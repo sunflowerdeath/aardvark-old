@@ -1,0 +1,164 @@
+type Size {
+	width: int,
+	height: int
+}
+
+type Position {
+	top: 0,
+	left: 0
+}
+
+// Base elements
+
+class Window {
+	constructor(size: Size, pos: Position)
+	
+	root: Element
+	
+	hide()
+	show()
+	quit()
+}
+
+class Element {
+	parent: Element
+	setPosition(pos: Position): void
+}
+
+class Children<T> {
+	length: Number
+	
+	appendChild(child: T)
+	insertChild(child: T, pos: Number)
+	removeChild(child: T)
+}
+
+type Constrain {
+	minHeight: Number,
+	maxHeight: Number,
+	minWidth: Number,
+	maxWidth: Number
+}
+
+// Text elements
+
+class Text extends Element {
+	text: String
+	fontSize
+	fontStyle
+	fontFamily
+	fontWeight
+	letterSpacing
+	color
+}
+
+class Paragraph extends Text {
+	lineHeight: Number
+	textAlign: 'left' | 'right' | 'justify'
+}
+
+// Layout elements
+
+class Center extends Element {
+	child: Element
+}
+
+class Padding extends Element {
+	// ...
+}
+
+class Scroll extends Element {
+}
+
+class FixedSize extends Element {
+	child: Element
+	width: Number
+	height: Number
+}
+
+class AbsolutePosition extends Element {
+	child: Element
+	left: Number
+	top: Number
+	right: Number
+	bottom: Number
+}
+
+class RelativePosition extends Element {
+	child: Element
+	left: Number
+	top: Number
+	right: Number
+	bottom: Number
+}
+
+class Stack extends Element {
+	children: Array<Element>
+}
+
+class Layer extends Element {
+	translate // absolute or relative
+	rotate: Number
+	scale: Number
+	skew
+	matrix
+	opacity: Number
+	filter
+	gpuLayer
+}
+
+type FlexAlign = 'center' | 'start' | 'end'
+
+type FlexJustify = 'center' | 'start' | 'end' | 'space-between'|
+	'space-around' | 'space-evenly'
+
+class Flex extends Element {
+	direction: 'column'|'row'
+	children: Children<FlexChild>
+	alignChildren: FlexAlign
+	justifyChildren: FlexJustify
+}
+
+class FlexChild extends Element {
+	basis: Number
+	grow: Number
+	align: FlexAlign
+}
+
+// single or multiple children
+class CustomLayout extends Element {
+	layout: (constrain: Constrain) -> Dimensions
+}
+
+// Paint elements
+
+class Image extends Element {
+}
+
+class Decoration extends Element {
+	background
+	border
+	borderRadius
+	boxShadow
+}
+
+class Clip extends Element {
+	// clip path or shape
+}
+	
+class Layer extends Element {
+	translate
+	opacity
+	filter
+	useGpuLayer
+}
+
+class CustomPaint extends Element {
+	paint: (canvas: Canvas, dimensions: Dimensions) -> void
+}
+
+// Interaction
+
+class Tappable extends Element {
+	
+}
