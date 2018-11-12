@@ -4,6 +4,8 @@
 #include "fmt/format.h"
 #include <SDL.h>
 
+#include <GL/gl.h> 
+
 // skia
 #include "GrBackendSurface.h"
 #include "GrContext.h"
@@ -52,13 +54,13 @@ void handle_events(SDL_Window* window) {
 
 int createSdlWindow(int windowWidth, int windowHeight) {
 	const int kStencilBits = 8;  // Skia needs 8 stencil bits
+	// but it works with 0...
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, kStencilBits);
-
     SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
     // If you want multisampling, uncomment the below lines and set a sample count
@@ -90,45 +92,35 @@ int createSdlWindow(int windowWidth, int windowHeight) {
         return 1;
     }
 
-	int result =  SDL_GL_MakeCurrent(window, glContext);
+	int result = SDL_GL_MakeCurrent(window, glContext);
     if (result != 0) {
         handle_sdl_error();
         return result;
     }
 
-	uint32_t windowFormat = SDL_GetWindowPixelFormat(window);
-    int contextType;
-    SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &contextType);
+	// create window, create GL context, make it current
 
-	int draw_width, draw_height;
     int dw, dh;
     SDL_GL_GetDrawableSize(window, &dw, &dh);
 
+	sk_sp<GrContext> grContext = GrContext::MakeGL();
     // setup GrContext
-    auto interface = GrGLMakeNativeInterface();
-    sk_sp<GrContext> grContext(GrContext::MakeGL(interface));
-    SkASSERT(grContext);
+    // auto interface = GrGLMakeNativeInterface();
+    // sk_sp<GrContext> grContext(GrContext::MakeGL(interface));
+    // SkASSERT(grContext);
 
-	// wrap the frame buffer object attached to the screen in a Skia render target
+	// on linux both color types workds BGRA and RGBA
+	SkColorType colorType = kRGBA_8888_SkColorType;
+	GrGLenum colorFormat = GR_GL_RGBA8; // linux open gl
+	// colorParams.format = GR_GL_BGRA8; // try this on android
+
     GrGLint buffer;
-	interface.get()->fFunctions.fGetIntegerv(GR_GL_FRAMEBUFFER_BINDING, &buffer);
-    GrGLFramebufferInfo info;
-    info.fFBOID = (GrGLuint) buffer;
+	glGetIntegerv(GR_GL_FRAMEBUFFER_BINDING, &buffer);
 
-    SkColorType colorType;
-    if (SDL_PIXELFORMAT_RGBA8888 == windowFormat) {
-		// TODO when this?
-        colorType = kRGBA_8888_SkColorType;
-		info.fFormat = GR_GL_RGBA8;
-    } else {
-        colorType = kBGRA_8888_SkColorType;
-        if (SDL_GL_CONTEXT_PROFILE_ES == contextType) {
-			info.fFormat = GR_GL_BGRA8;
-        } else {
-			// desktop GL
-			info.fFormat = GR_GL_RGBA8;
-        }
-    }
+	// create
+    GrGLFramebufferInfo info;
+    info.fFBOID = buffer;
+	info.fFormat = colorFormat;
 
 	GrBackendRenderTarget target(dw, dh, kMsaaSampleCount, kStencilBits, info);
 
@@ -212,8 +204,8 @@ int main() {
 	std::cout << greeting;
 	std::cout << std::endl;
 
-	js();
+	// js();
 
-	// int result = createSdlWindow(800, 600);
-	// if (result != 0) return result;
+	int result = createSdlWindow(800, 600);
+	if (result != 0) return result;
 }

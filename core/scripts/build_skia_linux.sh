@@ -7,7 +7,7 @@ SKIA_DIR=$PWD/externals/skia
 # skia_use_dng_sdk=false	RAW image handling
 # skia_use_sfntly=false		PDF handling depedency
 # skia_enable_pdf=false		PDF handling
-$SKIA_DIR/bin/gn gen --root=$SKIA_DIR $SKIA_DIR/lib --args="\
+$SKIA_DIR/bin/gn gen --root=$SKIA_DIR $SKIA_DIR/lib/linux-x86-64 --args="\
 is_official_build=true \
 cc=\"clang\" \
 cxx=\"clang++\" \
@@ -17,4 +17,4 @@ skia_use_sfntly=false \
 skia_enable_pdf=false \
 "
 
-ninja -C $SKIA_DIR/lib -j2
+ninja -C $SKIA_DIR/lib -j3

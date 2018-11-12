@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+	xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.aardvark.native_example">
+    
+	<!-- This .apk has no Java code itself, so set hasCode to false. -->
+	<application
+		android:label="AardvarkNative"
+		android:hasCode="false">
+
+		<!-- Activity is the built-in NativeActivity framework class.
+		This will take care of integrating with NDK code. -->
+		<activity 
+			android:name="android.app.NativeActivity"
+			android:label="AardvarkNative"
+			android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale">
+			<!-- Tell NativeActivity the name of .so -->
+			<meta-data 
+				android:name="android.app.lib_name"
+				android:value="native-activity" />
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity>
+    </application>
+
+</manifest>
