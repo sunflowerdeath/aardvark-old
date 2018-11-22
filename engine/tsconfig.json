@@ -1,0 +1,9 @@
+{
+	"compilerOptions": {
+		"sourceMap": true,
+		"target": "ES6"
+	},
+	"include": [
+        "src/**/*"
+    ]
+}

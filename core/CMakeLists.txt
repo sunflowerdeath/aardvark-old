@@ -43,6 +43,12 @@ set(CMAKE_CXX_FLAGS_RELEASE "\
 # fmt
 add_subdirectory("${CMAKE_BINARY_DIR}/externals/fmt")
 
+# GLFW
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+add_subdirectory(${CMAKE_BINARY_DIR}/externals/glfw)
+
 # SDL2
 find_package(SDL2 REQUIRED)
 add_library(SDL2_LIB STATIC IMPORTED)

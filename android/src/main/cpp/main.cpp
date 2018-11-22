@@ -55,12 +55,16 @@ void init_skia(AppState* app_state) {
 	sk_sp<GrContext> grContext(GrContext::MakeGL());
 
 	// Wrap the frame buffer object attached to the screen in a Skia render target
+	
+	// Get currently bound framebuffer object id
+	// This is redunant as buffer currently bound to screen should be always 0
     GrGLint buffer;
 	glGetIntegerv(GR_GL_FRAMEBUFFER_BINDING, &buffer);
     GrGLFramebufferInfo info;
-    info.fFBOID = (GrGLuint) buffer;
+    info.fFBOID = (GrGLuint) buffer; // Framebuffer object id
 	info.fFormat = colorFormat;
-	GrBackendRenderTarget target(width, height, kMsaaSampleCount, kStencilBits, info);
+	GrBackendRenderTarget target(width, height, kMsaaSampleCount,
+								 kStencilBits, info);
 
 	// setup SkSurface
     // To use distance field text, use commented out SkSurfaceProps instead
