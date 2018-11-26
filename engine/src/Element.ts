@@ -13,12 +13,14 @@ interface ElementOptions {
 }
 
 abstract class Element<P> {
+	props: Partial<P>
 	document: Document
 	parent: Element<any>
+
 	// These props are set by parent layout functions
 	size: Size
 	relPosition: Position
-	// Absolute position is calculated after layout painting
+	// Absolute position is calculated before painting
 	absPosition: Position
 	// Size depends only on input constraints
 	sizedByParent: boolean = true
@@ -26,28 +28,30 @@ abstract class Element<P> {
 	// layout of parents. This can happen when element recieves tight
 	// constraints, so it is always same size, or when element's size
 	// depends only on input constraints.
-	// size of its children for calculating own size.
 	// This prop is set automatically depending on the given layout constraints
-	// and value of the `sizeDependsOnChildren`.
+	// and value of the `sizedByParent`.
 	isRelayoutBoundary: boolean
 	// This is used for relayout
 	prevConstraints: BoxConstraints
-	// Element can be repaint boundary when it does not share layers  with
-	// another elements. This ensures that it can be repainted safely, if all
-	// changes are contained within it.
+
+	// Repaint boundary element does not share layers with another elements.
+	// This allows to repaint this element separately.
 	// This prop should be set explicitly.
 	isRepaintBoundary: boolean = false
 	layerTree: LayerTree
-	props: P
 
 	constructor(props: P, options?: ElementOptions) {
-		this.props = props
+		this.setProps(props)
 		if (options) {
 			this.isRepaintBoundary = options.isRepaintBoundary
 		}
 	}
 
 	setProps(props: Partial<P>) {
+		if (!this.props) {
+			this.props = props
+			return
+		}
 		Object.assign(this.props, props)
 		this.document.changeElement(this)
 	}

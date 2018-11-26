@@ -58,7 +58,7 @@ class Document {
 	
 	private initialPaint() {
 		this.layoutElement(this.root, BoxConstraints.fromSize(this.screen.size))
-		this.paintElement(this.root, true)
+		this.paintElement(this.root, { isRepaintRoot: true })
 		this.composeLayers()
 		this.isInitialPaint = false
 	}
@@ -74,7 +74,9 @@ class Document {
 			this.layoutElement(elem, elem.prevConstraints)
 			addQQ(repaintBoundaries, elem.findClosestRepaintBoundary())
 		}
-		for (const elem of repaintBoundaries) this.paintElement(elem, true)
+		for (const elem of repaintBoundaries) {
+			this.paintElement(elem, { isRepaintRoot: true })
+		}
 		this.composeLayers()
 		this.changedElements.clear()
 	}
@@ -96,9 +98,16 @@ class Document {
 		elem.prevConstraints = constraints
 		return size
 	}
+
+	currentClip: Path2D
 	
-	paintElement(elem: Element<any>, isRepaintRoot?: boolean): void {
+	paintElement(
+		elem: Element<any>,
+		options?: {isRepaintRoot?: boolean, clip?: Path2D}
+	): void {
 		console.log("Paint element", elem)
+		const isRepaintRoot = options && options.isRepaintRoot
+		this.currentClip = options && options.clip
 		if (!isRepaintRoot) elem.parent = this.currentElement
 		this.currentElement = elem
 		if (elem.isRepaintBoundary) {

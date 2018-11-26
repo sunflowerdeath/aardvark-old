@@ -18,6 +18,7 @@ class Background extends Element<BackgroundProps> {
 		const layer = this.document.getLayer()
 		const ctx = layer.canvas.getContext('2d')
 		ctx.save()
+		if (this.document.currentClip) ctx.clip(this.document.currentClip)
 		ctx.translate(this.absPosition.left, this.absPosition.top)
 		ctx.fillStyle = this.props.color
 		ctx.fillRect(0, 0, this.size.width, this.size.height)

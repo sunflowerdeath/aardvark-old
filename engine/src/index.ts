@@ -1,7 +1,13 @@
 import Compositor from './Compositor'
 import Document from './Document'
 import Size from './Size'
-import { Center, FixedSize, Background, Stack, Align }  from './elements/index'
+import { Center, FixedSize, Background, Stack, Align } from './elements/index'
+import Border, {
+	BoxBorder,
+	BoxRadius,
+	BorderSide,
+	Radius
+} from './elements/Border'
 
 declare var global: any
 
@@ -26,8 +32,52 @@ const root = new Stack({
 			left: Align.px(20),
 			top: Align.px(80),
 			child: new FixedSize({
-				size: new Size({ width: 50, height: 50 }),
-				child: new Background({ color: 'green' })
+				size: new Size({ width: 100, height: 100 }),
+				child: new Border({
+					border: BoxBorder.all(
+						new BorderSide({ width: 3, color: 'red' })
+					),
+					radius: BoxRadius.all(Radius.circular(20)),
+					child: new Background({ color: 'black' })
+				})
+			})
+		}),
+
+		new Align({
+			left: Align.px(150),
+			top: Align.px(80),
+			child: new FixedSize({
+				size: new Size({ width: 100, height: 100 }),
+				child: new Border({
+					border: new BoxBorder({
+						top: new BorderSide({ width: 8, color: 'red' }),
+						right: new BorderSide({ width: 16, color: 'blue' }),
+						bottom: new BorderSide({ width: 0, color: 'red' }),
+						left: new BorderSide({ width: 8, color: 'black' })
+					}),
+					radius: BoxRadius.all(Radius.zero),
+					child: new Background({ color: '#ccc' })
+				})
+			})
+		}),
+
+		new Align({
+			left: Align.px(300),
+			top: Align.px(80),
+			child: new FixedSize({
+				size: new Size({ width: 100, height: 100 }),
+				child: new Border({
+					border: BoxBorder.all(
+						new BorderSide({ width: 30, color: 'blue' })
+					),
+					radius: new BoxRadius({
+						topLeft: Radius.zero,
+						topRight: Radius.circular(10),
+						bottomLeft: Radius.circular(30),
+						bottomRight: Radius.circular(50)
+					}),
+					child: new Background({ color: 'black' })
+				})
 			})
 		})
 	]
