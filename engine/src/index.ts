@@ -8,6 +8,12 @@ import Border, {
 	BorderSide,
 	Radius
 } from './elements/Border'
+import Flex, {
+	FlexAlign,
+	FlexJustify,
+	FlexDirection,
+	FlexChild
+} from './elements/Flex'
 
 declare var global: any
 
@@ -77,6 +83,60 @@ const root = new Stack({
 						bottomRight: Radius.circular(50)
 					}),
 					child: new Background({ color: 'black' })
+				})
+			})
+		}),
+
+		new Align({
+			left: Align.px(0),
+			top: Align.px(250),
+			child: new FixedSize({
+				size: new Size({ width: 500, height: 100 }),
+				child: new Flex({
+					direction: FlexDirection.Row,
+					align: FlexAlign.Start,
+					justify: FlexJustify.Start,
+					children: [
+						{
+							grow: 1,
+							element: new Background({ color: '#ccc' })
+						},
+						{
+							size: 50,
+							element: new Background({ color: '#666' })
+						},
+						{
+							grow: 2,
+							element: new Background({ color: '#ccc' })
+						},
+						{
+							size: 100,
+							element: new Background({ color: '#666' })
+						}
+					]
+				})
+			})
+		}),
+
+		new Align({
+			left: Align.px(0),
+			top: Align.px(400),
+			child: new FixedSize({
+				size: new Size({ width: 500, height: 100 }),
+				child: new Flex({
+					direction: FlexDirection.Row,
+					align: FlexAlign.Start,
+					justify: FlexJustify.SpaceBetween,
+					children: [
+						{
+							size: 50,
+							element: new Background({ color: '#666' })
+						},
+						{
+							size: 100,
+							element: new Background({ color: '#666' })
+						}
+					]
 				})
 			})
 		})

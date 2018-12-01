@@ -26,6 +26,10 @@ class BoxConstraints implements IBoxConstraints{
 		})
 	}
 
+	maxSize(): Size {
+		return new Size({ width: this.maxWidth, height: this.maxHeight })
+	}
+
 	static isTight(constraints: BoxConstraints) {
 		return (
 			constraints.minWidth === constraints.maxWidth &&

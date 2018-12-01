@@ -18,7 +18,7 @@ class ComposeOptions {
 	rotation: number
 
 	static defaultValue = new ComposeOptions({
-		translate: new Position({ top: 0, left: 0 }),
+		translate: Position.origin,
 		scale: 1,
 		opacity: 1,
 		rotation: 0
