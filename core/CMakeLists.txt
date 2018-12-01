@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(hello LANGUAGES CXX)
 
-# TODO just use -std=cxx-14?
-set(CMAKE_CXX_STANDARD 14)
+# TODO just use -std=cxx-17?
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -10,7 +10,11 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
+# Export compile commands to 'compile_commands.json'
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # Prefer static libraries instead of dynamic ones
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".a;.so")
@@ -30,11 +34,8 @@ set(CMAKE_FIND_LIBRARY_SUFFIXES ".a;.so")
 # -s
 #   Run strip
 #-------------------------------------------------------------------------------
-set(CMAKE_CXX_FLAGS_RELEASE "\
-	-Os \
-	-ffunction-sections -fdata-sections \
-	-Wl,--gc-sections \
-	-s")
+set(CMAKE_CXX_FLAGS_RELEASE
+  "-Os -ffunction-sections -fdata-sections -Wl,--gc-sections -s")
 
 #-------------------------------------------------------------------------------
 # DEPENDENCIES
@@ -44,10 +45,10 @@ set(CMAKE_CXX_FLAGS_RELEASE "\
 add_subdirectory("${CMAKE_BINARY_DIR}/externals/fmt")
 
 # GLFW
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-add_subdirectory(${CMAKE_BINARY_DIR}/externals/glfw)
+# set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+# set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+# set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+# add_subdirectory(${CMAKE_BINARY_DIR}/externals/glfw)
 
 # SDL2
 find_package(SDL2 REQUIRED)
@@ -165,8 +166,38 @@ set_target_properties(JavaScriptCore PROPERTIES
 #-------------------------------------------------------------------------------
 # PROJECT SETUP
 #-------------------------------------------------------------------------------
-add_executable(hello src/hello.cpp)
+add_library(aardvark
+  src/base_types.cpp
+  src/box_constraints.cpp
+  src/compositing.cpp
+  src/layer_tree.cpp
+  src/document.cpp
+  src/element.cpp
+  src/window.cpp
+)
 # add_dependencies(hello fmt SKIA_LIB JavaScriptCore)
+target_link_libraries(aardvark 
+	fmt
+	SKIA_LIB
+	SDL2_LIB
+	JavaScriptCore
+)
+
+#-------------------------------------------------------------------------------
+# PROJECT SETUP
+#-------------------------------------------------------------------------------
+add_executable(example src/example.cpp)
+add_dependencies(example aardvark)
+target_link_libraries(example 
+	aardvark
+	SDL2_LIB
+)
+
+#-------------------------------------------------------------------------------
+# PROJECT SETUP
+#-------------------------------------------------------------------------------
+add_executable(hello src/hello.cpp)
+add_dependencies(hello fmt SKIA_LIB JavaScriptCore)
 target_link_libraries(hello 
 	fmt
 	SKIA_LIB
