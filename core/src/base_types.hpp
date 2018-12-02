@@ -9,7 +9,7 @@ struct Scale {
 struct Size {
 	float width;
 	float height;
-	static bool isEqual(Size a, Size b);
+	static bool is_equal(Size a, Size b);
 };
 
 struct Position {

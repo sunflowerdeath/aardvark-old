@@ -2,12 +2,12 @@
 
 namespace aardvark::elements {
 
-Background::Background(SkColor color, bool isRepaintBoundary)
-    : Element(isRepaintBoundary), color(color) {};
+Background::Background(SkColor color, bool is_repaint_boundary)
+    : Element(is_repaint_boundary), color(color){};
 
 Size Background::layout(BoxConstraints constraints) {
   return Size{
-      constraints.maxWidth /* width */, constraints.maxHeight /* height */
+      constraints.max_width /* width */, constraints.max_height /* height */
   };
 };
 
@@ -15,9 +15,9 @@ void Background::paint() {
   SkPaint paint;
   paint.setColor(color);
   SkRect rect;
-  rect.set({absPosition.left, absPosition.top},
-           {absPosition.left + size.width, absPosition.top + size.height});
-  auto layer = document->getLayer();
+  rect.set({abs_position.left, abs_position.top},
+           {abs_position.left + size.width, abs_position.top + size.height});
+  auto layer = document->get_layer();
   layer->canvas->drawRect(rect, paint);
 };
 

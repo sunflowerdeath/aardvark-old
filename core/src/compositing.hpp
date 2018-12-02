@@ -8,7 +8,7 @@
 #include "SkSurface.h"
 #include "base_types.hpp"
 
-namespace aardvark::compositing {
+namespace aardvark {
 
 struct ComposeOptions {
   Position translate;
@@ -25,10 +25,19 @@ class Layer {
   ComposeOptions compose_options;
   sk_sp<SkSurface> surface;
   SkCanvas* canvas;
+
+  // Clears layer's canvas
   void clear(SkColor color = SK_ColorBLACK);
+
+  // Clears layer and resets compose options to default
   void reset();
+
+  // Mark layer as changed to invalidate last snapshot
   void set_changed();
+
+  // Returns snapshot of the layer's canvas
   sk_sp<SkImage> get_snapshot();
+
  private:
   sk_sp<SkImage> snapshot;
 };
@@ -36,9 +45,11 @@ class Layer {
 class Compositor {
  public:
   Compositor(Size window_size);
-  std::shared_ptr<Layer> get_screen_layer();
-  std::shared_ptr<Layer> create_offscreen_layer(Size size);
-  void paint_layer(Layer* screen, Layer* layer, Position pos);
+  std::shared_ptr<Layer> make_screen_layer();
+  std::shared_ptr<Layer> make_offscreen_layer(Size size);
+  // Paints layer on top of the target layer
+  void paint_layer(Layer* target, Layer* layer, Position pos);
+
  private:
   Size window_size;
   sk_sp<GrContext> gr_context;

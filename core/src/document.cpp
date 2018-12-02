@@ -3,158 +3,156 @@
 
 namespace aardvark {
 
-void addOnlyParent(ElementsSet &set, Element* added) {
+// Add element to set ensuring that no element will be the children of another
+void add_only_parent(ElementsSet& set, Element* added) {
   for (auto elem : set) {
-    if (elem->isParentOf(added)) {
-      return; // Parent is already in the set
+    if (elem->is_parent_of(added)) {
+      return;  // Parent is already in the set
     }
-    if (added->isParentOf(elem)) {
-      set.erase(elem); // Child is in the set
+    if (added->is_parent_of(elem)) {
+      set.erase(elem);  // Child is in the set
     }
   }
   set.insert(added);
 };
 
-Document::Document(compositing::Compositor& compositor,
-                   std::shared_ptr<Element> root)
-    : compositor(compositor), screen(compositor.get_screen_layer()) {
-  setRoot(root);
+Document::Document(Compositor& compositor, std::shared_ptr<Element> root)
+    : compositor(compositor), screen(compositor.make_screen_layer()) {
+  set_root(root);
 }
 
-void Document::setRoot(std::shared_ptr<Element> newRoot) {
-  root = newRoot;
-  root->isRepaintBoundary = true;
-  root->relPosition = Position();
+void Document::set_root(std::shared_ptr<Element> new_root) {
+  root = new_root;
+  root->is_repaint_boundary = true;
+  root->rel_position = Position();
   root->size = screen->size;
-  isInitialPaint = true;
+  is_initial_paint = true;
 }
 
-void Document::changeElement(Element* elem) {
-  changedElements.insert(elem);
-}
+void Document::change_element(Element* elem) { changed_elements.insert(elem); }
 
 void Document::paint() {
-  if (isInitialPaint) {
-    initialPaint();
+  if (is_initial_paint) {
+    initial_paint();
   } else {
     repaint();
   }
 }
 
-void Document::initialPaint() {
-  layoutElement(root.get(), BoxConstraints::fromSize(screen->size));
-  paintElement(root.get(), /* isRepaintRoot */ true, /* clip */ false);
-  composeLayers();
-  isInitialPaint = false;
+void Document::initial_paint() {
+  layout_element(root.get(),
+                 BoxConstraints::from_size(screen->size, true /* tight */));
+  paint_element(root.get(), /* isRepaintRoot */ true, /* clip */ false);
+  compose_layers();
+  is_initial_paint = false;
 }
 
 void Document::repaint() {
-  if (changedElements.empty()) return;  // nothing to repaint
-  ElementsSet relayoutBoundaries;
-  for (auto elem : changedElements) {
-    addOnlyParent(relayoutBoundaries, elem->findClosestRelayoutBoundary());
+  if (changed_elements.empty()) return;  // nothing to repaint
+  ElementsSet relayout_boundaries;
+  for (auto elem : changed_elements) {
+    add_only_parent(relayout_boundaries,
+                    elem->find_closest_relayout_boundary());
   }
-  ElementsSet repaintBoundaries;
-  for (auto elem : relayoutBoundaries) {
-    layoutElement(elem, elem->prevConstraints);
-    addOnlyParent(repaintBoundaries, elem->findClosestRepaintBoundary());
+  ElementsSet repaint_boundaries;
+  for (auto elem : relayout_boundaries) {
+    layout_element(elem, elem->prev_constraints);
+    add_only_parent(repaint_boundaries, elem->find_closest_repaint_boundary());
   }
-  for (auto elem : repaintBoundaries) {
-    paintElement(elem, /* isRepaintRoot */ true, /* clip */ false);
+  for (auto elem : repaint_boundaries) {
+    paint_element(elem, /* isRepaintRoot */ true, /* clip */ false);
   }
-  composeLayers();
-  changedElements.clear();
+  compose_layers();
+  changed_elements.clear();
 }
 
-Size Document::layoutElement(Element* elem, BoxConstraints constraints) {
+Size Document::layout_element(Element* elem, BoxConstraints constraints) {
   elem->document = this;
-  elem->isRelayoutBoundary = constraints.isTight() || !elem->sizedByParent;
+  elem->is_relayout_boundary = constraints.is_tight() || !elem->sized_by_parent;
   auto size = elem->layout(constraints);
-  elem->prevConstraints = constraints;
+  elem->prev_constraints = constraints;
   return size;
 }
 
-void Document::paintElement(Element* elem, bool isRepaintRoot, bool clip) {
-  currentClip = clip;
-  if (!isRepaintRoot) elem->parent = currentElement;
-  this->currentElement = elem;
-  if (elem->isRepaintBoundary) {
+void Document::paint_element(Element* elem, bool is_repaint_root, bool clip) {
+  current_clip = clip;
+  if (!is_repaint_root) elem->parent = current_element;
+  this->current_element = elem;
+  if (elem->is_repaint_boundary) {
     // Save previous tree to be able to reuse layers from it
-    prevLayerTree = elem->layerTree.get();
+    prev_layer_tree = elem->layer_tree.get();
+    LayerTree* parent_tree =
+        is_repaint_root ? (is_initial_paint ? nullptr : prev_layer_tree->parent)
+                        : current_layer_tree;
     // Create new tree and add it to the parent tree
-    LayerTree* parentTree =
-        isRepaintRoot
-            ? (isInitialPaint ? nullptr : prevLayerTree->parent)
-            : currentLayerTree;
-    elem->layerTree = std::make_shared<LayerTree>(elem);
-    if (parentTree != nullptr) {
-      elem->layerTree->parent = parentTree;
-      if (isRepaintRoot) {
-        parentTree->replace(prevLayerTree, elem->layerTree.get());
+    elem->layer_tree = std::make_shared<LayerTree>(elem);
+    if (parent_tree != nullptr) {
+      elem->layer_tree->parent = parent_tree;
+      if (is_repaint_root) {
+        parent_tree->replace(prev_layer_tree, elem->layer_tree.get());
       } else {
-        parentTree->add(elem->layerTree.get());
+        parent_tree->add(elem->layer_tree.get());
       }
     }
     // Make new tree current
-    currentLayerTree = elem->layerTree.get();
-    currentLayer = nullptr;
+    current_layer_tree = elem->layer_tree.get();
+    current_layer = nullptr;
   }
-  elem->absPosition =
+  elem->abs_position =
       elem->parent == nullptr
-          ? elem->relPosition
-          : Position::add(elem->parent->absPosition, elem->relPosition);
+          ? elem->rel_position
+          : Position::add(elem->parent->abs_position, elem->rel_position);
   elem->paint();
-  if (elem->isRepaintBoundary) {
+  if (elem->is_repaint_boundary) {
     // Reset current layer tree when leaving repaint boundary
-    prevLayerTree = nullptr;
-    currentLayerTree = currentLayerTree->parent;
-    currentLayer = nullptr;
+    prev_layer_tree = nullptr;
+    current_layer_tree = current_layer_tree->parent;
+    current_layer = nullptr;
   }
-  currentElement = elem->parent;
+  current_element = elem->parent;
 }
 
-compositing::Layer* Document::getLayer() {
+Layer* Document::get_layer() {
   // If there is no current layer, setup default layer
-  if (!currentLayer) createLayer(currentLayerTree->element->size);
-  return currentLayer;
+  if (!current_layer) create_layer(current_layer_tree->element->size);
+  return current_layer;
   // TODO setup translate and clip
 }
 
 // Creates layer and adds it to the current layer tree, reusing layers from
 // previous repaint if possible.
-compositing::Layer* Document::createLayer(Size size) {
-  std::shared_ptr<compositing::Layer> layer =
-      prevLayerTree != nullptr ? prevLayerTree->findBySize(size) : nullptr;
+Layer* Document::create_layer(Size size) {
+  std::shared_ptr<Layer> layer = prev_layer_tree != nullptr
+                                     ? prev_layer_tree->find_by_size(size)
+                                     : nullptr;
   if (layer == nullptr) {
     // Create new layer
-    layer = compositor.create_offscreen_layer(size);
+    layer = compositor.make_offscreen_layer(size);
   } else {
     // Reuse layer
-    prevLayerTree->remove(layer);
+    prev_layer_tree->remove_layer(layer);
     layer.reset();
   }
-  currentLayerTree->add(layer);
-  currentLayer = layer.get();
-  std::cout << "create layer ok" << std::endl;
+  current_layer_tree->add(layer);
+  current_layer = layer.get();
   return layer.get();
 }
 
-void Document::composeLayers() {
+void Document::compose_layers() {
   screen->clear();
-  paintLayerTree(root->layerTree.get());
+  paint_layer_tree(root->layer_tree.get());
   screen->canvas->flush();
 }
 
-void Document::paintLayerTree(LayerTree* tree) {
-  for (auto &item : tree->children) {
+void Document::paint_layer_tree(LayerTree* tree) {
+  for (auto item : tree->children) {
     auto child_tree = std::get_if<LayerTree*>(&item);
     if (child_tree != nullptr) {
-      paintLayerTree(*child_tree);
+      paint_layer_tree(*child_tree);
     } else {
-      auto child_layer =
-         *std::get_if<std::shared_ptr<compositing::Layer>>(&item);
+      auto child_layer = *std::get_if<std::shared_ptr<Layer>>(&item);
       compositor.paint_layer(screen.get(), child_layer.get(),
-                             tree->element->absPosition);
+                             tree->element->abs_position);
     }
   }
 }

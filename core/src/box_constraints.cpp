@@ -2,25 +2,25 @@
 
 namespace aardvark {
 
-BoxConstraints BoxConstraints::makeLoose() {
+BoxConstraints BoxConstraints::make_loose() {
   return BoxConstraints{
-      0,         // minWidth
-      maxWidth,  // maxWidth
-      0,         // minHeight
-      maxHeight  // maxHeight
+      0,          // min_width
+      max_width,  // max_width
+      0,          // min_height
+      max_height  // max_height
   };
 };
 
-bool BoxConstraints::isTight() {
-  return minWidth == maxWidth && minHeight == maxHeight;
+bool BoxConstraints::is_tight() {
+  return min_width == max_width && min_height == max_height;
 };
 
-BoxConstraints BoxConstraints::fromSize(Size size) {
+BoxConstraints BoxConstraints::from_size(Size size, bool tight) {
   return BoxConstraints{
-      size.width,   // minWidth
-      size.width,   // maxWidth
-      size.height,  // minHeight
-      size.height   // maxHeight
+      tight ? size.width : 0,   // min_width
+      size.width,               // max_width
+      tight ? size.height : 0,  // min_height
+      size.height               // max_height
   };
 };
 

@@ -19,41 +19,54 @@ using ElementsSet = std::unordered_set<Element*>;
 
 class Document {
  public:
-  Document(compositing::Compositor& compositor, std::shared_ptr<Element> root);
-  void setRoot(std::shared_ptr<Element> newRoot);
-  void changeElement(Element* elem);
+  Document(Compositor& compositor, std::shared_ptr<Element> root);
+
+  // Sets new root element
+  void set_root(std::shared_ptr<Element> new_root);
+
+  // Notify document that element was changed
+  void change_element(Element* elem);
+
+  // Paints document
   void paint();
 
-  Size layoutElement(Element* elem, BoxConstraints constraints);
-  void paintElement(Element* elem, bool isRepaintRoot = false,
-                    bool clip = false);
+  // Elements should call this function to layout its children
+  Size layout_element(Element* elem, BoxConstraints constraints);
 
-  compositing::Layer* getLayer();
+  // Elements should call this function to paint its children
+  void paint_element(Element* elem, bool is_repaint_root = false,
+                     bool clip = false);
+
+  // Elements should call this method to obtain layer to paint itself
+  Layer* get_layer();
 
   // Creates layer and adds it to the current layer tree, reusing layers from
   // previous repaint if possible.
-  compositing::Layer* createLayer(Size size);
+  Layer* create_layer(Size size);
 
  private:
-  compositing::Compositor compositor;
-  std::shared_ptr<compositing::Layer> screen;
+  Compositor compositor;
+  std::shared_ptr<Layer> screen;
   std::shared_ptr<Element> root;
-  ElementsSet changedElements;
-  bool isInitialPaint;
+  ElementsSet changed_elements;
+  bool is_initial_paint;
 
   // These members are used during the paint phase
-  Element* currentElement;
-  LayerTree* currentLayerTree;
-  LayerTree* prevLayerTree;
-  compositing::Layer* currentLayer;
 
-  void initialPaint();
+  // Currently painted element
+  Element* current_element;
+	// Layer tree of the current repaint boundary element
+  LayerTree* current_layer_tree;
+	// Previous layer tree of the current repaint boundary element
+  LayerTree* prev_layer_tree;
+	// Layer that is currently used for painting
+  Layer* current_layer;
+  bool current_clip;
+
+  void initial_paint();
   void repaint();
-  bool currentClip;
-
-  void composeLayers();
-
-  void paintLayerTree(LayerTree* tree);
+  void compose_layers();
+  void paint_layer_tree(LayerTree* tree);
 };
 
 }  // namespace aardvark

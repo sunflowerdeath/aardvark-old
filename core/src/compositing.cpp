@@ -4,7 +4,7 @@
 #define GR_GL_BGRA8 0x93A1
 #define GR_GL_RGBA8 0x8058
 
-namespace aardvark::compositing {
+namespace aardvark {
 
 Layer::Layer(sk_sp<SkSurface> surface) {
   this->surface = surface;
@@ -39,7 +39,7 @@ Compositor::Compositor(Size window_size) {
   gr_context = GrContext::MakeGL();
 }
 
-std::shared_ptr<Layer> Compositor::get_screen_layer() {
+std::shared_ptr<Layer> Compositor::make_screen_layer() {
   const int stencil_bits = 8;
   const int msaa_sample_count = 0;
 
@@ -67,7 +67,7 @@ std::shared_ptr<Layer> Compositor::get_screen_layer() {
   return std::make_shared<Layer>(surface);
 };
 
-std::shared_ptr<Layer> Compositor::create_offscreen_layer(aardvark::Size size) {
+std::shared_ptr<Layer> Compositor::make_offscreen_layer(aardvark::Size size) {
   // sk_sp<GrContext> grContext(GrContext::MakeGL());
   const SkImageInfo info =
       SkImageInfo::MakeN32(size.width, size.height, kOpaque_SkAlphaType);
@@ -76,12 +76,12 @@ std::shared_ptr<Layer> Compositor::create_offscreen_layer(aardvark::Size size) {
   return std::make_shared<Layer>(surface);
 };
 
-void Compositor::paint_layer(Layer* screen, Layer* layer, Position pos) {
+void Compositor::paint_layer(Layer* target, Layer* layer, Position pos) {
   SkPaint paint;
   paint.setAlpha(128);
   auto res_pos = Position::add(layer->compose_options.translate, pos);
-  screen->canvas->drawImage(layer->get_snapshot(), res_pos.left, res_pos.top,
+  target->canvas->drawImage(layer->get_snapshot(), res_pos.left, res_pos.top,
                             &paint);
 };
 
-} // namespace aardvark::compositing
+} // namespace aardvark

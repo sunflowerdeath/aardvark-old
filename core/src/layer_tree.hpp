@@ -12,7 +12,7 @@ class LayerTree;
 class Element;
 
 using LayerTreeNode =
-    std::variant<LayerTree*, std::shared_ptr<compositing::Layer>>;
+    std::variant<LayerTree*, std::shared_ptr<Layer>>;
 
 class LayerTree {
  public:
@@ -31,13 +31,13 @@ class LayerTree {
   void add(LayerTreeNode item);
 
   // Replace one item with another
-  void replace(LayerTreeNode oldItem, LayerTreeNode newItem);
+  void replace(LayerTreeNode old_item, LayerTreeNode new_item);
 
-  // Removes item from the tree
-  void remove(std::shared_ptr<compositing::Layer> layer);
+  // Removes layer from the tree
+  void remove_layer(std::shared_ptr<Layer> layer);
 
   // Finds layer in the current tree that has provided size
-  std::shared_ptr<compositing::Layer> findBySize(Size size);
+  std::shared_ptr<Layer> find_by_size(Size size);
 };
 
 }

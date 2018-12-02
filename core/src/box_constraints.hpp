@@ -5,16 +5,19 @@
 namespace aardvark {
 
 struct BoxConstraints {
-  float minWidth;
-  float maxWidth;
-  float minHeight;
-  float maxHeight;
+  float min_width;
+  float max_width;
+  float min_height;
+  float max_height;
 
-  BoxConstraints makeLoose();
+  // Makes constraints with same max size and zero min size
+  BoxConstraints make_loose();
 
-  bool isTight();
+  // Checks whether min constraints is same as max constraints
+  bool is_tight();
 
-  static BoxConstraints fromSize(Size size);
+  // Makes tight or loose constraints from size
+  static BoxConstraints from_size(Size size, bool tight);
 };
 
 } // namespace aardvark

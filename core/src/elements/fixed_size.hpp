@@ -10,7 +10,7 @@ namespace aardvark::elements {
 class FixedSize : public Element {
  public:
   FixedSize(std::shared_ptr<Element> child, Size size,
-            bool isRepaintBoundary = false);
+            bool is_repaint_boundary = false);
   Size size;
   std::shared_ptr<Element> child;
   Size layout(BoxConstraints constraints);

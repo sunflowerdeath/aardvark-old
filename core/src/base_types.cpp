@@ -2,7 +2,7 @@
 
 namespace aardvark {
 
-bool Size::isEqual(Size a, Size b) {
+bool Size::is_equal(Size a, Size b) {
 return a.width == b.width && a.height == b.height;
 };
 

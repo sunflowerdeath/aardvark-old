@@ -21,7 +21,7 @@ void paint_frame(SkCanvas* canvas, int pos) {
 
 int main() {
   auto window = aardvark::SdlWindow(aardvark::Size{500, 500});
-  auto compositor = aardvark::compositing::Compositor(aardvark::Size{500, 500});
+  auto compositor = aardvark::Compositor(aardvark::Size{500, 500});
   // auto screen = compositor.get_screen_layer();
 
   auto root =

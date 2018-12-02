@@ -10,7 +10,7 @@ namespace aardvark::elements {
 
 class Background : public Element {
  public:
-  Background(SkColor color, bool isRepaintBoundary = false);
+  Background(SkColor color, bool is_repaint_boundary = false);
   SkColor color;
   std::shared_ptr<Element> child;
   Size layout(BoxConstraints constraints) override;

@@ -11,24 +11,53 @@ namespace aardvark {
 class Document;
 class LayerTree;
 
+// Base class for elements of the document
 class Element {
  public:
-  Element(bool isRepaintBoundary);
+  Element(bool is_repaint_boundary);
   Document* document;
-  std::shared_ptr<LayerTree> layerTree;
+  std::shared_ptr<LayerTree> layer_tree;
   Element* parent;
+ 
+	// These props should be set during layout of the parent element
   Size size;
-  Position relPosition;
-  Position absPosition;
-  bool sizedByParent = true;
-  bool isRelayoutBoundary = false;
-  bool isRepaintBoundary = false;
-  BoxConstraints prevConstraints;
+  Position rel_position;
+
+	// Absolute position is calculated before painting the element
+  Position abs_position;
+
+	// Element should set this to true when its size depends only on 
+  // input constraints
+  bool sized_by_parent = true;
+
+	// When element is relayout boundary, changes inside it do not affect 
+	// layout of parents. This can happen when element recieves tight
+	// constraints, so it is always same size, or when element's size
+	// depends only on input constraints.
+	// This prop is set automatically depending on the given layout constraints
+	// and value of the `sizedByParent`.
+  bool is_relayout_boundary = false;
+
+	// Repaint boundary element does not share layers with another elements.
+	// This allows to repaint this element separately.
+	// This prop should be set explicitly.
+  bool is_repaint_boundary = false;
+
+	// This is used for relayout
+  BoxConstraints prev_constraints;
+
+  // In this method element should calculate its size, layout children 
+  // and set their size and relative positions.
   virtual Size layout(BoxConstraints constraints) {};
+
+  // Paints element and its children
   virtual void paint() {};
-  bool isParentOf(Element* elem);
-  Element* findClosestRelayoutBoundary();
-  Element* findClosestRepaintBoundary();
+
+  // Check whether the element is direct or indirect parent of another element
+  bool is_parent_of(Element* elem);
+
+  Element* find_closest_relayout_boundary();
+  Element* find_closest_repaint_boundary();
 };
 
 };  // namespace aardvark

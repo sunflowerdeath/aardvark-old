@@ -2,11 +2,11 @@
 
 namespace aardvark {
 
-Element::Element(bool isRepaintBoundary) {
-  this->isRepaintBoundary = isRepaintBoundary;
+Element::Element(bool is_repaint_boundary) {
+  this->is_repaint_boundary = is_repaint_boundary;
 };
 
-bool Element::isParentOf(Element* elem) {
+bool Element::is_parent_of(Element* elem) {
   auto current = elem->parent;
   while (current) {
     if (current == this) return true;
@@ -15,17 +15,17 @@ bool Element::isParentOf(Element* elem) {
   return false;
 };
 
-Element* Element::findClosestRelayoutBoundary() {
-  if (this->isRelayoutBoundary) return this;
+Element* Element::find_closest_relayout_boundary() {
+  if (this->is_relayout_boundary) return this;
   auto current = this->parent;
-  while (!current->isRelayoutBoundary) current = current->parent;
+  while (!current->is_relayout_boundary) current = current->parent;
   return current;
 };
 
-Element* Element::findClosestRepaintBoundary() {
-  if (this->isRepaintBoundary) return this;
+Element* Element::find_closest_repaint_boundary() {
+  if (this->is_repaint_boundary) return this;
   auto current = this->parent;
-  while (!current->isRepaintBoundary) current = current->parent;
+  while (!current->is_repaint_boundary) current = current->parent;
   return current;
 };
 
