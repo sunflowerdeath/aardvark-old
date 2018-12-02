@@ -32,7 +32,7 @@ set(CMAKE_FIND_LIBRARY_SUFFIXES ".a;.so")
 # -Wl,--gc-sections
 #   Linker option to remove unneeded sections
 # -s
-#   Run strip
+#   Run strip to reduce size of executable
 #-------------------------------------------------------------------------------
 set(CMAKE_CXX_FLAGS_RELEASE
   "-Os -ffunction-sections -fdata-sections -Wl,--gc-sections -s")
@@ -43,12 +43,6 @@ set(CMAKE_CXX_FLAGS_RELEASE
 
 # fmt
 add_subdirectory("${CMAKE_BINARY_DIR}/externals/fmt")
-
-# GLFW
-# set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-# set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-# set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-# add_subdirectory(${CMAKE_BINARY_DIR}/externals/glfw)
 
 # SDL2
 find_package(SDL2 REQUIRED)
@@ -166,6 +160,8 @@ set_target_properties(JavaScriptCore PROPERTIES
 #-------------------------------------------------------------------------------
 # PROJECT SETUP
 #-------------------------------------------------------------------------------
+
+# library
 add_library(aardvark
   src/base_types.cpp
   src/box_constraints.cpp
@@ -174,33 +170,18 @@ add_library(aardvark
   src/document.cpp
   src/element.cpp
   src/window.cpp
+  src/elements/background.cpp
+  src/elements/center.cpp
+  src/elements/fixed_size.cpp
 )
-# add_dependencies(hello fmt SKIA_LIB JavaScriptCore)
-target_link_libraries(aardvark 
-	fmt
-	SKIA_LIB
-	SDL2_LIB
-	JavaScriptCore
+target_link_libraries(aardvark
+  fmt SKIA_LIB SDL2_LIB JavaScriptCore
 )
 
-#-------------------------------------------------------------------------------
-# PROJECT SETUP
-#-------------------------------------------------------------------------------
+# example
 add_executable(example src/example.cpp)
 add_dependencies(example aardvark)
 target_link_libraries(example 
 	aardvark
 	SDL2_LIB
-)
-
-#-------------------------------------------------------------------------------
-# PROJECT SETUP
-#-------------------------------------------------------------------------------
-add_executable(hello src/hello.cpp)
-add_dependencies(hello fmt SKIA_LIB JavaScriptCore)
-target_link_libraries(hello 
-	fmt
-	SKIA_LIB
-	SDL2_LIB
-	JavaScriptCore
 )

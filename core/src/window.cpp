@@ -9,19 +9,20 @@ void handle_sdl_error() {
 }
 
 SdlWindow::SdlWindow(Size size) {
-  const int kStencilBits = 8;  // Skia needs 8 stencil bits but it works with 0...
+  // Skia needs 8 stencil bits but it works with 0
+  const int stencil_bits = 8;
+  const int msaa_sample_count = 0;  // 4;
+
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
-  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, kStencilBits);
+  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, stencil_bits);
   SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
-  // If you want multisampling, uncomment the below lines and set a sample count
-  const int kMsaaSampleCount = 0;  // 4;
   // SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-  // SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, kMsaaSampleCount);
+  // SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, msaa_sample_count);
 
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0) {
     handle_sdl_error();
@@ -34,20 +35,11 @@ SdlWindow::SdlWindow(Size size) {
     handle_sdl_error();
   }
 
-  glContext = SDL_GL_CreateContext(window);
-  if (!glContext) {
+  context = SDL_GL_CreateContext(window);
+  if (!context) {
     handle_sdl_error();
   }
-
-  // make_current();
 };
-
-void SdlWindow::make_current() {
-  int result = SDL_GL_MakeCurrent(window, glContext);
-  if (result != 0) {
-    handle_sdl_error();
-  }
-}
 
 SdlWindow::~SdlWindow() {
   SDL_Quit();
@@ -58,6 +50,14 @@ void SdlWindow::close() {
   SDL_DestroyWindow(window);
 };
 
+
+void SdlWindow::make_current() {
+  int result = SDL_GL_MakeCurrent(window, context);
+  if (result != 0) {
+    handle_sdl_error();
+  }
+}
+
 void SdlWindow::swap_now() {
   SDL_GL_SwapWindow(window);
 }
@@ -66,22 +66,5 @@ void SdlWindow::swap() {
   SDL_GL_SetSwapInterval(1);
   SDL_GL_SwapWindow(window);
 }
-
-void SdlWindow::handleEvents() {
-  bool quit = false;
-  while (!quit) {
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-      switch (event.type) {
-        case SDL_QUIT:
-          quit = true;
-          break;
-        default:
-          break;
-      }
-    }
-  }
-  close();
-};
 
 } // namespace aardvark

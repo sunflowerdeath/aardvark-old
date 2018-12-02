@@ -24,8 +24,8 @@ class Element {
   bool isRelayoutBoundary = false;
   bool isRepaintBoundary = false;
   BoxConstraints prevConstraints;
-  virtual Size layout(BoxConstraints constraints);
-  virtual void paint();
+  virtual Size layout(BoxConstraints constraints) {};
+  virtual void paint() {};
   bool isParentOf(Element* elem);
   Element* findClosestRelayoutBoundary();
   Element* findClosestRepaintBoundary();

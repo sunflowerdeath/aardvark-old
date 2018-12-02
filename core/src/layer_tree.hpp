@@ -27,9 +27,16 @@ class LayerTree {
   // Child layers and trees
   std::vector<LayerTreeNode> children;
 
+  // Adds new item to the tree
   void add(LayerTreeNode item);
+
+  // Replace one item with another
   void replace(LayerTreeNode oldItem, LayerTreeNode newItem);
-  void remove(LayerTreeNode item);
+
+  // Removes item from the tree
+  void remove(std::shared_ptr<compositing::Layer> layer);
+
+  // Finds layer in the current tree that has provided size
   std::shared_ptr<compositing::Layer> findBySize(Size size);
 };
 

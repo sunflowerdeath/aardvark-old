@@ -1,11 +1,3 @@
-#include <memory>
-
-#include <GL/gl.h>
-#include "GrBackendSurface.h"
-#include "GrContext.h"
-#include "SkCanvas.h"
-#include "SkSurface.h"
-
 #include "compositing.hpp"
 
 #define GR_GL_FRAMEBUFFER_BINDING 0x8CA6
@@ -17,63 +9,79 @@ namespace aardvark::compositing {
 Layer::Layer(sk_sp<SkSurface> surface) {
   this->surface = surface;
   canvas = surface->getCanvas();
+  auto image_info = canvas->imageInfo();
+  size = Size{image_info.width(), image_info.height()};
 };
 
-void Layer::clear() {
-  canvas->clear(SK_ColorBLACK);
+void Layer::clear(SkColor color) {
+  canvas->clear(color);
+  set_changed();
 };
 
 void Layer::reset() {
+  clear();
+  compose_options = ComposeOptions();
 };
 
-Compositor::Compositor(Size windowSize) {
-  this->windowSize = windowSize;
+void Layer::set_changed() {
+  snapshot = nullptr;
 }
 
-std::shared_ptr<Layer> Compositor::getScreenLayer() {
-  const int kStencilBits = 8; // Skia needs 8 stencil bits
-  const int kMsaaSampleCount = 0; //4
+sk_sp<SkImage> Layer::get_snapshot() {
+  if (snapshot == nullptr) {
+    snapshot = surface->makeImageSnapshot();
+  }
+  return snapshot;
+};
+
+Compositor::Compositor(Size window_size) {
+  this->window_size = window_size;
+  gr_context = GrContext::MakeGL();
+}
+
+std::shared_ptr<Layer> Compositor::get_screen_layer() {
+  const int stencil_bits = 8;
+  const int msaa_sample_count = 0;
 
   // These values may be different on some devices
-  const SkColorType colorType = kRGBA_8888_SkColorType;
-  const GrGLenum colorFormat = GR_GL_RGBA8;
-
-  // Setup GrContext
-  sk_sp<GrContext> grContext(GrContext::MakeGL());
+  const SkColorType color_type = kRGBA_8888_SkColorType;
+  const GrGLenum color_format = GR_GL_RGBA8;
 
   // Wrap the frame buffer object attached to the screen in a Skia render target
-
-  // Get currently bound framebuffer object id
-  // This is probably redunant as buffer currently bound to screen
-  // should be always 0
+  // Get an id of the currently bound framebuffer object
   GrGLint buffer;
   glGetIntegerv(GR_GL_FRAMEBUFFER_BINDING, &buffer);
   GrGLFramebufferInfo info;
-  info.fFBOID = (GrGLuint) buffer; // Framebuffer object id
-  info.fFormat = colorFormat;
+  info.fFBOID = (GrGLuint) buffer;
+  info.fFormat = color_format;
 
   // Create skia render target
-  GrBackendRenderTarget target(windowSize.width, windowSize.height,
-                               kMsaaSampleCount, kStencilBits, info);
+  GrBackendRenderTarget target(window_size.width, window_size.height,
+                               msaa_sample_count, stencil_bits, info);
 
   // Setup skia surface
   SkSurfaceProps props(SkSurfaceProps::kLegacyFontHost_InitType);
   auto surface(SkSurface::MakeFromBackendRenderTarget(
-      grContext.get(), target, kBottomLeft_GrSurfaceOrigin, colorType, nullptr,
-      &props));
+      gr_context.get(), target, kBottomLeft_GrSurfaceOrigin, color_type,
+      nullptr, &props));
   return std::make_shared<Layer>(surface);
 };
 
-std::shared_ptr<Layer> Compositor::createOffscreenLayer(aardvark::Size size) {
-  sk_sp<GrContext> grContext(GrContext::MakeGL());
+std::shared_ptr<Layer> Compositor::create_offscreen_layer(aardvark::Size size) {
+  // sk_sp<GrContext> grContext(GrContext::MakeGL());
   const SkImageInfo info =
       SkImageInfo::MakeN32(size.width, size.height, kOpaque_SkAlphaType);
   auto surface(
-      SkSurface::MakeRenderTarget(grContext.get(), SkBudgeted::kNo, info));
+      SkSurface::MakeRenderTarget(gr_context.get(), SkBudgeted::kNo, info));
   return std::make_shared<Layer>(surface);
 };
 
-void Compositor::paintLayer(Layer* layer, Position pos) {
+void Compositor::paint_layer(Layer* screen, Layer* layer, Position pos) {
+  SkPaint paint;
+  paint.setAlpha(128);
+  auto res_pos = Position::add(layer->compose_options.translate, pos);
+  screen->canvas->drawImage(layer->get_snapshot(), res_pos.left, res_pos.top,
+                            &paint);
 };
 
 } // namespace aardvark::compositing

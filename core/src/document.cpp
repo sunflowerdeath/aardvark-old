@@ -1,4 +1,5 @@
 #include "document.hpp"
+#include <iostream>
 
 namespace aardvark {
 
@@ -16,7 +17,7 @@ void addOnlyParent(ElementsSet &set, Element* added) {
 
 Document::Document(compositing::Compositor& compositor,
                    std::shared_ptr<Element> root)
-    : compositor(compositor), screen(compositor.getScreenLayer()) {
+    : compositor(compositor), screen(compositor.get_screen_layer()) {
   setRoot(root);
 }
 
@@ -74,7 +75,6 @@ Size Document::layoutElement(Element* elem, BoxConstraints constraints) {
 }
 
 void Document::paintElement(Element* elem, bool isRepaintRoot, bool clip) {
-  // console.log("Paint element", elem)
   currentClip = clip;
   if (!isRepaintRoot) elem->parent = currentElement;
   this->currentElement = elem;
@@ -125,9 +125,9 @@ compositing::Layer* Document::getLayer() {
 compositing::Layer* Document::createLayer(Size size) {
   std::shared_ptr<compositing::Layer> layer =
       prevLayerTree != nullptr ? prevLayerTree->findBySize(size) : nullptr;
-  if (layer != nullptr) {
+  if (layer == nullptr) {
     // Create new layer
-    layer = compositor.createOffscreenLayer(size);
+    layer = compositor.create_offscreen_layer(size);
   } else {
     // Reuse layer
     prevLayerTree->remove(layer);
@@ -135,12 +135,14 @@ compositing::Layer* Document::createLayer(Size size) {
   }
   currentLayerTree->add(layer);
   currentLayer = layer.get();
+  std::cout << "create layer ok" << std::endl;
   return layer.get();
 }
 
 void Document::composeLayers() {
   screen->clear();
   paintLayerTree(root->layerTree.get());
+  screen->canvas->flush();
 }
 
 void Document::paintLayerTree(LayerTree* tree) {
@@ -151,7 +153,8 @@ void Document::paintLayerTree(LayerTree* tree) {
     } else {
       auto child_layer =
          *std::get_if<std::shared_ptr<compositing::Layer>>(&item);
-      compositor.paintLayer(child_layer.get(), tree->element->absPosition);
+      compositor.paint_layer(screen.get(), child_layer.get(),
+                             tree->element->absPosition);
     }
   }
 }

@@ -24,6 +24,16 @@ class Document {
   void changeElement(Element* elem);
   void paint();
 
+  Size layoutElement(Element* elem, BoxConstraints constraints);
+  void paintElement(Element* elem, bool isRepaintRoot = false,
+                    bool clip = false);
+
+  compositing::Layer* getLayer();
+
+  // Creates layer and adds it to the current layer tree, reusing layers from
+  // previous repaint if possible.
+  compositing::Layer* createLayer(Size size);
+
  private:
   compositing::Compositor compositor;
   std::shared_ptr<compositing::Layer> screen;
@@ -39,15 +49,7 @@ class Document {
 
   void initialPaint();
   void repaint();
-  Size layoutElement(Element* elem, BoxConstraints constraints);
   bool currentClip;
-  void paintElement(Element* elem, bool isRepaintRoot, bool clip);
-
-  compositing::Layer* getLayer();
-
-  // Creates layer and adds it to the current layer tree, reusing layers from
-  // previous repaint if possible.
-  compositing::Layer* createLayer(Size size);
 
   void composeLayers();
 
