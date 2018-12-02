@@ -15,8 +15,11 @@ class LayerTree;
 class Element {
  public:
   Element(bool is_repaint_boundary);
+  
+  // Document is set when this element is painted
   Document* document;
-  std::shared_ptr<LayerTree> layer_tree;
+
+  // Parent element should set this during constructing and updating
   Element* parent;
  
 	// These props should be set during layout of the parent element
@@ -42,6 +45,7 @@ class Element {
 	// This allows to repaint this element separately.
 	// This prop should be set explicitly.
   bool is_repaint_boundary = false;
+  std::shared_ptr<LayerTree> layer_tree;
 
 	// This is used for relayout
   BoxConstraints prev_constraints;

@@ -1,17 +1,19 @@
 #pragma once
 
 #include <memory>
-#include "SkCanvas.h"
+#include <vector>
 #include "../base_types.hpp"
 #include "../box_constraints.hpp"
 #include "../element.hpp"
 
 namespace aardvark::elements {
 
-class Background : public Element {
+class Stack : public Element {
  public:
-  Background(SkColor color, bool is_repaint_boundary = false);
-  SkColor color;
+  Stack(std::vector<std::shared_ptr<Element>> children,
+        bool is_repaint_boundary = false);
+  std::vector<std::shared_ptr<Element>> children;
+	bool sized_by_parent = true;
   Size layout(BoxConstraints constraints) override;
   void paint() override;
 };

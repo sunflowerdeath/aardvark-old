@@ -16,6 +16,9 @@ struct BoxConstraints {
   // Checks whether min constraints is same as max constraints
   bool is_tight();
 
+  // Returns max possible size
+  Size max_size();
+
   // Makes tight or loose constraints from size
   static BoxConstraints from_size(Size size, bool tight);
 };

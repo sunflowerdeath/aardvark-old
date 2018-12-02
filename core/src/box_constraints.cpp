@@ -15,6 +15,10 @@ bool BoxConstraints::is_tight() {
   return min_width == max_width && min_height == max_height;
 };
 
+Size BoxConstraints::max_size() {
+  return Size{max_width, max_height};
+}
+
 BoxConstraints BoxConstraints::from_size(Size size, bool tight) {
   return BoxConstraints{
       tight ? size.width : 0,   // min_width

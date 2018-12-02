@@ -1,14 +1,13 @@
-#include <vector>
-#include <iostream>
 #include <SDL.h>
+#include <iostream>
+#include <vector>
 #include "SkCanvas.h"
 #include "base_types.hpp"
-#include "window.hpp"
+
 #include "compositing.hpp"
 #include "document.hpp"
-#include "elements/center.hpp"
-#include "elements/fixed_size.hpp"
-#include "elements/background.hpp"
+#include "elements/elements.hpp"
+#include "window.hpp"
 
 void paint_frame(SkCanvas* canvas, int pos) {
   SkPaint paint;
@@ -16,7 +15,7 @@ void paint_frame(SkCanvas* canvas, int pos) {
   paint.setColor(SK_ColorWHITE);
   canvas->drawCircle(200, 50 + pos, 25, paint);
   // canvas->drawText(message, strlen(message), SkIntToScalar(100),
-                   // SkIntToScalar(100 + pos), paint);
+  // SkIntToScalar(100 + pos), paint);
 }
 
 int main() {
@@ -24,11 +23,20 @@ int main() {
   auto compositor = aardvark::Compositor(aardvark::Size{500, 500});
   // auto screen = compositor.get_screen_layer();
 
-  auto root =
-      std::make_shared<aardvark::elements::Center>(
-          std::make_shared<aardvark::elements::FixedSize>(
-              std::make_shared<aardvark::elements::Background>(SK_ColorGREEN),
-              aardvark::Size{100, 100}));
+  auto root = std::make_shared<aardvark::elements::Stack>(
+      std::vector<std::shared_ptr<aardvark::Element>>{
+          std::make_shared<aardvark::elements::Align>(
+              std::make_shared<aardvark::elements::FixedSize>(
+                  std::make_shared<aardvark::elements::Background>(
+                      SK_ColorGREEN),
+                  aardvark::Size{100, 100}),
+              0, 0),
+          std::make_shared<aardvark::elements::Align>(
+              std::make_shared<aardvark::elements::FixedSize>(
+                  std::make_shared<aardvark::elements::Background>(
+                      SK_ColorBLUE),
+                  aardvark::Size{100, 100}),
+              0, 200)});
   auto document = aardvark::Document(compositor, root);
 
   /*
@@ -71,8 +79,8 @@ int main() {
     */
 
     // For some reason swapping with vsync does not make frames 16ms,
-    // frames are anywhere between 3 and 15ms, and additionally it 
-    // constantly spends 5% cpu, so I disabled vsync and try to maintain 
+    // frames are anywhere between 3 and 15ms, and additionally it
+    // constantly spends 5% cpu, so I disabled vsync and try to maintain
     // 60 fps manually.
     window.swap_now();
     time = SDL_GetTicks() - time;
