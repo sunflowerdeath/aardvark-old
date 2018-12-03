@@ -39,6 +39,7 @@ class Layer {
   sk_sp<SkImage> get_snapshot();
 
  private:
+  bool is_changed;
   sk_sp<SkImage> snapshot;
 };
 

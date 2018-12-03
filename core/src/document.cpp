@@ -40,6 +40,7 @@ void Document::paint() {
 }
 
 void Document::initial_paint() {
+  std::cout << "---INITIAL PAINT---" << std::endl;
   layout_element(root.get(),
                  BoxConstraints::from_size(screen->size, true /* tight */));
   paint_element(root.get(), /* isRepaintRoot */ true, /* clip */ false);
@@ -49,6 +50,7 @@ void Document::initial_paint() {
 
 void Document::repaint() {
   if (changed_elements.empty()) return;  // nothing to repaint
+  std::cout << "---REPAINT---" << std::endl;
   ElementsSet relayout_boundaries;
   for (auto elem : changed_elements) {
     add_only_parent(relayout_boundaries,
@@ -67,6 +69,7 @@ void Document::repaint() {
 }
 
 Size Document::layout_element(Element* elem, BoxConstraints constraints) {
+  std::cout << "layout element: " << elem->get_debug_name() << std::endl;
   elem->document = this;
   elem->is_relayout_boundary = constraints.is_tight() || !elem->sized_by_parent;
   auto size = elem->layout(constraints);
@@ -75,6 +78,7 @@ Size Document::layout_element(Element* elem, BoxConstraints constraints) {
 }
 
 void Document::paint_element(Element* elem, bool is_repaint_root, bool clip) {
+  std::cout << "paint element: " << elem->get_debug_name() << std::endl;
   current_clip = clip;
   if (!is_repaint_root) elem->parent = current_element;
   this->current_element = elem;
@@ -86,8 +90,8 @@ void Document::paint_element(Element* elem, bool is_repaint_root, bool clip) {
                         : current_layer_tree;
     // Create new tree and add it to the parent tree
     elem->layer_tree = std::make_shared<LayerTree>(elem);
+    elem->layer_tree->parent = parent_tree;
     if (parent_tree != nullptr) {
-      elem->layer_tree->parent = parent_tree;
       if (is_repaint_root) {
         parent_tree->replace(prev_layer_tree, elem->layer_tree.get());
       } else {
@@ -114,8 +118,11 @@ void Document::paint_element(Element* elem, bool is_repaint_root, bool clip) {
 
 Layer* Document::get_layer() {
   // If there is no current layer, setup default layer
-  if (!current_layer) create_layer(current_layer_tree->element->size);
-  return current_layer;
+  auto layer = current_layer == nullptr
+                   ? create_layer(current_layer_tree->element->size)
+                   : current_layer;
+  layer->set_changed();
+  return layer;
   // TODO setup translate and clip
 }
 

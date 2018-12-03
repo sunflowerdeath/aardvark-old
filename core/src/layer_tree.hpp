@@ -36,7 +36,7 @@ class LayerTree {
   // Removes layer from the tree
   void remove_layer(std::shared_ptr<Layer> layer);
 
-  // Finds layer in the current tree that has provided size
+  // Finds layer in the current tree that has given size
   std::shared_ptr<Layer> find_by_size(Size size);
 };
 

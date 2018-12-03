@@ -24,11 +24,12 @@ void Layer::reset() {
 };
 
 void Layer::set_changed() {
-  snapshot = nullptr;
+  is_changed = true;
 }
 
 sk_sp<SkImage> Layer::get_snapshot() {
-  if (snapshot == nullptr) {
+  if (is_changed) {
+    is_changed = false;
     snapshot = surface->makeImageSnapshot();
   }
   return snapshot;

@@ -3,7 +3,7 @@
 namespace aardvark {
 
 LayerTree::LayerTree(Element* element) {
-  this->element = element; // weak ptr
+  this->element = element;
 };
 
 void LayerTree::add(LayerTreeNode item) {
@@ -23,7 +23,9 @@ void LayerTree::remove_layer(std::shared_ptr<Layer> layer) {
 std::shared_ptr<Layer> LayerTree::find_by_size(Size size) {
   for (auto item : children) {
     auto layer = std::get_if<std::shared_ptr<Layer>>(&item);
-    if (layer == nullptr) return *layer;
+    if (layer != nullptr && Size::is_equal((*layer)->size, size)) {
+      return *layer;
+    }
   }
   return nullptr;
 };

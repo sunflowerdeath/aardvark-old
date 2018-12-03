@@ -12,10 +12,10 @@ Size Align::layout(BoxConstraints constraints) {
   int abs_left = abs(left);
   int abs_top = abs(top);
   auto child_constraints = BoxConstraints{
-      0,                                 // minWidth
-      constraints.max_width - abs_left,  // maxWidth
-      0,                                 // minHeight
-      constraints.max_height - abs_top   // maxHeight
+      0,                                 // min_width
+      constraints.max_width - abs_left,  // max_width
+      0,                                 // min_height
+      constraints.max_height - abs_top   // max_height
   };
   auto size = document->layout_element(child.get(), child_constraints);
   child->size = size;
