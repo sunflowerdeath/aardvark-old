@@ -1,3 +1,4 @@
+#include <iostream>
 #include "compositing.hpp"
 
 #define GR_GL_FRAMEBUFFER_BINDING 0x8CA6
@@ -10,7 +11,8 @@ Layer::Layer(sk_sp<SkSurface> surface) {
   this->surface = surface;
   canvas = surface->getCanvas();
   auto image_info = canvas->imageInfo();
-  size = Size{image_info.width(), image_info.height()};
+  size = Size{static_cast<float>(image_info.width()),
+              static_cast<float>(image_info.height())};
 };
 
 void Layer::clear(SkColor color) {
@@ -18,8 +20,8 @@ void Layer::clear(SkColor color) {
   set_changed();
 };
 
-void Layer::reset() {
-  clear();
+void Layer::reset(SkColor color) {
+  clear(color);
   compose_options = ComposeOptions();
 };
 
@@ -49,7 +51,7 @@ std::shared_ptr<Layer> Compositor::make_screen_layer() {
   const GrGLenum color_format = GR_GL_RGBA8;
 
   // Wrap the frame buffer object attached to the screen in a Skia render target
-  // Get an id of the currently bound framebuffer object
+  // Get an id of the current framebuffer object
   GrGLint buffer;
   glGetIntegerv(GR_GL_FRAMEBUFFER_BINDING, &buffer);
   GrGLFramebufferInfo info;
@@ -69,9 +71,7 @@ std::shared_ptr<Layer> Compositor::make_screen_layer() {
 };
 
 std::shared_ptr<Layer> Compositor::make_offscreen_layer(aardvark::Size size) {
-  // sk_sp<GrContext> grContext(GrContext::MakeGL());
-  const SkImageInfo info =
-      SkImageInfo::MakeN32(size.width, size.height, kOpaque_SkAlphaType);
+  const SkImageInfo info = SkImageInfo::MakeN32Premul(size.width, size.height);
   auto surface(
       SkSurface::MakeRenderTarget(gr_context.get(), SkBudgeted::kNo, info));
   return std::make_shared<Layer>(surface);
@@ -81,8 +81,8 @@ void Compositor::paint_layer(Layer* target, Layer* layer, Position pos) {
   SkPaint paint;
   paint.setAlpha(128);
   auto res_pos = Position::add(layer->compose_options.translate, pos);
-  target->canvas->drawImage(layer->get_snapshot(), res_pos.left, res_pos.top,
-                            &paint);
+  target->canvas->drawImage(layer->get_snapshot(), res_pos.left, res_pos.top);
+  paint.setColor(SK_ColorWHITE);
 };
 
 } // namespace aardvark

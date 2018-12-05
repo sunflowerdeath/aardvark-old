@@ -18,10 +18,10 @@ class Element {
   Element(bool is_repaint_boundary);
   
   // Document is set when this element is painted
-  Document* document;
+  Document* document = nullptr;
 
   // Parent element should set this during constructing and updating
-  Element* parent;
+  Element* parent = nullptr;
  
   // These props should be set during layout of the parent element
   Size size;

@@ -30,7 +30,7 @@ class Layer {
   void clear(SkColor color = SK_ColorBLACK);
 
   // Clears layer and resets compose options to default
-  void reset();
+  void reset(SkColor color = SK_ColorBLACK);
 
   // Mark layer as changed to invalidate last snapshot
   void set_changed();
@@ -39,7 +39,7 @@ class Layer {
   sk_sp<SkImage> get_snapshot();
 
  private:
-  bool is_changed;
+  bool is_changed = true;
   sk_sp<SkImage> snapshot;
 };
 

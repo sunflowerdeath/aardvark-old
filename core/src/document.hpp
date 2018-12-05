@@ -44,9 +44,9 @@ class Document {
   // previous repaint if possible.
   Layer* create_layer(Size size);
 
+  std::shared_ptr<Layer> screen;
  private:
   Compositor compositor;
-  std::shared_ptr<Layer> screen;
   std::shared_ptr<Element> root;
   ElementsSet changed_elements;
   bool is_initial_paint;
@@ -54,13 +54,13 @@ class Document {
   // These members are used during the paint phase
 
   // Currently painted element
-  Element* current_element;
+  Element* current_element = nullptr;
 	// Layer tree of the current repaint boundary element
-  LayerTree* current_layer_tree;
+  LayerTree* current_layer_tree = nullptr;
 	// Previous layer tree of the current repaint boundary element
-  LayerTree* prev_layer_tree;
+  LayerTree* prev_layer_tree = nullptr;
 	// Layer that is currently used for painting
-  Layer* current_layer;
+  Layer* current_layer = nullptr;
   bool current_clip;
 
   void initial_paint();

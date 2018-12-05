@@ -2,21 +2,19 @@
 
 #include <iostream>
 #include <GL/gl.h>
-#include <SDL.h>
+#include <GLFW/glfw3.h>
 #include "base_types.hpp"
 
 namespace aardvark {
 
-class SdlWindow {
+class GlfwWindow {
  public:
-  SdlWindow(Size size);
-  ~SdlWindow();
+  GlfwWindow(Size size);
+  ~GlfwWindow();
   void make_current();
   void swap_now();
   void swap();
-  void close();
-  SDL_Window* window;
-  SDL_GLContext context;
+  GLFWwindow* window;
 };
 
 }  // namespace aardvark

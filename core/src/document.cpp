@@ -40,7 +40,7 @@ void Document::paint() {
 }
 
 void Document::initial_paint() {
-  std::cout << "---INITIAL PAINT---" << std::endl;
+  std::cout << "INITIAL PAINT" << std::endl;
   layout_element(root.get(),
                  BoxConstraints::from_size(screen->size, true /* tight */));
   paint_element(root.get(), /* isRepaintRoot */ true, /* clip */ false);
@@ -50,7 +50,7 @@ void Document::initial_paint() {
 
 void Document::repaint() {
   if (changed_elements.empty()) return;  // nothing to repaint
-  std::cout << "---REPAINT---" << std::endl;
+  std::cout << "REPAINT" << std::endl;
   ElementsSet relayout_boundaries;
   for (auto elem : changed_elements) {
     add_only_parent(relayout_boundaries,
@@ -82,6 +82,8 @@ void Document::paint_element(Element* elem, bool is_repaint_root, bool clip) {
   current_clip = clip;
   if (!is_repaint_root) elem->parent = current_element;
   this->current_element = elem;
+  // TODO handle this stuff
+  auto prev_layer_tree_sp = elem->layer_tree;
   if (elem->is_repaint_boundary) {
     // Save previous tree to be able to reuse layers from it
     prev_layer_tree = elem->layer_tree.get();
@@ -138,7 +140,7 @@ Layer* Document::create_layer(Size size) {
   } else {
     // Reuse layer
     prev_layer_tree->remove_layer(layer);
-    layer.reset();
+    layer->reset();
   }
   current_layer_tree->add(layer);
   current_layer = layer.get();

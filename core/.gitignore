@@ -1,7 +1,9 @@
 bin/
+lib/
 downloads/
 externals/
 CMakeFiles
 Makefile
 cmake_install.cmake
+compile_commands.json
 CMakeCache.txt

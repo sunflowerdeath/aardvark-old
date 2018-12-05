@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(hello LANGUAGES CXX)
 
-# TODO just use -std=cxx-17?
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -17,7 +16,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # Prefer static libraries instead of dynamic ones
-set(CMAKE_FIND_LIBRARY_SUFFIXES ".a;.so")
+# set(CMAKE_FIND_LIBRARY_SUFFIXES ".a;.so")
 
 # set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
@@ -45,12 +44,12 @@ set(CMAKE_CXX_FLAGS_RELEASE
 add_subdirectory("${CMAKE_BINARY_DIR}/externals/fmt")
 
 # SDL2
-find_package(SDL2 REQUIRED)
-add_library(SDL2_LIB STATIC IMPORTED)
-set_target_properties(SDL2_LIB PROPERTIES
-	IMPORTED_LOCATION ${SDL2_LIBRARIES}
-	INTERFACE_INCLUDE_DIRECTORIES ${SDL2_INCLUDE_DIRS}
-)
+# find_package(SDL2 REQUIRED)
+# add_library(SDL2_LIB STATIC IMPORTED)
+# set_target_properties(SDL2_LIB PROPERTIES
+	# IMPORTED_LOCATION ${SDL2_LIBRARIES}
+	# INTERFACE_INCLUDE_DIRECTORIES ${SDL2_INCLUDE_DIRS}
+# )
 
 # skia
 set(SKIA_DIR "${CMAKE_BINARY_DIR}/externals/skia")
@@ -92,9 +91,9 @@ find_library(EXPAT_LIB expat) # skia_use_expat skia_use_system_expat
 find_library(JPEG_LIB jpeg) # skia_use_system_libjpeg_turbo
 find_library(PNG_LIB png) # skia_use_system_libpng
 find_library(Z_LIB z) # ??
-find_library(WEBP_LIB webp) # skia_use_libwebp skia_use_system_libwebp
-find_library(WEBP_DEMUX_LIB webpdemux)
-find_library(WEBP_MUX_LIB webpmux)
+find_library(WEBP_LIB webp.a) # skia_use_libwebp skia_use_system_libwebp
+find_library(WEBP_DEMUX_LIB webpdemux.a)
+find_library(WEBP_MUX_LIB webpmux.a)
 find_library(FONTCONFIG_LIB libfontconfig.so) # skia_use_fontconfig
 find_library(FREETYPE_LIB freetype) # skia_use_system_freetype2
 
@@ -157,6 +156,14 @@ set_target_properties(JavaScriptCore PROPERTIES
 	INTERFACE_LINK_LIBRARIES WTF
 )
 
+# glfw
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+find_package(X11 REQUIRED)
+
+add_subdirectory(${CMAKE_BINARY_DIR}/externals/glfw)
+
 #-------------------------------------------------------------------------------
 # PROJECT SETUP
 #-------------------------------------------------------------------------------
@@ -175,13 +182,10 @@ add_library(aardvark
   src/elements/fixed_size.cpp
 )
 target_link_libraries(aardvark
-  fmt SKIA_LIB SDL2_LIB JavaScriptCore
+  fmt SKIA_LIB glfw ${X11_LIBRARIES} JavaScriptCore
 )
 
 # example
 add_executable(example src/example.cpp)
 add_dependencies(example aardvark)
-target_link_libraries(example 
-	aardvark
-	SDL2_LIB
-)
+target_link_libraries(example aardvark)
