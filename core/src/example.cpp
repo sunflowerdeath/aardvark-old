@@ -25,12 +25,17 @@ int main() {
                   std::make_shared<aardvark::elements::Background>(
                       SK_ColorGREEN),
                   aardvark::Size{100, 100}),
-              0, 200),
+              aardvark::value::none(),  // left
+              aardvark::value::none(),  // left
+              aardvark::value::rel(0.1),  // left
+              aardvark::value::rel(0.25)   // top
+              ),
           std::make_shared<aardvark::elements::Center>(
               std::make_shared<aardvark::elements::FixedSize>(
                   background, aardvark::Size{100, 100}))});
   auto document = aardvark::Document(compositor, root);
 
+  /*
   auto size2 = aardvark::Size{400, 400};
   auto window2 = aardvark::GlfwWindow(size2);
   auto compositor2 = aardvark::Compositor(size2);
@@ -42,6 +47,7 @@ int main() {
               std::make_shared<aardvark::elements::FixedSize>(
                   background2, aardvark::Size{100, 100}))});
   auto document2 = aardvark::Document(compositor2, root2);
+  */
 
   SkPaint paint;
 
@@ -62,13 +68,13 @@ int main() {
     if (state == GLFW_PRESS) {
       std::cout << "B" << std::endl;
       background->set_props(SK_ColorBLUE);
-      background2->set_props(SK_ColorBLUE);
+      // background2->set_props(SK_ColorBLUE);
     }
     state = glfwGetKey(window.window, GLFW_KEY_R);
     if (state == GLFW_PRESS) {
       std::cout << "R" << std::endl;
       background->set_props(SK_ColorRED);
-      background2->set_props(SK_ColorRED);
+      // background2->set_props(SK_ColorRED);
     }
 
     // paint
@@ -76,9 +82,11 @@ int main() {
     document.paint();
     window.swap_now();
 
+    /*
     window2.make_current();
     document2.paint();
     window2.swap_now();
+    */
 
     // For some reason swapping with vsync does not make frames 16ms,
     // frames are anywhere between 3 and 15ms, and additionally it
