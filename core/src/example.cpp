@@ -21,14 +21,22 @@ int main() {
   auto root = std::make_shared<aardvark::elements::Stack>(
       std::vector<std::shared_ptr<aardvark::Element>>{
           std::make_shared<aardvark::elements::Align>(
-              std::make_shared<aardvark::elements::FixedSize>(
-                  std::make_shared<aardvark::elements::Background>(
-                      SK_ColorGREEN),
-                  aardvark::Size{100, 100}),
-              aardvark::value::none(),  // left
-              aardvark::value::none(),  // left
-              aardvark::value::rel(0.1),  // left
-              aardvark::value::rel(0.25)   // top
+              std::make_shared<aardvark::elements::Border>(
+                  std::make_shared<aardvark::elements::FixedSize>(
+                      std::make_shared<aardvark::elements::Background>(
+                          SK_ColorWHITE),
+                      aardvark::Size{100, 100}),
+                  aardvark::elements::BoxBorders{
+                      aardvark::elements::BorderSide{8, SK_ColorRED},  // top
+                      aardvark::elements::BorderSide{8, SK_ColorRED},  // right
+                      aardvark::elements::BorderSide{8,
+                                                     SK_ColorWHITE},   // bottom
+                      aardvark::elements::BorderSide{8, SK_ColorRED},  // left
+                  }),
+              aardvark::value::none(),    // left
+              aardvark::value::none(),    // top
+              aardvark::value::rel(0.1),  // right
+              aardvark::value::rel(0.25)  // bottom
               ),
           std::make_shared<aardvark::elements::Center>(
               std::make_shared<aardvark::elements::FixedSize>(

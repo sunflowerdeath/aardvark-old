@@ -177,9 +177,12 @@ add_library(aardvark
   src/document.cpp
   src/element.cpp
   src/window.cpp
+  src/elements/align.cpp
   src/elements/background.cpp
+  src/elements/border.cpp
   src/elements/center.cpp
   src/elements/fixed_size.cpp
+  src/elements/stack.cpp
 )
 target_link_libraries(aardvark
   fmt SKIA_LIB glfw ${X11_LIBRARIES} JavaScriptCore
