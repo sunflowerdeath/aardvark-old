@@ -18,30 +18,53 @@ int main() {
   auto compositor = aardvark::Compositor(size);
   auto background =
       std::make_shared<aardvark::elements::Background>(SK_ColorBLUE);
+
+  auto border = std::make_shared<aardvark::elements::Border>(
+      std::make_shared<aardvark::elements::Background>(SK_ColorWHITE),
+      aardvark::elements::BoxBorders{
+          aardvark::elements::BorderSide{8, SK_ColorRED},   // top
+          aardvark::elements::BorderSide{16, SK_ColorRED},  // right
+          aardvark::elements::BorderSide{8, SK_ColorBLUE},  // bottom
+          aardvark::elements::BorderSide{4, SK_ColorBLUE},  // left
+      },
+      aardvark::elements::BoxRadiuses::all(aardvark::elements::Radius{0, 0}));
+
+  auto rounded = std::make_shared<aardvark::elements::Border>(
+      std::make_shared<aardvark::elements::Background>(SK_ColorWHITE),
+      aardvark::elements::BoxBorders{
+          aardvark::elements::BorderSide{4, SK_ColorRED},  // top
+          aardvark::elements::BorderSide{4, SK_ColorRED},  // right
+          aardvark::elements::BorderSide{4, SK_ColorRED},  // bottom
+          aardvark::elements::BorderSide{4, SK_ColorRED},  // left
+      },
+      aardvark::elements::BoxRadiuses{
+          aardvark::elements::Radius{20, 20},  // top_left
+          aardvark::elements::Radius{10, 10},  // top_right
+          aardvark::elements::Radius{10, 10},    // bottom_right
+          aardvark::elements::Radius{10, 10}   // bottom_left
+      });
+
   auto root = std::make_shared<aardvark::elements::Stack>(
       std::vector<std::shared_ptr<aardvark::Element>>{
           std::make_shared<aardvark::elements::Align>(
-              std::make_shared<aardvark::elements::Border>(
-                  std::make_shared<aardvark::elements::FixedSize>(
-                      std::make_shared<aardvark::elements::Background>(
-                          SK_ColorWHITE),
-                      aardvark::Size{100, 100}),
-                  aardvark::elements::BoxBorders{
-                      aardvark::elements::BorderSide{8, SK_ColorRED},  // top
-                      aardvark::elements::BorderSide{8, SK_ColorRED},  // right
-                      aardvark::elements::BorderSide{8,
-                                                     SK_ColorWHITE},   // bottom
-                      aardvark::elements::BorderSide{8, SK_ColorRED},  // left
-                  }),
+              std::make_shared<aardvark::elements::FixedSize>(
+                  border, aardvark::Size{100, 100}),
               aardvark::value::none(),    // left
               aardvark::value::none(),    // top
-              aardvark::value::rel(0.1),  // right
-              aardvark::value::rel(0.25)  // bottom
+              aardvark::value::abs(50),  // right
+              aardvark::value::abs(100)   // bottom
+              ),
+          std::make_shared<aardvark::elements::Align>(
+              std::make_shared<aardvark::elements::FixedSize>(
+                  rounded, aardvark::Size{100, 100}),
+              aardvark::value::abs(50),  // left
+              aardvark::value::abs(50)   // top
               ),
           std::make_shared<aardvark::elements::Center>(
               std::make_shared<aardvark::elements::FixedSize>(
                   background, aardvark::Size{100, 100}))});
   auto document = aardvark::Document(compositor, root);
+
 
   /*
   auto size2 = aardvark::Size{400, 400};
@@ -87,7 +110,7 @@ int main() {
 
     // paint
     window.make_current();
-    document.paint();
+    bool painted = document.paint();
     window.swap_now();
 
     /*
@@ -102,11 +125,14 @@ int main() {
     // 60 fps manually.
     auto end = std::chrono::high_resolution_clock::now();
     auto time =
-        std::chrono::duration_cast<std::chrono::milliseconds>(end - start)
+        std::chrono::duration_cast<std::chrono::microseconds>(end - start)
             .count();
-    if (time < 16) {
+    if (painted) {
+      std::cout << "frame time: " << (time / 1000.0) << "ms" << std::endl;
+    }
+    if (time < 16000) {
       // framerate is too high, need to wait
-      std::this_thread::sleep_for(std::chrono::milliseconds(16 - time));
+      std::this_thread::sleep_for(std::chrono::microseconds(16000 - time));
     }
   }
   return 0;

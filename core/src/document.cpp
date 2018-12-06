@@ -31,16 +31,17 @@ void Document::set_root(std::shared_ptr<Element> new_root) {
 
 void Document::change_element(Element* elem) { changed_elements.insert(elem); }
 
-void Document::paint() {
+bool Document::paint() {
   if (is_initial_paint) {
     initial_paint();
+    return true;
   } else {
-    repaint();
+    return repaint();
   }
 }
 
 void Document::initial_paint() {
-  std::cout << "INITIAL PAINT" << std::endl;
+  // std::cout << "INITIAL PAINT" << std::endl;
   layout_element(root.get(),
                  BoxConstraints::from_size(screen->size, true /* tight */));
   paint_element(root.get(), /* isRepaintRoot */ true, /* clip */ false);
@@ -48,9 +49,9 @@ void Document::initial_paint() {
   is_initial_paint = false;
 }
 
-void Document::repaint() {
-  if (changed_elements.empty()) return;  // nothing to repaint
-  std::cout << "REPAINT" << std::endl;
+bool Document::repaint() {
+  if (changed_elements.empty()) return false;  // nothing to repaint
+  // std::cout << "REPAINT" << std::endl;
   ElementsSet relayout_boundaries;
   for (auto elem : changed_elements) {
     add_only_parent(relayout_boundaries,
@@ -66,10 +67,11 @@ void Document::repaint() {
   }
   compose_layers();
   changed_elements.clear();
+  return true;
 }
 
 Size Document::layout_element(Element* elem, BoxConstraints constraints) {
-  std::cout << "layout element: " << elem->get_debug_name() << std::endl;
+  // std::cout << "layout element: " << elem->get_debug_name() << std::endl;
   elem->document = this;
   elem->is_relayout_boundary = constraints.is_tight() || !elem->sized_by_parent;
   auto size = elem->layout(constraints);
@@ -78,7 +80,7 @@ Size Document::layout_element(Element* elem, BoxConstraints constraints) {
 }
 
 void Document::paint_element(Element* elem, bool is_repaint_root, bool clip) {
-  std::cout << "paint element: " << elem->get_debug_name() << std::endl;
+  // std::cout << "paint element: " << elem->get_debug_name() << std::endl;
   current_clip = clip;
   if (!is_repaint_root) elem->parent = current_element;
   this->current_element = elem;

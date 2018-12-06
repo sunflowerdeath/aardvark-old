@@ -28,7 +28,7 @@ class Document {
   void change_element(Element* elem);
 
   // Paints document
-  void paint();
+  bool paint();
 
   // Elements should call this function to layout its children
   Size layout_element(Element* elem, BoxConstraints constraints);
@@ -64,7 +64,7 @@ class Document {
   bool current_clip;
 
   void initial_paint();
-  void repaint();
+  bool repaint();
   void compose_layers();
   void paint_layer_tree(LayerTree* tree);
 };
