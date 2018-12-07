@@ -44,7 +44,7 @@ void Document::initial_paint() {
   // std::cout << "INITIAL PAINT" << std::endl;
   layout_element(root.get(),
                  BoxConstraints::from_size(screen->size, true /* tight */));
-  paint_element(root.get(), /* isRepaintRoot */ true, /* clip */ false);
+  paint_element(root.get(), /* isRepaintRoot */ true);
   compose_layers();
   is_initial_paint = false;
 }
@@ -63,7 +63,7 @@ bool Document::repaint() {
     add_only_parent(repaint_boundaries, elem->find_closest_repaint_boundary());
   }
   for (auto elem : repaint_boundaries) {
-    paint_element(elem, /* isRepaintRoot */ true, /* clip */ false);
+    paint_element(elem, /* isRepaintRoot */ true);
   }
   compose_layers();
   changed_elements.clear();
@@ -79,9 +79,9 @@ Size Document::layout_element(Element* elem, BoxConstraints constraints) {
   return size;
 }
 
-void Document::paint_element(Element* elem, bool is_repaint_root, bool clip) {
+void Document::paint_element(Element* elem, bool is_repaint_root,
+                             std::optional<SkPath> custom_clip) {
   // std::cout << "paint element: " << elem->get_debug_name() << std::endl;
-  current_clip = clip;
   if (!is_repaint_root) elem->parent = current_element;
   this->current_element = elem;
   // TODO handle this stuff
@@ -110,6 +110,7 @@ void Document::paint_element(Element* elem, bool is_repaint_root, bool clip) {
       elem->parent == nullptr
           ? elem->rel_position
           : Position::add(elem->parent->abs_position, elem->rel_position);
+  set_clip_region(elem, custom_clip);
   elem->paint();
   if (elem->is_repaint_boundary) {
     // Reset current layer tree when leaving repaint boundary
@@ -122,13 +123,51 @@ void Document::paint_element(Element* elem, bool is_repaint_root, bool clip) {
 
 Layer* Document::get_layer() {
   // If there is no current layer, setup default layer
-  auto layer = current_layer == nullptr
-                   ? create_layer(current_layer_tree->element->size)
-                   : current_layer;
+  Layer* layer;
+  if (current_layer == nullptr) {
+    layer = create_layer(current_layer_tree->element->size);
+  } else {
+    layer = current_layer;
+  }
   layer->set_changed();
   return layer;
-  // TODO setup translate and clip
 }
+
+void Document::set_clip_region(Element* elem,
+                               std::optional<SkPath> custom_clip) {
+  // TODO optimize when child and parent have same position and side
+  SkRegion clip_region;
+  if (custom_clip == std::nullopt) {
+    // Make default clip region
+    clip_region.setRect(elem->abs_position.left,                     // l
+                        elem->abs_position.top,                      // t
+                        elem->abs_position.left + elem->size.width,  // r
+                        elem->abs_position.top + elem->size.height   // b
+    );
+    std::cout << "default" << elem->abs_position.left << ","
+              << elem->abs_position.top << std::endl;
+  } else {
+    // Make clip region from custom clip path
+    clip_region.setPath(custom_clip.value(), SkRegion({0, 0, screen->size.width,
+                                                       screen->size.height}));
+  }
+  if (elem->parent == nullptr) {
+    elem->clip_region = clip_region; // explicit move?
+  } else {
+    // create new clip region from parent
+    elem->clip_region = SkRegion(elem->parent->clip_region);
+    // intersect elem's own clip with current clip region
+    elem->clip_region.op(clip_region, SkRegion::kIntersect_Op);
+  }
+};
+
+void Document::setup_layer(Layer* layer, Element* elem) {
+  layer->canvas->restoreToCount(1);
+  layer->canvas->save();
+  layer->canvas->translate(elem->abs_position.left, elem->abs_position.top);
+  // Clip region is unaffected by transforms
+  layer->canvas->clipRegion(elem->clip_region);
+};
 
 // Creates layer and adds it to the current layer tree, reusing layers from
 // previous repaint if possible.

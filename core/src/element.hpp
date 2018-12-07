@@ -66,6 +66,10 @@ class Element {
 
   Element* find_closest_relayout_boundary();
   Element* find_closest_repaint_boundary();
+
+  // Clip region is constructed before painting by merging element's custom 
+  // or default clip with parent's clip region.
+  SkRegion clip_region;
 };
 
 };  // namespace aardvark

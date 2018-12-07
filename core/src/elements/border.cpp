@@ -42,11 +42,28 @@ void Border::paint() {
   layer->canvas->translate(abs_position.left, abs_position.top);
   rotation = 0;
 
+  // After painting each border side, coordinates are translated and
+  // rotated 90 degrees, so next border can be painted with same function.
+
+  /*
+  bool need_custom_clip = !radiuses.is_square();
+  if (need_custom_clip) {
+    SkMatrix clip_matrix;
+    SkPath clip_path;
+  }
+  */
+
   // top
   paint_side(
     borders.left, borders.top, borders.right,
     radiuses.topLeft, radiuses.topRight
-  ); 
+  );
+  /*
+  need_custom_clip && clip_side(
+    borders.left, borders.top, borders.right,
+    radiuses.topLeft, radiuses.topRight
+  );
+  */
   // right
   paint_side(
     borders.top, borders.right, borders.bottom,
@@ -56,12 +73,13 @@ void Border::paint() {
   paint_side(
     borders.right, borders.bottom, borders.left,
     radiuses.bottomRight, radiuses.bottomLeft
-  ); 
+  );
   // left
   paint_side(
     borders.bottom, borders.left, borders.top,
     radiuses.bottomLeft, radiuses.topLeft
   );
+
   layer->canvas->restore();
 };
 
@@ -105,13 +123,13 @@ void Border::paint_arc(Radius& radius, BorderSide& side, int width) {
   arc_paint.setStrokeWidth(line_width);
   arc_paint.setAntiAlias(true);
   // Adding line_width/2 is needed to paint stroke inside of the oval
-  auto lt = calc(matrix, width - 2 * radius.width, line_width / 2);
-  auto rb = calc(matrix, width - line_width / 2, 2 * radius.height);
-  // When is rotated, coords should be swapped to make correct rect
-  float l = lt.x(), t = lt.y(), r = rb.x(), b = rb.y();
-  if (l > r) std::swap(l, r);
-  if (t > b) std::swap(b, t);
-  layer->canvas->drawArc({l, t, r, b},   // oval bounds
+  auto bounds = SkRect::MakeLTRB(width - 2 * radius.width,  // l
+                                 line_width / 2,            // t
+                                 width - line_width / 2,    // r
+                                 2 * radius.height          // b
+  );
+  matrix.mapRect(&bounds);
+  layer->canvas->drawArc(bounds,         // oval
                          rotation - 90,  // startAngle, 0 is right middle
                          90,             // sweepAngle
                          false,          // useCenter
@@ -154,7 +172,7 @@ void Border::paint_side(BorderSide& prev_side, BorderSide& side,
   layer->canvas->drawLine(calc(matrix, start, side.width / 2),
                           calc(matrix, end, side.width / 2), line_paint);
 
-  // Draw different type of transition to next side
+  // Draw different type of transition to next side depending on corner
   if (right_radius.is_square()) {
     if (side.color != next_side.color) {
       // Draw triangle on the end of the line unless next side has same color
@@ -169,6 +187,29 @@ void Border::paint_side(BorderSide& prev_side, BorderSide& side,
   matrix.postRotate(90);
   matrix.postTranslate(width, 0);
   rotation += 90;
+};
+
+void Border::clip_side(BorderSide& prev_side, BorderSide& side,
+                       BorderSide& next_side, Radius& left_radius,
+                       Radius& right_radius) {
+  auto width = rotation % 180 == 0 ? size.width : size.height;
+  auto begin = fmax(prev_side.width, left_radius.width);
+  auto end = width - fmax(next_side.width, right_radius.width);
+  clip_path.lineTo(calc(clip_matrix, begin, side.width));
+  clip_path.lineTo(calc(clip_matrix, end, side.width));
+  auto inner_radius = right_radius.inner(side.width);
+  if (inner_radius.width > 0 && inner_radius.height > 0) {
+    /*
+    clip_path->drawArc({l, t, r, b},   // oval bounds
+                       rotation - 90,  // startAngle, 0 is right middle
+                       90,             // sweepAngle
+                       false,          // useCenter
+                       false           // forceMoveTo
+    );
+    */
+  }
+  clip_matrix.postRotate(90);
+  clip_matrix.postTranslate(width, 0);
 };
 
 }; // namespace aardvark::elements

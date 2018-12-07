@@ -2,6 +2,9 @@
 
 #include <memory>
 #include <unordered_set>
+#include <optional>
+#include "SkCanvas.h"
+#include "SkRegion.h"
 
 #include "base_types.hpp"
 #include "box_constraints.hpp"
@@ -35,10 +38,13 @@ class Document {
 
   // Elements should call this function to paint its children
   void paint_element(Element* elem, bool is_repaint_root = false,
-                     bool clip = false);
+                     std::optional<SkPath> custom_clip = std::nullopt);
 
   // Elements should call this method to obtain layer to paint itself
   Layer* get_layer();
+
+  // Sets translate and clip for painting element on the layer
+  void setup_layer(Layer* layer, Element* elem);
 
   // Creates layer and adds it to the current layer tree, reusing layers from
   // previous repaint if possible.
@@ -61,8 +67,9 @@ class Document {
   LayerTree* prev_layer_tree = nullptr;
 	// Layer that is currently used for painting
   Layer* current_layer = nullptr;
-  bool current_clip;
+  std::unique_ptr<SkPath> current_clip;
 
+  void set_clip_region(Element* elem, std::optional<SkPath> custom_clip);
   void initial_paint();
   bool repaint();
   void compose_layers();

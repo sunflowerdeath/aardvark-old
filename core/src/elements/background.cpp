@@ -20,10 +20,10 @@ Size Background::layout(BoxConstraints constraints) {
 void Background::paint() {
   SkPaint paint;
   paint.setColor(color);
-  SkRect rect;
-  rect.set({abs_position.left, abs_position.top},
-           {abs_position.left + size.width, abs_position.top + size.height});
   auto layer = document->get_layer();
+  document->setup_layer(layer, this);
+  SkRect rect;
+  rect.set({0, 0}, {size.width, size.height});
   layer->canvas->drawRect(rect, paint);
 };
 

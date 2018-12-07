@@ -19,6 +19,7 @@ int main() {
   auto background =
       std::make_shared<aardvark::elements::Background>(SK_ColorBLUE);
 
+  /*
   auto border = std::make_shared<aardvark::elements::Border>(
       std::make_shared<aardvark::elements::Background>(SK_ColorWHITE),
       aardvark::elements::BoxBorders{
@@ -32,16 +33,16 @@ int main() {
   auto rounded = std::make_shared<aardvark::elements::Border>(
       std::make_shared<aardvark::elements::Background>(SK_ColorWHITE),
       aardvark::elements::BoxBorders{
-          aardvark::elements::BorderSide{4, SK_ColorRED},  // top
-          aardvark::elements::BorderSide{4, SK_ColorRED},  // right
-          aardvark::elements::BorderSide{4, SK_ColorRED},  // bottom
-          aardvark::elements::BorderSide{4, SK_ColorRED},  // left
+          aardvark::elements::BorderSide{8, SK_ColorRED},  // top
+          aardvark::elements::BorderSide{8, SK_ColorRED},  // right
+          aardvark::elements::BorderSide{8, SK_ColorRED},  // bottom
+          aardvark::elements::BorderSide{8, SK_ColorRED},  // left
       },
       aardvark::elements::BoxRadiuses{
-          aardvark::elements::Radius{20, 20},  // top_left
-          aardvark::elements::Radius{10, 10},  // top_right
-          aardvark::elements::Radius{10, 10},    // bottom_right
-          aardvark::elements::Radius{10, 10}   // bottom_left
+          aardvark::elements::Radius{4, 4},    // top_left
+          aardvark::elements::Radius{8, 8},    // top_right
+          aardvark::elements::Radius{16, 16},  // bottom_right
+          aardvark::elements::Radius{32, 32}   // bottom_left
       });
 
   auto root = std::make_shared<aardvark::elements::Stack>(
@@ -63,8 +64,28 @@ int main() {
           std::make_shared<aardvark::elements::Center>(
               std::make_shared<aardvark::elements::FixedSize>(
                   background, aardvark::Size{100, 100}))});
-  auto document = aardvark::Document(compositor, root);
+  */
 
+  auto inner = std::make_shared<aardvark::elements::FixedSize>(
+      background, aardvark::Size{50, 50});
+
+  auto outer = std::make_shared<aardvark::elements::Background>(SK_ColorWHITE);
+
+  auto root = std::make_shared<aardvark::elements::Align>(
+      std::make_shared<aardvark::elements::FixedSize>(
+          std::make_shared<aardvark::elements::Stack>(
+              std::vector<std::shared_ptr<aardvark::Element>>{
+                  outer, std::make_shared<aardvark::elements::Align>(
+                             inner,
+                             aardvark::value::abs(70),  // left
+                             aardvark::value::abs(70)   // top
+                             )}),
+          aardvark::Size{100, 100}),
+      aardvark::value::abs(100),  // left
+      aardvark::value::abs(100)   // top
+  );
+
+  auto document = aardvark::Document(compositor, root);
 
   /*
   auto size2 = aardvark::Size{400, 400};
@@ -122,7 +143,7 @@ int main() {
     // For some reason swapping with vsync does not make frames 16ms,
     // frames are anywhere between 3 and 15ms, and additionally it
     // constantly spends 5% cpu, so I disabled vsync and try to maintain
-    // 60 fps manually.
+    // about 60 fps manually.
     auto end = std::chrono::high_resolution_clock::now();
     auto time =
         std::chrono::duration_cast<std::chrono::microseconds>(end - start)
