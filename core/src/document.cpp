@@ -133,27 +133,36 @@ Layer* Document::get_layer() {
   return layer;
 }
 
-void Document::set_clip_path(Element* elem, std::optional<SkPath> custom_clip) {
-  // TODO optimize when child and parent have same position and side
-  SkPath clip_path;
-  if (custom_clip == std::nullopt) {
-    // Default clip path
-    clip_path.addRect(elem->abs_position.left,                     // l
-                      elem->abs_position.top,                      // t
-                      elem->abs_position.left + elem->size.width,  // r
-                      elem->abs_position.top + elem->size.height   // b
-    );
-  } else {
-    clip_path = custom_clip.value();
+SkPath get_elem_clip(Element* elem, std::optional<SkPath> custom_clip) {
+  if (custom_clip != std::nullopt) {
+    SkPath clip_path;
+    custom_clip.value().offset(elem->abs_position.left, elem->abs_position.top,
+                               &clip_path);
+    return clip_path;
   }
+  SkPath clip_path;
+  clip_path.addRect(elem->abs_position.left,                     // l
+                    elem->abs_position.top,                      // t
+                    elem->abs_position.left + elem->size.width,  // r
+                    elem->abs_position.top + elem->size.height   // b
+  );
+  return clip_path;
+}
+
+void Document::set_clip_path(Element* elem, std::optional<SkPath> custom_clip) {
   if (elem->parent == nullptr) {
-    elem->clip_path = clip_path; // explicit move?
+    elem->clip_path = get_elem_clip(elem, custom_clip);
   } else {
-    // Intersect elem's own clip with current clip region
-    SkPath c;
-    Op(elem->parent->clip_path, clip_path, kIntersect_SkPathOp,
-       &c);
-    elem->clip_path = c;
+    if (custom_clip == std::nullopt && elem->size == elem->parent->size &&
+        elem->abs_position == elem->parent->abs_position) {
+      // When element uses default clip and has same size and position as its
+      // parent, just reuse parent's clip
+      elem->clip_path = elem->parent->clip_path;
+    } else {
+      // Intersect elem's own clip with current clip region
+      Op(elem->parent->clip_path, get_elem_clip(elem, custom_clip),
+         kIntersect_SkPathOp, &elem->clip_path);
+    }
   }
 };
 
