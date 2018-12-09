@@ -21,6 +21,7 @@ void Layer::clear(SkColor color) {
 };
 
 void Layer::reset(SkColor color) {
+  canvas->restoreToCount(1);
   clear(color);
   compose_options = ComposeOptions();
 };
