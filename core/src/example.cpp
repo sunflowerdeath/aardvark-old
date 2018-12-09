@@ -5,12 +5,29 @@
 
 #include <GLFW/glfw3.h>
 #include "SkCanvas.h"
+#include "SkPathOps.h"
 
 #include "base_types.hpp"
 #include "window.hpp"
 #include "compositing.hpp"
 #include "document.hpp"
 #include "elements/elements.hpp"
+
+std::shared_ptr<aardvark::Element> make_elems() {
+  auto white = std::make_shared<aardvark::elements::Background>(SK_ColorWHITE);
+  auto blue = std::make_shared<aardvark::elements::Background>(SK_ColorBLUE);
+  return std::make_shared<aardvark::elements::FixedSize>(
+      std::make_shared<aardvark::elements::Stack>(
+          std::vector<std::shared_ptr<aardvark::Element>>{
+              white,  // wtf
+              std::make_shared<aardvark::elements::Align>(
+                  std::make_shared<aardvark::elements::FixedSize>(
+                      blue, aardvark::Size{100, 100}),
+                  aardvark::value::abs(50),  // left
+                  aardvark::value::abs(50)   // top
+                  )}),
+      aardvark::Size{100, 100});
+};
 
 int main() {
   auto size = aardvark::Size{500, 500};
@@ -66,24 +83,42 @@ int main() {
                   background, aardvark::Size{100, 100}))});
   */
 
-  auto inner = std::make_shared<aardvark::elements::FixedSize>(
-      background, aardvark::Size{50, 50});
 
-  auto outer = std::make_shared<aardvark::elements::Background>(SK_ColorWHITE);
-
-  auto root = std::make_shared<aardvark::elements::Align>(
-      std::make_shared<aardvark::elements::FixedSize>(
-          std::make_shared<aardvark::elements::Stack>(
-              std::vector<std::shared_ptr<aardvark::Element>>{
-                  outer, std::make_shared<aardvark::elements::Align>(
-                             inner,
-                             aardvark::value::abs(70),  // left
-                             aardvark::value::abs(70)   // top
-                             )}),
-          aardvark::Size{100, 100}),
+  /*
+  auto default_clip = std::make_shared<aardvark::elements::Align>(
+      make_elems(),
       aardvark::value::abs(100),  // left
       aardvark::value::abs(100)   // top
   );
+  */
+
+  auto white = std::make_shared<aardvark::elements::Background>(SK_ColorWHITE);
+  auto blue = std::make_shared<aardvark::elements::Background>(SK_ColorBLUE);
+  auto stack = std::make_shared<aardvark::elements::Stack>(
+      std::vector<std::shared_ptr<aardvark::Element>>{
+          white,  // wtf
+          std::make_shared<aardvark::elements::Align>(
+              std::make_shared<aardvark::elements::FixedSize>(
+                  blue, aardvark::Size{100, 100}),
+              aardvark::value::abs(50),  // left
+              aardvark::value::abs(50)   // top
+              )});
+  auto fixed = std::make_shared<aardvark::elements::FixedSize>(
+      stack, aardvark::Size{100, 100});
+
+  SkPath clip_path;
+  clip_path.addOval({320, 120, 360, 160});
+  auto custom_clip =
+      std::make_shared<aardvark::elements::CustomClip>(fixed, clip_path);
+
+  auto root = std::make_shared<aardvark::elements::Stack>(
+      std::vector<std::shared_ptr<aardvark::Element>>{
+          std::make_shared<aardvark::elements::Align>(
+              custom_clip, aardvark::value::abs(300),  // left
+              aardvark::value::abs(100)                // top
+              )
+
+      });
 
   auto document = aardvark::Document(compositor, root);
 
@@ -119,21 +154,21 @@ int main() {
     int state = glfwGetKey(window.window, GLFW_KEY_B);
     if (state == GLFW_PRESS) {
       std::cout << "B" << std::endl;
-      background->set_props(SK_ColorBLUE);
+      blue->set_props(SK_ColorBLUE);
       // background2->set_props(SK_ColorBLUE);
     }
     state = glfwGetKey(window.window, GLFW_KEY_R);
     if (state == GLFW_PRESS) {
       std::cout << "R" << std::endl;
-      background->set_props(SK_ColorRED);
+      blue->set_props(SK_ColorRED);
       // background2->set_props(SK_ColorRED);
     }
 
     // paint
     window.make_current();
     bool painted = document.paint();
-    window.swap_now();
 
+    window.swap_now();
     /*
     window2.make_current();
     document2.paint();

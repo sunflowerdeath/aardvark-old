@@ -181,6 +181,7 @@ add_library(aardvark
   src/elements/background.cpp
   src/elements/border.cpp
   src/elements/center.cpp
+  src/elements/custom_clip.cpp
   src/elements/fixed_size.cpp
   src/elements/stack.cpp
 )

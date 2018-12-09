@@ -1,5 +1,6 @@
 #include "document.hpp"
 #include <iostream>
+#include "SkPathOps.h"
 
 namespace aardvark {
 
@@ -51,7 +52,6 @@ void Document::initial_paint() {
 
 bool Document::repaint() {
   if (changed_elements.empty()) return false;  // nothing to repaint
-  // std::cout << "REPAINT" << std::endl;
   ElementsSet relayout_boundaries;
   for (auto elem : changed_elements) {
     add_only_parent(relayout_boundaries,
@@ -110,7 +110,7 @@ void Document::paint_element(Element* elem, bool is_repaint_root,
       elem->parent == nullptr
           ? elem->rel_position
           : Position::add(elem->parent->abs_position, elem->rel_position);
-  set_clip_region(elem, custom_clip);
+  set_clip_path(elem, custom_clip);
   elem->paint();
   if (elem->is_repaint_boundary) {
     // Reset current layer tree when leaving repaint boundary
@@ -133,40 +133,35 @@ Layer* Document::get_layer() {
   return layer;
 }
 
-void Document::set_clip_region(Element* elem,
-                               std::optional<SkPath> custom_clip) {
+void Document::set_clip_path(Element* elem, std::optional<SkPath> custom_clip) {
   // TODO optimize when child and parent have same position and side
-  SkRegion clip_region;
+  SkPath clip_path;
   if (custom_clip == std::nullopt) {
-    // Make default clip region
-    clip_region.setRect(elem->abs_position.left,                     // l
-                        elem->abs_position.top,                      // t
-                        elem->abs_position.left + elem->size.width,  // r
-                        elem->abs_position.top + elem->size.height   // b
+    // Default clip path
+    clip_path.addRect(elem->abs_position.left,                     // l
+                      elem->abs_position.top,                      // t
+                      elem->abs_position.left + elem->size.width,  // r
+                      elem->abs_position.top + elem->size.height   // b
     );
-    std::cout << "default" << elem->abs_position.left << ","
-              << elem->abs_position.top << std::endl;
   } else {
-    // Make clip region from custom clip path
-    clip_region.setPath(custom_clip.value(), SkRegion({0, 0, screen->size.width,
-                                                       screen->size.height}));
+    clip_path = custom_clip.value();
   }
   if (elem->parent == nullptr) {
-    elem->clip_region = clip_region; // explicit move?
+    elem->clip_path = clip_path; // explicit move?
   } else {
-    // create new clip region from parent
-    elem->clip_region = SkRegion(elem->parent->clip_region);
-    // intersect elem's own clip with current clip region
-    elem->clip_region.op(clip_region, SkRegion::kIntersect_Op);
+    // Intersect elem's own clip with current clip region
+    SkPath c;
+    Op(elem->parent->clip_path, clip_path, kIntersect_SkPathOp,
+       &c);
+    elem->clip_path = c;
   }
 };
 
 void Document::setup_layer(Layer* layer, Element* elem) {
   layer->canvas->restoreToCount(1);
   layer->canvas->save();
+  layer->canvas->clipPath(elem->clip_path, SkClipOp::kIntersect, true);
   layer->canvas->translate(elem->abs_position.left, elem->abs_position.top);
-  // Clip region is unaffected by transforms
-  layer->canvas->clipRegion(elem->clip_region);
 };
 
 // Creates layer and adds it to the current layer tree, reusing layers from

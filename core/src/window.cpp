@@ -3,7 +3,7 @@
 namespace aardvark {
 
 const int STENCIL_BITS = 8;
-const int MSAA_SAMPLE_COUNT = 0;  // 4;
+const int MSAA_SAMPLE_COUNT = 4;  // 4;
 
 GlfwWindow::GlfwWindow(Size size) {
   if (!glfwInit()) {

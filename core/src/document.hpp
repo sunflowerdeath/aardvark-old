@@ -67,9 +67,8 @@ class Document {
   LayerTree* prev_layer_tree = nullptr;
 	// Layer that is currently used for painting
   Layer* current_layer = nullptr;
-  std::unique_ptr<SkPath> current_clip;
 
-  void set_clip_region(Element* elem, std::optional<SkPath> custom_clip);
+  void set_clip_path(Element* elem, std::optional<SkPath> custom_clip);
   void initial_paint();
   bool repaint();
   void compose_layers();

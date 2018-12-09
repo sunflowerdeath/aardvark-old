@@ -42,9 +42,10 @@ Compositor::Compositor(Size window_size) {
   gr_context = GrContext::MakeGL();
 }
 
+const int STENCIL_BITS = 8;
+const int MSAA_SAMPLE_COUNT = 4;
+
 std::shared_ptr<Layer> Compositor::make_screen_layer() {
-  const int stencil_bits = 8;
-  const int msaa_sample_count = 0;
 
   // These values may be different on some devices
   const SkColorType color_type = kRGBA_8888_SkColorType;
@@ -60,7 +61,7 @@ std::shared_ptr<Layer> Compositor::make_screen_layer() {
 
   // Create skia render target
   GrBackendRenderTarget target(window_size.width, window_size.height,
-                               msaa_sample_count, stencil_bits, info);
+                               MSAA_SAMPLE_COUNT, STENCIL_BITS, info);
 
   // Setup skia surface
   SkSurfaceProps props(SkSurfaceProps::kLegacyFontHost_InitType);
