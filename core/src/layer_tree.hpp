@@ -3,6 +3,8 @@
 #include <memory>
 #include <variant>
 #include <vector>
+#include <optional>
+#include "SkPath.h"
 #include "element.hpp"
 #include "compositing.hpp"
 
@@ -26,6 +28,8 @@ class LayerTree {
 
   // Child layers and trees
   std::vector<LayerTreeNode> children;
+
+  std::optional<SkPath> clip;
 
   // Adds new item to the tree
   void add(LayerTreeNode item);

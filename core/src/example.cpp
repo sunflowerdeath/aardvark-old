@@ -14,18 +14,24 @@
 #include "elements/elements.hpp"
 
 std::shared_ptr<aardvark::Element> make_elems() {
+  SkPath clip_path;
+  // clip_path.addOval({10, 10, 80, 80});
+  // clip_path.addRect({10, 10, 80, 80});
+  clip_path.addCircle(50, 50, 40);
   auto white = std::make_shared<aardvark::elements::Background>(SK_ColorRED);
   auto blue = std::make_shared<aardvark::elements::Background>(SK_ColorBLUE);
   return std::make_shared<aardvark::elements::FixedSize>(
-      std::make_shared<aardvark::elements::Stack>(
-          std::vector<std::shared_ptr<aardvark::Element>>{
-              white,  // wtf
-              std::make_shared<aardvark::elements::Align>(
-                  std::make_shared<aardvark::elements::FixedSize>(
-                      blue, aardvark::Size{100, 100}),
-                  aardvark::value::abs(50),  // left
-                  aardvark::value::abs(50)   // top
-                  )}),
+      std::make_shared<aardvark::elements::CustomClip>(
+          std::make_shared<aardvark::elements::Stack>(
+              std::vector<std::shared_ptr<aardvark::Element>>{
+                  white,  // wtf
+                  std::make_shared<aardvark::elements::Align>(
+                      std::make_shared<aardvark::elements::FixedSize>(
+                          blue, aardvark::Size{100, 100}),
+                      aardvark::value::abs(50),  // left
+                      aardvark::value::abs(50)   // top
+                      )}, true),
+          clip_path),
       aardvark::Size{100, 100});
 };
 
@@ -92,22 +98,20 @@ int main() {
 
   auto elements = std::vector<std::shared_ptr<aardvark::Element>>{background};
 
-  SkPath clip_path;
-  // clip_path.addOval({10, 10, 80, 80});
-  // clip_path.addRect({10, 10, 80, 80});
-  clip_path.addCircle(50, 50, 40);
   for (int i = 0; i < 5; i++) {
     for (int j = 0; j < 5; j++) {
       elements.push_back(std::make_shared<aardvark::elements::Align>(
-          std::make_shared<aardvark::elements::CustomClip>(make_elems(),
-                                                           clip_path),
+          make_elems(),
           aardvark::value::abs(i * 110),  // left
           aardvark::value::abs(j * 110)   // top
           ));
     }
   }
 
-  auto root = std::make_shared<aardvark::elements::Stack>(elements);
+  SkPath clip_path;
+  clip_path.addOval({0, 0, 500, 500});
+  auto root = std::make_shared<aardvark::elements::CustomClip>(
+      std::make_shared<aardvark::elements::Stack>(elements, true), clip_path);
 
   auto document = aardvark::Document(compositor, root);
 

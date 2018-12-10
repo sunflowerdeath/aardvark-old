@@ -3,6 +3,7 @@
 #include <memory>
 #include <unordered_set>
 #include <optional>
+
 #include "SkCanvas.h"
 #include "SkRegion.h"
 
@@ -67,6 +68,8 @@ class Document {
   LayerTree* prev_layer_tree = nullptr;
 	// Layer that is currently used for painting
   Layer* current_layer = nullptr;
+  std::optional<SkPath> current_clip = std::nullopt;
+
 
   void set_clip_path(Element* elem, std::optional<SkPath> custom_clip);
   void initial_paint();

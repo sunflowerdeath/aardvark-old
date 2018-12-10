@@ -45,6 +45,7 @@ void Document::initial_paint() {
   // std::cout << "INITIAL PAINT" << std::endl;
   layout_element(root.get(),
                  BoxConstraints::from_size(screen->size, true /* tight */));
+  current_clip = std::nullopt;
   paint_element(root.get(), /* isRepaintRoot */ true);
   compose_layers();
   is_initial_paint = false;
@@ -52,6 +53,7 @@ void Document::initial_paint() {
 
 bool Document::repaint() {
   if (changed_elements.empty()) return false;  // nothing to repaint
+  // TODO check when compose is needed
   ElementsSet relayout_boundaries;
   for (auto elem : changed_elements) {
     add_only_parent(relayout_boundaries,
@@ -65,8 +67,8 @@ bool Document::repaint() {
   for (auto elem : repaint_boundaries) {
     paint_element(elem, /* isRepaintRoot */ true);
   }
-  compose_layers();
   changed_elements.clear();
+  compose_layers();
   return true;
 }
 
@@ -80,12 +82,11 @@ Size Document::layout_element(Element* elem, BoxConstraints constraints) {
 }
 
 void Document::paint_element(Element* elem, bool is_repaint_root,
-                             std::optional<SkPath> custom_clip) {
-  // std::cout << "paint element: " << elem->get_debug_name() << std::endl;
+                             std::optional<SkPath> clip) {
   if (!is_repaint_root) elem->parent = current_element;
   this->current_element = elem;
-  // TODO handle this stuff
-  auto prev_layer_tree_sp = elem->layer_tree;
+
+  auto pin_prev_layer_tree = elem->layer_tree; // pin shared pointer
   if (elem->is_repaint_boundary) {
     // Save previous tree to be able to reuse layers from it
     prev_layer_tree = elem->layer_tree.get();
@@ -110,10 +111,40 @@ void Document::paint_element(Element* elem, bool is_repaint_root,
       elem->parent == nullptr
           ? elem->rel_position
           : Position::add(elem->parent->abs_position, elem->rel_position);
-  set_clip_path(elem, custom_clip);
+
+  // Clipping
+  auto prev_clip = current_clip;
+  if (is_repaint_root && !is_initial_paint) {
+    // Reuse clip from prev_layer_tree
+    current_layer_tree->clip = prev_layer_tree->clip;
+  } else {
+    // Calculate new current clip
+    if (clip != std::nullopt) {
+      SkPath offset_clip;
+      // Offset clip to position of clipped element
+      clip.value().offset(elem->abs_position.left, elem->abs_position.top,
+                          &offset_clip);
+      if (current_clip == std::nullopt) {
+        current_clip = offset_clip;
+      } else {
+        // Intersect prev clip with element's clip and make it new current clip
+        Op(current_clip.value(), offset_clip, kIntersect_SkPathOp,
+           &current_clip.value());
+      }
+    }
+    // When element is repaint boundary, current clip is not used while
+    // painting, instead it is applied while compositing
+    if (elem->is_repaint_boundary) {
+      current_layer_tree->clip = current_clip;
+      current_clip = std::nullopt;
+    }
+  }
+
   elem->paint();
+
+  current_clip = prev_clip; // Restore clip
   if (elem->is_repaint_boundary) {
-    // Reset current layer tree when leaving repaint boundary
+    // Reset current layer tree
     prev_layer_tree = nullptr;
     current_layer_tree = current_layer_tree->parent;
     current_layer = nullptr;
@@ -133,45 +164,19 @@ Layer* Document::get_layer() {
   return layer;
 }
 
-SkPath get_elem_clip(Element* elem, std::optional<SkPath> custom_clip) {
-  if (custom_clip != std::nullopt) {
-    SkPath clip_path;
-    custom_clip.value().offset(elem->abs_position.left, elem->abs_position.top,
-                               &clip_path);
-    return clip_path;
-  }
-  SkPath clip_path;
-  clip_path.addRect(elem->abs_position.left,                     // l
-                    elem->abs_position.top,                      // t
-                    elem->abs_position.left + elem->size.width,  // r
-                    elem->abs_position.top + elem->size.height   // b
-  );
-  return clip_path;
-}
-
-void Document::set_clip_path(Element* elem, std::optional<SkPath> custom_clip) {
-  if (elem->parent == nullptr) {
-    elem->clip_path = get_elem_clip(elem, custom_clip);
-  } else {
-    if (custom_clip == std::nullopt && elem->size == elem->parent->size &&
-        elem->abs_position == elem->parent->abs_position) {
-      // When element uses default clip and has same size and position as its
-      // parent, just reuse parent's clip
-      elem->clip_path = elem->parent->clip_path;
-    } else {
-      // Intersect elem's own clip with current clip region
-      Op(elem->parent->clip_path, get_elem_clip(elem, custom_clip),
-         kIntersect_SkPathOp, &elem->clip_path);
-    }
-  }
-};
-
 void Document::setup_layer(Layer* layer, Element* elem) {
   layer->canvas->restoreToCount(1);
   layer->canvas->save();
-  layer->canvas->clipPath(elem->clip_path, SkClipOp::kIntersect, true);
-  layer->canvas->translate(elem->abs_position.left, elem->abs_position.top);
-};
+  auto layer_pos = current_layer_tree->element->abs_position;
+  if (current_clip != std::nullopt) {
+    SkPath offset_clip;
+    current_clip.value().offset(-layer_pos.left, -layer_pos.top,
+                                &offset_clip);
+    layer->canvas->clipPath(offset_clip, SkClipOp::kIntersect, true);
+  }
+  layer->canvas->translate(elem->abs_position.left - layer_pos.left,
+                           elem->abs_position.top - layer_pos.top);
+}
 
 // Creates layer and adds it to the current layer tree, reusing layers from
 // previous repaint if possible.
@@ -199,6 +204,11 @@ void Document::compose_layers() {
 }
 
 void Document::paint_layer_tree(LayerTree* tree) {
+  if (tree->clip != std::nullopt) {
+    screen->canvas->save();
+    screen->canvas->clipPath(tree->clip.value(), SkClipOp::kIntersect, true);
+  }
+  // set clip to tree->element->clip_path
   for (auto item : tree->children) {
     auto child_tree = std::get_if<LayerTree*>(&item);
     if (child_tree != nullptr) {
@@ -209,6 +219,7 @@ void Document::paint_layer_tree(LayerTree* tree) {
                              tree->element->abs_position);
     }
   }
+  if (tree->clip != std::nullopt) screen->canvas->restore();
 }
 
 };  // namespace aardvark
