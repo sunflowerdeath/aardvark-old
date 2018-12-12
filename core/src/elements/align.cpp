@@ -43,6 +43,6 @@ Size Align::layout(BoxConstraints constraints) {
   return constraints.max_size();
 };
 
-void Align::paint() { document->paint_element(child.get()); };
+void Align::paint(bool is_changed) { document->paint_element(child.get()); };
 
 }  // namespace aardvark::elements

@@ -4,6 +4,7 @@
 #include "SkCanvas.h"
 #include "../base_types.hpp"
 #include "../box_constraints.hpp"
+#include "../paint_cache.hpp"
 #include "../element.hpp"
 
 namespace aardvark::elements {
@@ -71,13 +72,15 @@ class Border : public Element {
   BoxRadiuses radiuses;
   std::shared_ptr<Element> child;
   Size layout(BoxConstraints constraints);
-  void paint();
+  void paint(bool is_changed) override;
  private:
-  Layer* layer;
+  PaintCache cache;
+  SkCanvas* canvas;
   SkPath clip_path;
   SkMatrix clip_matrix;
   SkMatrix matrix;
   int rotation;
+  void paint_borders(SkCanvas* canvas);
   void paint_side(BorderSide& prev_side, BorderSide& side,
                   BorderSide& next_side, Radius& left_radius,
                   Radius& right_radius);

@@ -12,8 +12,8 @@ class Center : public Element {
   Center(std::shared_ptr<Element> child, bool is_repaint_boundary = false);
   std::shared_ptr<Element> child;
 	bool sized_by_parent = true;
-  Size layout(BoxConstraints constraints);
-  void paint();
+  Size layout(BoxConstraints constraints) override;
+  void paint(bool is_changed) override;
 };
 
 } // namespace aardvark::elements

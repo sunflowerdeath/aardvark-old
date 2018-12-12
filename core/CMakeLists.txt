@@ -176,12 +176,13 @@ add_library(aardvark
   src/layer_tree.cpp
   src/document.cpp
   src/element.cpp
+  src/paint_cache.cpp
   src/window.cpp
   src/elements/align.cpp
   src/elements/background.cpp
   src/elements/border.cpp
   src/elements/center.cpp
-  src/elements/custom_clip.cpp
+  src/elements/clip.cpp
   src/elements/fixed_size.cpp
   src/elements/stack.cpp
 )
@@ -189,7 +190,9 @@ target_link_libraries(aardvark
   fmt SKIA_LIB glfw ${X11_LIBRARIES} JavaScriptCore
 )
 
-# example
-add_executable(example src/example.cpp)
-add_dependencies(example aardvark)
-target_link_libraries(example aardvark)
+# examples
+add_executable(clip_example src/examples/clip.cpp)
+target_link_libraries(clip_example aardvark)
+
+add_executable(paint_cache_example src/examples/paint_cache.cpp)
+target_link_libraries(paint_cache_example aardvark)

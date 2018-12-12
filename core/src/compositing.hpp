@@ -27,10 +27,10 @@ class Layer {
   SkCanvas* canvas;
 
   // Clears layer's canvas
-  void clear(SkColor color = SK_ColorBLACK);
+  void clear(SkColor color = SK_ColorTRANSPARENT);
 
   // Clears layer and resets compose options to default
-  void reset(SkColor color = SK_ColorBLACK);
+  void reset(SkColor color = SK_ColorTRANSPARENT);
 
   // Mark layer as changed to invalidate last snapshot
   void set_changed();

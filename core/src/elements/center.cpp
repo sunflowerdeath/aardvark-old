@@ -26,6 +26,6 @@ Size Center::layout(BoxConstraints constraints) {
   };
 };
 
-void Center::paint() { document->paint_element(child.get()); };
+void Center::paint(bool is_changed) { document->paint_element(child.get()); };
 
 }  // namespace aardvark::elements

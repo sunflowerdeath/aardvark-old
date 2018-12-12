@@ -20,13 +20,15 @@ class Element {
   // Document is set when this element is painted
   Document* document = nullptr;
 
+  // !
   // Parent element should set this during constructing and updating
   Element* parent = nullptr;
  
-  // These props should be set during layout of the parent element
+  // These props should be set during layout by the parent element
   Size size;
   Position rel_position;
 
+  // !
   // Absolute position is calculated before painting the element
   Position abs_position;
 
@@ -34,6 +36,7 @@ class Element {
   // input constraints
   bool sized_by_parent = true;
 
+  // !
   // When element is relayout boundary, changes inside it do not affect 
   // layout of parents. This can happen when element recieves tight
   // constraints, so it is always same size, or when element's size
@@ -46,8 +49,11 @@ class Element {
   // This allows to repaint this element separately.
   // This prop should be set explicitly.
   bool is_repaint_boundary = false;
+
+  // !
   std::shared_ptr<LayerTree> layer_tree;
 
+  // !
   // This is used for relayout
   BoxConstraints prev_constraints;
 
@@ -55,8 +61,16 @@ class Element {
   // and set their size and relative positions.
   virtual Size layout(BoxConstraints constraints) {};
 
-  // Paints element and its children
-  virtual void paint() {};
+  // !
+  // Whether the element was changed by updating props or performig relayout
+  // since last repaint.
+  bool is_changed;
+
+  // Paints element and its children.
+  // `is_changed` is `true` when the element itself or some of its parents 
+  // is changed. When it is `false`, element is allowed to reuse result of
+  // previous painting.
+  virtual void paint(bool is_changed) {};
 
   // Used for debugging
   virtual std::string get_debug_name() { return "Unknown element"; };
@@ -66,10 +80,6 @@ class Element {
 
   Element* find_closest_relayout_boundary();
   Element* find_closest_repaint_boundary();
-
-  // Clip path is constructed before painting by merging element's custom 
-  // or default clip path with parent's clip path.
-  SkPath clip_path;
 };
 
 };  // namespace aardvark

@@ -16,6 +16,8 @@ Size FixedSize::layout(BoxConstraints constraints) {
   return size;
 };
 
-void FixedSize::paint() { document->paint_element(child.get()); };
+void FixedSize::paint(bool is_changed) {
+  document->paint_element(child.get());
+};
 
 }  // namespace aardvark::elements

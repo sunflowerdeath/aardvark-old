@@ -10,6 +10,7 @@ Border::Border(std::shared_ptr<Element> child, BoxBorders borders,
       radiuses(radiuses),
       child(child) {
   child->parent = this;
+  cache = PaintCache();
 };
 
 Size Border::layout(BoxConstraints constraints) {
@@ -33,13 +34,21 @@ Size Border::layout(BoxConstraints constraints) {
   };
 };
 
-void Border::paint() {
+void Border::paint(bool is_changed) {
   document->paint_element(child.get());
 
+  auto layer = document->get_layer();
+  document->setup_layer(layer, this);
+  paint_borders(layer->canvas);
+  // cache.restart(is_changed);
+  // cache.paint(layer->canvas, [&](SkCanvas* canvas) { paint_borders(canvas); });
+}
+
+void Border::paint_borders(SkCanvas* canvas) {
+  this->canvas = canvas;
   matrix = SkMatrix();
-  layer = document->get_layer();
-  layer->canvas->save();
-  layer->canvas->translate(abs_position.left, abs_position.top);
+  // layer->canvas->save();
+  // layer->canvas->translate(abs_position.left, abs_position.top);
   rotation = 0;
 
   // After painting each border side, coordinates are translated and
@@ -80,7 +89,6 @@ void Border::paint() {
     radiuses.bottomLeft, radiuses.topLeft
   );
 
-  layer->canvas->restore();
 };
 
 SkPoint calc(SkMatrix& matrix, float left, float top) {
@@ -111,7 +119,7 @@ void Border::paint_triangle(Radius& radius, BorderSide& prev_side,
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(side.color);
   paint.setAntiAlias(true);
-  layer->canvas->drawPath(path, paint);
+  canvas->drawPath(path, paint);
 };
 
 void Border::paint_arc(Radius& radius, BorderSide& side, int width) {
@@ -129,11 +137,11 @@ void Border::paint_arc(Radius& radius, BorderSide& side, int width) {
                                  2 * radius.height          // b
   );
   matrix.mapRect(&bounds);
-  layer->canvas->drawArc(bounds,         // oval
-                         rotation - 90,  // startAngle, 0 is right middle
-                         90,             // sweepAngle
-                         false,          // useCenter
-                         arc_paint       // paint
+  canvas->drawArc(bounds,         // oval
+                  rotation - 90,  // startAngle, 0 is right middle
+                  90,             // sweepAngle
+                  false,          // useCenter
+                  arc_paint       // paint
   );
 };
 
@@ -169,7 +177,7 @@ void Border::paint_side(BorderSide& prev_side, BorderSide& side,
   line_paint.setStyle(SkPaint::kStroke_Style);
   line_paint.setColor(side.color);
   line_paint.setStrokeWidth(side.width);
-  layer->canvas->drawLine(calc(matrix, start, side.width / 2),
+  canvas->drawLine(calc(matrix, start, side.width / 2),
                           calc(matrix, end, side.width / 2), line_paint);
 
   // Draw different type of transition to next side depending on corner

@@ -2,6 +2,6 @@
 #include "background.hpp"
 #include "border.hpp"
 #include "center.hpp"
-#include "custom_clip.hpp"
+#include "clip.hpp"
 #include "fixed_size.hpp"
 #include "stack.hpp"

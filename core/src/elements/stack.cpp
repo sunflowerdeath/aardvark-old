@@ -19,7 +19,7 @@ Size Stack::layout(BoxConstraints constraints) {
   return constraints.max_size();
 }
 
-void Stack::paint() {
+void Stack::paint(bool is_changed) {
   for (auto child : children) {
     document->paint_element(child.get());
   }

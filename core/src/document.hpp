@@ -69,6 +69,9 @@ class Document {
 	// Layer that is currently used for painting
   Layer* current_layer = nullptr;
   std::optional<SkPath> current_clip = std::nullopt;
+  // Whether the current element or some of its parent is changed since last
+  // repaint
+  bool inside_changed = false;
 
 
   void set_clip_path(Element* elem, std::optional<SkPath> custom_clip);

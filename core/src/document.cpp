@@ -30,7 +30,9 @@ void Document::set_root(std::shared_ptr<Element> new_root) {
   is_initial_paint = true;
 }
 
-void Document::change_element(Element* elem) { changed_elements.insert(elem); }
+void Document::change_element(Element* elem) {
+  changed_elements.insert(elem);
+}
 
 bool Document::paint() {
   if (is_initial_paint) {
@@ -42,7 +44,6 @@ bool Document::paint() {
 }
 
 void Document::initial_paint() {
-  // std::cout << "INITIAL PAINT" << std::endl;
   layout_element(root.get(),
                  BoxConstraints::from_size(screen->size, true /* tight */));
   current_clip = std::nullopt;
@@ -63,6 +64,7 @@ bool Document::repaint() {
   for (auto elem : relayout_boundaries) {
     layout_element(elem, elem->prev_constraints);
     add_only_parent(repaint_boundaries, elem->find_closest_repaint_boundary());
+    elem->is_changed = true;
   }
   for (auto elem : repaint_boundaries) {
     paint_element(elem, /* isRepaintRoot */ true);
@@ -73,9 +75,8 @@ bool Document::repaint() {
 }
 
 Size Document::layout_element(Element* elem, BoxConstraints constraints) {
-  // std::cout << "layout element: " << elem->get_debug_name() << std::endl;
   elem->document = this;
-  elem->is_relayout_boundary = constraints.is_tight() || !elem->sized_by_parent;
+  elem->is_relayout_boundary = constraints.is_tight() || elem->sized_by_parent;
   auto size = elem->layout(constraints);
   elem->prev_constraints = constraints;
   return size;
@@ -114,14 +115,13 @@ void Document::paint_element(Element* elem, bool is_repaint_root,
 
   // Clipping
   auto prev_clip = current_clip;
-  if (is_repaint_root && !is_initial_paint) {
-    // Reuse clip from prev_layer_tree
-    current_layer_tree->clip = prev_layer_tree->clip;
+  if (is_repaint_root) {
+    // Repaint root doesn't get clip, but it restores it from prev layer tree
+    if (!is_initial_paint) current_layer_tree->clip = prev_layer_tree->clip;
   } else {
-    // Calculate new current clip
     if (clip != std::nullopt) {
       SkPath offset_clip;
-      // Offset clip to position of clipped element
+      // Offset clip to position of the clipped element
       clip.value().offset(elem->abs_position.left, elem->abs_position.top,
                           &offset_clip);
       if (current_clip == std::nullopt) {
@@ -140,11 +140,14 @@ void Document::paint_element(Element* elem, bool is_repaint_root,
     }
   }
 
-  elem->paint();
+  auto prev_inside_changed = inside_changed;
+  inside_changed = inside_changed || elem->is_changed;
+  elem->paint(inside_changed);
+  elem->is_changed = false;
+  inside_changed = prev_inside_changed;
 
   current_clip = prev_clip; // Restore clip
   if (elem->is_repaint_boundary) {
-    // Reset current layer tree
     prev_layer_tree = nullptr;
     current_layer_tree = current_layer_tree->parent;
     current_layer = nullptr;
@@ -208,7 +211,6 @@ void Document::paint_layer_tree(LayerTree* tree) {
     screen->canvas->save();
     screen->canvas->clipPath(tree->clip.value(), SkClipOp::kIntersect, true);
   }
-  // set clip to tree->element->clip_path
   for (auto item : tree->children) {
     auto child_tree = std::get_if<LayerTree*>(&item);
     if (child_tree != nullptr) {

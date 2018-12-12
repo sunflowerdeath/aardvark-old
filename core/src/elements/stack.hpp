@@ -15,7 +15,7 @@ class Stack : public Element {
   std::vector<std::shared_ptr<Element>> children;
 	bool sized_by_parent = true;
   Size layout(BoxConstraints constraints) override;
-  void paint() override;
+  void paint(bool is_changed) override;
 };
 
 } // namespace aardvark::elements

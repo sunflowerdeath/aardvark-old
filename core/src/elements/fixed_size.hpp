@@ -13,8 +13,8 @@ class FixedSize : public Element {
             bool is_repaint_boundary = false);
   Size size;
   std::shared_ptr<Element> child;
-  Size layout(BoxConstraints constraints);
-  void paint();
+  Size layout(BoxConstraints constraints) override;
+  void paint(bool is_changed) override;
 };
 
 } // namespace aardvark::elements

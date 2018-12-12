@@ -17,7 +17,7 @@ Size Background::layout(BoxConstraints constraints) {
   };
 };
 
-void Background::paint() {
+void Background::paint(bool is_changed) {
   SkPaint paint;
   paint.setColor(color);
   auto layer = document->get_layer();

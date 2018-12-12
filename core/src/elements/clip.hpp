@@ -8,15 +8,17 @@
 
 namespace aardvark::elements {
 
-class CustomClip : public Element {
+class Clip : public Element {
  public:
-  CustomClip(std::shared_ptr<Element> child, SkPath custom_clip_path,
+  Clip(std::shared_ptr<Element> child, SkPath (*clipper)(Size),
              bool is_repaint_boundary = false);
-  SkPath custom_clip_path;
+  SkPath (*clipper)(Size);
   std::shared_ptr<Element> child;
 	bool sized_by_parent = true;
-  Size layout(BoxConstraints constraints);
-  void paint();
+  Size layout(BoxConstraints constraints) override;
+  void paint(bool is_changed) override;
+  static SkPath default_clip(Size size);
+
 };
 
 } // namespace aardvark::elements
