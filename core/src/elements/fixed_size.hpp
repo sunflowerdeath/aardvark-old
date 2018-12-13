@@ -13,6 +13,7 @@ class FixedSize : public Element {
             bool is_repaint_boundary = false);
   Size size;
   std::shared_ptr<Element> child;
+  std::string get_debug_name() override { return "FixedSize"; };
   Size layout(BoxConstraints constraints) override;
   void paint(bool is_changed) override;
 };

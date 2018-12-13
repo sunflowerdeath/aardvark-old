@@ -12,8 +12,7 @@ void LayerTree::add(LayerTreeNode item) {
 };
 
 void LayerTree::replace(LayerTreeNode old_item, LayerTreeNode new_item) {
-  auto it = std::find(children.begin(), children.end(), old_item);
-  children.emplace(it, new_item);
+  std::replace(children.begin(), children.end(), old_item, new_item);
 };
 
 void LayerTree::remove_layer(std::shared_ptr<Layer> layer) {

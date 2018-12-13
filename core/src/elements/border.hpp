@@ -71,10 +71,10 @@ class Border : public Element {
   BoxBorders borders;
   BoxRadiuses radiuses;
   std::shared_ptr<Element> child;
-  Size layout(BoxConstraints constraints);
+  std::string get_debug_name() override { return "Border"; };
+  Size layout(BoxConstraints constraints) override;
   void paint(bool is_changed) override;
  private:
-  PaintCache cache;
   SkCanvas* canvas;
   SkPath clip_path;
   SkMatrix clip_matrix;

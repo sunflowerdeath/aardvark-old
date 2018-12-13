@@ -15,10 +15,10 @@ std::shared_ptr<aardvark::Element> make_elems() {
   auto border = std::make_shared<aardvark::elements::Border>(
       std::make_shared<aardvark::elements::Background>(SK_ColorWHITE),
       aardvark::elements::BoxBorders{
-          aardvark::elements::BorderSide{8, SK_ColorRED},  // top
-          aardvark::elements::BorderSide{8, SK_ColorRED},  // right
-          aardvark::elements::BorderSide{8, SK_ColorRED},  // bottom
-          aardvark::elements::BorderSide{8, SK_ColorRED},  // left
+          aardvark::elements::BorderSide{4, SK_ColorRED},  // top
+          aardvark::elements::BorderSide{4, SK_ColorRED},  // right
+          aardvark::elements::BorderSide{4, SK_ColorRED},  // bottom
+          aardvark::elements::BorderSide{4, SK_ColorRED},  // left
       },
       aardvark::elements::BoxRadiuses{
           aardvark::elements::Radius{4, 4},    // top_left
@@ -27,7 +27,7 @@ std::shared_ptr<aardvark::Element> make_elems() {
           aardvark::elements::Radius{32, 32}   // bottom_left
       });
   return std::make_shared<aardvark::elements::FixedSize>(
-      border, aardvark::Size{50, 50}, true);
+      border, aardvark::Size{50, 50});
 };
 
 int main() {
@@ -37,8 +37,7 @@ int main() {
 
   auto background =
       std::make_shared<aardvark::elements::Background>(SK_ColorWHITE, true);
-  auto elements = std::vector<std::shared_ptr<aardvark::Element>>{background};
-
+  std::vector<std::shared_ptr<aardvark::Element>> elements;
   for (int i = 0; i < 10; i++) {
     for (int j = 0; j < 10; j++) {
       elements.push_back(std::make_shared<aardvark::elements::Align>(
@@ -49,7 +48,10 @@ int main() {
     }
   }
 
-  auto root = std::make_shared<aardvark::elements::Stack>(elements, true);
+  auto root = std::make_shared<aardvark::elements::Stack>(
+      std::vector<std::shared_ptr<aardvark::Element>>{
+          background,
+          std::make_shared<aardvark::elements::Stack>(elements, true)});
   auto document = aardvark::Document(compositor, root);
 
   bool quit = false;

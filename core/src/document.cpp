@@ -84,6 +84,7 @@ Size Document::layout_element(Element* elem, BoxConstraints constraints) {
 
 void Document::paint_element(Element* elem, bool is_repaint_root,
                              std::optional<SkPath> clip) {
+  // std::cout << "paint element: " << elem->get_debug_name() << std::endl;
   if (!is_repaint_root) elem->parent = current_element;
   this->current_element = elem;
 
@@ -112,6 +113,7 @@ void Document::paint_element(Element* elem, bool is_repaint_root,
       elem->parent == nullptr
           ? elem->rel_position
           : Position::add(elem->parent->abs_position, elem->rel_position);
+
 
   // Clipping
   auto prev_clip = current_clip;

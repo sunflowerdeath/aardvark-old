@@ -10,17 +10,16 @@ Border::Border(std::shared_ptr<Element> child, BoxBorders borders,
       radiuses(radiuses),
       child(child) {
   child->parent = this;
-  cache = PaintCache();
 };
 
 Size Border::layout(BoxConstraints constraints) {
+  auto vert_width = borders.left.width + borders.right.width;
+  auto horiz_width = borders.top.width + borders.bottom.width;
   auto child_constraints = BoxConstraints{
-      0,  // min_width
-      constraints.max_width - borders.left.width -
-          borders.right.width,  // max_width
-      0,                        // min_height
-      constraints.max_height - borders.top.width -
-          borders.bottom.width  // max_height
+      0,                                    // min_width
+      constraints.max_width - vert_width,   // max_width
+      0,                                    // min_height
+      constraints.max_height - horiz_width  // max_height
   };
   auto size = document->layout_element(child.get(), child_constraints);
   child->size = size;
@@ -29,66 +28,49 @@ Size Border::layout(BoxConstraints constraints) {
       borders.top.width    // top
   };
   return Size{
-      size.width + borders.left.width + borders.right.width,  // width
-      size.height + borders.top.width + borders.bottom.width  // height
+      size.width + vert_width,   // width
+      size.height + horiz_width  // height
   };
 };
 
 void Border::paint(bool is_changed) {
-  document->paint_element(child.get());
-
   auto layer = document->get_layer();
   document->setup_layer(layer, this);
-  paint_borders(layer->canvas);
-  // cache.restart(is_changed);
-  // cache.paint(layer->canvas, [&](SkCanvas* canvas) { paint_borders(canvas); });
-}
-
-void Border::paint_borders(SkCanvas* canvas) {
-  this->canvas = canvas;
-  matrix = SkMatrix();
-  // layer->canvas->save();
-  // layer->canvas->translate(abs_position.left, abs_position.top);
-  rotation = 0;
+  this->canvas = layer->canvas;
 
   // After painting each border side, coordinates are translated and
   // rotated 90 degrees, so next border can be painted with same function.
+  matrix = SkMatrix();
+  rotation = 0;
+  // top -> right -> bottom -> left
+  paint_side(borders.left, borders.top, borders.right, radiuses.topLeft,
+             radiuses.topRight);
+  paint_side(borders.top, borders.right, borders.bottom, radiuses.topRight,
+             radiuses.bottomRight);
+  paint_side(borders.right, borders.bottom, borders.left, radiuses.bottomRight,
+             radiuses.bottomLeft);
+  paint_side(borders.bottom, borders.left, borders.top, radiuses.bottomLeft,
+             radiuses.topLeft);
 
-  /*
+  // TODO if all *inner* radiuses are square
   bool need_custom_clip = !radiuses.is_square();
   if (need_custom_clip) {
-    SkMatrix clip_matrix;
-    SkPath clip_path;
+    clip_matrix = SkMatrix();
+    clip_path = SkPath();
+    rotation = 0;
+    // top -> right -> bottom -> left
+    clip_side(borders.left, borders.top, borders.right, radiuses.topLeft,
+              radiuses.topRight);
+    clip_side(borders.top, borders.right, borders.bottom, radiuses.topRight,
+              radiuses.bottomRight);
+    clip_side(borders.right, borders.bottom, borders.left, radiuses.bottomRight,
+              radiuses.bottomLeft);
+    clip_side(borders.bottom, borders.left, borders.top, radiuses.bottomLeft,
+              radiuses.topLeft);
   }
-  */
-
-  // top
-  paint_side(
-    borders.left, borders.top, borders.right,
-    radiuses.topLeft, radiuses.topRight
-  );
-  /*
-  need_custom_clip && clip_side(
-    borders.left, borders.top, borders.right,
-    radiuses.topLeft, radiuses.topRight
-  );
-  */
-  // right
-  paint_side(
-    borders.top, borders.right, borders.bottom,
-    radiuses.topRight, radiuses.bottomRight
-  );
-  // bottom
-  paint_side(
-    borders.right, borders.bottom, borders.left,
-    radiuses.bottomRight, radiuses.bottomLeft
-  );
-  // left
-  paint_side(
-    borders.bottom, borders.left, borders.top,
-    radiuses.bottomLeft, radiuses.topLeft
-  );
-
+  document->paint_element(
+      child.get(), false,
+      need_custom_clip ? std::optional(clip_path) : std::nullopt);
 };
 
 SkPoint calc(SkMatrix& matrix, float left, float top) {
@@ -200,24 +182,30 @@ void Border::paint_side(BorderSide& prev_side, BorderSide& side,
 void Border::clip_side(BorderSide& prev_side, BorderSide& side,
                        BorderSide& next_side, Radius& left_radius,
                        Radius& right_radius) {
-  auto width = rotation % 180 == 0 ? size.width : size.height;
-  auto begin = fmax(prev_side.width, left_radius.width);
-  auto end = width - fmax(next_side.width, right_radius.width);
-  clip_path.lineTo(calc(clip_matrix, begin, side.width));
-  clip_path.lineTo(calc(clip_matrix, end, side.width));
+  auto width = (rotation % 180 == 0 ? size.width : size.height) -
+               prev_side.width - next_side.width;
+  auto begin = fmax(0, left_radius.width - prev_side.width);
+  auto end = width - fmax(0, right_radius.width - next_side.width);
+  clip_path.lineTo(calc(clip_matrix, begin, 0));
+  clip_path.lineTo(calc(clip_matrix, end, 0));
   auto inner_radius = right_radius.inner(side.width);
-  if (inner_radius.width > 0 && inner_radius.height > 0) {
-    /*
-    clip_path->drawArc({l, t, r, b},   // oval bounds
-                       rotation - 90,  // startAngle, 0 is right middle
-                       90,             // sweepAngle
-                       false,          // useCenter
-                       false           // forceMoveTo
+  std::cout << begin << "," << end << std::endl;
+  if (!inner_radius.is_square()) {
+    auto bounds = SkRect::MakeLTRB(width - 2 * inner_radius.width,  // left
+                                   0,                               // top
+                                   width,                           // right
+                                   2 * inner_radius.height          // height
     );
-    */
+    clip_matrix.mapRect(&bounds);
+    clip_path.arcTo(bounds,         // oval bounds
+                    rotation - 90,  // startAngle, 0 is right middle
+                    90,             // sweepAngle
+                    false           // forceMoveTo
+    );
   }
   clip_matrix.postRotate(90);
   clip_matrix.postTranslate(width, 0);
+  rotation += 90;
 };
 
 }; // namespace aardvark::elements
