@@ -13,8 +13,6 @@ void cursor_pos_callback(GLFWwindow* window, double left, double top) {
   App::dispatch_event(window, events::MouseMoveEvent(left, top));
 }
 
-void cursor_enter_callback(GLFWwindow* window, int entered) {
-}
 
 void mouse_button_callback(GLFWwindow* window, int button, int action,
                            int mods) {
@@ -41,6 +39,15 @@ void window_focus_callback(GLFWwindow* window, int focused) {
   else DesktopApp::dispatch_event(window, WindowBlurEvent());
 };
 
+void cursor_enter_callback(GLFWwindow* window, int entered) {
+  if (entered) DesktopApp::dispatch_event(window, MouseEnterEvent());
+  else DesktopApp::dispatch_event(window, MouseLeaveEvent());
+}
+
+void cursor_pos_callback(GLFWwindow* window, double left, double top) {
+  DesktopApp::dispatch_event(window, MouseMoveEvent(left, top));
+}
+
 const auto FRAME_TIME = 16000;
 
 void DesktopApp::dispatch_event(GLFWwindow* window, Event event) {
@@ -53,6 +60,8 @@ std::shared_ptr<DesktopWindow> DesktopApp::create_window(Size size) {
   windows.push_back(window);
   glfwSetWindowUserPointer(window->window, (void*)this);
   glfwSetWindowFocusCallback(window->window, window_focus_callback);
+  glfwSetCursorEnterCallback(window->window, cursor_enter_callback);
+  glfwSetCursorPosCallback(window->window, cursor_pos_callback);
   documents[window] = Document();
   return window;
 };
@@ -95,7 +104,6 @@ void DesktopApp::run() {
 };
 
 void DesktopApp::handle_event(GLFWwindow* window, Event event) {
-  std::cout << "handle_event" << std::endl;
   if (event_handler) event_handler(this, event);
 };
 

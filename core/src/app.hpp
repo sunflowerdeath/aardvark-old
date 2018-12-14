@@ -14,37 +14,28 @@
 namespace aardvark {
 
 struct WindowFocusEvent {};
-
 struct WindowBlurEvent {};
-
 struct WindowMoveEvent {
   WindowMoveEvent(double left, double top) : left(left), top(top){};
   double left;
   double top;
 };
-
 struct WindowCloseEvent {};
 struct WindowMinimizeEvent {};
 struct WindowRestoreEvent {};
 
+struct MouseEnterEvent {};
+struct MouseLeaveEvent {};
+struct MouseMoveEvent {
+  MouseMoveEvent(double left, double top) : left(left), top(top){};
+  double left;
+  double top;
+};
+
 using Event =
     std::variant<WindowFocusEvent, WindowBlurEvent, WindowMoveEvent,
-                 WindowCloseEvent, WindowMinimizeEvent, WindowRestoreEvent>;
-/*
-enum class Events {
-  WINDOW_FOCUS,
-  WINDOW_BLUR,
-  WINDOW_MOVE,
-  WINDOW_CLOSE,
-  WINDOW_MINIMIZE,
-  WINDOW_RESTORE,
-  MOUSE_ENTER,
-  MOUSE_LEAVE,
-  MOUSE_DOWN,
-  MOUSE_UP,
-  SCROLL
-};
-*/
+                 WindowCloseEvent, WindowMinimizeEvent, WindowRestoreEvent,
+                 MouseEnterEvent, MouseLeaveEvent, MouseMoveEvent>;
 
 class DesktopApp {
  public:
@@ -59,6 +50,8 @@ class DesktopApp {
 
   // Used provided event handler
   std::function<void(DesktopApp* app, Event event)> event_handler;
+
+  void* user_pointer;
 
   // Dispatches event to the corresponding App instance
   static void dispatch_event(GLFWwindow* window, Event event);

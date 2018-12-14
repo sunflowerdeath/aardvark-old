@@ -1,4 +1,3 @@
-#include <iostream>
 #include "compositing.hpp"
 
 #define GR_GL_FRAMEBUFFER_BINDING 0x8CA6
