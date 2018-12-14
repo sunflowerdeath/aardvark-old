@@ -38,20 +38,19 @@ sk_sp<SkImage> Layer::get_snapshot() {
   return snapshot;
 };
 
-Compositor::Compositor(Size window_size) {
-  this->window_size = window_size;
-  gr_context = GrContext::MakeGL();
-}
+void Layer::paint_layer(Layer* layer, Position pos) {
+  auto res_pos = Position::add(layer->compose_options.translate, pos);
+  canvas->drawImage(layer->get_snapshot(), res_pos.left, res_pos.top);
+};
 
 const int STENCIL_BITS = 8;
 const int MSAA_SAMPLE_COUNT = 4;
 
-std::shared_ptr<Layer> Compositor::make_screen_layer() {
-
+std::shared_ptr<Layer> Layer::make_screen_layer(sk_sp<GrContext> gr_context) {
+  // sk_sp<GrContext> gr_context = GrContext::MakeGL();
   // These values may be different on some devices
   const SkColorType color_type = kRGBA_8888_SkColorType;
   const GrGLenum color_format = GR_GL_RGBA8;
-
   // Wrap the frame buffer object attached to the screen in a Skia render target
   // Get an id of the current framebuffer object
   GrGLint buffer;
@@ -59,11 +58,13 @@ std::shared_ptr<Layer> Compositor::make_screen_layer() {
   GrGLFramebufferInfo info;
   info.fFBOID = (GrGLuint) buffer;
   info.fFormat = color_format;
-
   // Create skia render target
-  GrBackendRenderTarget target(window_size.width, window_size.height,
-                               MSAA_SAMPLE_COUNT, STENCIL_BITS, info);
-
+  GLint dimensions[4];;
+  glGetIntegerv(GL_VIEWPORT, dimensions);
+  GLint width = dimensions[2];
+  GLint height = dimensions[3];
+  GrBackendRenderTarget target(width, height, MSAA_SAMPLE_COUNT, STENCIL_BITS,
+                               info);
   // Setup skia surface
   SkSurfaceProps props(SkSurfaceProps::kLegacyFontHost_InitType);
   auto surface(SkSurface::MakeFromBackendRenderTarget(
@@ -72,19 +73,12 @@ std::shared_ptr<Layer> Compositor::make_screen_layer() {
   return std::make_shared<Layer>(surface);
 };
 
-std::shared_ptr<Layer> Compositor::make_offscreen_layer(aardvark::Size size) {
+std::shared_ptr<Layer> Layer::make_offscreen_layer(sk_sp<GrContext> gr_context,
+                                                   Size size) {
   const SkImageInfo info = SkImageInfo::MakeN32Premul(size.width, size.height);
   auto surface(
       SkSurface::MakeRenderTarget(gr_context.get(), SkBudgeted::kNo, info));
   return std::make_shared<Layer>(surface);
-};
-
-void Compositor::paint_layer(Layer* target, Layer* layer, Position pos) {
-  SkPaint paint;
-  paint.setAlpha(128);
-  auto res_pos = Position::add(layer->compose_options.translate, pos);
-  target->canvas->drawImage(layer->get_snapshot(), res_pos.left, res_pos.top);
-  paint.setColor(SK_ColorWHITE);
 };
 
 } // namespace aardvark

@@ -189,7 +189,6 @@ void Border::clip_side(BorderSide& prev_side, BorderSide& side,
   clip_path.lineTo(calc(clip_matrix, begin, 0));
   clip_path.lineTo(calc(clip_matrix, end, 0));
   auto inner_radius = right_radius.inner(side.width);
-  std::cout << begin << "," << end << std::endl;
   if (!inner_radius.is_square()) {
     auto bounds = SkRect::MakeLTRB(width - 2 * inner_radius.width,  // left
                                    0,                               // top

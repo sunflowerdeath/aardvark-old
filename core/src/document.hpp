@@ -6,6 +6,7 @@
 
 #include "SkCanvas.h"
 #include "SkRegion.h"
+#include "GrContext.h"
 
 #include "base_types.hpp"
 #include "box_constraints.hpp"
@@ -23,7 +24,9 @@ using ElementsSet = std::unordered_set<Element*>;
 
 class Document {
  public:
-  Document(Compositor& compositor, std::shared_ptr<Element> root);
+  Document(std::shared_ptr<Element> root = nullptr);
+
+  sk_sp<GrContext> gr_context;
 
   // Sets new root element
   void set_root(std::shared_ptr<Element> new_root);
@@ -53,7 +56,6 @@ class Document {
 
   std::shared_ptr<Layer> screen;
  private:
-  Compositor compositor;
   std::shared_ptr<Element> root;
   ElementsSet changed_elements;
   bool is_initial_paint;

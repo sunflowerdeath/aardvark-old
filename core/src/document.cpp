@@ -17,9 +17,10 @@ void add_only_parent(ElementsSet& set, Element* added) {
   set.insert(added);
 };
 
-Document::Document(Compositor& compositor, std::shared_ptr<Element> root)
-    : compositor(compositor), screen(compositor.make_screen_layer()) {
-  set_root(root);
+Document::Document(std::shared_ptr<Element> root) {
+  gr_context = GrContext::MakeGL();
+  screen = Layer::make_screen_layer(gr_context);
+  if (root != nullptr) set_root(root);
 }
 
 void Document::set_root(std::shared_ptr<Element> new_root) {
@@ -84,7 +85,7 @@ Size Document::layout_element(Element* elem, BoxConstraints constraints) {
 
 void Document::paint_element(Element* elem, bool is_repaint_root,
                              std::optional<SkPath> clip) {
-  // std::cout << "paint element: " << elem->get_debug_name() << std::endl;
+  std::cout << "paint element: " << elem->get_debug_name() << std::endl;
   if (!is_repaint_root) elem->parent = current_element;
   this->current_element = elem;
 
@@ -113,7 +114,6 @@ void Document::paint_element(Element* elem, bool is_repaint_root,
       elem->parent == nullptr
           ? elem->rel_position
           : Position::add(elem->parent->abs_position, elem->rel_position);
-
 
   // Clipping
   auto prev_clip = current_clip;
@@ -191,7 +191,7 @@ Layer* Document::create_layer(Size size) {
                                      : nullptr;
   if (layer == nullptr) {
     // Create new layer
-    layer = compositor.make_offscreen_layer(size);
+    layer = Layer::make_offscreen_layer(gr_context, size);
   } else {
     // Reuse layer
     prev_layer_tree->remove_layer(layer);
@@ -219,8 +219,7 @@ void Document::paint_layer_tree(LayerTree* tree) {
       paint_layer_tree(*child_tree);
     } else {
       auto child_layer = *std::get_if<std::shared_ptr<Layer>>(&item);
-      compositor.paint_layer(screen.get(), child_layer.get(),
-                             tree->element->abs_position);
+      screen->paint_layer(child_layer.get(), tree->element->abs_position);
     }
   }
   if (tree->clip != std::nullopt) screen->canvas->restore();

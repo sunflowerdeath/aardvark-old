@@ -3,7 +3,6 @@
 #include <memory>
 #include <GL/gl.h>
 #include "GrBackendSurface.h"
-#include "GrContext.h"
 #include "SkCanvas.h"
 #include "SkSurface.h"
 #include "base_types.hpp"
@@ -38,22 +37,15 @@ class Layer {
   // Returns snapshot of the layer's canvas
   sk_sp<SkImage> get_snapshot();
 
+  // Paints layer on top of this layer
+  void paint_layer(Layer* layer, Position pos);
+
+  static std::shared_ptr<Layer> make_screen_layer(sk_sp<GrContext> gr_context);
+  static std::shared_ptr<Layer> make_offscreen_layer(
+      sk_sp<GrContext> gr_context, Size size);
  private:
   bool is_changed = true;
   sk_sp<SkImage> snapshot;
-};
-
-class Compositor {
- public:
-  Compositor(Size window_size);
-  std::shared_ptr<Layer> make_screen_layer();
-  std::shared_ptr<Layer> make_offscreen_layer(Size size);
-  // Paints layer on top of the target layer
-  void paint_layer(Layer* target, Layer* layer, Position pos);
-
- private:
-  Size window_size;
-  sk_sp<GrContext> gr_context;
 };
 
 };

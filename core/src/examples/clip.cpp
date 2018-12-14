@@ -35,10 +35,7 @@ std::shared_ptr<aardvark::Element> make_elems(bool circle) {
 };
 
 int main() {
-  auto size = aardvark::Size{500, 500};
-  auto window = aardvark::GlfwWindow(size);
-  auto compositor = aardvark::Compositor(size);
-
+  auto window = aardvark::DesktopWindow(aardvark::Size{500, 500});
   auto background =
       std::make_shared<aardvark::elements::Background>(SK_ColorWHITE);
   auto elements = std::vector<std::shared_ptr<aardvark::Element>>{background};
@@ -60,7 +57,7 @@ int main() {
   };
   auto root = std::make_shared<aardvark::elements::Clip>(
       std::make_shared<aardvark::elements::Stack>(elements, true), clipper);
-  auto document = aardvark::Document(compositor, root);
+  auto document = aardvark::Document(root);
 
 
   bool quit = false;

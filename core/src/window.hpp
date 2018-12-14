@@ -7,10 +7,13 @@
 
 namespace aardvark {
 
-class GlfwWindow {
+class DesktopWindow {
  public:
-  GlfwWindow(Size size);
-  ~GlfwWindow();
+  DesktopWindow(Size size);
+  ~DesktopWindow();
+  // Disable copy and assignment
+  DesktopWindow(const DesktopWindow&) = delete;
+  DesktopWindow& operator=(DesktopWindow const&) = delete;
   void make_current();
   void swap_now();
   void swap();

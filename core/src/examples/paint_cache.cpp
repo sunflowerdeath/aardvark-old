@@ -31,12 +31,10 @@ std::shared_ptr<aardvark::Element> make_elems() {
 };
 
 int main() {
-  auto size = aardvark::Size{550, 550};
-  auto window = aardvark::GlfwWindow(size);
-  auto compositor = aardvark::Compositor(size);
+  auto window = aardvark::DesktopWindow(aardvark::Size{550, 550});
 
   auto background =
-      std::make_shared<aardvark::elements::Background>(SK_ColorWHITE, true);
+      std::make_shared<aardvark::elements::Background>(SK_ColorWHITE);
   std::vector<std::shared_ptr<aardvark::Element>> elements;
   for (int i = 0; i < 10; i++) {
     for (int j = 0; j < 10; j++) {
@@ -51,8 +49,8 @@ int main() {
   auto root = std::make_shared<aardvark::elements::Stack>(
       std::vector<std::shared_ptr<aardvark::Element>>{
           background,
-          std::make_shared<aardvark::elements::Stack>(elements, true)});
-  auto document = aardvark::Document(compositor, root);
+          std::make_shared<aardvark::elements::Stack>(elements)});
+  auto document = aardvark::Document(root);
 
   bool quit = false;
   while (!quit) {

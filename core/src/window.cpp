@@ -5,7 +5,7 @@ namespace aardvark {
 const int STENCIL_BITS = 8;
 const int MSAA_SAMPLE_COUNT = 4;  // 4;
 
-GlfwWindow::GlfwWindow(Size size) {
+DesktopWindow::DesktopWindow(Size size) {
   if (!glfwInit()) {
     std::cout << "glfw init error" << std::endl;
   }
@@ -20,9 +20,9 @@ GlfwWindow::GlfwWindow(Size size) {
   make_current();
 };
 
-GlfwWindow::~GlfwWindow() { glfwDestroyWindow(window); };
-void GlfwWindow::swap() { glfwSwapBuffers(window); };
-void GlfwWindow::swap_now() { glfwSwapBuffers(window); };
-void GlfwWindow::make_current() { glfwMakeContextCurrent(window); };
+DesktopWindow::~DesktopWindow() { glfwDestroyWindow(window); };
+void DesktopWindow::swap() { glfwSwapBuffers(window); };
+void DesktopWindow::swap_now() { glfwSwapBuffers(window); };
+void DesktopWindow::make_current() { glfwMakeContextCurrent(window); };
 
 } // namespace aardvark

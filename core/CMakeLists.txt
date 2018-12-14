@@ -170,6 +170,7 @@ add_subdirectory(${CMAKE_BINARY_DIR}/externals/glfw)
 
 # library
 add_library(aardvark
+  src/app.cpp
   src/base_types.cpp
   src/box_constraints.cpp
   src/compositing.cpp
@@ -196,3 +197,6 @@ target_link_libraries(clip_example aardvark)
 
 add_executable(paint_cache_example src/examples/paint_cache.cpp)
 target_link_libraries(paint_cache_example aardvark)
+
+add_executable(app_example src/examples/app_example.cpp)
+target_link_libraries(app_example aardvark)
