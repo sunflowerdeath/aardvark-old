@@ -3,16 +3,14 @@
 #include <memory>
 #include <unordered_set>
 #include <optional>
-
 #include "SkCanvas.h"
 #include "SkRegion.h"
 #include "GrContext.h"
-
 #include "base_types.hpp"
 #include "box_constraints.hpp"
-#include "compositing.hpp"
-#include "element.hpp"
+#include "layer.hpp"
 #include "layer_tree.hpp"
+#include "element.hpp"
 
 namespace aardvark {
 

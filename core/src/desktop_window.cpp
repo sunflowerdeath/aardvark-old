@@ -1,4 +1,4 @@
-#include "window.hpp"
+#include "desktop_window.hpp"
 
 namespace aardvark {
 

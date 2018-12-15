@@ -6,7 +6,7 @@
 #include <optional>
 #include "SkPath.h"
 #include "element.hpp"
-#include "compositing.hpp"
+#include "layer.hpp"
 
 namespace aardvark {
 

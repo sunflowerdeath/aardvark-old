@@ -1,4 +1,4 @@
-#include "compositing.hpp"
+#include "layer.hpp"
 
 #define GR_GL_FRAMEBUFFER_BINDING 0x8CA6
 #define GR_GL_BGRA8 0x93A1

@@ -1,52 +1,48 @@
 #include <chrono>
 #include <thread>
 #include <iostream>
-#include "app.hpp"
+#include "desktop_app.hpp"
 
 namespace aardvark {
 
-/*
-void key_callback(GLFWwindow* window, int key, int scancode, int action,
-                  int mods) {}
-
-void cursor_pos_callback(GLFWwindow* window, double left, double top) {
-  App::dispatch_event(window, events::MouseMoveEvent(left, top));
-}
-
-
-void mouse_button_callback(GLFWwindow* window, int button, int action,
-                           int mods) {
-  if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
-    popup_menu();
-}
-
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-}
-
-void drop_callback(GLFWwindow* window, int count, const char** paths) {
-  int i;
-  for (i = 0;  i < count;  i++)
-      handle_dropped_file(paths[i]);
-}
-
-void window_size_callback(GLFWwindow* window, int width, int height) {
-  App::dispatch_event(events::ResizeEvent(width, height));
-}
-*/
-
+// Window events
 void window_focus_callback(GLFWwindow* window, int focused) {
   if (focused) DesktopApp::dispatch_event(window, WindowFocusEvent());
   else DesktopApp::dispatch_event(window, WindowBlurEvent());
 };
 
+void window_close_callback(GLFWwindow* window) {
+  DesktopApp::dispatch_event(window, WindowCloseEvent());
+};
+
+// Mouse events
 void cursor_enter_callback(GLFWwindow* window, int entered) {
   if (entered) DesktopApp::dispatch_event(window, MouseEnterEvent());
   else DesktopApp::dispatch_event(window, MouseLeaveEvent());
-}
+};
 
 void cursor_pos_callback(GLFWwindow* window, double left, double top) {
   DesktopApp::dispatch_event(window, MouseMoveEvent(left, top));
-}
+};
+
+void mouse_button_callback(GLFWwindow* window, int button, int action,
+                           int mods) {
+  if (action == GLFW_PRESS) {
+    DesktopApp::dispatch_event(window, MouseDownEvent{button, mods});
+  } else {
+    DesktopApp::dispatch_event(window, MouseUpEvent{button, mods});
+  }
+};
+
+// Keyboard events
+void key_callback(GLFWwindow* window, int key, int scancode, int action,
+                  int mods) {
+  KeyAction key_action;
+  if (action == GLFW_PRESS) key_action = KeyAction::Press;
+  if (action == GLFW_RELEASE) key_action = KeyAction::Release;
+  if (action == GLFW_REPEAT) key_action = KeyAction::Repeat;
+  DesktopApp::dispatch_event(window, KeyEvent{key, scancode, key_action, mods});
+};
 
 const auto FRAME_TIME = 16000;
 
@@ -59,9 +55,15 @@ std::shared_ptr<DesktopWindow> DesktopApp::create_window(Size size) {
   auto window = std::make_shared<DesktopWindow>(size);
   windows.push_back(window);
   glfwSetWindowUserPointer(window->window, (void*)this);
+  // Window events
   glfwSetWindowFocusCallback(window->window, window_focus_callback);
+  glfwSetWindowCloseCallback(window->window, window_close_callback);
+  // Mouse events
   glfwSetCursorEnterCallback(window->window, cursor_enter_callback);
   glfwSetCursorPosCallback(window->window, cursor_pos_callback);
+  glfwSetMouseButtonCallback(window->window, mouse_button_callback);
+  // Keyboard events
+  glfwSetKeyCallback(window->window, key_callback);
   documents[window] = Document();
   return window;
 };

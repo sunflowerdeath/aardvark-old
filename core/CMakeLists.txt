@@ -43,14 +43,6 @@ set(CMAKE_CXX_FLAGS_RELEASE
 # fmt
 add_subdirectory("${CMAKE_BINARY_DIR}/externals/fmt")
 
-# SDL2
-# find_package(SDL2 REQUIRED)
-# add_library(SDL2_LIB STATIC IMPORTED)
-# set_target_properties(SDL2_LIB PROPERTIES
-	# IMPORTED_LOCATION ${SDL2_LIBRARIES}
-	# INTERFACE_INCLUDE_DIRECTORIES ${SDL2_INCLUDE_DIRS}
-# )
-
 # skia
 set(SKIA_DIR "${CMAKE_BINARY_DIR}/externals/skia")
 
@@ -69,10 +61,7 @@ set(SKIA_INCLUDE_DIRS
 	${SKIA_DIR}/include/private
 )
 
-## TODO
-# https://github.com/zub2/SkiaExample/blob/master/ext/CMakeLists.txt#L134
-# this must match what BUILD.gn sets
-# if it's wrong it can result in all kinds of funny behavior
+# This must match what BUILD.gn sets
 set(SKIA_DEFINES
 	"SK_SAMPLES_FOR_X" # always set for linux, even if there's no X used
 	"SK_SUPPORT_GPU=1" # skia_enable_gpu
@@ -82,6 +71,7 @@ set(SKIA_DEFINES
 	"SK_PDF_USE_SFNTLY" # skia_use_sfntly
 	"SK_HAS_WEBP_LIBRARY" # skia_use_libwebp
 	"SK_XML" # skia_use_expat
+  # "SK_BUILD_FOR_ANDROID"
 )
 
 find_package(OpenGL)
@@ -112,9 +102,8 @@ set(SKIA_DEPENDENCIES
 	${FREETYPE_LIB}
 )
 
-# TODO just skia?
-add_library(SKIA_LIB STATIC IMPORTED GLOBAL)
-set_target_properties(SKIA_LIB PROPERTIES
+add_library(skia STATIC IMPORTED GLOBAL)
+set_target_properties(skia PROPERTIES
 	IMPORTED_LOCATION "${SKIA_DIR}/lib/linux-x86_64/libskia.a"
 	INTERFACE_INCLUDE_DIRECTORIES "${SKIA_INCLUDE_DIRS}"
 	INTERFACE_COMPILE_DEFINITIONS "${SKIA_DEFINES}"
@@ -169,16 +158,15 @@ add_subdirectory(${CMAKE_BINARY_DIR}/externals/glfw)
 #-------------------------------------------------------------------------------
 
 # library
+set(TARGET "DESKTOP")
 add_library(aardvark
-  src/app.cpp
   src/base_types.cpp
   src/box_constraints.cpp
-  src/compositing.cpp
+  src/layer.cpp
   src/layer_tree.cpp
   src/document.cpp
   src/element.cpp
   src/paint_cache.cpp
-  src/window.cpp
   src/elements/align.cpp
   src/elements/background.cpp
   src/elements/border.cpp
@@ -187,8 +175,16 @@ add_library(aardvark
   src/elements/fixed_size.cpp
   src/elements/stack.cpp
 )
+
+if("${TARGET}" STREQUAL "DESKTOP")
+  target_sources(aardvark PRIVATE
+    src/desktop_window.cpp
+    src/desktop_app.cpp
+  )
+endif()
+
 target_link_libraries(aardvark
-  fmt SKIA_LIB glfw ${X11_LIBRARIES} JavaScriptCore
+  fmt skia glfw ${X11_LIBRARIES} JavaScriptCore
 )
 
 # examples
