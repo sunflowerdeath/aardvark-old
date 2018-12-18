@@ -5,6 +5,7 @@
 #include <vector>
 #include <optional>
 #include "SkPath.h"
+#include "SkMatrix.h"
 #include "element.hpp"
 #include "layer.hpp"
 
@@ -30,6 +31,8 @@ class LayerTree {
   std::vector<LayerTreeNode> children;
 
   std::optional<SkPath> clip;
+
+  SkMatrix transform;
 
   // Adds new item to the tree
   void add(LayerTreeNode item);

@@ -7,8 +7,9 @@ namespace aardvark {
 
 // Window events
 void window_focus_callback(GLFWwindow* window, int focused) {
-  if (focused) DesktopApp::dispatch_event(window, WindowFocusEvent());
-  else DesktopApp::dispatch_event(window, WindowBlurEvent());
+  auto event = focused ? static_cast<Event>(WindowFocusEvent())
+                       : static_cast<Event>(WindowBlurEvent());
+  DesktopApp::dispatch_event(window, event);
 };
 
 void window_close_callback(GLFWwindow* window) {
@@ -17,8 +18,9 @@ void window_close_callback(GLFWwindow* window) {
 
 // Mouse events
 void cursor_enter_callback(GLFWwindow* window, int entered) {
-  if (entered) DesktopApp::dispatch_event(window, MouseEnterEvent());
-  else DesktopApp::dispatch_event(window, MouseLeaveEvent());
+  auto event = entered ? static_cast<Event>(MouseEnterEvent())
+                       : static_cast<Event>(MouseLeaveEvent());
+  DesktopApp::dispatch_event(window, event);
 };
 
 void cursor_pos_callback(GLFWwindow* window, double left, double top) {
@@ -27,11 +29,10 @@ void cursor_pos_callback(GLFWwindow* window, double left, double top) {
 
 void mouse_button_callback(GLFWwindow* window, int button, int action,
                            int mods) {
-  if (action == GLFW_PRESS) {
-    DesktopApp::dispatch_event(window, MouseDownEvent{button, mods});
-  } else {
-    DesktopApp::dispatch_event(window, MouseUpEvent{button, mods});
-  }
+  auto event = action == GLFW_PRESS
+                   ? static_cast<Event>(MouseDownEvent{button, mods})
+                   : static_cast<Event>(MouseUpEvent{button, mods});
+  DesktopApp::dispatch_event(window, event);
 };
 
 // Keyboard events

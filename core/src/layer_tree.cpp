@@ -5,6 +5,7 @@ namespace aardvark {
 
 LayerTree::LayerTree(Element* element) {
   this->element = element;
+  transform.reset();
 };
 
 void LayerTree::add(LayerTreeNode item) {

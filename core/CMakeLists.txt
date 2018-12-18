@@ -18,7 +18,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # Prefer static libraries instead of dynamic ones
 # set(CMAKE_FIND_LIBRARY_SUFFIXES ".a;.so")
 
-# set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -fno-omit-frame-pointer")
 
 #-------------------------------------------------------------------------------
 # RELEASE OPTIMIZATIONS
@@ -35,6 +35,8 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 #-------------------------------------------------------------------------------
 set(CMAKE_CXX_FLAGS_RELEASE
   "-Os -ffunction-sections -fdata-sections -Wl,--gc-sections -s")
+
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Os -g -fno-omit-frame-pointer")
 
 #-------------------------------------------------------------------------------
 # DEPENDENCIES
@@ -173,6 +175,7 @@ add_library(aardvark
   src/elements/center.cpp
   src/elements/clip.cpp
   src/elements/fixed_size.cpp
+  src/elements/layer.cpp
   src/elements/stack.cpp
 )
 
@@ -188,11 +191,14 @@ target_link_libraries(aardvark
 )
 
 # examples
-add_executable(clip_example src/examples/clip.cpp)
-target_link_libraries(clip_example aardvark)
+# add_executable(clip_example src/examples/clip.cpp)
+# target_link_libraries(clip_example aardvark)
 
-add_executable(paint_cache_example src/examples/paint_cache.cpp)
-target_link_libraries(paint_cache_example aardvark)
+# add_executable(paint_cache_example src/examples/paint_cache.cpp)
+# target_link_libraries(paint_cache_example aardvark)
 
-add_executable(app_example src/examples/app_example.cpp)
-target_link_libraries(app_example aardvark)
+# add_executable(app_example src/examples/app_example.cpp)
+# target_link_libraries(app_example aardvark)
+
+add_executable(layer_example src/examples/layer_example.cpp)
+target_link_libraries(layer_example aardvark)

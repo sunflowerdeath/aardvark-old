@@ -85,7 +85,7 @@ Size Document::layout_element(Element* elem, BoxConstraints constraints) {
 
 void Document::paint_element(Element* elem, bool is_repaint_root,
                              std::optional<SkPath> clip) {
-  std::cout << "paint element: " << elem->get_debug_name() << std::endl;
+  // std::cout << "paint element: " << elem->get_debug_name() << std::endl;
   if (!is_repaint_root) elem->parent = current_element;
   this->current_element = elem;
 
@@ -209,20 +209,57 @@ void Document::compose_layers() {
 }
 
 void Document::paint_layer_tree(LayerTree* tree) {
+  screen->canvas->save();
+  auto pos = tree->element->abs_position;
+  screen->canvas->translate(pos.left, pos.top);
+  screen->canvas->concat(tree->transform);
   if (tree->clip != std::nullopt) {
-    screen->canvas->save();
     screen->canvas->clipPath(tree->clip.value(), SkClipOp::kIntersect, true);
   }
   for (auto item : tree->children) {
-    auto child_tree = std::get_if<LayerTree*>(&item);
-    if (child_tree != nullptr) {
-      paint_layer_tree(*child_tree);
+    if (std::holds_alternative<LayerTree*>(item)) {
+      auto child_tree = std::get<LayerTree*>(item);
+      paint_layer_tree(child_tree);
     } else {
-      auto child_layer = *std::get_if<std::shared_ptr<Layer>>(&item);
-      screen->paint_layer(child_layer.get(), tree->element->abs_position);
+      auto child_layer = std::get<std::shared_ptr<Layer>>(item);
+      screen->paint_layer(child_layer.get(), Position{0,0});
     }
   }
-  if (tree->clip != std::nullopt) screen->canvas->restore();
+  screen->canvas->restore();
 }
+
+/*
+void update_clip(Element* elem) {
+  if (elem->clip == std::nullopt) return;
+
+  // Offset clip to position of the clipped element
+  SkPath offset_clip;
+  elem->clip.value().offset(elem->abs_position.left, elem->abs_position.top,
+                            &offset_clip);
+  if (current_clip == std::nullopt) {
+    current_clip = offset_clip;
+  } else {
+    // Intersect prev clip with element's clip and make it new current clip
+    Op(current_clip.value(), offset_clip, kIntersect_SkPathOp,
+       &current_clip.value());
+  }
+}
+
+void hit_test(double left, double top) {
+  current_clip = std::nullopt;
+  hit_elems.clear();
+  check_elem(this->root, left, top);
+}
+
+void check_element(Element* elem, double left, double top) {
+  update_clip(elem);
+  if (current_clip.contains(left, top) &&
+      elem->hit_test(left + elem->abs_position.left,
+                     top + elem->abs_position.top)) {
+    if (elem->is_responder) hit_elems.push_back(elem);
+    elem->walk_children(std::bind(&check_element, _1, left, top));
+  }
+}
+*/
 
 };  // namespace aardvark

@@ -4,4 +4,5 @@
 #include "center.hpp"
 #include "clip.hpp"
 #include "fixed_size.hpp"
+#include "layer.hpp"
 #include "stack.hpp"

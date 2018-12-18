@@ -8,22 +8,14 @@ Center::Center(std::shared_ptr<Element> child, bool is_repaint_boundary)
 };
 
 Size Center::layout(BoxConstraints constraints) {
-  auto childConstraints = BoxConstraints{
-      0,                      // min_width
-      constraints.max_width,  // max_width
-      0,                      // min_height
-      constraints.max_height  // max_height
-  };
-  auto childSize = document->layout_element(child.get(), childConstraints);
-  child->size = childSize;
+  auto child_size =
+      document->layout_element(child.get(), constraints.make_loose());
+  child->size = child_size;
   child->rel_position = Position{
-      (constraints.max_width - childSize.width) / 2,   // left
-      (constraints.max_height - childSize.height) / 2  // top
+      (constraints.max_width - child_size.width) / 2,   // left
+      (constraints.max_height - child_size.height) / 2  // top
   };
-  return Size{
-      constraints.max_width,  // width
-      constraints.max_height  // height
-  };
+  return constraints.max_size();
 };
 
 void Center::paint(bool is_changed) { document->paint_element(child.get()); };

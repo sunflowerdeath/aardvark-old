@@ -9,19 +9,11 @@
 
 namespace aardvark {
 
-struct ComposeOptions {
-  Position translate;
-  Scale scale;
-  float opacity = 1;
-  float rotation = 0;
-};
-
 class Layer {
  public:
   Layer(sk_sp<SkSurface> surface);
 
   Size size;
-  ComposeOptions compose_options;
   sk_sp<SkSurface> surface;
   SkCanvas* canvas;
 

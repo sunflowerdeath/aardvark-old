@@ -22,7 +22,6 @@ void Layer::clear(SkColor color) {
 void Layer::reset(SkColor color) {
   canvas->restoreToCount(1);
   clear(color);
-  compose_options = ComposeOptions();
 };
 
 void Layer::set_changed() {
@@ -38,8 +37,8 @@ sk_sp<SkImage> Layer::get_snapshot() {
 };
 
 void Layer::paint_layer(Layer* layer, Position pos) {
-  auto res_pos = Position::add(layer->compose_options.translate, pos);
-  canvas->drawImage(layer->get_snapshot(), res_pos.left, res_pos.top);
+  // auto res_pos = Position::add(layer->compose_options.translate, pos);
+  canvas->drawImage(layer->get_snapshot(), pos.left, pos.top);
 };
 
 const int STENCIL_BITS = 8;
