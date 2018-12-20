@@ -38,7 +38,9 @@ sk_sp<SkImage> Layer::get_snapshot() {
 
 void Layer::paint_layer(Layer* layer, Position pos) {
   // auto res_pos = Position::add(layer->compose_options.translate, pos);
-  canvas->drawImage(layer->get_snapshot(), pos.left, pos.top);
+  SkPaint paint;
+  paint.setAntiAlias(true);
+  canvas->drawImage(layer->get_snapshot(), pos.left, pos.top, &paint);
 };
 
 const int STENCIL_BITS = 8;

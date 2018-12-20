@@ -6,14 +6,11 @@ namespace aardvark::elements {
 Align::Align(std::shared_ptr<Element> child, AlignmentValue left,
              AlignmentValue top, AlignmentValue right, AlignmentValue bottom,
              bool is_repaint_boundary)
-    : Element(is_repaint_boundary),
+    : SingleChildElement(child, is_repaint_boundary),
       left(left),
       top(top),
       right(right),
-      bottom(bottom),
-      child(child) {
-  child->parent = this;
-};
+      bottom(bottom){};
 
 float calc_value(AlignmentValue val, float total) {
   return std::holds_alternative<value::abs>(val)

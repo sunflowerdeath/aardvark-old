@@ -10,13 +10,12 @@ namespace aardvark::elements {
 
 using AlignmentValue = std::variant<value::rel, value::abs, value::none>;
 
-class Align : public Element {
+class Align : public SingleChildElement {
  public:
   Align(std::shared_ptr<Element> child, AlignmentValue left, AlignmentValue top,
         AlignmentValue right = value::none(),
         AlignmentValue bottom = value::none(),
         bool is_repaint_boundary = false);
-  std::shared_ptr<Element> child;
   AlignmentValue left;
   AlignmentValue top;
   AlignmentValue right;

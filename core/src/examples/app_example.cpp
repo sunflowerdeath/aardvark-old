@@ -44,7 +44,6 @@ void handle_events(aardvark::DesktopApp* app, aardvark::Event event) {
 int main() {
   auto app = aardvark::DesktopApp();
   auto window = app.create_window(aardvark::Size{500, 500});
-
   auto document = app.get_document(window);
 
   auto background =

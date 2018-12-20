@@ -16,11 +16,10 @@ struct TransformOptions {
   float rotation = 0;
 };
 
-class Layer : public Element {
+class Layer : public SingleChildElement {
  public:
   Layer(std::shared_ptr<Element> child,
         std::variant<SkMatrix, TransformOptions> transform);
-  std::shared_ptr<Element> child;
 	bool sized_by_parent = true;
   std::variant<SkMatrix, TransformOptions> transform;
   std::string get_debug_name() override { return "Layer"; };

@@ -59,7 +59,7 @@ struct BoxRadiuses {
   };
 };
 
-class Border : public Element {
+class Border : public SingleChildElement {
  public:
   // Two adjacent borders can have rounded corder only when they have same
   // width and color. Connection between borders with rounded corner is
@@ -70,7 +70,6 @@ class Border : public Element {
          BoxRadiuses radiuses, bool is_repaint_boundary = false);
   BoxBorders borders;
   BoxRadiuses radiuses;
-  std::shared_ptr<Element> child;
   std::string get_debug_name() override { return "Border"; };
   Size layout(BoxConstraints constraints) override;
   void paint(bool is_changed) override;

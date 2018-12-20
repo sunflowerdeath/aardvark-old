@@ -5,12 +5,9 @@ namespace aardvark::elements {
 
 Border::Border(std::shared_ptr<Element> child, BoxBorders borders,
                BoxRadiuses radiuses, bool is_repaint_boundary)
-    : Element(is_repaint_boundary),
+    : SingleChildElement(child, is_repaint_boundary),
       borders(borders),
-      radiuses(radiuses),
-      child(child) {
-  child->parent = this;
-};
+      radiuses(radiuses){};
 
 Size Border::layout(BoxConstraints constraints) {
   auto vert_width = borders.left.width + borders.right.width;

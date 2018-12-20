@@ -3,10 +3,8 @@
 namespace aardvark::elements {
 
 Clip::Clip(std::shared_ptr<Element> child, SkPath (*clipper)(Size),
-                       bool is_repaint_boundary)
-    : Element(is_repaint_boundary), child(child), clipper(clipper) {
-  child->parent = this;
-}
+           bool is_repaint_boundary)
+    : SingleChildElement(child, is_repaint_boundary), clipper(clipper){};
 
 Size Clip::layout(BoxConstraints constraints) {
   child->size = document->layout_element(child.get(), constraints.make_loose());

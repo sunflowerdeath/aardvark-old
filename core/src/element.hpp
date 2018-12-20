@@ -75,11 +75,31 @@ class Element {
   // Used for debugging
   virtual std::string get_debug_name() { return "Unknown element"; };
 
+  void change();
+
   // Check whether the element is direct or indirect parent of another element
   bool is_parent_of(Element* elem);
 
   Element* find_closest_relayout_boundary();
   Element* find_closest_repaint_boundary();
+};
+
+class SingleChildElement : public Element {
+ public:
+  SingleChildElement(std::shared_ptr<Element> child, bool is_repaint_boundary);
+  std::shared_ptr<Element> child;
+  void remove_child(std::shared_ptr<Element> child);
+  void insert_child(std::shared_ptr<Element> child);
+};
+
+class MultipleChildrenElement : public Element {
+ public:
+  MultipleChildrenElement(std::vector<std::shared_ptr<Element>> children,
+                          bool is_repaint_boundary);
+  std::vector<std::shared_ptr<Element>> children;
+  void remove_child(std::shared_ptr<Element> child);
+  void append_child(std::shared_ptr<Element> child);
+  void insert_before_child(std::shared_ptr<Element> child);
 };
 
 };  // namespace aardvark
