@@ -8,18 +8,18 @@ Stack::Stack(std::vector<std::shared_ptr<Element>> children,
                               /* size_depends_on_parent */ true){};
 
 Size Stack::layout(BoxConstraints constraints) {
-  for (auto child : children) {
-    child->size =
-        document->layout_element(child.get(), constraints.make_loose());
-    child->rel_position = Position{0, 0};
-  }
-  return constraints.max_size();
+    for (auto child : children) {
+        child->size =
+            document->layout_element(child.get(), constraints.make_loose());
+        child->rel_position = Position{0, 0};
+    }
+    return constraints.max_size();
 }
 
 void Stack::paint(bool is_changed) {
-  for (auto child : children) {
-    document->paint_element(child.get());
-  }
+    for (auto child : children) {
+        document->paint_element(child.get());
+    }
 }
 
 }  // namespace aardvark::elements

@@ -1,13 +1,13 @@
 #pragma once
 
-#include <memory>
-#include <string>
 #include <functional>
+#include <memory>
 #include <optional>
+#include <string>
 #include "SkPath.h"
-#include "document.hpp"
 #include "base_types.hpp"
 #include "box_constraints.hpp"
+#include "document.hpp"
 #include "responder.hpp"
 
 namespace aardvark {
@@ -18,131 +18,132 @@ class LayerTree;
 class Responder;
 // In order to forward declare enum, it must tell compiler how much memory
 // it uses
-enum class ResponderBehaviour: unsigned int;
+enum class ResponderBehaviour : unsigned int;
 
 using ChildrenVisitor = std::function<void(std::shared_ptr<Element>)>;
 
 // Base class for elements of the document
 class Element {
-  friend Document;
+    friend Document;
 
- public:
-  Element(bool is_repaint_boundary, bool size_depends_on_parent);
+  public:
+    Element(bool is_repaint_boundary, bool size_depends_on_parent);
 
-  // --------------------------------------------------------------------------
-  // These fields can be set with default constructor:
-  // --------------------------------------------------------------------------
- 
-  // Repaint boundary element does not share layers with another elements.
-  // This allows to repaint this element separately.
-  bool is_repaint_boundary;
- 
-  // Should be `true` when its size depends only on input constraints, not on 
-  // element's props or children. This allows to optimize relayout.
-  bool size_depends_on_parent;
+    // -------------------------------------------------------------------------
+    // These fields can be set with default constructor:
+    // -------------------------------------------------------------------------
 
-  // ---------------------------------------------------------------------------
-  // These methods can be overriden to implement different elements:
-  // ---------------------------------------------------------------------------
- 
-  // Returns name of the element for debugging
-  virtual std::string get_debug_name() { return "Unknown element"; };
- 
-  // In this method element should calculate its size, layout children 
-  // and set their size and relative positions.
-  virtual Size layout(BoxConstraints constraints) {};
+    // Repaint boundary element does not share layers with another elements.
+    // This allows to repaint this element separately.
+    bool is_repaint_boundary;
 
-  // Paints element and its children.
-  // `is_changed` is `true` when the element itself or some of its parents is 
-  // changed. When it is `false`, element is allowed to reuse result of previous
-  // painting.
-  virtual void paint(bool is_changed) {};
+    // Should be `true` when its size depends only on input constraints, not on
+    // element's props or children. This allows to optimize relayout.
+    bool size_depends_on_parent;
 
-  // Walks children in paint order.
-  virtual void visit_children(ChildrenVisitor visitor){};
+    // -------------------------------------------------------------------------
+    // These methods can be overriden to implement different elements:
+    // -------------------------------------------------------------------------
 
-  // Checks if element is hit by pointer. Default is checking element's box.
-  virtual bool hit_test(double left, double top);
+    // Returns name of the element for debugging
+    virtual std::string get_debug_name() { return "Unknown element"; };
 
-  virtual ResponderBehaviour get_responder_behaviour();
+    // In this method element should calculate its size, layout children
+    // and set their size and relative positions.
+    virtual Size layout(BoxConstraints constraints){};
 
-  virtual Responder* get_responder() { return nullptr; };
+    // Paints element and its children.
+    // `is_changed` is `true` when the element itself or some of its parents is
+    // changed. When it is `false`, element is allowed to reuse result of
+    // previous painting.
+    virtual void paint(bool is_changed){};
 
-  // These methods only needed for elements with children
-  virtual void append_child(std::shared_ptr<Element> child) {};
-  virtual void remove_child(std::shared_ptr<Element> child) {};
-  virtual void insert_before_child(std::shared_ptr<Element> child) {};
+    // Walks children in paint order.
+    virtual void visit_children(ChildrenVisitor visitor){};
 
-  // ---------------------------------------------------------------------------
-  // These props should be set by the parent element during layout
-  // ---------------------------------------------------------------------------
-  Size size;
-  Position rel_position;
-  std::optional<SkPath> clip = std::nullopt;
+    // Checks if element is hit by pointer. Default is checking element's box.
+    virtual bool hit_test(double left, double top);
 
-  // Notifies the document, that this element was changed
-  void change();
+    virtual ResponderBehaviour get_responder_behaviour();
 
-  // Checks whether the element is direct or indirect parent of another element
-  bool is_parent_of(Element* elem);
+    virtual Responder* get_responder() { return nullptr; };
 
-  Element* find_closest_relayout_boundary();
-  Element* find_closest_repaint_boundary();
+    // These methods only needed for elements with children
+    virtual void append_child(std::shared_ptr<Element> child){};
+    virtual void remove_child(std::shared_ptr<Element> child){};
+    virtual void insert_before_child(std::shared_ptr<Element> child){};
 
-  // Parent element should set this during constructing and updating
-  Element* parent = nullptr;
+    // -------------------------------------------------------------------------
+    // These props should be set by the parent element during layout
+    // -------------------------------------------------------------------------
+    Size size;
+    Position rel_position;
+    std::optional<SkPath> clip = std::nullopt;
 
-  // Document is set when this element is painted
-  Document* document = nullptr;
+    // Notifies the document, that this element was changed
+    void change();
 
- protected:
-  // Is protected to allow ancestor of element class to access own tree
-  std::shared_ptr<LayerTree> layer_tree;
+    // Checks whether the element is direct or indirect parent of another
+    // element
+    bool is_parent_of(Element* elem);
 
- private:
-  // Whether the element was changed by updating props or performig relayout
-  // since last repaint.
-  bool is_changed;
+    Element* find_closest_relayout_boundary();
+    Element* find_closest_repaint_boundary();
 
-  // Absolute position is calculated before painting the element
-  Position abs_position;
+    // Parent element should set this during constructing and updating
+    Element* parent = nullptr;
 
-  // When element is relayout boundary, changes inside it do not affect 
-  // layout of parents. This happens when element recieves tight constraints,
-  // so it is always same size, or when element's size depends only on 
-  // input constraints.
-  bool is_relayout_boundary = false;
+    // Document is set when this element is painted
+    Document* document = nullptr;
 
-  // This is used for relayout
-  BoxConstraints prev_constraints;
+  protected:
+    // Is protected to allow ancestor of element class to access own tree
+    std::shared_ptr<LayerTree> layer_tree;
+
+  private:
+    // Whether the element was changed by updating props or performig relayout
+    // since last repaint.
+    bool is_changed;
+
+    // Absolute position is calculated before painting the element
+    Position abs_position;
+
+    // When element is relayout boundary, changes inside it do not affect
+    // layout of parents. This happens when element recieves tight constraints,
+    // so it is always same size, or when element's size depends only on
+    // input constraints.
+    bool is_relayout_boundary = false;
+
+    // This is used for relayout
+    BoxConstraints prev_constraints;
 };
 
 class SingleChildElement : public Element {
- public:
-  SingleChildElement(std::shared_ptr<Element> child, bool is_repaint_boundary,
-                     bool size_depends_on_parent);
+  public:
+    SingleChildElement(std::shared_ptr<Element> child, bool is_repaint_boundary,
+                       bool size_depends_on_parent);
 
-  std::shared_ptr<Element> child;
-  void append_child(std::shared_ptr<Element> child) override;
-  void remove_child(std::shared_ptr<Element> child) override;
-  void visit_children(ChildrenVisitor visitor) override { visitor(child); };
+    std::shared_ptr<Element> child;
+    void append_child(std::shared_ptr<Element> child) override;
+    void remove_child(std::shared_ptr<Element> child) override;
+    void visit_children(ChildrenVisitor visitor) override { visitor(child); };
 };
 
 class MultipleChildrenElement : public Element {
- public:
-  MultipleChildrenElement(std::vector<std::shared_ptr<Element>> children,
-                          bool is_repaint_boundary,
-                          bool size_depends_on_parent);
+  public:
+    MultipleChildrenElement(std::vector<std::shared_ptr<Element>> children,
+                            bool is_repaint_boundary,
+                            bool size_depends_on_parent);
 
-  std::vector<std::shared_ptr<Element>> children;
-  void remove_child(std::shared_ptr<Element> child) override;
-  void append_child(std::shared_ptr<Element> child) override;
-  void insert_before_child(std::shared_ptr<Element> child) override;
-  void visit_children(ChildrenVisitor visitor) override {
-    for (auto child : children) {
-      visitor(child);
-    }
-  };
+    std::vector<std::shared_ptr<Element>> children;
+    void remove_child(std::shared_ptr<Element> child) override;
+    void append_child(std::shared_ptr<Element> child) override;
+    void insert_before_child(std::shared_ptr<Element> child) override;
+    void visit_children(ChildrenVisitor visitor) override {
+        for (auto child : children) {
+            visitor(child);
+        }
+    };
 };
 
 };  // namespace aardvark

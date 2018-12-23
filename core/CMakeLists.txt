@@ -155,6 +155,12 @@ find_package(X11 REQUIRED)
 
 add_subdirectory(${CMAKE_BINARY_DIR}/externals/glfw)
 
+# Catch2
+
+add_library(Catch2 INTERFACE)
+set_target_properties(Catch2 PROPERTIES
+	INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/externals/Catch2)
+
 #-------------------------------------------------------------------------------
 # PROJECT SETUP
 #-------------------------------------------------------------------------------
@@ -193,8 +199,8 @@ target_link_libraries(aardvark
 )
 
 # examples
-add_executable(clip_example src/examples/clip.cpp)
-target_link_libraries(clip_example aardvark)
+# add_executable(clip_example src/examples/clip.cpp)
+# target_link_libraries(clip_example aardvark)
 
 # add_executable(paint_cache_example src/examples/paint_cache.cpp)
 # target_link_libraries(paint_cache_example aardvark)
@@ -202,5 +208,11 @@ target_link_libraries(clip_example aardvark)
 # add_executable(app_example src/examples/app_example.cpp)
 # target_link_libraries(app_example aardvark)
 
-add_executable(layer_example src/examples/layer_example.cpp)
-target_link_libraries(layer_example aardvark)
+# add_executable(layer_example src/examples/layer_example.cpp)
+# target_link_libraries(layer_example aardvark)
+
+# tests
+add_executable(base_types_test src/tests/base_types_test.cpp)
+target_link_libraries(base_types_test Catch2 aardvark)
+
+

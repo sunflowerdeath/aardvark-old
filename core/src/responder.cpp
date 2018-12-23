@@ -11,6 +11,17 @@ bool contains(std::vector<T> vec, T item) {
 void ResponderReconciler::reconcile(
     std::vector<std::shared_ptr<Element>> &hit_elements) {
   // TODO
+  //
+  // if responder captures check if it continues
+  // then call update
+  //
+  // start from top
+  // while not ended
+  //   call responder, add it to prev_responders
+  //   if pass-through        -> go to next
+  //   if pass-to-parent      -> go to next which is parent
+  //   if absorb              -> end
+  //   if capture             -> end
 }
 
 /*

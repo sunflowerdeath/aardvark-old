@@ -43,14 +43,14 @@ class Responder {
 };
 
 class ResponderReconciler {
- public:
-  // Gets stack of elements that are under the pointer, determines which
-  // responders should handle event, and calls handers.
-  void reconcile(std::vector<std::shared_ptr<Element>>& hit_elements);
+  public:
+    // Gets stack of elements that are under the pointer, determines which
+    // responders should handle event, and calls handers.
+    void reconcile(std::vector<std::shared_ptr<Element>>& hit_elements);
 
- private:
-  std::optional<std::shared_ptr<Element>> capture_element = std::nullopt;
-  std::vector<std::shared_ptr<Element>> prev_responder_elements;
+  private:
+    std::optional<std::shared_ptr<Element>> capture_element = std::nullopt;
+    std::vector<std::shared_ptr<Element>> prev_responder_elements;
 };
 
 }  // namespace aardvark
