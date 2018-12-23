@@ -4,5 +4,6 @@
 #include "center.hpp"
 #include "clip.hpp"
 #include "fixed_size.hpp"
+#include "gesture_responder.hpp"
 #include "layer.hpp"
 #include "stack.hpp"

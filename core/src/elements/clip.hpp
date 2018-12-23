@@ -13,7 +13,6 @@ class Clip : public SingleChildElement {
   Clip(std::shared_ptr<Element> child, SkPath (*clipper)(Size),
              bool is_repaint_boundary = false);
   SkPath (*clipper)(Size);
-	bool sized_by_parent = true;
   Size layout(BoxConstraints constraints) override;
   void paint(bool is_changed) override;
   static SkPath default_clip(Size size);

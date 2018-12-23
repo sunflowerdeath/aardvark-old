@@ -20,7 +20,7 @@ class Layer : public SingleChildElement {
  public:
   Layer(std::shared_ptr<Element> child,
         std::variant<SkMatrix, TransformOptions> transform);
-	bool sized_by_parent = true;
+
   std::variant<SkMatrix, TransformOptions> transform;
   std::string get_debug_name() override { return "Layer"; };
   Size layout(BoxConstraints constraints) override;

@@ -85,7 +85,23 @@ void DesktopApp::run() {
   bool painted = false;
   while (!should_stop) {
     auto start = std::chrono::high_resolution_clock::now();
+    most_recent_mousemove = std::nullopt;
     glfwPollEvents();
+
+    if (most_recent_mousemove != std::nullopt) {
+      auto win = windows[0];
+      auto doc = get_document(win);
+      if (!doc->is_initial_paint)
+        doc->hit_test(most_recent_mousemove->left, most_recent_mousemove->top);
+        if (doc->hit_elements.size() > 0) {
+          std::cout << "Hit elements: ";
+          for (auto elem : doc->hit_elements) {
+            std::cout << elem->get_debug_name() << ", ";
+          }
+          std::cout << std::endl;
+        }
+    }
+
     painted = false;
     for (auto& window : windows) {
       window->make_current();
@@ -108,6 +124,9 @@ void DesktopApp::run() {
 
 void DesktopApp::handle_event(GLFWwindow* window, Event event) {
   if (event_handler) event_handler(this, event);
+  if (auto mousemove = std::get_if<MouseMoveEvent>(&event)) {
+    most_recent_mousemove = *mousemove;
+  }
 };
 
 }  // namespace aardvark

@@ -2,13 +2,24 @@
 
 namespace aardvark {
 
-Element::Element(bool is_repaint_boundary) {
+Element::Element(bool is_repaint_boundary, bool size_depends_on_parent) {
   this->is_repaint_boundary = is_repaint_boundary;
+  this->size_depends_on_parent = size_depends_on_parent;
 };
 
 void Element::change() {
   if (document != nullptr) document->change_element(this);
 }
+
+bool Element::hit_test(double left, double top) {
+  return (left >= abs_position.left &&
+          left <= abs_position.left + size.width && top >= abs_position.top &&
+          top <= abs_position.top + size.height);
+};
+
+ResponderBehaviour Element::get_responder_behaviour() {
+  return ResponderBehaviour::PassToParent;
+};
 
 bool Element::is_parent_of(Element* elem) {
   auto current = elem->parent;
@@ -34,8 +45,9 @@ Element* Element::find_closest_repaint_boundary() {
 };
 
 SingleChildElement::SingleChildElement(std::shared_ptr<Element> child,
-                                       bool is_repaint_boundary)
-    : child(child), Element(is_repaint_boundary) {
+                                       bool is_repaint_boundary,
+                                       bool size_depends_on_parent)
+    : child(child), Element(is_repaint_boundary, size_depends_on_parent) {
   child->parent = this;
 };
 
@@ -46,14 +58,15 @@ void SingleChildElement::remove_child(std::shared_ptr<Element> child) {
   }
 };
 
-void SingleChildElement::insert_child(std::shared_ptr<Element> child) {
+void SingleChildElement::append_child(std::shared_ptr<Element> child) {
   this->child = child;
   change();
 };
 
 MultipleChildrenElement::MultipleChildrenElement(
-    std::vector<std::shared_ptr<Element>> children, bool is_repaint_boundary)
-    : children(children), Element(is_repaint_boundary) {
+    std::vector<std::shared_ptr<Element>> children, bool is_repaint_boundary,
+    bool size_depends_on_parent)
+    : children(children), Element(is_repaint_boundary, size_depends_on_parent) {
   for (auto child : children) child->parent = this;
 };
 
@@ -80,4 +93,4 @@ void MultipleChildrenElement::insert_before_child(
   change();
 };
 
-}; // namepsace aardvark
+}; // namespace aardvark

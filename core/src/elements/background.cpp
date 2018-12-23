@@ -4,7 +4,8 @@
 namespace aardvark::elements {
 
 Background::Background(SkColor color, bool is_repaint_boundary)
-    : Element(is_repaint_boundary), color(color){};
+    : Element(is_repaint_boundary, /* size_depends_on_parent */ true),
+      color(color){};
 
 void Background::set_props(SkColor color) {
   this->color = color;

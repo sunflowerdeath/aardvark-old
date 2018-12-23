@@ -39,8 +39,7 @@ class Document {
   Size layout_element(Element* elem, BoxConstraints constraints);
 
   // Elements should call this function to paint its children
-  void paint_element(Element* elem, bool is_repaint_root = false,
-                     std::optional<SkPath> custom_clip = std::nullopt);
+  void paint_element(Element* elem, bool is_repaint_root = false);
 
   // Elements should call this method to obtain layer to paint itself
   Layer* get_layer();
@@ -52,11 +51,14 @@ class Document {
   // previous repaint if possible.
   Layer* create_layer(Size size);
 
+  void hit_test(double left, double top);
+  std::vector<std::shared_ptr<Element>> hit_elements;
+
   std::shared_ptr<Layer> screen;
+  bool is_initial_paint;
  private:
   std::shared_ptr<Element> root;
   ElementsSet changed_elements;
-  bool is_initial_paint;
 
   // These members are used during the paint phase
 
@@ -73,12 +75,13 @@ class Document {
   // repaint
   bool inside_changed = false;
 
-
-  void set_clip_path(Element* elem, std::optional<SkPath> custom_clip);
   void initial_paint();
   bool repaint();
   void compose_layers();
   void paint_layer_tree(LayerTree* tree);
+
+  void hit_test_element(std::shared_ptr<Element> elem, double left, double top);
+  SkMatrix transform;
 };
 
 }  // namespace aardvark

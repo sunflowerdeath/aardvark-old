@@ -169,12 +169,14 @@ add_library(aardvark
   src/document.cpp
   src/element.cpp
   src/paint_cache.cpp
+  src/responder.cpp
   src/elements/align.cpp
   src/elements/background.cpp
   src/elements/border.cpp
   src/elements/center.cpp
   src/elements/clip.cpp
   src/elements/fixed_size.cpp
+  src/elements/gesture_responder.cpp
   src/elements/layer.cpp
   src/elements/stack.cpp
 )
@@ -191,8 +193,8 @@ target_link_libraries(aardvark
 )
 
 # examples
-# add_executable(clip_example src/examples/clip.cpp)
-# target_link_libraries(clip_example aardvark)
+add_executable(clip_example src/examples/clip.cpp)
+target_link_libraries(clip_example aardvark)
 
 # add_executable(paint_cache_example src/examples/paint_cache.cpp)
 # target_link_libraries(paint_cache_example aardvark)

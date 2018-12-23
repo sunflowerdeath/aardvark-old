@@ -4,7 +4,8 @@ namespace aardvark::elements {
 
 Stack::Stack(std::vector<std::shared_ptr<Element>> children,
              bool is_repaint_boundary)
-    : MultipleChildrenElement(children, is_repaint_boundary){};
+    : MultipleChildrenElement(children, is_repaint_boundary,
+                              /* size_depends_on_parent */ true){};
 
 Size Stack::layout(BoxConstraints constraints) {
   for (auto child : children) {

@@ -5,7 +5,8 @@ namespace aardvark::elements {
 
 Border::Border(std::shared_ptr<Element> child, BoxBorders borders,
                BoxRadiuses radiuses, bool is_repaint_boundary)
-    : SingleChildElement(child, is_repaint_boundary),
+    : SingleChildElement(child, is_repaint_boundary,
+                         /* size_depends_on_parent */ false),
       borders(borders),
       radiuses(radiuses){};
 
@@ -65,9 +66,8 @@ void Border::paint(bool is_changed) {
     clip_side(borders.bottom, borders.left, borders.top, radiuses.bottomLeft,
               radiuses.topLeft);
   }
-  document->paint_element(
-      child.get(), false,
-      need_custom_clip ? std::optional(clip_path) : std::nullopt);
+  child->clip = need_custom_clip ? std::optional(clip_path) : std::nullopt;
+  document->paint_element(child.get());
 };
 
 SkPoint calc(SkMatrix& matrix, float left, float top) {

@@ -12,7 +12,7 @@ class Stack : public MultipleChildrenElement {
  public:
   Stack(std::vector<std::shared_ptr<Element>> children,
         bool is_repaint_boundary = false);
-	bool sized_by_parent = true;
+
   Size layout(BoxConstraints constraints) override;
   void paint(bool is_changed) override;
 };

@@ -25,6 +25,7 @@ class DesktopApp {
   std::function<void(DesktopApp* app, Event event)> event_handler;
   // Pointer to user data, for example
   void* user_pointer;
+  std::optional<MouseMoveEvent> most_recent_mousemove;
   // Dispatches event to the corresponding App instance
   static void dispatch_event(GLFWwindow* window, Event event);
  private:

@@ -77,14 +77,20 @@ bool Document::repaint() {
 
 Size Document::layout_element(Element* elem, BoxConstraints constraints) {
   elem->document = this;
-  elem->is_relayout_boundary = constraints.is_tight() || elem->sized_by_parent;
+  elem->is_relayout_boundary =
+      constraints.is_tight() || elem->size_depends_on_parent;
   auto size = elem->layout(constraints);
   elem->prev_constraints = constraints;
   return size;
 }
 
-void Document::paint_element(Element* elem, bool is_repaint_root,
-                             std::optional<SkPath> clip) {
+SkPath offset_path(SkPath* path, Position offset) {
+  SkPath offset_path;
+  path->offset(offset.left, offset.top, &offset_path);
+  return offset_path;
+}
+
+void Document::paint_element(Element* elem, bool is_repaint_root) {
   // std::cout << "paint element: " << elem->get_debug_name() << std::endl;
   if (!is_repaint_root) elem->parent = current_element;
   this->current_element = elem;
@@ -121,11 +127,9 @@ void Document::paint_element(Element* elem, bool is_repaint_root,
     // Repaint root doesn't get clip, but it restores it from prev layer tree
     if (!is_initial_paint) current_layer_tree->clip = prev_layer_tree->clip;
   } else {
-    if (clip != std::nullopt) {
-      SkPath offset_clip;
+    if (elem->clip != std::nullopt) {
       // Offset clip to position of the clipped element
-      clip.value().offset(elem->abs_position.left, elem->abs_position.top,
-                          &offset_clip);
+      SkPath offset_clip = offset_path(&elem->clip.value(), elem->abs_position);
       if (current_clip == std::nullopt) {
         current_clip = offset_clip;
       } else {
@@ -134,10 +138,13 @@ void Document::paint_element(Element* elem, bool is_repaint_root,
            &current_clip.value());
       }
     }
-    // When element is repaint boundary, current clip is not used while
-    // painting, instead it is applied while compositing
-    if (elem->is_repaint_boundary) {
-      current_layer_tree->clip = current_clip;
+    // When element is repaint boundary, current clip is not needed while
+    // painting, instead it is applied while compositing.
+    if (elem->is_repaint_boundary && current_clip != std::nullopt) {
+      // Offset clip to the position of the layer
+      current_layer_tree->clip = offset_path(
+          &current_clip.value(),
+          Position{-elem->abs_position.left, -elem->abs_position.top});
       current_clip = std::nullopt;
     }
   }
@@ -222,44 +229,38 @@ void Document::paint_layer_tree(LayerTree* tree) {
       paint_layer_tree(child_tree);
     } else {
       auto child_layer = std::get<std::shared_ptr<Layer>>(item);
-      screen->paint_layer(child_layer.get(), Position{0,0});
+      screen->paint_layer(child_layer.get(), Position{0, 0});
     }
   }
   screen->canvas->restore();
 }
 
-/*
-void update_clip(Element* elem) {
-  if (elem->clip == std::nullopt) return;
+void Document::hit_test(double left, double top) {
+  transform.reset();
+  hit_elements.clear();
+  hit_test_element(this->root, left, top);
+}
 
-  // Offset clip to position of the clipped element
-  SkPath offset_clip;
-  elem->clip.value().offset(elem->abs_position.left, elem->abs_position.top,
-                            &offset_clip);
-  if (current_clip == std::nullopt) {
-    current_clip = offset_clip;
-  } else {
-    // Intersect prev clip with element's clip and make it new current clip
-    Op(current_clip.value(), offset_clip, kIntersect_SkPathOp,
-       &current_clip.value());
+void Document::hit_test_element(std::shared_ptr<Element> elem, double left,
+                                double top) {
+  if (elem->is_repaint_boundary) {
+    SkMatrix inverted;
+    elem->layer_tree->transform.invert(&inverted);
+    transform = SkMatrix::Concat(transform, inverted);
+  }
+  if (elem->clip != std::nullopt) {
+    SkPath offset_clip;
+    elem->clip.value().offset(elem->abs_position.left, elem->abs_position.top,
+                              &offset_clip);
+    SkPoint transformed;
+    transform.mapPoints(&transformed, 1);
+    offset_clip.contains(transformed.x(), transformed.y()); // TODO
+  }
+  if (elem->hit_test(left, top)) {
+    hit_elements.push_back(elem);
+    elem->visit_children(std::bind(&Document::hit_test_element, this,
+                                   std::placeholders::_1, left, top));
   }
 }
-
-void hit_test(double left, double top) {
-  current_clip = std::nullopt;
-  hit_elems.clear();
-  check_elem(this->root, left, top);
-}
-
-void check_element(Element* elem, double left, double top) {
-  update_clip(elem);
-  if (current_clip.contains(left, top) &&
-      elem->hit_test(left + elem->abs_position.left,
-                     top + elem->abs_position.top)) {
-    if (elem->is_responder) hit_elems.push_back(elem);
-    elem->walk_children(std::bind(&check_element, _1, left, top));
-  }
-}
-*/
 
 };  // namespace aardvark

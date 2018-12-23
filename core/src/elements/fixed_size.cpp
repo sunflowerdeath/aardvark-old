@@ -4,7 +4,9 @@ namespace aardvark::elements {
 
 FixedSize::FixedSize(std::shared_ptr<Element> child, Size size,
                      bool is_repaint_boundary)
-    : SingleChildElement(child, is_repaint_boundary), size(size){};
+    : SingleChildElement(child, is_repaint_boundary,
+                         /* size_depends_on_parent */ false),
+      size(size){};
 
 Size FixedSize::layout(BoxConstraints constraints) {
   document->layout_element(child.get(),

@@ -3,7 +3,8 @@
 namespace aardvark::elements {
 
 Center::Center(std::shared_ptr<Element> child, bool is_repaint_boundary)
-    : SingleChildElement(child, is_repaint_boundary){};
+    : SingleChildElement(child, is_repaint_boundary,
+                         /* size_depends_on_parent */ true){};
 
 Size Center::layout(BoxConstraints constraints) {
   auto child_size =

@@ -6,7 +6,8 @@ namespace aardvark::elements {
 Align::Align(std::shared_ptr<Element> child, AlignmentValue left,
              AlignmentValue top, AlignmentValue right, AlignmentValue bottom,
              bool is_repaint_boundary)
-    : SingleChildElement(child, is_repaint_boundary),
+    : SingleChildElement(child, is_repaint_boundary,
+                         /* size_depends_on_parent */ true),
       left(left),
       top(top),
       right(right),

@@ -1,19 +1,18 @@
 #pragma once
 
 #include <memory>
-#include "SkCanvas.h"
 #include "../base_types.hpp"
 #include "../box_constraints.hpp"
 #include "../element.hpp"
 
 namespace aardvark::elements {
 
-class Background : public Element {
+class GestureResponder : public SingleChildElement {
  public:
-  Background(SkColor color, bool is_repaint_boundary = false);
-  SkColor color;
-  void set_props(SkColor color);
-  std::string get_debug_name() override { return "Background"; };
+  GestureResponder(std::shared_ptr<Element> child,
+                   bool is_repaint_boundary = false);
+
+  std::string get_debug_name() override { return "GestureResponder"; };
   Size layout(BoxConstraints constraints) override;
   void paint(bool is_changed) override;
 };
