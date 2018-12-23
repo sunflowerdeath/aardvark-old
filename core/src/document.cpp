@@ -244,20 +244,28 @@ void Document::hit_test(double left, double top) {
 void Document::hit_test_element(std::shared_ptr<Element> elem, double left,
                                 double top) {
   if (elem->is_repaint_boundary) {
-    SkMatrix inverted;
-    elem->layer_tree->transform.invert(&inverted);
-    transform = SkMatrix::Concat(transform, inverted);
+    SkMatrix adjusted;
+    adjusted.setTranslate(-elem->abs_position.left, -elem->abs_position.top);
+    adjusted.postConcat(elem->layer_tree->transform);
+    adjusted.postTranslate(elem->abs_position.left, elem->abs_position.top);
+    adjusted.invert(&adjusted);
+    transform = SkMatrix::Concat(adjusted, transform);
   }
+  auto transformed = SkPoint{left, top};
+  transform.mapPoints(&transformed, 1);
+
+  bool clipped = false;
   if (elem->clip != std::nullopt) {
     SkPath offset_clip;
     elem->clip.value().offset(elem->abs_position.left, elem->abs_position.top,
                               &offset_clip);
-    SkPoint transformed;
-    transform.mapPoints(&transformed, 1);
-    offset_clip.contains(transformed.x(), transformed.y()); // TODO
+    clipped = !offset_clip.contains(transformed.x(), transformed.y()); // TODO
   }
-  if (elem->hit_test(left, top)) {
-    hit_elements.push_back(elem);
+
+  if (!clipped) {
+    if (elem->hit_test(transformed.x(), transformed.y())) {
+      hit_elements.push_back(elem);
+    }
     elem->visit_children(std::bind(&Document::hit_test_element, this,
                                    std::placeholders::_1, left, top));
   }

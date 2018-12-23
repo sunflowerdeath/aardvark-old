@@ -12,11 +12,12 @@
 
 namespace aardvark {
 
-// forward declaration due to circular includes
+// Forward declarations due to circular includes
 class Document;
 class LayerTree;
 class Responder;
-// in order to forward declare enum we must tell compiler how much memory it uses
+// In order to forward declare enum, it must tell compiler how much memory
+// it uses
 enum class ResponderBehaviour: unsigned int;
 
 using ChildrenVisitor = std::function<void(std::shared_ptr<Element>)>;
@@ -57,7 +58,7 @@ class Element {
   // painting.
   virtual void paint(bool is_changed) {};
 
-  // Return children in paint order.
+  // Walks children in paint order.
   virtual void visit_children(ChildrenVisitor visitor){};
 
   // Checks if element is hit by pointer. Default is checking element's box.
