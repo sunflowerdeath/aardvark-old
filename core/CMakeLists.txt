@@ -212,7 +212,10 @@ target_link_libraries(aardvark
 # target_link_libraries(layer_example aardvark)
 
 # tests
-add_executable(base_types_test src/tests/base_types_test.cpp)
-target_link_libraries(base_types_test Catch2 aardvark)
+add_executable(tests
+  src/tests/index.cpp
+  src/tests/base_types_test.cpp
+  src/tests/box_constraints_test.cpp)
+target_link_libraries(tests Catch2 aardvark)
 
 
