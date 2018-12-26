@@ -11,12 +11,15 @@
 #include "element.hpp"
 #include "layer.hpp"
 #include "layer_tree.hpp"
+#include "events.hpp"
+#include "responder.hpp"
 
 namespace aardvark {
 
 // forward declaration due to circular includes
 class Element;
 class LayerTree;
+class ResponderReconciler;
 
 using ElementsSet = std::unordered_set<Element*>;
 
@@ -56,9 +59,11 @@ class Document {
 
     std::shared_ptr<Layer> screen;
     bool is_initial_paint;
+    std::shared_ptr<Element> root;
+
+    void handle_event(Event event);
 
   private:
-    std::shared_ptr<Element> root;
     ElementsSet changed_elements;
 
     // These members are used during the paint phase
@@ -84,6 +89,7 @@ class Document {
     void hit_test_element(std::shared_ptr<Element> elem, double left,
                           double top);
     SkMatrix transform;
+    std::unique_ptr<ResponderReconciler> reconciler;
 };
 
 }  // namespace aardvark

@@ -20,6 +20,7 @@ void add_only_parent(ElementsSet& set, Element* added) {
 Document::Document(std::shared_ptr<Element> root) {
     gr_context = GrContext::MakeGL();
     screen = Layer::make_screen_layer(gr_context);
+    reconciler = std::make_unique<ResponderReconciler>();
     if (root != nullptr) set_root(root);
 }
 
@@ -275,6 +276,13 @@ void Document::hit_test_element(std::shared_ptr<Element> elem, double left,
         elem->visit_children(std::bind(&Document::hit_test_element, this,
                                        std::placeholders::_1, left, top));
     }
-}
+};
+
+void Document::handle_event(Event event) {
+    if (auto mousemove = std::get_if<aardvark::MouseMoveEvent>(&event)) {
+        hit_test(mousemove->left, mousemove->top);
+        reconciler->reconcile(hit_elements, root.get());
+    }
+};
 
 };  // namespace aardvark

@@ -7,6 +7,7 @@
 struct AppState {
   std::shared_ptr<aardvark::elements::Center> align;
   std::shared_ptr<aardvark::elements::Layer> layer;
+  std::shared_ptr<aardvark::elements::Background> background;
   aardvark::elements::TransformOptions transform;
 };
 
@@ -54,30 +55,47 @@ void handle_events(aardvark::DesktopApp* app, aardvark::Event event) {
 }
 
 int main() {
-  auto app = aardvark::DesktopApp();
-  auto window = app.create_window(aardvark::Size{500, 500});
+    auto app = aardvark::DesktopApp();
+    auto window = app.create_window(aardvark::Size{500, 500});
 
-  auto document = app.get_document(window);
+    auto document = app.get_document(window);
 
-  auto transform = aardvark::elements::TransformOptions{
-      aardvark::Position{0, 0},  // translate
-      {1.0, 1.0},                // scale
-      45                         // rotate
-  };
+    auto state = AppState{};
 
-  SkMatrix matrix;
-  to_matrix(transform, &matrix);
+    auto transform = aardvark::elements::TransformOptions{
+        aardvark::Position{0, 0},  // translate
+        {1.0, 1.0},                // scale
+        45                         // rotate
+    };
+    SkMatrix matrix;
+    to_matrix(transform, &matrix);
 
-  auto layer = std::make_shared<aardvark::elements::Layer>(
-      std::make_shared<aardvark::elements::GestureResponder>(
-          std::make_shared<aardvark::elements::Background>(SK_ColorRED)),
-      matrix);
-  auto elem = std::make_shared<aardvark::elements::Center>(
-      std::make_shared<aardvark::elements::FixedSize>(
-          layer, aardvark::Size{100 /* width */, 100 /* height */}));
-  document->set_root(elem);
-  auto state = AppState{elem, layer, transform};
-  app.user_pointer = (void*)(&state);
-  app.event_handler = &handle_events;
-  app.run();
+    auto background =
+        std::make_shared<aardvark::elements::Background>(SK_ColorRED);
+    auto start = [&state]() { state.background->set_props(SK_ColorBLUE); };
+    auto end = [&state](bool is_terminated) {
+        state.background->set_props(SK_ColorRED);
+    };
+    auto layer = std::make_shared<aardvark::elements::Layer>(
+        std::make_shared<aardvark::elements::GestureResponder>(
+            background,                             // child
+            aardvark::ResponderMode::PassToParent,  // mode
+            start,                                  // start
+            [] {},                                  // update
+            end),                                   // end
+        matrix);
+    auto align = std::make_shared<aardvark::elements::Center>(
+        std::make_shared<aardvark::elements::FixedSize>(
+            layer, aardvark::Size{100 /* width */, 100 /* height */}));
+
+    document->set_root(align);
+
+    state.align = align;
+    state.layer = layer;
+    state.background = background;
+    state.transform = transform;
+
+    app.user_pointer = (void*)(&state);
+    app.event_handler = &handle_events;
+    app.run();
 };

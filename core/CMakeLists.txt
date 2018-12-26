@@ -208,8 +208,8 @@ target_link_libraries(aardvark
 # add_executable(app_example src/examples/app_example.cpp)
 # target_link_libraries(app_example aardvark)
 
-# add_executable(layer_example src/examples/layer_example.cpp)
-# target_link_libraries(layer_example aardvark)
+add_executable(layer_example src/examples/layer_example.cpp)
+target_link_libraries(layer_example aardvark)
 
 # tests
 add_executable(tests

@@ -7,8 +7,8 @@
 #include "SkPath.h"
 #include "base_types.hpp"
 #include "box_constraints.hpp"
-#include "document.hpp"
 #include "responder.hpp"
+#include "document.hpp"
 
 namespace aardvark {
 
@@ -64,6 +64,7 @@ class Element {
     // Checks if element is hit by pointer. Default is checking element's box.
     virtual bool hit_test(double left, double top);
 
+    // Default is `PassToParent`.
     virtual ResponderMode get_responder_mode();
     virtual Responder* get_responder() { return nullptr; };
 

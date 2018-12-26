@@ -110,7 +110,7 @@ TEST_CASE("ResponderReconciler", "[responder]" ) {
         a->responder.calls.clear();
         b->responder.calls.clear();
 
-        // "b" removed from document
+        // "b" is removed from document
         b->parent = nullptr;
         reconciler.reconcile(hit_elements, root.get());
         REQUIRE(b->responder.calls[0] == TestResponder::Call::End);

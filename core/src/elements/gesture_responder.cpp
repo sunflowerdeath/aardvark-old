@@ -2,11 +2,6 @@
 
 namespace aardvark::elements {
 
-GestureResponder::GestureResponder(std::shared_ptr<Element> child,
-                                   bool is_repaint_boundary)
-    : SingleChildElement(child, is_repaint_boundary,
-                         /* size_depends_on_parent */ true){};
-
 Size GestureResponder::layout(BoxConstraints constraints) {
     auto child_size =
         document->layout_element(child.get(), constraints.make_loose());
