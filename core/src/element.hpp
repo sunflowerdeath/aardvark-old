@@ -18,7 +18,7 @@ class LayerTree;
 class Responder;
 // In order to forward declare enum, it must tell compiler how much memory
 // it uses
-enum class ResponderBehaviour : unsigned int;
+enum class ResponderMode : unsigned int;
 
 using ChildrenVisitor = std::function<void(std::shared_ptr<Element>)>;
 
@@ -64,8 +64,7 @@ class Element {
     // Checks if element is hit by pointer. Default is checking element's box.
     virtual bool hit_test(double left, double top);
 
-    virtual ResponderBehaviour get_responder_behaviour();
-
+    virtual ResponderMode get_responder_mode();
     virtual Responder* get_responder() { return nullptr; };
 
     // These methods only needed for elements with children

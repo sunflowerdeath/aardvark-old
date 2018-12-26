@@ -9,7 +9,7 @@ namespace aardvark {
 
 class Element;
 
-enum class ResponderBehaviour: unsigned int {
+enum class ResponderMode: unsigned int {
   // After element handles event, it passes it to the element that is behind.
   PassThrough,
 
@@ -30,10 +30,10 @@ enum class ResponderBehaviour: unsigned int {
 class Responder {
  public:
   // Is called when element starts responding to events.
-  virtual bool start() { return false; };
+  virtual void start() {};
  
   // Is called for each move on the element.
-  virtual bool update() { return false; };
+  virtual void update() {};
 
   // Is called when element stops responding to events.
   // Responding is terminated, when the event is not ended, but some other
@@ -46,11 +46,12 @@ class ResponderReconciler {
   public:
     // Gets stack of elements that are under the pointer, determines which
     // responders should handle event, and calls handers.
-    void reconcile(std::vector<std::shared_ptr<Element>>& hit_elements);
+    void reconcile(std::vector<std::shared_ptr<Element>>& hit_elements,
+                   Element* root_element);
 
   private:
-    std::optional<std::shared_ptr<Element>> capture_element = std::nullopt;
-    std::vector<std::shared_ptr<Element>> prev_responder_elements;
+    std::optional<std::shared_ptr<Element>> capturing_element = std::nullopt;
+    std::vector<std::shared_ptr<Element>> prev_active_elements;
 };
 
 }  // namespace aardvark

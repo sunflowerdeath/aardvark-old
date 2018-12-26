@@ -111,3 +111,20 @@ creating additional layers cost performance.
 ```
 
 ## Hit testing
+
+### Gesture responding
+
+- PassThrough
+  After element handles event, it passes it to the element that is behind.
+
+- PassToParent
+  Passes event to the parent element (or any further ancestor) behind this 
+  element. This is default mode.
+ 
+- Absorb
+  Does not pass event after handling.
+
+- Capture
+  Makes this element handle events exclusively and even when it is no longer
+  hit by pointer. Element continues to handle event until it stops capturing
+  or is removed from the document.
