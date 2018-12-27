@@ -170,6 +170,7 @@ set(TARGET "DESKTOP")
 add_library(aardvark
   src/base_types.cpp
   src/box_constraints.cpp
+  src/hit_tester.cpp
   src/layer.cpp
   src/layer_tree.cpp
   src/document.cpp

@@ -9,6 +9,7 @@
 #include "base_types.hpp"
 #include "box_constraints.hpp"
 #include "element.hpp"
+#include "hit_tester.hpp"
 #include "layer.hpp"
 #include "layer_tree.hpp"
 #include "events.hpp"
@@ -20,14 +21,13 @@ namespace aardvark {
 class Element;
 class LayerTree;
 class ResponderReconciler;
+class HitTester;
 
 using ElementsSet = std::unordered_set<Element*>;
 
 class Document {
   public:
     Document(std::shared_ptr<Element> root = nullptr);
-
-    sk_sp<GrContext> gr_context;
 
     // Sets new root element
     void set_root(std::shared_ptr<Element> new_root);
@@ -54,20 +54,14 @@ class Document {
     // previous repaint if possible.
     Layer* create_layer(Size size);
 
-    void hit_test(double left, double top);
-    std::vector<std::shared_ptr<Element>> hit_elements;
-
     std::shared_ptr<Layer> screen;
     bool is_initial_paint;
-    std::shared_ptr<Element> root;
 
     void handle_event(Event event);
-
   private:
+    sk_sp<GrContext> gr_context;
+    std::shared_ptr<Element> root;
     ElementsSet changed_elements;
-
-    // These members are used during the paint phase
-
     // Currently painted element
     Element* current_element = nullptr;
     // Layer tree of the current repaint boundary element
@@ -80,15 +74,11 @@ class Document {
     // Whether the current element or some of its parent is changed since last
     // repaint
     bool inside_changed = false;
-
     void initial_paint();
     bool repaint();
     void compose_layers();
     void paint_layer_tree(LayerTree* tree);
-
-    void hit_test_element(std::shared_ptr<Element> elem, double left,
-                          double top);
-    SkMatrix transform;
+    std::unique_ptr<HitTester> hit_tester;
     std::unique_ptr<ResponderReconciler> reconciler;
 };
 

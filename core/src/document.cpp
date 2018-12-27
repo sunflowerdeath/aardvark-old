@@ -21,6 +21,7 @@ Document::Document(std::shared_ptr<Element> root) {
     gr_context = GrContext::MakeGL();
     screen = Layer::make_screen_layer(gr_context);
     reconciler = std::make_unique<ResponderReconciler>();
+    hit_tester = std::make_unique<HitTester>();
     if (root != nullptr) set_root(root);
 }
 
@@ -240,48 +241,10 @@ void Document::paint_layer_tree(LayerTree* tree) {
     screen->canvas->restore();
 }
 
-void Document::hit_test(double left, double top) {
-    transform.reset();
-    hit_elements.clear();
-    hit_test_element(this->root, left, top);
-}
-
-void Document::hit_test_element(std::shared_ptr<Element> elem, double left,
-                                double top) {
-    if (elem->is_repaint_boundary) {
-        SkMatrix adjusted;
-        adjusted.setTranslate(-elem->abs_position.left,
-                              -elem->abs_position.top);
-        adjusted.postConcat(elem->layer_tree->transform);
-        adjusted.postTranslate(elem->abs_position.left, elem->abs_position.top);
-        adjusted.invert(&adjusted);
-        transform = SkMatrix::Concat(adjusted, transform);
-    }
-    auto transformed = SkPoint{left, top};
-    transform.mapPoints(&transformed, 1);
-
-    bool clipped = false;
-    if (elem->clip != std::nullopt) {
-        SkPath offset_clip;
-        elem->clip.value().offset(elem->abs_position.left,
-                                  elem->abs_position.top, &offset_clip);
-        clipped =
-            !offset_clip.contains(transformed.x(), transformed.y());  // TODO
-    }
-
-    if (!clipped) {
-        if (elem->hit_test(transformed.x(), transformed.y())) {
-            hit_elements.push_back(elem);
-        }
-        elem->visit_children(std::bind(&Document::hit_test_element, this,
-                                       std::placeholders::_1, left, top));
-    }
-};
-
 void Document::handle_event(Event event) {
     if (auto mousemove = std::get_if<aardvark::MouseMoveEvent>(&event)) {
-        hit_test(mousemove->left, mousemove->top);
-        reconciler->reconcile(hit_elements, root.get());
+        hit_tester->test(root, mousemove->left, mousemove->top);
+        reconciler->reconcile(hit_tester->hit_elements, root.get());
     }
 };
 

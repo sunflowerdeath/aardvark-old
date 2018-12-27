@@ -9,6 +9,7 @@
 #include "box_constraints.hpp"
 #include "responder.hpp"
 #include "document.hpp"
+#include "hit_tester.hpp"
 
 namespace aardvark {
 
@@ -25,6 +26,7 @@ using ChildrenVisitor = std::function<void(std::shared_ptr<Element>)>;
 // Base class for elements of the document
 class Element {
     friend Document;
+    friend HitTester;
 
   public:
     Element(bool is_repaint_boundary, bool size_depends_on_parent);

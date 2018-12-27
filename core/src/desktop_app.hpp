@@ -32,8 +32,6 @@ class DesktopApp {
   bool should_stop;
   std::vector<std::shared_ptr<DesktopWindow>> windows;
   std::unordered_map<std::shared_ptr<DesktopWindow>, Document> documents;
-  std::unordered_map<std::shared_ptr<DesktopWindow>, ResponderReconciler>
-      reconcilers;
   void handle_event(GLFWwindow* window, Event event);
 };
 
