@@ -71,7 +71,7 @@ set(SKIA_DEFINES
 	"SK_HAS_PNG_LIBRARY" # skia_use_libpng
 	# "SK_SUPPORT_PDF" # skia_enable_pdf
 	"SK_PDF_USE_SFNTLY" # skia_use_sfntly
-	"SK_HAS_WEBP_LIBRARY" # skia_use_libwebp
+	# "SK_HAS_WEBP_LIBRARY" # skia_use_libwebp
 	"SK_XML" # skia_use_expat
   # "SK_BUILD_FOR_ANDROID"
 )
@@ -83,9 +83,9 @@ find_library(EXPAT_LIB expat) # skia_use_expat skia_use_system_expat
 find_library(JPEG_LIB jpeg) # skia_use_system_libjpeg_turbo
 find_library(PNG_LIB png) # skia_use_system_libpng
 find_library(Z_LIB z) # ??
-find_library(WEBP_LIB webp.a) # skia_use_libwebp skia_use_system_libwebp
-find_library(WEBP_DEMUX_LIB webpdemux.a)
-find_library(WEBP_MUX_LIB webpmux.a)
+# find_library(WEBP_LIB webp.a) # skia_use_libwebp skia_use_system_libwebp
+# find_library(WEBP_DEMUX_LIB webpdemux.a)
+# find_library(WEBP_MUX_LIB webpmux.a)
 find_library(FONTCONFIG_LIB libfontconfig.so) # skia_use_fontconfig
 find_library(FREETYPE_LIB freetype) # skia_use_system_freetype2
 
@@ -106,7 +106,7 @@ set(SKIA_DEPENDENCIES
 
 add_library(skia STATIC IMPORTED GLOBAL)
 set_target_properties(skia PROPERTIES
-	IMPORTED_LOCATION "${SKIA_DIR}/lib/linux-x86_64/libskia.a"
+	IMPORTED_LOCATION "${SKIA_DIR}/lib/linux-x86-64/libskia.a"
 	INTERFACE_INCLUDE_DIRECTORIES "${SKIA_INCLUDE_DIRS}"
 	INTERFACE_COMPILE_DEFINITIONS "${SKIA_DEFINES}"
 	INTERFACE_LINK_LIBRARIES "${SKIA_DEPENDENCIES}"
@@ -159,14 +159,14 @@ add_subdirectory(${CMAKE_BINARY_DIR}/externals/glfw)
 
 add_library(Catch2 INTERFACE)
 set_target_properties(Catch2 PROPERTIES
-	INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/externals/Catch2)
+	INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/externals/Catch2/include)
 
 #-------------------------------------------------------------------------------
 # PROJECT SETUP
 #-------------------------------------------------------------------------------
 
 # library
-set(TARGET "DESKTOP")
+set(PLATFORM "DESKTOP")
 add_library(aardvark
   src/base_types.cpp
   src/box_constraints.cpp
@@ -188,7 +188,7 @@ add_library(aardvark
   src/elements/stack.cpp
 )
 
-if("${TARGET}" STREQUAL "DESKTOP")
+if("${PLATFORM}" STREQUAL "DESKTOP")
   target_sources(aardvark PRIVATE
     src/desktop_window.cpp
     src/desktop_app.cpp
@@ -213,11 +213,9 @@ add_executable(layer_example src/examples/layer_example.cpp)
 target_link_libraries(layer_example aardvark)
 
 # tests
-add_executable(tests
-  src/tests/index.cpp
-  src/tests/base_types_test.cpp
-  src/tests/box_constraints_test.cpp
-  src/tests/responder_test.cpp)
-target_link_libraries(tests Catch2 aardvark)
-
-
+# add_executable(tests
+  # src/tests/index.cpp
+  # src/tests/base_types_test.cpp
+  # src/tests/box_constraints_test.cpp
+  # src/tests/responder_test.cpp)
+# target_link_libraries(tests Catch2 aardvark)

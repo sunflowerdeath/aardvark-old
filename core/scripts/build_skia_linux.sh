@@ -15,6 +15,7 @@ skia_use_icu=false \
 skia_use_dng_sdk=false \
 skia_use_sfntly=false \
 skia_enable_pdf=false \
+skia_use_libwebp=false \
 "
 
-ninja -C $SKIA_DIR/lib -j3
+ninja -C $SKIA_DIR/lib/linux-x86-64 -j7

@@ -18,6 +18,7 @@ DesktopWindow::DesktopWindow(Size size) {
   glfwWindowHint(GLFW_SAMPLES, MSAA_SAMPLE_COUNT);
   window = glfwCreateWindow(size.width, size.height, "GLFW", NULL, NULL);
   make_current();
+    glfwSwapInterval(0);
 };
 
 DesktopWindow::~DesktopWindow() { glfwDestroyWindow(window); };

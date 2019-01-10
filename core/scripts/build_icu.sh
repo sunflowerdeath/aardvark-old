@@ -24,7 +24,7 @@ $ICU_DIR/source/configure \
     CXX=clang++ \
     --with-data-packaging=static
 
-make -j2
+make -j7
 
 cp $ICU_DIR/build/stubdata/libicudata.a $ICU_DIR/build/lib/
 

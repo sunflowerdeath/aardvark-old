@@ -1,4 +1,4 @@
-#include "catch.hpp"
+#include "Catch2/catch.hpp"
 #include "../base_types.hpp"
 
 using namespace aardvark;

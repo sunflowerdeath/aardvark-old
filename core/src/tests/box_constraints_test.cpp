@@ -1,4 +1,4 @@
-#include "catch.hpp"
+#include "Catch2/catch.hpp"
 #include "../box_constraints.hpp"
 
 using namespace aardvark;

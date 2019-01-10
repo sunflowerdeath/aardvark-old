@@ -1,5 +1,5 @@
 #include <vector>
-#include "catch.hpp"
+#include "Catch2/catch.hpp"
 #include "../responder.hpp"
 
 using namespace aardvark;

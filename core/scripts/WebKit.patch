@@ -87,7 +87,7 @@ diff -bur ./downloads/WebKit/Source/WTF/wtf/unicode/CollatorDefault.cpp ./extern
 @@ -28,12 +28,13 @@
  
  #include "config.h"
- #include "Collator.h"
+ #include <wtf/unicode/Collator.h>
 +#include <StringView.h>
  
  #if UCONFIG_NO_COLLATION
