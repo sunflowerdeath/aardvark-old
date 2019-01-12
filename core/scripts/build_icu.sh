@@ -26,6 +26,6 @@ $ICU_DIR/source/configure \
 
 make -j7
 
-cp $ICU_DIR/build/stubdata/libicudata.a $ICU_DIR/build/lib/
+# cp $ICU_DIR/build/stubdata/libicudata.a $ICU_DIR/build/lib/
 
 
