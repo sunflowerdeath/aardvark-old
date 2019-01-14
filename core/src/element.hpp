@@ -52,7 +52,9 @@ class Element {
 
     // In this method element should calculate its size, layout children
     // and set their size and relative positions.
-    virtual Size layout(BoxConstraints constraints){};
+    virtual Size layout(BoxConstraints constraints) {
+        return constraints.max_size();
+    };
 
     // Paints element and its children.
     // `is_changed` is `true` when the element itself or some of its parents is

@@ -5,7 +5,7 @@
 
 using namespace aardvark;
 
-TEST_CASE("inline_layout::TextSpan", "[inline_layout]" ) {
+TEST_CASE("inline_layout::TextSpan", "[inline_layout] [text_span]" ) {
     auto text = UnicodeString((UChar*)u"Hello, World!");
     SkPaint paint;
     auto span = inline_layout::TextSpan(text, paint);
@@ -14,9 +14,6 @@ TEST_CASE("inline_layout::TextSpan", "[inline_layout]" ) {
     auto world = UnicodeString((UChar*)u"World!");
     auto hello_width = inline_layout::measure_text(hello, paint);
     auto world_width = inline_layout::measure_text(world, paint);
-
-    std::cout << "!!!" << text_width << "," << hello_width << "," <<
-        world_width << std::endl;
 
     SECTION("fits") {
         auto constraints = inline_layout::InlineConstraints{

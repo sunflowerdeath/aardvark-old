@@ -1,11 +1,32 @@
 #include <memory>
 #include <optional>
 #include <variant>
-
+#include <unicode/unistr.h>
 #include "../base_types.hpp"
 #include "SkPaint.h"
 
 namespace aardvark::inline_layout {
+
+// Measures text width, paint must have UTF16 encoding.
+int measure_text(const UnicodeString& text, const SkPaint& paint);
+
+// Convert ICU string to C++ UTF-8 encoded string.
+std::string to_std_string(const UnicodeString& text);
+
+enum class LineBreak {
+    // Use default unicode line breaking algorithm
+    normal,
+
+    // Never allow break text
+    never,
+
+    // Line break is allowed between any two characters
+    anywhere,
+
+    // If word can not fit in the line using default breaking algorithm, it is
+    // allowed to break it at arbitrary point
+    overflow
+};
 
 class Span;
 

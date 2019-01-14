@@ -3,10 +3,6 @@
 
 namespace aardvark::inline_layout {
 
-int measure_text(UnicodeString text, SkPaint& paint) {
-    return paint.measureText(text.getBuffer(), text.length() * 2);
-};
-
 TextSpan::TextSpan(UnicodeString text, SkPaint paint,
                    std::optional<SpanBase> base_span)
     : text(text), paint(paint), Span(base_span) {
@@ -21,12 +17,6 @@ TextSpan::TextSpan(UnicodeString text, SkPaint paint,
     }
 };
 
-void print_string(const UnicodeString& text) {
-    std::string cppstring;
-    text.toUTF8String(cppstring);
-    std::cout << "\"" << cppstring << "\"" << std::endl;
-};
-
 InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
     linebreaker->setText(text);
 
@@ -36,9 +26,7 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
     auto end = linebreaker->next();
     while (end != BreakIterator::DONE) {
         auto substring = text.tempSubString(start, end - start);
-        print_string(substring);
         auto text_width = measure_text(substring, paint);
-        std::cout << "width = " << text_width << std::endl;
         if (text_width + acc_width > constraints.remaining_line_width) break;
         acc_width += text_width;
         start = end;
@@ -47,8 +35,8 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
 
     SkPaint::FontMetrics metrics;
     (void)paint.getFontMetrics(&metrics);
-    auto line_height = metrics.fAscent + metrics.fDescent;
-    auto baseline = metrics.fAscent;
+    auto line_height = static_cast<int>(metrics.fAscent + metrics.fDescent);
+    auto baseline = static_cast<int>(metrics.fAscent);
 
     if (end == BreakIterator::DONE) {
         // All text fit in the current line
@@ -71,12 +59,12 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
             this           // fit_span
         };
     } else {
-        auto fit_text = text.tempSubString(0, end);
-        auto remainder_text = text.tempSubString(end);
-        fit_span = std::make_shared<TextSpan>(fit_text, paint,
+        auto fit_text = text.tempSubString(0, start);
+        auto remainder_text = text.tempSubString(start);
+        fit_span = std::make_unique<TextSpan>(fit_text, paint,
                                               SpanBase{/* base_span */ this,
                                                        /* prev_offset */ 0});
-        remainder_span = std::make_shared<TextSpan>(
+        remainder_span = std::make_unique<TextSpan>(
             remainder_text, paint,
             SpanBase{/* base_span */ this,
                      /* prev_offset */ fit_text.countChar32()});

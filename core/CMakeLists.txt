@@ -178,6 +178,7 @@ add_library(aardvark
   src/paint_cache.cpp
   src/responder.cpp
   src/inline_layout/text_span.cpp
+  src/inline_layout/inline_layout.cpp
   src/elements/align.cpp
   src/elements/background.cpp
   src/elements/border.cpp
