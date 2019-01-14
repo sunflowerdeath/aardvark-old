@@ -1,5 +1,10 @@
+#pragma once
+
 #include <optional>
+#include <memory>
 #include <unicode/brkiter.h>
+#include "../element.hpp"
+#include "../elements/text.hpp"
 #include "inline_layout.hpp"
 
 namespace aardvark::inline_layout {
@@ -9,6 +14,8 @@ class TextSpan : public Span {
     TextSpan(UnicodeString text, SkPaint paint,
              std::optional<SpanBase> base_span = std::nullopt);
     InlineLayoutResult layout(InlineConstraints constraints) override;
+    std::shared_ptr<Element> render(
+        std::optional<SpanSelection> selection) override;
     UnicodeString text;
     SkPaint paint;
   private:

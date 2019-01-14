@@ -1,8 +1,11 @@
+#pragma once
+
 #include <memory>
 #include <optional>
 #include <variant>
 #include <unicode/unistr.h>
 #include "../base_types.hpp"
+#include "../element.hpp"
 #include "SkPaint.h"
 
 namespace aardvark::inline_layout {
@@ -52,15 +55,15 @@ struct Selection {
     int extent_offset;
 };
 
-struct start {};
-struct end {};
-struct offset {
-    offset(int pos) : pos(pos){};
+struct s_start {};
+struct s_end {};
+struct s_offset {
+    s_offset(int pos) : pos(pos){};
     int pos;
 };
 
 // Selected range in the span object
-using SpanSelection = std::variant<start, end, offset>;
+using SpanSelection = std::variant<s_start, s_end, s_offset>;
 
 struct SpanBase {
     Span* span;
@@ -76,9 +79,8 @@ class Span {
     virtual InlineLayoutResult layout(InlineConstraints constraints){};
 
     // Returns elements that represent this span in the document
-    // virtual std::shared_ptr<Element> render(
-    // std::optional<SpanSelection> selection
-    // ) {};
+    virtual std::shared_ptr<Element> render(
+        std::optional<SpanSelection> selection){};
 
     // virtual ResponderMode get_responder_mode();
     // virtual Responder* get_responder() { return nullptr; };
@@ -89,7 +91,7 @@ class Span {
     // Should be set by container during layout
     Size size;
     int line_height;
-    int line_baseline;
+    int baseline;
 };
 
 /*

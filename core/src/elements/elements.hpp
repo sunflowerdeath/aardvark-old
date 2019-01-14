@@ -6,4 +6,6 @@
 #include "fixed_size.hpp"
 #include "gesture_responder.hpp"
 #include "layer.hpp"
+#include "paragraph.hpp"
 #include "stack.hpp"
+#include "text.hpp"

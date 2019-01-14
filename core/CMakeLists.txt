@@ -177,8 +177,8 @@ add_library(aardvark
   src/element.cpp
   src/paint_cache.cpp
   src/responder.cpp
-  src/inline_layout/text_span.cpp
   src/inline_layout/inline_layout.cpp
+  src/inline_layout/text_span.cpp
   src/elements/align.cpp
   src/elements/background.cpp
   src/elements/border.cpp
@@ -187,7 +187,9 @@ add_library(aardvark
   src/elements/fixed_size.cpp
   src/elements/gesture_responder.cpp
   src/elements/layer.cpp
+  src/elements/paragraph.cpp
   src/elements/stack.cpp
+  src/elements/text.cpp
 )
 
 if("${PLATFORM}" STREQUAL "DESKTOP")
@@ -214,11 +216,14 @@ target_link_libraries(aardvark
 # add_executable(layer_example src/examples/layer_example.cpp)
 # target_link_libraries(layer_example aardvark)
 
+add_executable(paragraph_example src/examples/paragraph_example.cpp)
+target_link_libraries(paragraph_example aardvark)
+
 # tests
-add_executable(tests
-  src/tests/index.cpp
-  src/tests/base_types_test.cpp
-  src/tests/box_constraints_test.cpp
-  src/tests/responder_test.cpp
-  src/tests/text_span_test.cpp)
-target_link_libraries(tests Catch2 aardvark)
+# add_executable(tests
+  # src/tests/index.cpp
+  # src/tests/base_types_test.cpp
+  # src/tests/box_constraints_test.cpp
+  # src/tests/responder_test.cpp
+  # src/tests/text_span_test.cpp)
+# target_link_libraries(tests Catch2 aardvark)

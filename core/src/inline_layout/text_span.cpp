@@ -73,4 +73,9 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
     }
 };
 
+std::shared_ptr<Element> TextSpan::render(
+    std::optional<SpanSelection> selection) {
+    return std::make_shared<elements::Text>(text, paint);
+};
+
 }  // namespace aardvark::inline_layout
