@@ -2,8 +2,8 @@
 
 namespace aardvark::elements {
 
-Text::Text(UnicodeString text, SkPaint paint, bool is_repaint_boudary)
-    : Element(is_repaint_boudary, /* size_depends_on_parent */ true),
+Text::Text(UnicodeString text, SkPaint paint, bool is_repaint_boundary)
+    : Element(is_repaint_boundary, /* size_depends_on_parent */ true),
       text(text),
       skpaint(paint){};
 

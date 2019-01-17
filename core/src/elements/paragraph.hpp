@@ -8,6 +8,7 @@ class Paragraph;
 
 class ParagraphLine {
   public:
+    ParagraphLine(Paragraph* paragraph) : paragraph(paragraph){};
     int render(Position position);
     Paragraph* paragraph;
     std::vector<inline_layout::Span*> spans;

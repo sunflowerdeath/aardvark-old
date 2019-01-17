@@ -11,7 +11,7 @@ int ParagraphLine::render(Position position) {
     auto current_width = 0;
     for (auto& span : spans) {
         auto elem = span->render(/* selection */ std::nullopt);
-        // elem->parent = paragraph;
+        elem->parent = paragraph;
         auto constraints =
             BoxConstraints::from_size(span->size, /* tight */ true);
         auto size =
@@ -30,7 +30,7 @@ Paragraph::Paragraph(std::vector<std::shared_ptr<inline_layout::Span>> content,
       Element(is_repaint_boundary, /* size_depends_on_parent */ true){};
 
 void Paragraph::next_line() {
-    current_line = &lines.emplace_back();
+    current_line = &lines.emplace_back(this);
     remaining_width = total_width;
 };
 

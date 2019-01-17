@@ -53,6 +53,8 @@ class ResponderReconciler {
 
   private:
     std::optional<std::shared_ptr<Element>> capturing_element = std::nullopt;
+    std::vector<std::shared_ptr<Element>> active_elements;
+    std::vector<std::shared_ptr<Element>> prev_active_elements;
     std::vector<Responder*> active_responders;
     std::vector<Responder*> prev_active_responders;
 };

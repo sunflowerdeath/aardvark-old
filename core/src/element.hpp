@@ -70,6 +70,8 @@ class Element {
 
     // Default is `PassToParent`.
     virtual ResponderMode get_responder_mode();
+    // Element must have only one responder, and it must ensure that returned
+    // pointer is valid during all of its lifetime.
     virtual Responder* get_responder() { return nullptr; };
 
     // These methods only needed for elements with children

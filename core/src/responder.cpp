@@ -19,7 +19,7 @@ void ResponderReconciler::reconcile(
         auto elem_val = capturing_element.value();
         if (root_element->is_parent_of(elem_val.get()) &&
             elem_val->get_responder_mode() == ResponderMode::Capture) {
-            active_responders.push_back(elem_val->get_responder());
+            active_elements.push_back(elem_val);
         } else {
             capturing_element = std::nullopt;
         }
@@ -30,7 +30,7 @@ void ResponderReconciler::reconcile(
         auto it = hit_elements.rbegin();
         while (it != hit_elements.rend()) {
             auto elem = *it;
-            active_responders.push_back(elem->get_responder());
+            active_elements.push_back(elem);
             auto mode = elem->get_responder_mode();
             if (mode == ResponderMode::PassThrough) {
                 it++;  // Pass event handling to the next element
@@ -46,11 +46,15 @@ void ResponderReconciler::reconcile(
             } else if (mode == ResponderMode::Capture) {
                 // Capturing element becomes only element handling event
                 capturing_element = elem;
-                active_responders.erase(active_responders.begin(),
-                                        active_responders.end() - 1);
+                active_elements.erase(active_elements.begin(),
+                                      active_elements.end() - 1);
                 break;
             }
         }
+    }
+
+    for (auto& elem : active_elements) {
+        active_responders.push_back(elem->get_responder());
     }
 
     if (capturing_element == std::nullopt) {
@@ -89,6 +93,8 @@ void ResponderReconciler::reconcile(
         }
     }
 
+    prev_active_elements = active_elements;
+    active_elements.clear();
     prev_active_responders = active_responders;
     active_responders.clear();
 }

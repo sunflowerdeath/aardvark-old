@@ -82,9 +82,6 @@ class Span {
     virtual std::shared_ptr<Element> render(
         std::optional<SpanSelection> selection){};
 
-    // virtual ResponderMode get_responder_mode();
-    // virtual Responder* get_responder() { return nullptr; };
-
     // Span from which this span is derived
     std::optional<SpanBase> base_span;
 

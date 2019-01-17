@@ -14,25 +14,26 @@
 /* }; */
 
 int main() {
-  auto app = aardvark::DesktopApp();
-  auto window = app.create_window(aardvark::Size{500, 500});
-  auto document = app.get_document(window);
+    auto app = aardvark::DesktopApp();
+    auto window = app.create_window(aardvark::Size{500, 500});
+    auto document = app.get_document(window);
 
-  auto text = UnicodeString((UChar*)u"Lorem ipsum dolor sit amet, consectetur");
-  SkPaint paint;
-  paint.setColor(SK_ColorWHITE);
+    auto text =
+        UnicodeString((UChar*)u"Lorem ipsum dolor sit amet, consectetur");
+    SkPaint paint;
+    paint.setColor(SK_ColorWHITE);
 
-  auto elem = std::make_shared<aardvark::elements::Align>(
-      std::make_shared<aardvark::elements::FixedSize>(
-          std::make_shared<aardvark::elements::Paragraph>(
-              std::vector<std::shared_ptr<aardvark::inline_layout::Span>>{
-                  std::make_shared<aardvark::inline_layout::TextSpan>(text,
-                                                                      paint)}),
-          aardvark::Size{300 /* width */, 200 /* height */}),
-      aardvark::value::abs(50), aardvark::value::abs(50));
-  document->set_root(elem);
-  // auto state = AppState{elem, background};
-  // app.user_pointer = (void*)(&state);
-  // app.event_handler = &handle_events;
-  app.run();
+    auto elem = std::make_shared<aardvark::elements::Align>(
+        std::make_shared<aardvark::elements::FixedSize>(
+            std::make_shared<aardvark::elements::Paragraph>(
+                std::vector<std::shared_ptr<aardvark::inline_layout::Span>>{
+                    std::make_shared<aardvark::inline_layout::TextSpan>(
+                        text, paint)}),
+            aardvark::Size{100 /* width */, 200 /* height */}),
+        aardvark::value::abs(50), aardvark::value::abs(50));
+    document->set_root(elem);
+    // auto state = AppState{elem, background};
+    // app.user_pointer = (void*)(&state);
+    // app.event_handler = &handle_events;
+    app.run();
 };

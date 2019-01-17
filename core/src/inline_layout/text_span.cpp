@@ -6,7 +6,7 @@ namespace aardvark::inline_layout {
 TextSpan::TextSpan(UnicodeString text, SkPaint paint,
                    std::optional<SpanBase> base_span)
     : text(text), paint(paint), Span(base_span) {
-    paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
+    this->paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
     // Create linebreaker
     UErrorCode status = U_ZERO_ERROR;
     linebreaker = BreakIterator::createLineInstance(Locale::getUS(), status);
@@ -35,8 +35,8 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
 
     SkPaint::FontMetrics metrics;
     (void)paint.getFontMetrics(&metrics);
-    auto line_height = static_cast<int>(metrics.fAscent + metrics.fDescent);
-    auto baseline = static_cast<int>(metrics.fAscent);
+    auto line_height = static_cast<int>(-metrics.fAscent + metrics.fDescent);
+    auto baseline = static_cast<int>(-metrics.fAscent);
 
     if (end == BreakIterator::DONE) {
         // All text fit in the current line
