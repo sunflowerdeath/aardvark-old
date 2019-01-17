@@ -66,7 +66,7 @@ void Border::paint(bool is_changed) {
         clip_side(borders.bottom, borders.left, borders.top,
                   radiuses.bottomLeft, radiuses.topLeft);
     }
-    child->clip = need_custom_clip ? std::optional(clip_path) : std::nullopt;
+    // child->clip = need_custom_clip ? std::optional(clip_path) : std::nullopt;
     document->paint_element(child.get());
 };
 
@@ -173,9 +173,11 @@ void Border::paint_side(BorderSide& prev_side, BorderSide& side,
         paint_arc(right_radius, side, width);
     }
 
-    // Transforms applied in reverse order
-    matrix.postRotate(90);
-    matrix.postTranslate(width, 0);
+    // For some unknown reason `preTranslate` is not working same as `preConcat`
+    SkMatrix m;
+    m.setTranslate(width, 0);
+    matrix.preConcat(m);
+    matrix.preRotate(90);
     rotation += 90;
 };
 
