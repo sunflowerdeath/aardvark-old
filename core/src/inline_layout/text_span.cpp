@@ -21,25 +21,30 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
     linebreaker->setText(text);
 
     // Iterate through break points
-    auto start = linebreaker->first();
-    auto end = linebreaker->next();
     auto acc_width = 0.0f;  // Accumulated width
     auto segment_width = 0.0f;
+    auto start = linebreaker->first();
+    auto end = linebreaker->next();
     while (end != BreakIterator::DONE) {
         auto substring = text.tempSubString(start, end - start);
-        auto segment_width = measure_text_width(substring, paint);
+        segment_width = measure_text_width(substring, paint);
         if (segment_width + acc_width > constraints.remaining_line_width) break;
         acc_width += segment_width;
         start = end;
         end = linebreaker->next();
     }
 
-    // Impossible to split the segment, so leave it in the current line
-    if (start == linebreaker->first() &&
+    if (start == linebreaker->first() && end != BreakIterator::DONE &&
         constraints.total_line_width == constraints.remaining_line_width) {
+        // If first segment at the start of line did not fit, put it into the 
+        // current line to prevent endless linebreaking
         acc_width += segment_width;
         start = end;
         end = linebreaker->next();
+        // If it was last segment, set end to DONE
+        if (linebreaker->next() == BreakIterator::DONE) {
+            end = BreakIterator::DONE;
+        }
     }
 
     if (end == BreakIterator::DONE) {
@@ -53,6 +58,7 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
             std::nullopt                     // remainder_span
         };
     } else if (start == linebreaker->first()) {
+        // Nothing did fit
         fit_span.reset();
         remainder_span.reset();
         return InlineLayoutResult{
