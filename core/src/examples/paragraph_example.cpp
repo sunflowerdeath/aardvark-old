@@ -37,19 +37,31 @@ int main() {
         UnicodeString((UChar*)u"Lorem ipsum dolor sit amet, consectetur");
     SkPaint paint;
     paint.setColor(SK_ColorWHITE);
+    paint.setTextSize(16);
+    auto span =
+        std::make_shared<aardvark::inline_layout::TextSpan>(text, paint);
+
+    auto red_text = UnicodeString((UChar*)u"MORE TEXT");
+    SkPaint red_paint;
+    red_paint.setColor(SK_ColorRED);
+    red_paint.setTextSize(32);
+    auto red_span = std::make_shared<aardvark::inline_layout::TextSpan>(
+        red_text, red_paint);
+
+    auto paragraph = std::make_shared<aardvark::elements::Paragraph>(
+        std::vector<std::shared_ptr<aardvark::inline_layout::Span>>{span,
+                                                                    red_span},
+        aardvark::inline_layout::LineMetrics::from_paint(paint));
 
     auto fixed_size = std::make_shared<aardvark::elements::FixedSize>(
         std::make_shared<aardvark::elements::Border>(
-            std::make_shared<aardvark::elements::Paragraph>(
-                std::vector<std::shared_ptr<aardvark::inline_layout::Span>>{
-                    std::make_shared<aardvark::inline_layout::TextSpan>(
-                        text, paint)}),
+            paragraph,
             aardvark::elements::BoxBorders::all(
                 aardvark::elements::BorderSide{/* width */ 1,
                                                /* color */ SK_ColorWHITE}),
             aardvark::elements::BoxRadiuses::all(
                 aardvark::elements::Radius::circular(0))),
-        aardvark::Size{100 /* width */, 120 /* height */});
+        aardvark::Size{200 /* width */, 120 /* height */});
     auto elem = std::make_shared<aardvark::elements::Align>(
         fixed_size, aardvark::value::abs(50), aardvark::value::abs(50));
     document->set_root(elem);

@@ -23,8 +23,8 @@ struct Scale {
 };
 
 struct Size {
-    int width = 0;
-    int height = 0;
+    float width = 0;
+    float height = 0;
     static bool is_equal(Size a, Size b);
 };
 
@@ -37,8 +37,8 @@ inline bool operator!=(const Size& lhs, const Size& rhs) {
 };
 
 struct Position {
-    int left = 0;
-    int top = 0;
+    float left = 0;
+    float top = 0;
     static Position add(Position a, Position b);
 };
 

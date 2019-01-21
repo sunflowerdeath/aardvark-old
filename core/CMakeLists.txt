@@ -1,3 +1,5 @@
+set(CMAKE_C_COMPILER "/usr/bin/clang")
+set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 cmake_minimum_required(VERSION 3.10)
 project(hello LANGUAGES CXX)
 
@@ -34,7 +36,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -fno-omit-frame-pointer")
 #   Run strip to reduce size of executable
 #-------------------------------------------------------------------------------
 set(CMAKE_CXX_FLAGS_RELEASE
-  "-Os -ffunction-sections -fdata-sections -Wl,--gc-sections -s")
+  "-Os -ffunction-sections -fdata-sections")
+set(CMAKE_EXE_LINKER_FLAGS "-Wl,--gc-sections -Wl,-s")
 
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Os -g -fno-omit-frame-pointer")
 

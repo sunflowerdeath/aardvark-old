@@ -22,8 +22,8 @@ Size Border::layout(BoxConstraints constraints) {
     auto size = document->layout_element(child.get(), child_constraints);
     child->size = size;
     child->rel_position = Position{
-        borders.left.width,  // left
-        borders.top.width    // top
+        static_cast<float>(borders.left.width),  // left
+        static_cast<float>(borders.top.width)    // top
     };
     return Size{
         size.width + vert_width,   // width

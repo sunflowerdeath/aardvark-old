@@ -2,31 +2,48 @@
 
 namespace aardvark::elements {
 
-int ParagraphLine::render(Position position) {
+float ParagraphLine::render(Position position) {
     elements.reserve(spans.size());
+
+    float max_ascent = paragraph->metrics.baseline;
+    float max_descent = paragraph->metrics.height - paragraph->metrics.baseline;
     for (auto& span : spans) {
-        // Height of the line is equal to the height of the tallest span
-        if (span->size.height > height) height = span->size.height;
+        if (span->metrics.baseline > max_ascent) {
+            max_ascent = span->metrics.baseline;
+        }
+        auto descent = span->metrics.height - span->metrics.baseline;
+        if (descent > max_descent) max_descent = descent;
     }
-    auto current_width = 0;
+    auto line_metrics = inline_layout::LineMetrics{
+        max_ascent + max_descent,    // height
+        max_ascent,                  // baseline
+        paragraph->metrics.x_height  // x_height
+    };
+
+    auto current_width = 0.0f;
     for (auto& span : spans) {
         auto elem = span->render(/* selection */ std::nullopt);
         elem->parent = paragraph;
-        auto constraints =
-            BoxConstraints::from_size(span->size, /* tight */ true);
+        auto constraints = BoxConstraints::from_size(
+            Size{span->width, span->metrics.height}, /* tight */ true);
         auto size =
             paragraph->document->layout_element(elem.get(), constraints);
         elem->size = size;
-        elem->rel_position = position + Position{current_width, 0};
+        elem->rel_position =
+            position + Position{current_width,
+                                span->vert_align(line_metrics, span->metrics)};
         elements.push_back(elem);
-        current_width += span->size.width;
+        current_width += span->width;
     }
-    return height;
+
+    return line_metrics.height;
 };
 
 Paragraph::Paragraph(std::vector<std::shared_ptr<inline_layout::Span>> content,
+                     inline_layout::LineMetrics metrics,
                      bool is_repaint_boundary)
     : content(content),
+      metrics(metrics),
       Element(is_repaint_boundary, /* size_depends_on_parent */ true){};
 
 void Paragraph::next_line() {
@@ -60,10 +77,10 @@ void Paragraph::layout_span(inline_layout::Span* span) {
     auto result = span->layout(constraints);
     if (result.fit_span != std::nullopt) {
         auto fit_span = result.fit_span.value();
-        fit_span->size = result.size;
-        fit_span->baseline = result.baseline;
+        fit_span->metrics = result.metrics;
+        fit_span->width = result.width;
         current_line->spans.push_back(fit_span);
-        remaining_width -= result.size.width;
+        remaining_width -= result.width;
     }
     if (result.remainder_span != std::nullopt) {
         next_line();

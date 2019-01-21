@@ -18,7 +18,8 @@ void PaintCache::paint(SkCanvas* real_canvas,
         auto info = real_canvas->imageInfo();
         SkPictureRecorder recorder;
         SkCanvas* picture_canvas =
-            recorder.beginRecording({0, 0, info.width(), info.height()});
+            recorder.beginRecording({0, 0, static_cast<float>(info.width()),
+                                     static_cast<float>(info.height())});
         painter(picture_canvas);
         sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
         records.push_back(picture);

@@ -21,55 +21,59 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
     linebreaker->setText(text);
 
     // Iterate through break points
-    auto acc_width = 0;  // Accumulated width
     auto start = linebreaker->first();
     auto end = linebreaker->next();
+    auto acc_width = 0.0f;  // Accumulated width
+    auto segment_width = 0.0f;
     while (end != BreakIterator::DONE) {
         auto substring = text.tempSubString(start, end - start);
-        auto text_width = measure_text(substring, paint);
-        if (text_width + acc_width > constraints.remaining_line_width) break;
-        acc_width += text_width;
+        auto segment_width = measure_text_width(substring, paint);
+        if (segment_width + acc_width > constraints.remaining_line_width) break;
+        acc_width += segment_width;
         start = end;
         end = linebreaker->next();
     }
 
-    SkPaint::FontMetrics metrics;
-    (void)paint.getFontMetrics(&metrics);
-    auto line_height = static_cast<int>(-metrics.fAscent + metrics.fDescent);
-    auto baseline = static_cast<int>(-metrics.fAscent);
+    // Impossible to split the segment, so leave it in the current line
+    if (start == linebreaker->first() &&
+        constraints.total_line_width == constraints.remaining_line_width) {
+        acc_width += segment_width;
+        start = end;
+        end = linebreaker->next();
+    }
 
     if (end == BreakIterator::DONE) {
-        // All text fit in the current line
+        // All text fits in the current line
         fit_span.reset();
         remainder_span.reset();
         return InlineLayoutResult{
-            this,                          // fit_span
-            Size{acc_width, line_height},  // size
-            baseline,                      // baseline
-            std::nullopt                   // fit_span
+            this,                            // fit_span
+            acc_width,                       // width
+            LineMetrics::from_paint(paint),  // line_metrics
+            std::nullopt                     // remainder_span
         };
     } else if (start == linebreaker->first()) {
-        // Nothing did fit
         fit_span.reset();
         remainder_span.reset();
         return InlineLayoutResult{
-            std::nullopt,  // fit_span
-            Size{0, 0},    // size
-            0,             // baseline
-            this           // fit_span
+            std::nullopt,   // fit_span
+            0,              // width
+            LineMetrics(),  // line_metrics
+            this            // remainder_span
         };
     } else {
-        auto fit_text = text.tempSubString(0, start);
-        auto remainder_text = text.tempSubString(start);
-        fit_span = std::make_unique<TextSpan>(fit_text, paint,
-                                              SpanBase{/* base_span */ this,
-                                                       /* prev_offset */ 0});
-        remainder_span = std::make_unique<TextSpan>(
-            remainder_text, paint,
-            SpanBase{/* base_span */ this,
-                     /* prev_offset */ fit_text.countChar32()});
-        return InlineLayoutResult{fit_span.get(), Size{acc_width, line_height},
-                                  baseline, remainder_span.get()};
+       auto fit_text = text.tempSubString(0, start);
+       auto remainder_text = text.tempSubString(start);
+       fit_span = std::make_unique<TextSpan>(fit_text, paint,
+                                             SpanBase{/* base_span */ this,
+                                                      /* prev_offset */ 0});
+       remainder_span = std::make_unique<TextSpan>(
+           remainder_text, paint,
+           SpanBase{/* base_span */ this,
+                    /* prev_offset */ fit_text.countChar32()});
+       return InlineLayoutResult{fit_span.get(), acc_width,
+                                 LineMetrics::from_paint(paint),
+                                 remainder_span.get()};
     }
 };
 

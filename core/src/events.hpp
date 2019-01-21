@@ -7,7 +7,7 @@ namespace aardvark {
 struct WindowFocusEvent {};
 struct WindowBlurEvent {};
 struct WindowMoveEvent {
-  WindowMoveEvent(double left, double top) : left(left), top(top){};
+  WindowMoveEvent(float left, float top) : left(left), top(top){};
   double left;
   double top;
 };
@@ -18,7 +18,7 @@ struct WindowRestoreEvent {};
 struct MouseEnterEvent {};
 struct MouseLeaveEvent {};
 struct MouseMoveEvent {
-  MouseMoveEvent(double left, double top) : left(left), top(top){};
+  MouseMoveEvent(float left, float top) : left(left), top(top){};
   double left;
   double top;
 };

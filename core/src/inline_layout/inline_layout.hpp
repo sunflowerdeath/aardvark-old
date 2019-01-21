@@ -10,11 +10,9 @@
 
 namespace aardvark::inline_layout {
 
-// Measures text width, paint must have UTF16 encoding.
-int measure_text(const UnicodeString& text, const SkPaint& paint);
+float measure_text_width(const UnicodeString& text, const SkPaint& paint);
 
-// Convert ICU string to C++ UTF-8 encoded string.
-std::string to_std_string(const UnicodeString& text);
+std::string icu_to_std_string(const UnicodeString& text);
 
 enum class LineBreak {
     // Use default unicode line breaking algorithm
@@ -34,16 +32,50 @@ enum class LineBreak {
 class Span;
 
 struct InlineConstraints {
-    int remaining_line_width;
-    int total_line_width;
-    int padding_before;
-    int padding_after;
+    float remaining_line_width;
+    float total_line_width;
+    float padding_before;
+    float padding_after;
 };
+
+struct LineMetrics {
+    float height;
+    float baseline;
+    float x_height;
+
+    LineMetrics add(int added) {
+        return LineMetrics{height + added, baseline, x_height};
+    };
+
+    LineMetrics scale(int ratio) {
+        return LineMetrics{height * ratio, baseline, x_height};
+    };
+
+    static LineMetrics from_paint(const SkPaint& paint);
+};
+
+namespace vert_align {
+
+// Span is aligned on the baseline
+float baseline(LineMetrics line, LineMetrics span);
+
+// Span is aligned at the top of the line
+float top(LineMetrics line, LineMetrics span);
+
+float center(LineMetrics line, LineMetrics span);
+
+// Span is aligned at the bottom of the line
+float bottom(LineMetrics line, LineMetrics span);
+
+// Middle of the span is aligned with middle of x-height of the line
+int text_center(LineMetrics line, LineMetrics span);
+
+}  // namespace vert_align
 
 struct InlineLayoutResult {
     std::optional<Span*> fit_span;
-    Size size;
-    int baseline;
+    float width;
+    LineMetrics metrics;
     std::optional<Span*> remainder_span;
 };
 
@@ -82,34 +114,18 @@ class Span {
     virtual std::shared_ptr<Element> render(
         std::optional<SpanSelection> selection){};
 
+    // Calculates position of the span in the line, default is baseline
+    virtual float vert_align(LineMetrics line, LineMetrics span) {
+        return vert_align::baseline(line, span);
+    };
+
     // Span from which this span is derived
     std::optional<SpanBase> base_span;
 
     // Should be set by container during layout
-    Size size;
-    int line_height;
-    int baseline;
+    float width;
+    LineMetrics metrics;
 };
-
-/*
-class VerticalAlignSpan : public Span {
-    std::shared_ptr<Span> content;
-    VerticalAlign align;
-};
-*/
-
-/*
-struct TextStyle {
-    int font_face;
-    int font_size;
-    int font_style;
-    int font_weight;
-    int line_height;
-    int color;
-    int letter_spacing;
-    // int word_spacing;
-}
-*/
 
 class SpacingSpan : public Span {
   public:
@@ -117,22 +133,5 @@ class SpacingSpan : public Span {
         : width(width), Span(base_span){};
     int width;
 };
-
-/*
-class DecorationSpan : public Span {
-  public:
-    std::vector<std::shared_ptr<Span>> content;
-    int padding;
-    int margin;
-    int border;
-    int background;
-};
-
-class ElementSpan : public Span {
-  public:
-    Size size;
-    std::shared_ptr<Element> element;
-};
-*/
 
 };  // namespace aardvark::inline_layout

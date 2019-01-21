@@ -9,16 +9,18 @@ class Paragraph;
 class ParagraphLine {
   public:
     ParagraphLine(Paragraph* paragraph) : paragraph(paragraph){};
-    int render(Position position);
+    float render(Position position);
     Paragraph* paragraph;
     std::vector<inline_layout::Span*> spans;
     std::vector<std::shared_ptr<Element>> elements;
-    int height = 0;
 };
 
 class Paragraph : public Element {
+    friend ParagraphLine;
+
   public:
     Paragraph(std::vector<std::shared_ptr<inline_layout::Span>> content,
+              inline_layout::LineMetrics metrics,
               bool is_repaint_boundary = false);
     std::vector<std::shared_ptr<inline_layout::Span>> content;
     std::string get_debug_name() override { return "Paragraph"; };
@@ -26,13 +28,14 @@ class Paragraph : public Element {
     void paint(bool is_changed) override;
 
   private:
+    inline_layout::LineMetrics metrics;
     void next_line();
     void layout_span(inline_layout::Span* span);
     std::vector<ParagraphLine> lines;
     ParagraphLine* current_line;
-    int current_height;
-    int total_width;
-    int remaining_width;
+    float current_height;
+    float total_width;
+    float remaining_width;
 };
 
 }  // namespace aardvark::elements

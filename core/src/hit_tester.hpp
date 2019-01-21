@@ -11,10 +11,10 @@ class Element;
 
 class HitTester {
   public:
-    void test(std::shared_ptr<Element> root, double left, double top);
+    void test(std::shared_ptr<Element> root, float left, float top);
     std::vector<std::shared_ptr<Element>> hit_elements;
   private:
-    void test_element(std::shared_ptr<Element> elem, double left, double top);
+    void test_element(std::shared_ptr<Element> elem, float left, float top);
     SkMatrix transform;
 };
 

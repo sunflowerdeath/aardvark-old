@@ -23,8 +23,8 @@ void Background::paint(bool is_changed) {
     paint.setColor(color);
     auto layer = document->get_layer();
     document->setup_layer(layer, this);
-    SkIRect rect{0, 0, size.width, size.height};
-    layer->canvas->drawIRect(rect, paint);
+    SkRect rect{0, 0, size.width, size.height};
+    layer->canvas->drawRect(rect, paint);
 };
 
 }  // namespace aardvark::elements

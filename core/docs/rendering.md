@@ -1,46 +1,63 @@
 # Rendering
 
+This document provides high level overview of the rendering engine architecture
+and describes some implementation details.
+
 Rendering consists of three phases: layout, painting and compositing.
 
 ## Layout
-Layout - calculating size and position of each element.
-Element takes constraints - minimum and maximum possible size - and decides
-what size it wants to be. While doing it, element also calls layout of its
-children, and sets their sizes and positions.
 
-Relayout can be performed more effectively than initial layout.
-Layout can be performed on closest to changed element relayout boundary.
-It is such element, that changes inside of it do not affect layout of its parents,
-it isolates all changes inside it.
-Here's how to find if an element is a relayout boundary:
-- It gets tight constraints, so it can only be one size
-- It depends only on the incoming constraints, and not on its own properties.
+In layout phase document calculates size and position of each element.
+Each element takes constraints &ndash; minimum and maximum possible size &ndash;
+and decides what size it wants to be. While doing it, element also calls layout
+of its children, and sets their sizes and positions.
+
+Performing full document relayout on each change is bad for perfomance.
+Document can determine what part may be affected by changing a certain element
+and perform relayout only for this part.
+
+For relayout document finds closest element, that isolates changes.
+It means that no changes inside that element can change layout outside of it.
+Such elements are called "relayout boundaries".
+Here's how document determines if an element is a relayout boundary:
+
+- It gets tight constraints from the parent, so it can only be one size
+
+- Its layout depends only on the incoming constraints, and not on
+  properties or content.
   For example, when element always expands to all available space.
 
 ## Painting
+
 Painting - creating visual representation of elements.
-While painting, an element executes own painting commands and calls painting of
-its children. Before each set of painting commands, element should request
-current surface, because it can be changed, if some children are painted on
-separate layers.
+During painting phase, elements execute own painting commands and call
+painting of its children. Before preforming each set of painting commands,
+element should request current surface, because it can be changed, if some
+children are painted on separate layers.
 
 Only elements that were changed directly or changed their size or position 
 after relayout will update their visual representation.
 All other elements will look the same, so they can reuse result of previous
 painting. This can be done in two ways:
+
 - Record painting commands into the object, that can be replayed later.
+
 - Painting element onto separate surface and copying it from it. This is called
-rasterization. It is fastest, but it requires additional memory.
+  rasterization. It is fastest, but it requires additional memory.
 
 ## Layers system
+
 Support for layers is useful for several reasons:
+
 - It allows to repaint not all layers, but only those on which changed elements
-are located.
+  are located.
+
 - Operations with layers, like translating, rotating or changing opacity can be 
-performed without repainting, it requires only compositing. Compositing is fast
-because it is performed on GPU.
+  performed without repainting, it requires only compositing. Compositing is fast
+  because it is performed on GPU.
+
 - Some layers come from external sources, for example, camera, video or native
-platform view.
+  platform view.
 
 It is important to note, that if some element uses a separate layer, then
 everything that is painted after it should be placed on another separate layer.
@@ -53,9 +70,11 @@ They are called repaint boundaries. Such elements can be repainted separately.
 Using the repaint boundary may require more layers than without it, thats why
 you need to specify them manually, not automatically like relayout boundaries.
 
-This is an example how layers change when adding repaint boundary.
-Each color shows a separate layer. Element can have two colors, because it
-can paint on several layers - before and after painting its children.
+This is an example how layers change after adding repaint boundary.
+This is tree of elements. Сolor indicates on which layer the element is painted.
+Element can have more that one color, because it can be painted on several layers -
+before and after painting its children.
+Red line shows in which order the elements are painted.
 
 Without repaint boundary:
 
@@ -82,11 +101,11 @@ semitransparent pixel of the first color and both colors will be mixed.
 Artifacts can be avoided by painting clipped elements on separate layer, but
 creating additional layers cost performance.
 
-| clipping artifacts | clipping with layer |
-|---|---|
+| clipping artifacts                             | clipping with layer                    |
+| ---------------------------------------------- | -------------------------------------- |
 | ![clipping with artifacts](clip-artifacts.png) | ![clipping with layer](clip-layer.png) |
 
-```
+```js
 <FixedSize width={100} height={100}>
   <Clip path={circle}>
     <Background color="red" />
@@ -97,7 +116,7 @@ creating additional layers cost performance.
 </FixedSize>
 ```
 
-```
+```js
 <FixedSize width={100} height={100}>
   <Clip path={circle}>
     <Layer>
@@ -109,22 +128,3 @@ creating additional layers cost performance.
   </Clip>
 </FixedSize>
 ```
-
-## Hit testing
-
-### Gesture responding
-
-- PassThrough
-  After element handles event, it passes it to the element that is behind.
-
-- PassToParent
-  Passes event to the parent element (or any further ancestor) behind this 
-  element. This is default mode.
- 
-- Absorb
-  Does not pass event after handling.
-
-- Capture
-  Makes this element handle events exclusively and even when it is no longer
-  hit by pointer. Element continues to handle event until it stops capturing
-  or is removed from the document.
