@@ -1,6 +1,8 @@
+cmake_minimum_required(VERSION 3.10)
+
 set(CMAKE_C_COMPILER "/usr/bin/clang")
 set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
-cmake_minimum_required(VERSION 3.10)
+
 project(hello LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -32,12 +34,14 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -fno-omit-frame-pointer")
 #	can be removed at link time with --gc-sections
 # -Wl,--gc-sections
 #   Linker option to remove unneeded sections
-# -s
+# -Wl,-s
 #   Run strip to reduce size of executable
 #-------------------------------------------------------------------------------
 set(CMAKE_CXX_FLAGS_RELEASE
   "-Os -ffunction-sections -fdata-sections")
-set(CMAKE_EXE_LINKER_FLAGS "-Wl,--gc-sections -Wl,-s")
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(CMAKE_EXE_LINKER_FLAGS "-Wl,--gc-sections -Wl,-s")
+endif()
 
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Os -g -fno-omit-frame-pointer")
 
@@ -222,8 +226,11 @@ target_link_libraries(aardvark
 # add_executable(paragraph_example src/examples/paragraph_example.cpp)
 # target_link_libraries(paragraph_example aardvark)
 
-add_executable(border_example src/examples/border_example.cpp)
-target_link_libraries(border_example aardvark)
+# add_executable(border_example src/examples/border_example.cpp)
+# target_link_libraries(border_example aardvark)
+
+add_executable(align_example src/examples/align_example.cpp)
+target_link_libraries(align_example aardvark)
 
 # tests
 # add_executable(tests

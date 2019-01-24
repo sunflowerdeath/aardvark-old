@@ -1,5 +1,4 @@
 #include "border.hpp"
-#include <iostream>
 
 namespace aardvark::elements {
 
@@ -171,7 +170,7 @@ void Border::paint_side(BorderSide& prev_side, BorderSide& side,
     // Draw different type of transition to next side depending on corner
     if (right_radius.is_square()) {
         if (side.color != next_side.color) {
-            // Draw triangle on the end of the line unless next side has same
+            // Draw triangle on the end of the line when next side has different
             // color
             paint_triangle(right_radius, prev_side, side, next_side, width,
                            false);
@@ -181,7 +180,6 @@ void Border::paint_side(BorderSide& prev_side, BorderSide& side,
         paint_arc(right_radius, side, width);
     }
 
-    // For some unknown reason `preTranslate` is not working same as `preConcat`
     transform_to_next_side(matrix, width);
     rotation += 90;
 };
