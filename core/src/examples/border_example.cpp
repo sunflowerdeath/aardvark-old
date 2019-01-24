@@ -15,15 +15,15 @@ int main() {
 
     // 1px full
     auto single = std::make_shared<aardvark::elements::Border>(
-        std::make_shared<aardvark::elements::Background>(SK_ColorBLACK),
+        std::make_shared<aardvark::elements::Background>(SK_ColorLTGRAY),
         aardvark::elements::BoxBorders::all(
             aardvark::elements::BorderSide{/* width */ 1,
-                                           /* color */ SK_ColorWHITE}),
+                                           /* color */ SK_ColorBLACK}),
         aardvark::elements::BoxRadiuses::all(
             aardvark::elements::Radius::circular(0)));
 
     auto different = std::make_shared<aardvark::elements::Border>(
-        std::make_shared<aardvark::elements::Background>(SK_ColorWHITE),
+        std::make_shared<aardvark::elements::Background>(SK_ColorLTGRAY),
         aardvark::elements::BoxBorders{
             aardvark::elements::BorderSide{/* width */ 1,
                                            /* color */ SK_ColorRED},  // top
@@ -32,13 +32,13 @@ int main() {
             aardvark::elements::BorderSide{/* width */ 1,
                                            /* color */ SK_ColorBLUE},  // bottom
             aardvark::elements::BorderSide{/* width */ 1,
-                                           /* color */ SK_ColorYELLOW}  // left
+                                           /* color */ SK_ColorGRAY}  // left
         },
         aardvark::elements::BoxRadiuses::all(
             aardvark::elements::Radius::circular(0)));
 
     auto different2 = std::make_shared<aardvark::elements::Border>(
-        std::make_shared<aardvark::elements::Background>(SK_ColorWHITE),
+        std::make_shared<aardvark::elements::Background>(SK_ColorLTGRAY),
         aardvark::elements::BoxBorders{
             aardvark::elements::BorderSide{/* width */ 1,
                                            /* color */ SK_ColorRED},  // top
@@ -53,7 +53,7 @@ int main() {
             aardvark::elements::Radius::circular(0)));
 
     auto rounded = std::make_shared<aardvark::elements::Border>(
-        std::make_shared<aardvark::elements::Background>(SK_ColorWHITE),
+        std::make_shared<aardvark::elements::Background>(SK_ColorLTGRAY),
         aardvark::elements::BoxBorders::all(
             aardvark::elements::BorderSide{/* width */ 2,
                                            /* color */ SK_ColorRED}),
@@ -61,7 +61,7 @@ int main() {
             aardvark::elements::Radius::circular(10)));
 
     auto rounded2 = std::make_shared<aardvark::elements::Border>(
-        std::make_shared<aardvark::elements::Background>(SK_ColorWHITE),
+        std::make_shared<aardvark::elements::Background>(SK_ColorLTGRAY),
         aardvark::elements::BoxBorders::all(
             aardvark::elements::BorderSide{/* width */ 10,
                                            /* color */ SK_ColorRED}),
@@ -70,6 +70,8 @@ int main() {
 
     auto root = std::make_shared<aardvark::elements::Stack>(
         std::vector<std::shared_ptr<aardvark::Element>>{
+            std::make_shared<aardvark::elements::Background>(SK_ColorWHITE),
+
             std::make_shared<aardvark::elements::Align>(
                 std::make_shared<aardvark::elements::FixedSize>(
                     single, aardvark::Size{100, 150}),
