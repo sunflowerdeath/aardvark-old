@@ -66,7 +66,7 @@ void Border::paint(bool is_changed) {
         clip_side(borders.bottom, borders.left, borders.top,
                   radiuses.bottomLeft, radiuses.topLeft);
     }
-    // child->clip = need_custom_clip ? std::optional(clip_path) : std::nullopt;
+    child->clip = need_custom_clip ? std::optional(clip_path) : std::nullopt;
     document->paint_element(child.get());
 };
 
@@ -74,6 +74,14 @@ SkPoint calc(SkMatrix& matrix, float left, float top) {
     SkPoint point{left, top};
     matrix.mapPoints(&point, 1);
     return point;
+};
+
+void transform_to_next_side(SkMatrix& matrix, float side_width) {
+    // For some unknown reason `preTranslate` is not working same as `preConcat`
+    SkMatrix m;
+    m.setTranslate(side_width, 0);
+    matrix.preConcat(m);
+    matrix.preRotate(90);
 };
 
 void Border::paint_triangle(Radius& radius, BorderSide& prev_side,
@@ -128,20 +136,19 @@ void Border::paint_side(BorderSide& prev_side, BorderSide& side,
                         Radius& right_radius) {
     auto width = rotation % 180 == 0 ? size.width : size.height;
     if (side.width == 0) {
-        matrix.preTranslate(width, 0);
-        matrix.preRotate(90);
+        transform_to_next_side(matrix, width);
         rotation += 90;
         return;
     }
 
-    int start;
+    float start;
     if (left_radius.is_square()) {
         if (prev_side.color == side.color) {
+            // When prev side has the same color, draw line from the beginning
             start = 0;
         } else {
-            // Draw triangle on the left side, unless left radius has same
-            // color. In that case we can just draw line from beginning of the
-            // side
+            // When prev side has different color, draw triangle on the left and
+            // then draw the line
             paint_triangle(left_radius, prev_side, side, next_side, width,
                            true);
             start = prev_side.width;
@@ -149,14 +156,15 @@ void Border::paint_side(BorderSide& prev_side, BorderSide& side,
     } else {
         start = left_radius.width;
     }
-    int end = width -
-              (right_radius.is_square() ? next_side.width : right_radius.width);
+    float end = width - (right_radius.is_square() ? next_side.width
+                                                  : right_radius.width);
 
     // Draw the line
     SkPaint line_paint;
     line_paint.setStyle(SkPaint::kStroke_Style);
     line_paint.setColor(side.color);
     line_paint.setStrokeWidth(side.width);
+    line_paint.setAntiAlias(true);
     canvas->drawLine(calc(matrix, start, side.width / 2),
                      calc(matrix, end, side.width / 2), line_paint);
 
@@ -174,10 +182,7 @@ void Border::paint_side(BorderSide& prev_side, BorderSide& side,
     }
 
     // For some unknown reason `preTranslate` is not working same as `preConcat`
-    SkMatrix m;
-    m.setTranslate(width, 0);
-    matrix.preConcat(m);
-    matrix.preRotate(90);
+    transform_to_next_side(matrix, width);
     rotation += 90;
 };
 
@@ -204,8 +209,8 @@ void Border::clip_side(BorderSide& prev_side, BorderSide& side,
                         false           // forceMoveTo
         );
     }
-    clip_matrix.postRotate(90);
-    clip_matrix.postTranslate(width, 0);
+
+    transform_to_next_side(clip_matrix, width);
     rotation += 90;
 };
 

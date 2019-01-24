@@ -10,7 +10,7 @@
 namespace aardvark::elements {
 
 struct BorderSide {
-    int width = 0;
+    float width = 0;
     SkColor color;
 };
 

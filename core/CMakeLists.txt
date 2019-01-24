@@ -222,11 +222,14 @@ target_link_libraries(aardvark
 # add_executable(paragraph_example src/examples/paragraph_example.cpp)
 # target_link_libraries(paragraph_example aardvark)
 
+add_executable(border_example src/examples/border_example.cpp)
+target_link_libraries(border_example aardvark)
+
 # tests
-add_executable(tests
-  src/tests/index.cpp
-  src/tests/base_types_test.cpp
-  src/tests/box_constraints_test.cpp
-  src/tests/responder_test.cpp
-  src/tests/text_span_test.cpp)
-target_link_libraries(tests Catch2 aardvark)
+# add_executable(tests
+  # src/tests/index.cpp
+  # src/tests/base_types_test.cpp
+  # src/tests/box_constraints_test.cpp
+  # src/tests/responder_test.cpp
+  # src/tests/text_span_test.cpp)
+# target_link_libraries(tests Catch2 aardvark)
