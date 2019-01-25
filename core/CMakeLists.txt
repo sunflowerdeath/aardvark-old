@@ -241,6 +241,7 @@ if(AARDVARK_BUILD_TESTS)
       src/tests/base_types_test.cpp
       src/tests/box_constraints_test.cpp
       src/tests/responder_test.cpp
+      src/tests/align_test.cpp
       src/tests/text_span_test.cpp)
     target_link_libraries(tests Catch2 aardvark)
 endif()

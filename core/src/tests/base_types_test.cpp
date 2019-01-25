@@ -34,8 +34,8 @@ TEST_CASE("Value", "[value]") {
     }
 
     SECTION("is_none") {
-        REQUIRE(!abs.is_none()) 
-        REQUIRE(!rel.is_none()) 
-        REQUIRE(none.is_none()) 
+        REQUIRE(!abs.is_none());
+        REQUIRE(!rel.is_none());
+        REQUIRE(none.is_none());
     }
 }
