@@ -63,7 +63,8 @@ int main() {
                 aardvark::elements::Radius::circular(0))),
         aardvark::Size{200 /* width */, 120 /* height */});
     auto elem = std::make_shared<aardvark::elements::Align>(
-        fixed_size, aardvark::value::abs(50), aardvark::value::abs(50));
+        fixed_size, aardvark::elements::EdgeInsets{aardvark::Value::abs(50),
+                                                   aardvark::Value::abs(50)});
     document->set_root(elem);
     auto state = AppState{fixed_size};
     app.user_pointer = (void*)(&state);

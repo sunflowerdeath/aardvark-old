@@ -27,9 +27,11 @@ void handle_events(aardvark::DesktopApp* app, aardvark::Event event) {
   } else if (std::holds_alternative<aardvark::MouseUpEvent>(event)) {
     std::cout << "mouse up" << std::endl;
   } else if (auto mousemove = std::get_if<aardvark::MouseMoveEvent>(&event)) {
-    state->align->left = aardvark::value::abs(mousemove->left - 20);
-    state->align->top = aardvark::value::abs(mousemove->top - 20);
-    state->align->document->change_element(state->align.get());
+      state->align->insets = aardvark::elements::EdgeInsets{
+          aardvark::Value::abs(mousemove->left - 20),  // left
+          aardvark::Value::abs(mousemove->top - 20)    // top
+      };
+      state->align->document->change_element(state->align.get());
   } else if (auto key = std::get_if<aardvark::KeyEvent>(&event)) {
     auto type = key->action == aardvark::KeyAction::Press
                    ? "press"
@@ -51,7 +53,8 @@ int main() {
   auto elem = std::make_shared<aardvark::elements::Align>(
       std::make_shared<aardvark::elements::FixedSize>(
           background, aardvark::Size{40 /* width */, 40 /* height */}),
-      aardvark::value::abs(0), aardvark::value::abs(0));
+      aardvark::elements::EdgeInsets{aardvark::Value::abs(0),
+                                     aardvark::Value::abs(0)});
   document->set_root(elem);
   auto state = AppState{elem, background};
   app.user_pointer = (void*)(&state);

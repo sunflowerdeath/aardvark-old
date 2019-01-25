@@ -38,11 +38,12 @@ int main() {
   std::vector<std::shared_ptr<aardvark::Element>> elements;
   for (int i = 0; i < 10; i++) {
     for (int j = 0; j < 10; j++) {
-      elements.push_back(std::make_shared<aardvark::elements::Align>(
-          make_elems(),
-          aardvark::value::abs(i * 55),  // left
-          aardvark::value::abs(j * 55)   // top
-          ));
+        elements.push_back(std::make_shared<aardvark::elements::Align>(
+            make_elems(),
+            aardvark::elements::EdgeInsets{
+                aardvark::Value::abs(i * 55),  // left
+                aardvark::Value::abs(j * 55)   // top
+            }));
     }
   }
 

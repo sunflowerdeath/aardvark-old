@@ -21,3 +21,21 @@ TEST_CASE("Position", "[position]") {
     }
 }
 
+TEST_CASE("Value", "[value]") {
+    auto total = 10;
+    auto abs = Value::abs(1);
+    auto rel = Value::rel(0.5);
+    auto none = Value::none();
+
+    SECTION("calc") {
+        REQUIRE(abs.calc(total) == 1);
+        REQUIRE(rel.calc(total) == 5);
+        REQUIRE(none.calc(total) == 0);
+    }
+
+    SECTION("is_none") {
+        REQUIRE(!abs.is_none()) 
+        REQUIRE(!rel.is_none()) 
+        REQUIRE(none.is_none()) 
+    }
+}

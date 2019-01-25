@@ -211,32 +211,36 @@ target_link_libraries(aardvark
 )
 
 # examples
-# add_executable(clip_example src/examples/clip.cpp)
-# target_link_libraries(clip_example aardvark)
+if(AARDVARK_BUILD_EXAMPLES)
+    add_executable(clip_example src/examples/clip_example.cpp)
+    target_link_libraries(clip_example aardvark)
 
-# add_executable(paint_cache_example src/examples/paint_cache.cpp)
-# target_link_libraries(paint_cache_example aardvark)
+    add_executable(paint_cache_example src/examples/paint_cache.cpp)
+    target_link_libraries(paint_cache_example aardvark)
 
-# add_executable(app_example src/examples/app_example.cpp)
-# target_link_libraries(app_example aardvark)
+    add_executable(app_example src/examples/app_example.cpp)
+    target_link_libraries(app_example aardvark)
 
-# add_executable(layer_example src/examples/layer_example.cpp)
-# target_link_libraries(layer_example aardvark)
+    add_executable(layer_example src/examples/layer_example.cpp)
+    target_link_libraries(layer_example aardvark)
 
-# add_executable(paragraph_example src/examples/paragraph_example.cpp)
-# target_link_libraries(paragraph_example aardvark)
+    add_executable(paragraph_example src/examples/paragraph_example.cpp)
+    target_link_libraries(paragraph_example aardvark)
 
-# add_executable(border_example src/examples/border_example.cpp)
-# target_link_libraries(border_example aardvark)
+    add_executable(border_example src/examples/border_example.cpp)
+    target_link_libraries(border_example aardvark)
 
-add_executable(align_example src/examples/align_example.cpp)
-target_link_libraries(align_example aardvark)
+    add_executable(align_example src/examples/align_example.cpp)
+    target_link_libraries(align_example aardvark)
+endif()
 
 # tests
-# add_executable(tests
-  # src/tests/index.cpp
-  # src/tests/base_types_test.cpp
-  # src/tests/box_constraints_test.cpp
-  # src/tests/responder_test.cpp
-  # src/tests/text_span_test.cpp)
-# target_link_libraries(tests Catch2 aardvark)
+if(AARDVARK_BUILD_TESTS)
+    add_executable(tests
+      src/tests/index.cpp
+      src/tests/base_types_test.cpp
+      src/tests/box_constraints_test.cpp
+      src/tests/responder_test.cpp
+      src/tests/text_span_test.cpp)
+    target_link_libraries(tests Catch2 aardvark)
+endif()

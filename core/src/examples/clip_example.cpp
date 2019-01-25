@@ -26,9 +26,10 @@ std::shared_ptr<aardvark::Element> make_elems(bool circle) {
                     red, std::make_shared<aardvark::elements::Align>(
                              std::make_shared<aardvark::elements::FixedSize>(
                                  blue, aardvark::Size{100, 100}),
-                             aardvark::value::abs(50),  // left
-                             aardvark::value::abs(50)   // top
-                             )},
+                             aardvark::elements::EdgeInsets{
+                                 aardvark::Value::abs(50),  // left
+                                 aardvark::Value::abs(50)   // top
+                             })},
                 true),
             circle ? clipper : aardvark::elements::Clip::default_clip),
         aardvark::Size{100, 100});
@@ -44,9 +45,10 @@ int main() {
         for (int j = 0; j < 5; j++) {
             elements.push_back(std::make_shared<aardvark::elements::Align>(
                 make_elems(i % 2 == 0),
-                aardvark::value::abs(i * 110),  // left
-                aardvark::value::abs(j * 110)   // top
-                ));
+                aardvark::elements::EdgeInsets{
+                    aardvark::Value::abs(i * 110),  // left
+                    aardvark::Value::abs(j * 110)   // top
+                }));
         }
     }
 
