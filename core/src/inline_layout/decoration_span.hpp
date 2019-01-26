@@ -12,7 +12,13 @@ namespace aardvark::inline_layout {
 struct Decoration {
     std::optional<SkColor> background;
     std::optional<BoxBorders> borders;
-    std::optional<Alignment> padding;
+    std::optional<EdgeInsets> insets;
+
+    // Returns new decoration with only left part
+    Decoration left();
+ 
+    // Returns new decoration with only right part
+    Decoration right();
 };
 
 class DecorationSpan : public Span {

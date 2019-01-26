@@ -12,6 +12,8 @@ namespace aardvark::elements {
 struct BorderSide {
     float width = 0;
     SkColor color;
+
+    static BorderSide none() { return BorderSide{0, SK_ColorBlack}; };
 };
 
 struct BoxBorders {
