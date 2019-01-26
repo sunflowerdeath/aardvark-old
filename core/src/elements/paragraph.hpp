@@ -1,19 +1,13 @@
+#pragma once
+
 #include "../base_types.hpp"
 #include "../element.hpp"
 #include "../inline_layout/inline_layout.hpp"
+#include "../inline_layout/utils.hpp"
 
 namespace aardvark::elements {
 
-class Paragraph;
-
-class ParagraphLine {
-  public:
-    ParagraphLine(Paragraph* paragraph) : paragraph(paragraph){};
-    float render(Position position);
-    Paragraph* paragraph;
-    std::vector<inline_layout::Span*> spans;
-    std::vector<std::shared_ptr<Element>> elements;
-};
+using ParagraphLine = std::vector<std::shared_ptr<inline_layout::Span>>;
 
 class Paragraph : public Element {
     friend ParagraphLine;
@@ -30,9 +24,10 @@ class Paragraph : public Element {
   private:
     inline_layout::LineMetrics metrics;
     void next_line();
-    void layout_span(inline_layout::Span* span);
+    void layout_span(std::shared_ptr<inline_layout::Span> span_sp);
     std::vector<ParagraphLine> lines;
     ParagraphLine* current_line;
+    std::vector<std::shared_ptr<Element>> elements;
     float current_height;
     float total_width;
     float remaining_width;

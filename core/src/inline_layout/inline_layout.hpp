@@ -10,10 +10,6 @@
 
 namespace aardvark::inline_layout {
 
-float measure_text_width(const UnicodeString& text, const SkPaint& paint);
-
-std::string icu_to_std_string(const UnicodeString& text);
-
 enum class LineBreak {
     // Use default unicode line breaking algorithm
     normal,
@@ -73,10 +69,26 @@ int text_center(LineMetrics line, LineMetrics span);
 }  // namespace vert_align
 
 struct InlineLayoutResult {
-    std::optional<Span*> fit_span;
+    enum class Type { fit, split, wrap };
+
+    Type type;
     float width;
     LineMetrics metrics;
-    std::optional<Span*> remainder_span;
+    std::optional<std::shared_ptr<Span>> fit_span = std::nullopt;
+    std::optional<std::shared_ptr<Span>> remainder_span = std::nullopt;
+
+    static InlineLayoutResult fit(float width, LineMetrics metrics) {
+        return InlineLayoutResult{Type::fit, width, metrics};
+    };
+
+    static InlineLayoutResult split(float width, LineMetrics metrics,
+                                    std::shared_ptr<Span> fit_span,
+                                    std::shared_ptr<Span> remainder_span) {
+        return InlineLayoutResult{Type::split, width, metrics, fit_span,
+                                  remainder_span};
+    };
+
+    static InlineLayoutResult wrap() { return InlineLayoutResult{Type::wrap}; };
 };
 
 // Representation of the selected range in the inline container element
@@ -125,13 +137,19 @@ class Span {
     // Should be set by container during layout
     float width;
     LineMetrics metrics;
-};
 
-class SpacingSpan : public Span {
-  public:
-    SpacingSpan(int width, std::optional<SpanBase> base_span = std::nullopt)
-        : width(width), Span(base_span){};
-    int width;
+    // To layout span you should use static method, because span can not return
+    // shared pointer to self
+    static InlineLayoutResult layout(std::shared_ptr<Span> span_sp,
+                                     InlineConstraints constraints) {
+        auto result = span_sp->layout(constraints);
+        if (result.type == InlineLayoutResult::Type::fit) {
+            result.fit_span = span_sp;
+        } else if (result.type == InlineLayoutResult::Type::wrap) {
+            result.remainder_span = span_sp;
+        }
+        return result;
+    };
 };
 
 };  // namespace aardvark::inline_layout

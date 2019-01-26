@@ -2,16 +2,6 @@
 
 namespace aardvark::inline_layout {
 
-float measure_text_width(const UnicodeString& text, const SkPaint& paint) {
-    return paint.measureText(text.getBuffer(), text.length() * 2);
-};
-
-std::string icu_to_std_string(const UnicodeString& text) {
-    std::string std_string;
-    text.toUTF8String(std_string);
-    return std_string;
-};
-
 LineMetrics LineMetrics::from_paint(const SkPaint& paint) {
     SkPaint::FontMetrics metrics;
     (void)paint.getFontMetrics(&metrics);

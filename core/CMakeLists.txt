@@ -186,6 +186,7 @@ add_library(aardvark
   src/responder.cpp
   src/inline_layout/inline_layout.cpp
   src/inline_layout/text_span.cpp
+  src/inline_layout/utils.cpp
   src/elements/align.cpp
   src/elements/background.cpp
   src/elements/border.cpp
@@ -212,6 +213,12 @@ target_link_libraries(aardvark
 
 # examples
 if(AARDVARK_BUILD_EXAMPLES)
+    add_executable(align_example src/examples/align_example.cpp)
+    target_link_libraries(align_example aardvark)
+
+    add_executable(border_example src/examples/border_example.cpp)
+    target_link_libraries(border_example aardvark)
+
     add_executable(clip_example src/examples/clip_example.cpp)
     target_link_libraries(clip_example aardvark)
 
@@ -227,11 +234,6 @@ if(AARDVARK_BUILD_EXAMPLES)
     add_executable(paragraph_example src/examples/paragraph_example.cpp)
     target_link_libraries(paragraph_example aardvark)
 
-    add_executable(border_example src/examples/border_example.cpp)
-    target_link_libraries(border_example aardvark)
-
-    add_executable(align_example src/examples/align_example.cpp)
-    target_link_libraries(align_example aardvark)
 endif()
 
 # tests

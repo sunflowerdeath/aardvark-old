@@ -6,6 +6,7 @@
 #include "../element.hpp"
 #include "../elements/text.hpp"
 #include "inline_layout.hpp"
+#include "utils.hpp"
 
 namespace aardvark::inline_layout {
 
@@ -18,10 +19,9 @@ class TextSpan : public Span {
         std::optional<SpanSelection> selection) override;
     UnicodeString text;
     SkPaint paint;
+
   private:
     BreakIterator* linebreaker;
-    std::unique_ptr<TextSpan> fit_span;
-    std::unique_ptr<TextSpan> remainder_span;
 };
 
 }  // namespace aardvark::inline_layout

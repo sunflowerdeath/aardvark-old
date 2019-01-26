@@ -6,6 +6,7 @@
 #include "../elements/border.hpp"
 #include "../elements/background.hpp"
 #include "inline_layout.hpp"
+#include "utils.hpp"
 
 namespace aardvark::inline_layout {
 
@@ -31,9 +32,10 @@ class DecorationSpan : public Span {
         std::optional<SpanSelection> selection) override;
     std::vector<std::shared_ptr<Span>> content;
     Decoration decoration;
-  private:
-    std::unique_ptr<DecorationSpan> fit_span;
-    std::unique_ptr<DecorationSpan> remainder_span;
+
+  public:
+    std::unique_ptr<Span> fit_span;
+    std::unique_ptr<Span> remainder_span;
 };
 
 }  // namespace aardvark::inline_layout

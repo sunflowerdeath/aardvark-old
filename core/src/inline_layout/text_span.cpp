@@ -48,38 +48,28 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
     }
 
     if (end == BreakIterator::DONE) {
-        // All text fits in the current line
-        fit_span.reset();
-        remainder_span.reset();
-        return InlineLayoutResult{
-            this,                            // fit_span
-            acc_width,                       // width
-            LineMetrics::from_paint(paint),  // line_metrics
-            std::nullopt                     // remainder_span
-        };
+        return InlineLayoutResult::fit(
+            /* width */ acc_width,
+            /* metrics */ LineMetrics::from_paint(paint));
     } else if (start == linebreaker->first()) {
-        // Nothing did fit
-        fit_span.reset();
-        remainder_span.reset();
-        return InlineLayoutResult{
-            std::nullopt,   // fit_span
-            0,              // width
-            LineMetrics(),  // line_metrics
-            this            // remainder_span
-        };
+        return InlineLayoutResult::wrap();
     } else {
        auto fit_text = text.tempSubString(0, start);
        auto remainder_text = text.tempSubString(start);
-       fit_span = std::make_unique<TextSpan>(fit_text, paint,
-                                             SpanBase{/* base_span */ this,
-                                                      /* prev_offset */ 0});
-       remainder_span = std::make_unique<TextSpan>(
+       auto fit_span =
+           std::make_shared<TextSpan>(fit_text, paint,
+                                      SpanBase{/* base_span */ this,
+                                               /* prev_offset */ 0});
+       auto remainder_span = std::make_shared<TextSpan>(
            remainder_text, paint,
            SpanBase{/* base_span */ this,
                     /* prev_offset */ fit_text.countChar32()});
-       return InlineLayoutResult{fit_span.get(), acc_width,
-                                 LineMetrics::from_paint(paint),
-                                 remainder_span.get()};
+       return InlineLayoutResult::split(
+           acc_width,                       // width
+           LineMetrics::from_paint(paint),  // metrics
+           fit_span,                        // fit_span
+           remainder_span                   // remainder_span
+       );
     }
 };
 

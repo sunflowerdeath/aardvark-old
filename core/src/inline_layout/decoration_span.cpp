@@ -33,6 +33,7 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
             continue;
         }
 
+        // auto result = Span::layout(span, constraints);
         auto result = span->layout(constraints);
         if (result.fit_span != std::nullopt) {
             fit_spans.push_back(span);
@@ -68,9 +69,9 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
         };
     } else {
         // split
-        fit_span = std::make_unique<DecorationSpan>(
+        auto fit_span = std::make_unique<DecorationSpan>(
             fit_spans, decoration.left(), SpanBase{this, 0});
-        remainder_span = std::make_unique<DecorationSpan>(
+        auto remainder_span = std::make_unique<DecorationSpan>(
             remaining_spans, decoration.right(),
             SpanBase{this, fit_spans.size()});
         return InlineLayoutResult{
@@ -90,8 +91,8 @@ std::shared_ptr<Element> DecorationSpan::render(
             decoration.background.value());
         container->children.push_back(background);
     }
-    auto line = Line(content);
-    auto height = line.render_to(container);
+    auto metrics = calc_combined_metrics(spans);
+    render_spans(container, spans, metrics, Position{0, 0});
     auto align = 0;
     if (decoration.insets != std::nullopt) {
         auto insets = decoration.insets.value();
