@@ -184,7 +184,8 @@ add_library(aardvark
   src/element.cpp
   src/paint_cache.cpp
   src/responder.cpp
-  src/inline_layout/inline_layout.cpp
+  src/inline_layout/span.cpp
+  src/inline_layout/line_metrics.cpp
   src/inline_layout/text_span.cpp
   src/inline_layout/utils.cpp
   src/elements/align.cpp
@@ -202,8 +203,8 @@ add_library(aardvark
 
 if("${PLATFORM}" STREQUAL "DESKTOP")
   target_sources(aardvark PRIVATE
-    src/desktop_window.cpp
-    src/desktop_app.cpp
+    src/platforms/desktop/desktop_window.cpp
+    src/platforms/desktop/desktop_app.cpp
   )
 endif()
 
@@ -213,23 +214,23 @@ target_link_libraries(aardvark
 
 # examples
 if(AARDVARK_BUILD_EXAMPLES)
-    # add_executable(align_example src/examples/align_example.cpp)
-    # target_link_libraries(align_example aardvark)
+    add_executable(align_example src/examples/align_example.cpp)
+    target_link_libraries(align_example aardvark)
 
-    # add_executable(border_example src/examples/border_example.cpp)
-    # target_link_libraries(border_example aardvark)
+    add_executable(border_example src/examples/border_example.cpp)
+    target_link_libraries(border_example aardvark)
 
-    # add_executable(clip_example src/examples/clip_example.cpp)
-    # target_link_libraries(clip_example aardvark)
+    add_executable(clip_example src/examples/clip_example.cpp)
+    target_link_libraries(clip_example aardvark)
 
-    # add_executable(paint_cache_example src/examples/paint_cache.cpp)
-    # target_link_libraries(paint_cache_example aardvark)
+    add_executable(paint_cache_example src/examples/paint_cache.cpp)
+    target_link_libraries(paint_cache_example aardvark)
 
-    # add_executable(app_example src/examples/app_example.cpp)
-    # target_link_libraries(app_example aardvark)
+    add_executable(app_example src/examples/app_example.cpp)
+    target_link_libraries(app_example aardvark)
 
-    # add_executable(layer_example src/examples/layer_example.cpp)
-    # target_link_libraries(layer_example aardvark)
+    add_executable(layer_example src/examples/layer_example.cpp)
+    target_link_libraries(layer_example aardvark)
 
     add_executable(paragraph_example src/examples/paragraph_example.cpp)
     target_link_libraries(paragraph_example aardvark)

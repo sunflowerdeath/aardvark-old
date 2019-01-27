@@ -78,4 +78,6 @@ std::shared_ptr<Element> TextSpan::render(
     return std::make_shared<elements::Text>(text, paint);
 };
 
+// TODO destroy linebreaker
+
 }  // namespace aardvark::inline_layout

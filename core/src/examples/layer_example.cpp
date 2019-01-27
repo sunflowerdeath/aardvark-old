@@ -1,6 +1,4 @@
-#include <iostream>
-#include <stdio.h>
-#include "../desktop_app.hpp"
+#include "../platforms/desktop/desktop_app.hpp"
 #include "../base_types.hpp"
 #include "../elements/elements.hpp"
 

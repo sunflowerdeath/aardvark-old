@@ -4,7 +4,6 @@
 #include "../base_types.hpp"
 #include "../box_constraints.hpp"
 #include "../element.hpp"
-#include "SkCanvas.h"
 
 namespace aardvark::elements {
 

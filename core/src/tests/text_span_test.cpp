@@ -1,7 +1,6 @@
 #include "Catch2/catch.hpp"
 #include "../base_types.hpp"
 #include "../inline_layout/text_span.hpp"
-#include <iostream>
 
 using namespace aardvark;
 

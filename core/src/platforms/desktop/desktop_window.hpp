@@ -3,7 +3,7 @@
 #include <iostream>
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
-#include "base_types.hpp"
+#include "../../base_types.hpp"
 
 namespace aardvark {
 

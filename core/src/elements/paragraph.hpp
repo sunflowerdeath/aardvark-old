@@ -2,25 +2,10 @@
 
 #include "../base_types.hpp"
 #include "../element.hpp"
-#include "../inline_layout/inline_layout.hpp"
+#include "../inline_layout/span.hpp"
 #include "../inline_layout/utils.hpp"
 
 namespace aardvark::elements {
-
-enum class LineBreak {
-    // Use default unicode line breaking algorithm
-    normal,
-
-    // Never allow break text
-    never,
-
-    // Line break is allowed between any two characters
-    anywhere,
-
-    // If word can not fit in the line using default breaking algorithm, it is
-    // allowed to break it at arbitrary point
-    overflow
-};
 
 struct Selection {
     inline_layout::Span* base;

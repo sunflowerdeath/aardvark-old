@@ -5,10 +5,25 @@
 #include <unicode/brkiter.h>
 #include "../element.hpp"
 #include "../elements/text.hpp"
-#include "inline_layout.hpp"
+#include "span.hpp"
 #include "utils.hpp"
 
 namespace aardvark::inline_layout {
+
+enum class LineBreak {
+    // Use default unicode line breaking algorithm
+    normal,
+
+    // Never allow break text
+    never,
+
+    // Line break is allowed between any two characters
+    anywhere,
+
+    // If word can not fit in the line using default breaking algorithm, it is
+    // allowed to break it at arbitrary point
+    overflow
+};
 
 class TextSpan : public Span {
   public:

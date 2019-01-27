@@ -1,12 +1,8 @@
-#include <stdio.h>
-#include <unicode/unistr.h>
 #include <iostream>
+#include <unicode/unistr.h>
 #include "../base_types.hpp"
-#include "../desktop_app.hpp"
+#include "../platforms/desktop/desktop_app.hpp"
 #include "../elements/elements.hpp"
-#include "../inline_layout/inline_layout.hpp"
-#include "../inline_layout/text_span.hpp"
-#include "SkPaint.h"
 
 int main() {
     auto app = aardvark::DesktopApp();
@@ -118,8 +114,5 @@ int main() {
         });
 
     document->set_root(root);
-    // auto state = AppState{fixed_size};
-    // app.user_pointer = (void*)(&state);
-    // app.event_handler = &handle_events;
     app.run();
 };

@@ -6,7 +6,7 @@
 #include <GLFW/glfw3.h>
 
 #include "../base_types.hpp"
-#include "../desktop_window.hpp"
+#include "../platforms/desktop/desktop_window.hpp"
 #include "../layer.hpp"
 #include "../document.hpp"
 #include "../elements/elements.hpp"

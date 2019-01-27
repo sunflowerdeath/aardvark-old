@@ -1,11 +1,9 @@
 #include <iostream>
-#include <stdio.h>
 #include <unicode/unistr.h>
 #include "SkPaint.h"
-#include "../desktop_app.hpp"
+#include "../platforms/desktop/desktop_app.hpp"
 #include "../base_types.hpp"
 #include "../elements/elements.hpp"
-#include "../inline_layout/inline_layout.hpp"
 #include "../inline_layout/text_span.hpp"
 
 struct AppState {

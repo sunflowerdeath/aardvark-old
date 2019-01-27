@@ -1,8 +1,8 @@
 #include <iostream>
 #include <stdio.h>
 #include "SkPaint.h"
-#include "../desktop_app.hpp"
 #include "../base_types.hpp"
+#include "../platforms/desktop/desktop_app.hpp"
 #include "../elements/elements.hpp"
 
 std::shared_ptr<aardvark::Element> make_box(

@@ -6,7 +6,7 @@
 #include "../base_types.hpp"
 #include "../box_constraints.hpp"
 #include "../element.hpp"
-#include "../inline_layout/inline_layout.hpp"
+#include "../inline_layout/line_metrics.hpp"
 
 namespace aardvark::elements {
 

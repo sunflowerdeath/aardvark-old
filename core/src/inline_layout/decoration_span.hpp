@@ -5,7 +5,7 @@
 #include "../element.hpp"
 #include "../elements/border.hpp"
 #include "../elements/background.hpp"
-#include "inline_layout.hpp"
+#include "span.hpp"
 #include "utils.hpp"
 
 namespace aardvark::inline_layout {

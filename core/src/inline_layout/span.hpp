@@ -4,7 +4,7 @@
 #include <optional>
 #include "../base_types.hpp"
 #include "../element.hpp"
-#include "SkPaint.h"
+#include "line_metrics.hpp"
 
 namespace aardvark::inline_layout {
 
@@ -15,17 +15,6 @@ struct InlineConstraints {
     float total_line_width;
     float padding_before;
     float padding_after;
-};
-
-struct LineMetrics {
-    float height;
-    float baseline;
-    float x_height;
-
-    LineMetrics add(int added);
-    LineMetrics scale(int ratio);
-
-    static LineMetrics from_paint(const SkPaint& paint);
 };
 
 namespace vert_align {
@@ -103,7 +92,7 @@ class Span {
     LineMetrics metrics;
 
     // To layout span you should use static method, because span can not return
-    // shared pointer to self
+    // shared pointer to itself
     static InlineLayoutResult layout(std::shared_ptr<Span> span_sp,
                                      InlineConstraints constraints);
 };

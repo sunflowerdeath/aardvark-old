@@ -5,10 +5,10 @@
 #include <functional>
 #include <memory>
 #include <GLFW/glfw3.h>
-#include "base_types.hpp"
+#include "../../base_types.hpp"
+#include "../../events.hpp"
+#include "../../document.hpp"
 #include "desktop_window.hpp"
-#include "events.hpp"
-#include "document.hpp"
 
 namespace aardvark {
 
