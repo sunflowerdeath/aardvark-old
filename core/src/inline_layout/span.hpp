@@ -72,6 +72,8 @@ class Span {
   public:
     Span(std::optional<SpanBase> base_span = std::nullopt){};
 
+    virtual ~Span(){};
+
     // Defines how the content should be lay out by the container
     virtual InlineLayoutResult layout(InlineConstraints constraints){};
 

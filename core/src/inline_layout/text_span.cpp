@@ -17,6 +17,10 @@ TextSpan::TextSpan(UnicodeString text, SkPaint paint,
     }
 };
 
+TextSpan::~TextSpan() {
+    delete linebreaker;
+};
+
 InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
     linebreaker->setText(text);
 

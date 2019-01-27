@@ -29,6 +29,7 @@ class TextSpan : public Span {
   public:
     TextSpan(UnicodeString text, SkPaint paint,
              std::optional<SpanBase> base_span = std::nullopt);
+    ~TextSpan() override;
     InlineLayoutResult layout(InlineConstraints constraints) override;
     std::shared_ptr<Element> render(
         std::optional<SpanSelectionRange> selection) override;
