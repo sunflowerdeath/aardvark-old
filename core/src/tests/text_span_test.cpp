@@ -8,7 +8,7 @@ TEST_CASE("inline_layout::TextSpan", "[inline_layout] [text_span]" ) {
     auto text = UnicodeString((UChar*)u"Hello, World!");
     SkPaint paint;
     paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
-    auto span = inline_layout::TextSpan(text, paint);
+    auto span = std::make_shared<inline_layout::TextSpan>(text, paint);
     auto text_width = inline_layout::measure_text_width(text, paint);
     auto hello = UnicodeString((UChar*)u"Hello, ");
     auto world = UnicodeString((UChar*)u"World!");
@@ -22,8 +22,8 @@ TEST_CASE("inline_layout::TextSpan", "[inline_layout] [text_span]" ) {
             0,     // padding_before
             0      // padding_after
         };
-        auto result = span.layout(constraints);
-        REQUIRE(result.fit_span == &span);
+        auto result = inline_layout::Span::layout(span, constraints);
+        REQUIRE(result.fit_span.value() == span);
         REQUIRE(result.width == text_width);
         REQUIRE(result.remainder_span == std::nullopt);
     }
@@ -35,9 +35,9 @@ TEST_CASE("inline_layout::TextSpan", "[inline_layout] [text_span]" ) {
             0,     // padding_before
             0      // padding_after
         };
-        auto result = span.layout(constraints);
+        auto result = inline_layout::Span::layout(span, constraints);
         REQUIRE(result.fit_span == std::nullopt);
-        REQUIRE(result.remainder_span == &span);
+        REQUIRE(result.remainder_span.value() == span);
     }
 
     SECTION("splits") {
@@ -47,27 +47,26 @@ TEST_CASE("inline_layout::TextSpan", "[inline_layout] [text_span]" ) {
             0,               // padding_before
             0                // padding_after
         };
-        auto result = span.layout(constraints);
-        auto fit_span = (inline_layout::TextSpan*)result.fit_span.value();
+        auto result = inline_layout::Span::layout(span, constraints);
+        auto fit_span = (inline_layout::TextSpan*)result.fit_span.value().get();
         auto remainder_span =
-            (inline_layout::TextSpan*)result.remainder_span.value();
+            (inline_layout::TextSpan*)result.remainder_span.value().get();
         REQUIRE(fit_span->text == hello);
         REQUIRE(result.width == hello_width);
         REQUIRE(remainder_span->text == world);
     }
 
     SECTION("impossible to split") {
-        auto hello_span = inline_layout::TextSpan(hello, paint);
+        auto hello_span =
+            std::make_shared<inline_layout::TextSpan>(hello, paint);
         auto constraints = inline_layout::InlineConstraints{
             hello_width - 10,  // remaining_width
             hello_width - 10,  // total_width
             0,                 // padding_before
             0                  // padding_after
         };
-        auto result = hello_span.layout(constraints);
-        // auto fit_span = (inline_layout::TextSpan*)result.fit_span.value();
-        // REQUIRE(fit_span->text == hello);
-        REQUIRE(result.fit_span == &hello_span);
+        auto result = inline_layout::Span::layout(hello_span, constraints);
+        REQUIRE(result.fit_span.value() == hello_span);
         REQUIRE(result.remainder_span == std::nullopt);
     }
 }
