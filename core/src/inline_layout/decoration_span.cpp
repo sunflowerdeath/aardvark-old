@@ -24,8 +24,8 @@ DecorationSpan::DecorationSpan(std::vector<std::shared_ptr<Span>> content,
     : content(content), decoration(decoration), Span(base_span){};
 
 InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
-    std::vector<Span*> fit_spans;
-    std::vector<Span*> remaining_spans;
+    std::vector<std::shared_ptr<Span>> fit_spans;
+    std::vector<std::shared_ptr<Span>> remaining_spans;
     auto reached_end = false;
     for (auto& span : content) {
         if (reached_end) {
@@ -33,8 +33,7 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
             continue;
         }
 
-        // auto result = Span::layout(span, constraints);
-        auto result = span->layout(constraints);
+        auto result = Span::layout(span, constraints);
         if (result.fit_span != std::nullopt) {
             fit_spans.push_back(span);
             fit_span->metrics = result.metrics;
@@ -48,38 +47,23 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
     }
 
     if (remaining_spans.size() == 0) {
-        // all fit
-        fit_span.reset();
-        remainder_span.reset();
-        return InlineLayoutResult{
-            this,           // fit_span
-            0,              // width
-            LineMetrics(),  // metrics
-            std::nullopt    // remainder_span
-        };
+        return InlineLayoutResult::fit(0,             // width
+                                       LineMetrics()  // metrics
+        );
     } else if (fit_spans.size() == 0) {
-        // nothing fit
-        fit_span.reset();
-        remainder_span.reset();
-        return InlineLayoutResult{
-            std::nullopt,   // fit_span
-            0,              // width
-            LineMetrics(),  // metrics
-            this            // remainder_span
-        };
+        return InlineLayoutResult::wrap();
     } else {
         // split
-        auto fit_span = std::make_unique<DecorationSpan>(
+        auto fit_span = std::make_shared<DecorationSpan>(
             fit_spans, decoration.left(), SpanBase{this, 0});
-        auto remainder_span = std::make_unique<DecorationSpan>(
+        auto remainder_span = std::make_shared<DecorationSpan>(
             remaining_spans, decoration.right(),
             SpanBase{this, fit_spans.size()});
-        return InlineLayoutResult{
-            fit_span.get(),       // fit_span
-            0,                    // width
-            LineMetrics(),        // metrics
-            remainder_span.get()  // remainder_span
-        };
+        return InlineLayoutResult::split(fit_span,       // fit_span
+                                         0,              // width
+                                         LineMetrics(),  // metrics
+                                         remainder_span  // remainder_span
+        );
     }
 };
 
@@ -92,7 +76,7 @@ std::shared_ptr<Element> DecorationSpan::render(
         container->children.push_back(background);
     }
     auto metrics = calc_combined_metrics(spans);
-    render_spans(container, spans, metrics, Position{0, 0});
+    render_spans(spans, metrics, Position{0, 0}, &container->children);
     auto align = 0;
     if (decoration.insets != std::nullopt) {
         auto insets = decoration.insets.value();

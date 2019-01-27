@@ -2,28 +2,11 @@
 
 #include <memory>
 #include <optional>
-#include <variant>
-#include <unicode/unistr.h>
 #include "../base_types.hpp"
 #include "../element.hpp"
 #include "SkPaint.h"
 
 namespace aardvark::inline_layout {
-
-enum class LineBreak {
-    // Use default unicode line breaking algorithm
-    normal,
-
-    // Never allow break text
-    never,
-
-    // Line break is allowed between any two characters
-    anywhere,
-
-    // If word can not fit in the line using default breaking algorithm, it is
-    // allowed to break it at arbitrary point
-    overflow
-};
 
 class Span;
 
@@ -91,23 +74,16 @@ struct InlineLayoutResult {
     static InlineLayoutResult wrap() { return InlineLayoutResult{Type::wrap}; };
 };
 
-// Representation of the selected range in the inline container element
-struct Selection {
-    Span* base;
-    int base_offset;
-    Span* extent;
-    int extent_offset;
+struct SpanSelectionEdge {
+    enum class Type {start, offset, end};
+    Type type;
+    int offset = 0;
 };
 
-struct s_start {};
-struct s_end {};
-struct s_offset {
-    s_offset(int pos) : pos(pos){};
-    int pos;
+struct SpanSelectionRange {
+    SpanSelectionEdge from;
+    SpanSelectionEdge to;
 };
-
-// Selected range in the span object
-using SpanSelection = std::variant<s_start, s_end, s_offset>;
 
 struct SpanBase {
     Span* span;
@@ -124,7 +100,7 @@ class Span {
 
     // Returns elements that represent this span in the document
     virtual std::shared_ptr<Element> render(
-        std::optional<SpanSelection> selection){};
+        std::optional<SpanSelectionRange> selection){};
 
     // Calculates position of the span in the line, default is baseline
     virtual float vert_align(LineMetrics line, LineMetrics span) {

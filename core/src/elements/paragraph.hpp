@@ -7,11 +7,31 @@
 
 namespace aardvark::elements {
 
+enum class LineBreak {
+    // Use default unicode line breaking algorithm
+    normal,
+
+    // Never allow break text
+    never,
+
+    // Line break is allowed between any two characters
+    anywhere,
+
+    // If word can not fit in the line using default breaking algorithm, it is
+    // allowed to break it at arbitrary point
+    overflow
+};
+
+struct Selection {
+    inline_layout::Span* base;
+    int base_offset;
+    inline_layout::Span* extent;
+    int extent_offset;
+};
+
 using ParagraphLine = std::vector<std::shared_ptr<inline_layout::Span>>;
 
 class Paragraph : public Element {
-    friend ParagraphLine;
-
   public:
     Paragraph(std::vector<std::shared_ptr<inline_layout::Span>> content,
               inline_layout::LineMetrics metrics,

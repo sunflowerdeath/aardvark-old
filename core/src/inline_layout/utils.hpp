@@ -1,5 +1,6 @@
 #pragma once
 
+#include <unicode/unistr.h>
 #include "../base_types.hpp"
 #include "../elements/elements.hpp"
 #include "inline_layout.hpp"

@@ -74,7 +74,7 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
 };
 
 std::shared_ptr<Element> TextSpan::render(
-    std::optional<SpanSelection> selection) {
+    std::optional<SpanSelectionRange> selection) {
     return std::make_shared<elements::Text>(text, paint);
 };
 
