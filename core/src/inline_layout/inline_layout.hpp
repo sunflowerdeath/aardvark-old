@@ -22,13 +22,8 @@ struct LineMetrics {
     float baseline;
     float x_height;
 
-    LineMetrics add(int added) {
-        return LineMetrics{height + added, baseline, x_height};
-    };
-
-    LineMetrics scale(int ratio) {
-        return LineMetrics{height * ratio, baseline, x_height};
-    };
+    LineMetrics add(int added);
+    LineMetrics scale(int ratio);
 
     static LineMetrics from_paint(const SkPaint& paint);
 };
@@ -60,18 +55,11 @@ struct InlineLayoutResult {
     std::optional<std::shared_ptr<Span>> fit_span = std::nullopt;
     std::optional<std::shared_ptr<Span>> remainder_span = std::nullopt;
 
-    static InlineLayoutResult fit(float width, LineMetrics metrics) {
-        return InlineLayoutResult{Type::fit, width, metrics};
-    };
-
+    static InlineLayoutResult fit(float width, LineMetrics metrics);
     static InlineLayoutResult split(float width, LineMetrics metrics,
                                     std::shared_ptr<Span> fit_span,
-                                    std::shared_ptr<Span> remainder_span) {
-        return InlineLayoutResult{Type::split, width, metrics, fit_span,
-                                  remainder_span};
-    };
-
-    static InlineLayoutResult wrap() { return InlineLayoutResult{Type::wrap}; };
+                                    std::shared_ptr<Span> remainder_span);
+    static InlineLayoutResult wrap();
 };
 
 struct SpanSelectionEdge {
@@ -117,15 +105,7 @@ class Span {
     // To layout span you should use static method, because span can not return
     // shared pointer to self
     static InlineLayoutResult layout(std::shared_ptr<Span> span_sp,
-                                     InlineConstraints constraints) {
-        auto result = span_sp->layout(constraints);
-        if (result.type == InlineLayoutResult::Type::fit) {
-            result.fit_span = span_sp;
-        } else if (result.type == InlineLayoutResult::Type::wrap) {
-            result.remainder_span = span_sp;
-        }
-        return result;
-    };
+                                     InlineConstraints constraints);
 };
 
 };  // namespace aardvark::inline_layout

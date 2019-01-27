@@ -2,6 +2,14 @@
 
 namespace aardvark::inline_layout {
 
+LineMetrics LineMetrics::add(int added) {
+    return LineMetrics{height + added, baseline, x_height};
+};
+
+LineMetrics LineMetrics::scale(int ratio) {
+    return LineMetrics{height * ratio, baseline, x_height};
+}
+
 LineMetrics LineMetrics::from_paint(const SkPaint& paint) {
     SkPaint::FontMetrics metrics;
     (void)paint.getFontMetrics(&metrics);
@@ -33,5 +41,31 @@ int text_center(LineMetrics line, LineMetrics span) {
 };
 
 }  // namespace vert_align
+
+InlineLayoutResult InlineLayoutResult::fit(float width, LineMetrics metrics) {
+    return InlineLayoutResult{Type::fit, width, metrics};
+};
+
+InlineLayoutResult InlineLayoutResult::split(
+    float width, LineMetrics metrics, std::shared_ptr<Span> fit_span,
+    std::shared_ptr<Span> remainder_span) {
+    return InlineLayoutResult{Type::split, width, metrics, fit_span,
+                              remainder_span};
+};
+
+InlineLayoutResult InlineLayoutResult::wrap() {
+    return InlineLayoutResult{Type::wrap};
+};
+
+InlineLayoutResult Span::layout(std::shared_ptr<Span> span_sp,
+                                InlineConstraints constraints) {
+    auto result = span_sp->layout(constraints);
+    if (result.type == InlineLayoutResult::Type::fit) {
+        result.fit_span = span_sp;
+    } else if (result.type == InlineLayoutResult::Type::wrap) {
+        result.remainder_span = span_sp;
+    }
+    return result;
+};
 
 } // namespace aardvark::inline_layout
