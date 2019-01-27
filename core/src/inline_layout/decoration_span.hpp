@@ -12,14 +12,14 @@ namespace aardvark::inline_layout {
 
 struct Decoration {
     std::optional<SkColor> background;
-    std::optional<BoxBorders> borders;
-    std::optional<EdgeInsets> insets;
+    std::optional<elements::BoxBorders> borders;
+    std::optional<elements::EdgeInsets> insets;
 
-    // Returns new decoration with only left part
-    Decoration left();
+    // Splits decoration into left and right parts
+    std::pair<Decoration, Decoration> split();
  
-    // Returns new decoration with only right part
-    Decoration right();
+    // Calculates widths of left and right paddings
+    std::pair<float, float> get_paddings(float total_line_width);
 };
 
 class DecorationSpan : public Span {
@@ -29,13 +29,9 @@ class DecorationSpan : public Span {
                    std::optional<SpanBase> base_span = std::nullopt);
     InlineLayoutResult layout(InlineConstraints constraints) override;
     std::shared_ptr<Element> render(
-        std::optional<SpanSelection> selection) override;
+        std::optional<SpanSelectionRange> selection) override;
     std::vector<std::shared_ptr<Span>> content;
     Decoration decoration;
-
-  public:
-    std::unique_ptr<Span> fit_span;
-    std::unique_ptr<Span> remainder_span;
 };
 
 }  // namespace aardvark::inline_layout

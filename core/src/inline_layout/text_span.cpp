@@ -23,15 +23,21 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
     // Iterate through break points
     auto acc_width = 0.0f;  // Accumulated width
     auto segment_width = 0.0f;
-    auto start = linebreaker->first();
+    auto first = linebreaker->first();
+    auto start = first;
     auto end = linebreaker->next();
+    auto next = linebreaker->next();
     while (end != BreakIterator::DONE) {
         auto substring = text.tempSubString(start, end - start);
-        segment_width = measure_text_width(substring, paint);
-        if (segment_width + acc_width > constraints.remaining_line_width) break;
+        auto padding_width =
+            (start == first ? constraints.padding_before : 0) +
+            (next == BreakIterator::DONE ? constraints.padding_after : 0);
+        segment_width = measure_text_width(substring, paint) + padding_width;
+        if (acc_width + segment_width > constraints.remaining_line_width) break;
         acc_width += segment_width;
         start = end;
-        end = linebreaker->next();
+        end = next;
+        next = linebreaker->next();
     }
 
     if (start == linebreaker->first() && end != BreakIterator::DONE &&
@@ -40,7 +46,7 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
         // current line to prevent endless linebreaking
         acc_width += segment_width;
         start = end;
-        end = linebreaker->next();
+        end = next;
         // If it was last segment, set end to DONE
         if (linebreaker->next() == BreakIterator::DONE) {
             end = BreakIterator::DONE;

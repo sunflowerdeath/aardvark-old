@@ -5,6 +5,7 @@
 #include "../base_types.hpp"
 #include "../elements/elements.hpp"
 #include "../inline_layout/text_span.hpp"
+#include "../inline_layout/decoration_span.hpp"
 
 struct AppState {
   std::shared_ptr<aardvark::elements::FixedSize> fixed_size;
@@ -46,9 +47,28 @@ int main() {
     auto red_span = std::make_shared<aardvark::inline_layout::TextSpan>(
         red_text, red_paint);
 
+    auto green_text =
+        UnicodeString((UChar*)u" reference to the last element in the vector");
+    SkPaint green_paint;
+    green_paint.setColor(SK_ColorGREEN);
+    green_paint.setTextSize(16);
+    auto green_span = std::make_shared<aardvark::inline_layout::TextSpan>(
+        green_text, green_paint);
+
+    auto decoration = aardvark::inline_layout::Decoration{
+        SK_ColorGRAY  // background
+    };
+    auto decoration_span =
+        std::make_shared<aardvark::inline_layout::DecorationSpan>(
+            std::vector<std::shared_ptr<aardvark::inline_layout::Span>>{
+                red_span, green_span},
+            decoration);
+
     auto paragraph = std::make_shared<aardvark::elements::Paragraph>(
-        std::vector<std::shared_ptr<aardvark::inline_layout::Span>>{span,
-                                                                    red_span},
+        std::vector<std::shared_ptr<aardvark::inline_layout::Span>>{
+            span,
+            // red_span, green_span},
+            decoration_span},
         aardvark::inline_layout::LineMetrics::from_paint(paint));
 
     auto fixed_size = std::make_shared<aardvark::elements::FixedSize>(
@@ -59,7 +79,7 @@ int main() {
                                                /* color */ SK_ColorWHITE}),
             aardvark::elements::BoxRadiuses::all(
                 aardvark::elements::Radius::circular(0))),
-        aardvark::Size{200 /* width */, 120 /* height */});
+        aardvark::Size{200 /* width */, 150 /* height */});
     auto elem = std::make_shared<aardvark::elements::Align>(
         fixed_size, aardvark::elements::EdgeInsets{aardvark::Value::abs(50),
                                                    aardvark::Value::abs(50)});
