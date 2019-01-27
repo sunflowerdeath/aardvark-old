@@ -1,5 +1,4 @@
 #include "decoration_span.hpp"
-#include <iostream>
 
 namespace aardvark::inline_layout {
 
@@ -48,7 +47,7 @@ DecorationSpan::DecorationSpan(std::vector<std::shared_ptr<Span>> content,
 InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
     std::vector<std::shared_ptr<Span>> fit_spans;
     std::vector<std::shared_ptr<Span>> remaining_spans;
-    auto acc_width = 0;
+    auto fit_spans_width = 0;
     auto reached_end = false;
     auto paddings = decoration.get_paddings(constraints.total_line_width);
     for (auto& span : content) {
@@ -59,7 +58,7 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
 
         auto span_constraints = InlineConstraints{
             constraints.remaining_line_width -
-                acc_width,                 // remaining_line_width
+                fit_spans_width,                 // remaining_line_width
             constraints.total_line_width,  // total_line_width
             span == content.front() ? std::get<0>(paddings)
                                     : 0,  // padding_before
@@ -71,7 +70,7 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
             fit_span->metrics = result.metrics;
             fit_span->width = result.width;
             fit_spans.push_back(fit_span);
-            acc_width += result.width;
+            fit_spans_width += result.width;
         }
         if (result.remainder_span != std::nullopt) {
             reached_end = true;
@@ -83,7 +82,7 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
         // TODO use default_metrics?
         auto fit_span_metrics =
             calc_combined_metrics(fit_spans, LineMetrics{0, 0, 0});
-        return InlineLayoutResult::fit(acc_width, fit_span_metrics);
+        return InlineLayoutResult::fit(fit_spans_width, fit_span_metrics);
     } else if (fit_spans.size() == 0) {
         return InlineLayoutResult::wrap();
     } else {
@@ -101,10 +100,11 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
             std::get<1>(split_decoration),                      // decoration
             SpanBase{this, static_cast<int>(fit_spans.size())}  // base_span
         );
-        return InlineLayoutResult::split(acc_width,         // width
-                                         fit_span_metrics,  // metrics
-                                         fit_span,          // fit_span
-                                         remainder_span     // remainder_span
+        return InlineLayoutResult::split(
+            constraints.remaining_line_width,  // width
+            fit_span_metrics,                  // metrics
+            fit_span,                          // fit_span
+            remainder_span                     // remainder_span
         );
     }
 };
@@ -117,8 +117,6 @@ std::shared_ptr<Element> DecorationSpan::render(
             decoration.background.value());
         stack->children.push_back(background);
     }
-    // TODO use default metrics?
-    auto metrics = calc_combined_metrics(content, LineMetrics{0, 0, 0});
     render_spans(content, metrics, Position{0, 0}, &stack->children);
 
     std::shared_ptr<Element> container = stack;
