@@ -56,21 +56,24 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
             continue;
         }
 
-        auto span_constraints = InlineConstraints{
-            constraints.remaining_line_width -
-                fit_spans_width,                 // remaining_line_width
-            constraints.total_line_width,  // total_line_width
-            span == content.front() ? std::get<0>(paddings)
-                                    : 0,  // padding_before
-            span == content.back() ? std::get<1>(paddings) : 0  // padding_after
-        };
+        auto padding_before =
+            span == content.front() ? std::get<0>(paddings) : 0;
+        auto padding_after = span == content.back() ? std::get<1>(paddings) : 0;
+        auto span_constraints =
+            InlineConstraints{constraints.remaining_line_width -
+                                  fit_spans_width,  // remaining_line_width
+                              constraints.total_line_width,  // total_line_width
+                              padding_before, padding_after};
         auto result = Span::layout(span, span_constraints);
         if (result.fit_span != std::nullopt) {
             auto fit_span = result.fit_span.value();
             fit_span->metrics = result.metrics;
             fit_span->width = result.width;
             fit_spans.push_back(fit_span);
-            fit_spans_width += result.width;
+            fit_spans_width +=
+                padding_before + result.width +
+                (result.type == InlineLayoutResult::Type::fit ? padding_after
+                                                              : 0);
         }
         if (result.remainder_span != std::nullopt) {
             reached_end = true;
@@ -112,30 +115,32 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
 std::shared_ptr<Element> DecorationSpan::render(
     std::optional<SpanSelectionRange> selection) {
     auto stack = std::make_shared<elements::Stack>();
-    if (decoration.background != std::nullopt) {
-        auto background = std::make_shared<elements::Background>(
-            decoration.background.value());
-        stack->children.push_back(background);
-    }
     render_spans(content, metrics, Position{0, 0}, &stack->children);
 
     std::shared_ptr<Element> container = stack;
-    auto align = 0;
+    auto top_offset = 0;
     if (decoration.insets != std::nullopt) {
         auto insets = decoration.insets.value();
         container = std::make_shared<elements::Align>(container, insets);
-        align += insets.top.calc(metrics.height);
+        top_offset += insets.top.calc(metrics.height);
+    }
+    if (decoration.background != std::nullopt) {
+        auto background = std::make_shared<elements::Background>(
+            decoration.background.value());
+        container = std::make_shared<elements::Stack>(
+            std::vector<std::shared_ptr<Element>>{background, container});
     }
     if (decoration.borders != std::nullopt) {
         auto borders = decoration.borders.value();
         container = std::make_shared<elements::Border>(
             container, borders,
             elements::BoxRadiuses::all(elements::Radius{0, 0}));
-        align += borders.top.width;
+        top_offset += borders.top.width;
     }
-    if (align > 0) {
+    if (top_offset > 0) {
         container = std::make_shared<elements::Align>(
-            container, elements::EdgeInsets{Value::abs(0), Value::abs(-align)});
+            container,
+            elements::EdgeInsets{Value::abs(0), Value::abs(-top_offset)});
     }
     return container;
 };

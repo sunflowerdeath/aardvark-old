@@ -2,11 +2,11 @@
 
 namespace aardvark::inline_layout {
 
-LineMetrics LineMetrics::add(int added) {
+LineMetrics LineMetrics::add(float added) {
     return LineMetrics{height + added, baseline, x_height};
 };
 
-LineMetrics LineMetrics::scale(int ratio) {
+LineMetrics LineMetrics::scale(float ratio) {
     return LineMetrics{height * ratio, baseline, x_height};
 }
 
