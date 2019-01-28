@@ -56,7 +56,12 @@ int main() {
         green_text, green_paint);
 
     auto decoration = aardvark::inline_layout::Decoration{
-        SK_ColorGRAY  // background
+        SK_ColorGRAY,  // background
+        aardvark::elements::BoxBorders::all(
+            aardvark::elements::BorderSide{2, SK_ColorRED}),  // borders
+        aardvark::elements::EdgeInsets{
+            aardvark::Value::abs(10), aardvark::Value::none(),
+            aardvark::Value::abs(10), aardvark::Value::none()}  // insets
     };
     auto decoration_span =
         std::make_shared<aardvark::inline_layout::DecorationSpan>(
@@ -69,7 +74,7 @@ int main() {
             span,
             // red_span, green_span},
             decoration_span},
-        aardvark::inline_layout::LineMetrics::from_paint(paint));
+        aardvark::inline_layout::LineMetrics::from_paint(paint).scale(1.5));
 
     auto fixed_size = std::make_shared<aardvark::elements::FixedSize>(
         std::make_shared<aardvark::elements::Border>(

@@ -18,7 +18,7 @@ std::pair<Decoration, Decoration> Decoration::split() {
        left_insets = insets.value();
        right_insets = insets.value();
        left_insets.value().right = Value::none();
-       left_insets.value().left = Value::none();
+       right_insets.value().left = Value::none();
     }
 
     return std::make_pair(Decoration{background, left_borders, left_insets},
