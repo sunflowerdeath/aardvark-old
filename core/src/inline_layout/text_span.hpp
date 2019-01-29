@@ -28,6 +28,7 @@ enum class LineBreak {
 class TextSpan : public Span {
   public:
     TextSpan(UnicodeString text, SkPaint paint,
+             LineBreak linebreak = LineBreak::normal,
              std::optional<SpanBase> base_span = std::nullopt);
     ~TextSpan() override;
     InlineLayoutResult layout(InlineConstraints constraints) override;
@@ -35,6 +36,7 @@ class TextSpan : public Span {
         std::optional<SpanSelectionRange> selection) override;
     UnicodeString text;
     SkPaint paint;
+    LineBreak linebreak;
 
   private:
     BreakIterator* linebreaker;

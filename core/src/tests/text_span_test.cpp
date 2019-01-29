@@ -15,7 +15,7 @@ TEST_CASE("inline_layout::TextSpan", "[inline_layout] [text_span]" ) {
     auto hello_width = inline_layout::measure_text_width(hello, paint);
     auto world_width = inline_layout::measure_text_width(world, paint);
 
-    SECTION("fits") {
+    SECTION("linebreak normal: fit") {
         auto constraints = inline_layout::InlineConstraints{
             1000,  // remaining_width
             1000,  // total_width
@@ -28,7 +28,7 @@ TEST_CASE("inline_layout::TextSpan", "[inline_layout] [text_span]" ) {
         REQUIRE(result.remainder_span == std::nullopt);
     }
 
-    SECTION("does not fit") {
+    SECTION("linebreak normal: wrap") {
         auto constraints = inline_layout::InlineConstraints{
             0,     // remaining_width
             1000,  // total_width
@@ -40,7 +40,7 @@ TEST_CASE("inline_layout::TextSpan", "[inline_layout] [text_span]" ) {
         REQUIRE(result.remainder_span.value() == span);
     }
 
-    SECTION("splits") {
+    SECTION("linebreak normal: split") {
         auto constraints = inline_layout::InlineConstraints{
             hello_width,     // remaining_width
             1000,            // total_width
@@ -56,7 +56,7 @@ TEST_CASE("inline_layout::TextSpan", "[inline_layout] [text_span]" ) {
         REQUIRE(remainder_span->text == world);
     }
 
-    SECTION("impossible to split") {
+    SECTION("linebreak normal: fit when cannot split") {
         auto hello_span =
             std::make_shared<inline_layout::TextSpan>(hello, paint);
         auto constraints = inline_layout::InlineConstraints{
@@ -80,4 +80,26 @@ TEST_CASE("inline_layout::TextSpan", "[inline_layout] [text_span]" ) {
         // alpha + beta < size < padding_before + alpha + beta
     }
     */
+
+    SECTION("linebreak never") {
+        auto span = std::make_shared<inline_layout::TextSpan>(
+            text, paint, inline_layout::LineBreak::never);
+        auto wrap_constraints = inline_layout::InlineConstraints{
+            hello_width - 1,  // remaining_width
+            1000,             // total_width
+            0,                // padding_before
+            0                 // padding_after
+        };
+        auto result = inline_layout::Span::layout(span, wrap_constraints);
+        REQUIRE(result.type == inline_layout::InlineLayoutResult::Type::wrap);
+
+        auto fit_constraints = inline_layout::InlineConstraints{
+            hello_width - 1,  // remaining_width
+            hello_width - 1,  // total_width
+            0,                // padding_before
+            0                 // padding_after
+        };
+        result = inline_layout::Span::layout(span, fit_constraints);
+        REQUIRE(result.type == inline_layout::InlineLayoutResult::Type::fit);
+    }
 }
