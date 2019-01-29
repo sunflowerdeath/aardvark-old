@@ -69,4 +69,15 @@ TEST_CASE("inline_layout::TextSpan", "[inline_layout] [text_span]" ) {
         REQUIRE(result.fit_span.value() == hello_span);
         REQUIRE(result.remainder_span == std::nullopt);
     }
+
+    /*
+    SECTION("padding") {
+        auto alpha_beta_gamma = UnicodeString((UChar*)u"alpha beta gamma");
+        auto alpha = UnicodeString((UChar*)u"alpha ");
+        auto beta = UnicodeString((UChar*)u"beta ");
+        auto gamma = UnicodeString((UChar*)u"gamma");
+
+        // alpha + beta < size < padding_before + alpha + beta
+    }
+    */
 }

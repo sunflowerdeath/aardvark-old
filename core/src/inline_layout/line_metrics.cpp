@@ -7,7 +7,8 @@ LineMetrics LineMetrics::add(float added) {
 };
 
 LineMetrics LineMetrics::scale(float ratio) {
-    return LineMetrics{height * ratio, baseline, x_height};
+    auto d = height * (ratio - 1);
+    return LineMetrics{height + d, baseline + d / 2, x_height};
 }
 
 LineMetrics LineMetrics::from_paint(const SkPaint& paint) {

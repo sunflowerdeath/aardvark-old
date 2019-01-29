@@ -70,7 +70,8 @@ struct SpanBase {
 // Span represents part of the contents of the inline container element
 class Span {
   public:
-    Span(std::optional<SpanBase> base_span = std::nullopt){};
+    Span(std::optional<SpanBase> base_span = std::nullopt)
+        : base_span(base_span){};
 
     virtual ~Span(){};
 

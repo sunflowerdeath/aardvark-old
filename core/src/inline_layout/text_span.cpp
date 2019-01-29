@@ -7,18 +7,26 @@ TextSpan::TextSpan(UnicodeString text, SkPaint paint,
                    std::optional<SpanBase> base_span)
     : text(text), paint(paint), Span(base_span) {
     this->paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
-    // Create linebreaker
-    UErrorCode status = U_ZERO_ERROR;
-    linebreaker = BreakIterator::createLineInstance(Locale::getUS(), status);
-    if (U_FAILURE(status)) {
-        std::cout << "Failed to create sentence break iterator. Status = "
-                  << u_errorName(status) << std::endl;
-        exit(1);
+
+    if (base_span != std::nullopt) {
+        // Reuse linebreaker from the base span
+        linebreaker =
+            dynamic_cast<TextSpan*>(base_span.value().span)->linebreaker;
+    } else {
+        // Create own linebreaker
+        UErrorCode status = U_ZERO_ERROR;
+        linebreaker =
+            BreakIterator::createLineInstance(Locale::getUS(), status);
+        if (U_FAILURE(status)) {
+            std::cout << "Failed to create sentence break iterator. Status = "
+                      << u_errorName(status) << std::endl;
+            exit(1);
+        }
     }
 };
 
 TextSpan::~TextSpan() {
-    delete linebreaker;
+    if (base_span == std::nullopt) delete linebreaker;
 };
 
 InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
