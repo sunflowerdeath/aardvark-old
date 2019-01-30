@@ -29,41 +29,56 @@ TextSpan::~TextSpan() {
     if (base_span == std::nullopt) delete linebreaker;
 };
 
+InlineLayoutResult TextSpan::split(int pos, float measured_width) {
+    auto fit_text = text.tempSubString(0, pos);
+    auto remainder_text = text.tempSubString(pos);
+    auto fit_span = std::make_shared<TextSpan>(fit_text, paint, linebreak,
+                                               SpanBase{this, 0});
+    auto remainder_span =
+        std::make_shared<TextSpan>(remainder_text, paint, linebreak,
+                                   SpanBase{this, fit_text.countChar32()});
+    return InlineLayoutResult::split(measured_width,                  // width
+                                     LineMetrics::from_paint(paint),  // metrics
+                                     fit_span,       // fit_span
+                                     remainder_span  // remainder_span
+    );
+};
+
 InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
-    auto at_line_beginning =
-        constraints.total_line_width != constraints.remaining_line_width;
+    auto is_line_start =
+        constraints.total_line_width == constraints.remaining_line_width;
 
     if (linebreak == LineBreak::never) {
+        // Wrap if not at the start of the line, otherwise always fit
         auto width = measure_text_width(text, paint);
-        if (width > constraints.remaining_line_width && !at_line_beginning) {
+        auto required_width = constraints.remaining_line_width -
+                              constraints.padding_before -
+                              constraints.padding_after;
+        if (width > required_width && !is_line_start) {
             return InlineLayoutResult::wrap();
+        } else {
+            return InlineLayoutResult::fit(width,
+                                           LineMetrics::from_paint(paint));
+        }
+    }
+
+    if (linebreak == LineBreak::anywhere) {
+        auto width = measure_text_width(text, paint);
+        if (width > constraints.remaining_line_width) {
+            auto fit_width = 0.0f;
+            auto fit_chars = break_text(
+                text, paint, constraints.remaining_line_width, &fit_width);
+            if (fit_chars == 0) {
+                if (!is_line_start) return InlineLayoutResult::wrap();
+                // When text cannot be wrapped again, fit at least 1 char
+                return split(1, 0);
+            }
+            return split(fit_chars, fit_width);
         }
         return InlineLayoutResult::fit(width, LineMetrics::from_paint(paint));
     }
 
-    /*
-    TODO
-    if (linebreak == LineBreak::anywhere) {
-        auto width = measure_text_width(text, paint);
-        if (width <= constraints.remaining_line_width) {
-            return InlineLayoutResult::fit(width,
-                                           LineMetrics::from_paint(paint));
-        } else {
-            auto fit_n = break_text(text, constraints.remaining_line_width);
-            auto fit_bytes =
-                paint.breakText(text.getBuffer(), text.length() * 2,
-                                constraints.remaining_line_width);
-            if (fit_bytes == 0) {
-                if (!at_line_beginning) return InlineLayoutResult::wrap()
-                // Require at least one letter
-            } else {
-                return InlineLayout::split();
-            }
-        }
-    }
-    */
-
-    // linebreak default
+    // linebreak normal/overflow
     linebreaker->setText(text);
 
     // Iterate through break points
@@ -95,9 +110,9 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
     }
 
     if (start == linebreaker->first() && end != BreakIterator::DONE &&
-        at_line_beginning) {
-        // If first segment at the start of line did not fit, put it into the 
-        // current line to prevent endless linebreaking
+        is_line_start) {
+        // If first segment does not fit in line, put it into the current line
+        // to prevent endless wrap
         acc_width += segment_width;
         start = end;
         end = next;
@@ -108,22 +123,18 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
     }
 
     if (end == BreakIterator::DONE) {
-        return InlineLayoutResult::fit(
-            /* width */ acc_width,
-            /* metrics */ LineMetrics::from_paint(paint));
+        return InlineLayoutResult::fit(acc_width,
+                                       LineMetrics::from_paint(paint));
     } else if (start == linebreaker->first()) {
         return InlineLayoutResult::wrap();
     } else {
        auto fit_text = text.tempSubString(0, start);
        auto remainder_text = text.tempSubString(start);
-       auto fit_span =
-           std::make_shared<TextSpan>(fit_text, paint, linebreak,
-                                      SpanBase{/* base_span */ this,
-                                               /* prev_offset */ 0});
-       auto remainder_span = std::make_shared<TextSpan>(
-           remainder_text, paint, linebreak,
-           SpanBase{/* base_span */ this,
-                    /* prev_offset */ fit_text.countChar32()});
+       auto fit_span = std::make_shared<TextSpan>(fit_text, paint, linebreak,
+                                                  SpanBase{this, 0});
+       auto remainder_span =
+           std::make_shared<TextSpan>(remainder_text, paint, linebreak,
+                                      SpanBase{this, fit_text.countChar32()});
        return InlineLayoutResult::split(
            acc_width,                       // width
            LineMetrics::from_paint(paint),  // metrics
@@ -137,7 +148,5 @@ std::shared_ptr<Element> TextSpan::render(
     std::optional<SpanSelectionRange> selection) {
     return std::make_shared<elements::Text>(text, paint);
 };
-
-// TODO destroy linebreaker
 
 }  // namespace aardvark::inline_layout

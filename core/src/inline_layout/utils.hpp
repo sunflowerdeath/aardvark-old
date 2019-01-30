@@ -9,6 +9,9 @@ namespace aardvark::inline_layout {
 
 float measure_text_width(const UnicodeString& text, const SkPaint& paint);
 
+int break_text(const UnicodeString& text, const SkPaint& paint,
+               float available_width, float* width = nullptr);
+
 // Converts ICU UnicodeString to C++ std string (with UTF-16 encoding)
 std::string icu_to_std_string(const UnicodeString& text);
 

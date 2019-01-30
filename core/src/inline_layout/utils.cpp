@@ -6,6 +6,13 @@ float measure_text_width(const UnicodeString& text, const SkPaint& paint) {
     return paint.measureText(text.getBuffer(), text.length() * 2);
 };
 
+int break_text(const UnicodeString& text, const SkPaint& paint, float max_width,
+               float* measured_width) {
+    auto fit_bytes = paint.breakText(text.getBuffer(), text.length() * 2,
+                                     max_width, measured_width);
+    return text.countChar32(0, fit_bytes / 2);
+};
+
 std::string icu_to_std_string(const UnicodeString& text) {
     std::string std_string;
     text.toUTF8String(std_string);
