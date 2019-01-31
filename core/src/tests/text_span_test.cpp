@@ -81,42 +81,47 @@ TEST_CASE("inline_layout::TextSpan", "[inline_layout] [text_span]" ) {
     }
     */
 
-    SECTION("linebreak never") {
-        auto span = std::make_shared<inline_layout::TextSpan>(
-            text, paint, inline_layout::LineBreak::never);
+    auto span_never = std::make_shared<inline_layout::TextSpan>(
+        text, paint, inline_layout::LineBreak::never);
 
-        // Wrap if not at the start of the line
-        auto wrap_constraints = inline_layout::InlineConstraints{
+    SECTION("linebreak never: wrap") {
+        // Result should be `wrap` if span is not at the start of the line
+        auto constraints = inline_layout::InlineConstraints{
             hello_width - 1,  // remaining_width
             1000,             // total_width
             0,                // padding_before
             0                 // padding_after
         };
-        auto result = inline_layout::Span::layout(span, wrap_constraints);
+        auto result = inline_layout::Span::layout(span_never, constraints);
         REQUIRE(result.type == inline_layout::InlineLayoutResult::Type::wrap);
+    }
 
-        auto fit_constraints = inline_layout::InlineConstraints{
+    SECTION("linebreak never: fit") {
+        // Otherwise result always should be `fit`
+        auto constraints = inline_layout::InlineConstraints{
             hello_width - 1,  // remaining_width
             hello_width - 1,  // total_width
             0,                // padding_before
             0                 // padding_after
         };
-        result = inline_layout::Span::layout(span, fit_constraints);
+        auto result = inline_layout::Span::layout(span_never, constraints);
         REQUIRE(result.type == inline_layout::InlineLayoutResult::Type::fit);
     }
 
-    SECTION("linebreak anywhere") {
+    auto span_any = std::make_shared<inline_layout::TextSpan>(
+        hello, paint, inline_layout::LineBreak::anywhere);
+
+    SECTION("linebreak anywhere: split") {
+        // Span should split before char that exceed remaining line width
         auto hell = UnicodeString((UChar*)u"Hell");
         auto hell_width = inline_layout::measure_text_width(hell, paint);
-        auto span = std::make_shared<inline_layout::TextSpan>(
-            hello, paint, inline_layout::LineBreak::anywhere);
         auto constraints = inline_layout::InlineConstraints{
             hell_width,  // remaining_width
             hell_width,  // total_width
             0,           // padding_before
             0            // padding_after
         };
-        auto result = inline_layout::Span::layout(span, constraints);
+        auto result = inline_layout::Span::layout(span_any, constraints);
         REQUIRE(result.type == inline_layout::InlineLayoutResult::Type::split);
         auto fit_span = dynamic_cast<inline_layout::TextSpan*>(
             result.fit_span.value().get());
@@ -125,5 +130,38 @@ TEST_CASE("inline_layout::TextSpan", "[inline_layout] [text_span]" ) {
             result.remainder_span.value().get());
         auto remaining_text = UnicodeString((UChar*)u"o, ");
         REQUIRE(remainder_span->text == remaining_text);
+    }
+
+    SECTION("linebreak anywhere: wrap") {
+        // Result should be `wrap` when not a single char can fit and span 
+        // is not at the line start
+        auto constraints = inline_layout::InlineConstraints{
+            1,  // remaining_width
+            2,  // total_width
+            0,  // padding_before
+            0   // padding_after
+        };
+        auto result = inline_layout::Span::layout(span_any, constraints);
+        REQUIRE(result.type == inline_layout::InlineLayoutResult::Type::wrap);
+    }
+
+    SECTION("linebreak anywhere: split 1 char") {
+        // Whan span is at the line start, it should fit one char to prevent
+        // endless linebreaking
+        auto constraints = inline_layout::InlineConstraints{
+            1,  // remaining_width
+            1,  // total_width
+            0,  // padding_before
+            0   // padding_after
+        };
+        auto result = inline_layout::Span::layout(span_any, constraints);
+        REQUIRE(result.type == inline_layout::InlineLayoutResult::Type::split);
+        auto fit_span = dynamic_cast<inline_layout::TextSpan*>(
+            result.fit_span.value().get());
+        auto fit_text = UnicodeString((UChar*)u"H");
+        REQUIRE(fit_span->text == fit_text);
+    };
+
+    SECTION("linebreak overflow") {
     }
 }
