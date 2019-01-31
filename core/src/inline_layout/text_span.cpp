@@ -44,47 +44,51 @@ InlineLayoutResult TextSpan::split(int pos, float measured_width) {
                                    SpanBase{this, fit_text.countChar32()});
     return InlineLayoutResult::split(measured_width,                  // width
                                      LineMetrics::from_paint(paint),  // metrics
-                                     fit_span,       // fit_span
-                                     remainder_span  // remainder_span
-    );
+                                     fit_span, remainder_span);
 };
 
 InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
-    if (text.countChar32() == 0) return fit(0);
+    auto chars_count = text.countChar32();
+
+    if (chars_count == 0) return fit(0);
 
     auto is_line_start =
         constraints.total_line_width == constraints.remaining_line_width;
 
+    // First, check if span fits completely
+    auto required_width = constraints.remaining_line_width -
+                          constraints.padding_before -
+                          constraints.padding_after;
+    auto measured_width = measure_text_width(text, paint);
+    if (measured_width <= required_width) return fit(measured_width);
+
     if (linebreak == LineBreak::never) {
-        auto width = measure_text_width(text, paint);
-        auto required_width = constraints.remaining_line_width -
-                              constraints.padding_before -
-                              constraints.padding_after;
-        return (width <= required_width || is_line_start)
-                   ? fit(width)
-                   : InlineLayoutResult::wrap();
+        return is_line_start ? fit(measured_width) : InlineLayoutResult::wrap();
     }
 
     if (linebreak == LineBreak::anywhere) {
-        auto width = measure_text_width(text, paint);
-        if (text.countChar32() == 1 ||
-            width < constraints.remaining_line_width) {
-            return fit(width);
-        }
         auto fit_width = 0.0f;
         auto fit_chars = break_text(
-            text, paint, constraints.remaining_line_width, &fit_width);
+            text, paint,
+            constraints.remaining_line_width - constraints.padding_before,
+            &fit_width);
+        if (fit_chars == chars_count) {
+            // If span fits completely without `padding_after`, but we already 
+            // know that it does not fits with it, split 1 char to the next line
+            return split(chars_count - 1, 0);
+        }
         if (fit_chars == 0) {
-            // Split 1 character to prevent endless linebreaking
-            return is_line_start ? split(1, 0) : InlineLayoutResult::wrap();
+            // If span is at the line start, it should fit at least one char 
+            // to prevent endless linebreaking, otherwise it should wrap
+            return is_line_start
+                       ? (chars_count == 1 ? fit(measured_width) : split(1, 0))
+                       : InlineLayoutResult::wrap();
         }
         return split(fit_chars, fit_width);
     }
 
     // linebreak == normal || linebreak == overflow
     linebreaker->setText(text);
-
-    // Iterate through break points
     auto first = linebreaker->first();
     auto start = first;
     auto end = linebreaker->next();
@@ -92,6 +96,7 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
     auto acc_width = 0.0f;  // Accumulated segments width
     auto segment_width = 0.0f; // Current segment width
     auto paddings_width = 0.0f;
+    // Iterate through break points
     while (end != BreakIterator::DONE) {
         auto substring = text.tempSubString(start, end - start);
         // Line must have space for `padding_before` to fit first segment, and
@@ -114,9 +119,8 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
 
     if (start == linebreaker->first() && end != BreakIterator::DONE &&
         is_line_start) {
-
         if (linebreak == LineBreak::normal) {
-            // If first segment does not fit in line, put it into the current line
+            // If span is at the line start, it should fit at least one segment,
             // to prevent endless linebreaking
             acc_width += segment_width;
             start = end;

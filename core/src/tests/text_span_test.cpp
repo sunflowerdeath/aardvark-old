@@ -146,8 +146,8 @@ TEST_CASE("inline_layout::TextSpan", "[inline_layout] [text_span]" ) {
     }
 
     SECTION("linebreak anywhere: split 1 char") {
-        // Whan span is at the line start, it should fit one char to prevent
-        // endless linebreaking
+        // If span is at the line start, it should fit at least one char to 
+        // prevent endless linebreaking
         auto constraints = inline_layout::InlineConstraints{
             1,  // remaining_width
             1,  // total_width
@@ -161,6 +161,23 @@ TEST_CASE("inline_layout::TextSpan", "[inline_layout] [text_span]" ) {
         auto fit_text = UnicodeString((UChar*)u"H");
         REQUIRE(fit_span->text == fit_text);
     };
+
+    SECTION("linebreak anywhere: padding") {
+        // When span does not fit with paddings, but would fit without 
+        // `padding_after`, it should split 1 char to the next line
+        auto constraints = inline_layout::InlineConstraints{
+            hello_width + 30,  // remaining_width
+            hello_width + 30,  // total_width
+            20,  // padding_before
+            20   // padding_after
+        };
+        auto result = inline_layout::Span::layout(span_any, constraints);
+        REQUIRE(result.type == inline_layout::InlineLayoutResult::Type::split);
+        auto fit_span = dynamic_cast<inline_layout::TextSpan*>(
+            result.fit_span.value().get());
+        auto fit_text = UnicodeString((UChar*)u"Hello,");
+        REQUIRE(fit_span->text == fit_text);
+    }
 
     SECTION("linebreak overflow") {
     }
