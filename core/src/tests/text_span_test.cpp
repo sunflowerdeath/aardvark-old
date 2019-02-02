@@ -56,7 +56,7 @@ TEST_CASE("inline_layout::TextSpan", "[inline_layout] [text_span]" ) {
         REQUIRE(remainder_span->text == world);
     }
 
-    SECTION("linebreak normal: fit when cannot split") {
+    SECTION("linebreak normal: should fit at least one segment") {
         auto hello_span =
             std::make_shared<inline_layout::TextSpan>(hello, paint);
         auto constraints = inline_layout::InlineConstraints{

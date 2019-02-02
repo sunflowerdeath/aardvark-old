@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <unicode/unistr.h>
 #include "../base_types.hpp"
 #include "../elements/elements.hpp"
@@ -7,7 +8,8 @@
 
 namespace aardvark::inline_layout {
 
-float measure_text_width(const UnicodeString& text, const SkPaint& paint);
+float measure_text_width(const UnicodeString& text, const SkPaint& paint,
+                         std::optional<int> num_chars = std::nullopt);
 
 int break_text(const UnicodeString& text, const SkPaint& paint,
                float available_width, float* width = nullptr);
