@@ -42,8 +42,9 @@ class TextSpan : public Span {
     BreakIterator* linebreaker;
     InlineLayoutResult split(int pos, float measured_width);
     InlineLayoutResult fit(float measured_width);
-    int break_anywhere(UnicodeString text, float remaining_width,
-                       bool at_line_start);
+    InlineLayoutResult break_segment(const UnicodeString& text,
+                                     const InlineConstraints& constraints,
+                                     bool is_last_segment);
 };
 
 }  // namespace aardvark::inline_layout

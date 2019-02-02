@@ -4,9 +4,9 @@ namespace aardvark::inline_layout {
 
 float measure_text_width(const UnicodeString& text, const SkPaint& paint,
                          std::optional<int> num_chars) {
-    auto length =
+    auto byte_length =
         (num_chars == std::nullopt ? text.length() : num_chars.value()) * 2;
-    return paint.measureText(text.getBuffer(), length);
+    return paint.measureText(text.getBuffer(), byte_length);
 };
 
 int break_text(const UnicodeString& text, const SkPaint& paint, float max_width,

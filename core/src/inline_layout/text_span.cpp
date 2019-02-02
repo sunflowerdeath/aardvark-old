@@ -45,19 +45,39 @@ InlineLayoutResult TextSpan::split(int fit_chars, float fit_width) {
                                      fit_span, remainder_span);
 };
 
-// Returns number of chars that fit into the remaining line width
-int TextSpan::break_anywhere(UnicodeString text, float remaining_width,
-                             bool at_line_start) {
+// Breaks text segment into lines, taking into account special cases
+InlineLayoutResult TextSpan::break_segment(const UnicodeString& text,
+                                           const InlineConstraints& constraints,
+                                           bool is_last_segment) {
     auto chars_count = text.countChar32();
+    auto required_width =
+        constraints.remaining_line_width - constraints.padding_before;
     auto fit_width = 0.0f;
-    auto fit_chars = break_text(text, paint, remaining_width, &fit_width);
-    // If span fits completely without `padding_after`, 
-    // know that it does not fits with it, split 1 char to the next line
-    if (fit_chars == chars_count) return chars_count - 1;
-    // If span is at the line start, it should fit at least one char 
-    // to prevent endless linebreaking, otherwise it should wrap
-    if (fit_chars == 0) return at_line_start ? 1 : 0;
-    return fit_chars;
+    auto fit_chars = break_text(text, paint, required_width, &fit_width);
+    if (is_last_segment && fit_chars == chars_count) {
+        // If span fits completely without `padding_after` but does not fit
+        // with it, split one char to the next line
+        if (fit_width > required_width - constraints.padding_after) {
+            return split(chars_count - 1,
+                         measure_text_width(text, paint, chars_count - 1));
+        } else {
+            return fit(fit_width);
+        }
+    }
+    if (fit_chars == 0) {
+        auto at_line_start =
+            constraints.total_line_width == constraints.remaining_line_width;
+        // If span is at the line start, it should fit at least one char
+        // to prevent endless linebreaking, otherwise it should wrap
+        if (at_line_start) {
+            auto first_char_width = measure_text_width(text, paint, 1);
+            return chars_count == 1 ? fit(first_char_width)
+                                    : split(1, first_char_width);
+        } else {
+            return InlineLayoutResult::wrap();
+        }
+    }
+    return split(fit_chars, fit_width);
 }
 
 InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
@@ -76,32 +96,7 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
     }
 
     if (linebreak == LineBreak::anywhere) {
-        auto required_width =
-            constraints.remaining_line_width - constraints.padding_before;
-        auto fit_width = 0.0f;
-        auto fit_chars = break_text(text, paint, required_width, &fit_width);
-        if (fit_chars == chars_count) {
-            // If span fits completely without `padding_after` but does not fit
-            // with it, split one char to the next line
-            if (fit_width > required_width - constraints.padding_after) {
-                return split(chars_count - 1,
-                             measure_text_width(text, paint, chars_count - 1));
-            } else {
-                return fit(fit_width);
-            }
-        }
-        if (fit_chars == 0) {
-            // If span is at the line start, it should fit at least one char 
-            // to prevent endless linebreaking, otherwise it should wrap
-            if (at_line_start) {
-                auto first_char_width = measure_text_width(text, paint, 1);
-                return chars_count == 1 ? fit(first_char_width)
-                                        : split(1, first_char_width);
-            } else {
-                return InlineLayoutResult::wrap();
-            }
-        }
-        return split(fit_chars, fit_width);
+        return break_segment(text, constraints, true);
     }
 
     // linebreak == normal || linebreak == overflow
@@ -143,10 +138,7 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
                                    : split(end, segment_width);
         } else if (linebreak == LineBreak::overflow) {
             auto segment_text = text.tempSubString(start, end - start);
-            auto required_width =
-                constraints.remaining_line_width - constraints.padding_before;
-            auto result =
-                break_anywhere(segment_text, required_width, at_line_start);
+            return break_segment(segment_text, constraints, true);
         }
     }
 
@@ -157,7 +149,7 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
     } else {
         return split(start, fit_width);
     }
-    };
+};
 
 std::shared_ptr<Element> TextSpan::render(
     std::optional<SpanSelectionRange> selection) {

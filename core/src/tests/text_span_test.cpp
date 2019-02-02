@@ -168,8 +168,8 @@ TEST_CASE("inline_layout::TextSpan", "[inline_layout] [text_span]" ) {
         auto constraints = inline_layout::InlineConstraints{
             hello_width + 30,  // remaining_width
             hello_width + 30,  // total_width
-            20,  // padding_before
-            20   // padding_after
+            20,                // padding_before
+            20                 // padding_after
         };
         auto result = inline_layout::Span::layout(span_any, constraints);
         REQUIRE(result.type == inline_layout::InlineLayoutResult::Type::split);
@@ -180,5 +180,39 @@ TEST_CASE("inline_layout::TextSpan", "[inline_layout] [text_span]" ) {
     }
 
     SECTION("linebreak overflow") {
+        auto span_overflow = std::make_shared<inline_layout::TextSpan>(
+            text, paint, inline_layout::LineBreak::overflow);
+       
+        // When segment fits in line, it should break as normal
+        auto normal_constraints = inline_layout::InlineConstraints{
+            hello_width + 20,  // remaining_width
+            hello_width + 20,  // total_width
+            0,                 // padding_before
+            0                  // padding_after
+        };
+        auto normal_result =
+            inline_layout::Span::layout(span_overflow, normal_constraints);
+        REQUIRE(normal_result.type ==
+                inline_layout::InlineLayoutResult::Type::split);
+        auto fit_span = dynamic_cast<inline_layout::TextSpan*>(
+            normal_result.fit_span.value().get());
+        REQUIRE(fit_span->text == hello);
+
+        // When segment does not fit in line, it should split segment
+        auto hell = UnicodeString((UChar*)u"Hell");
+        auto hell_width = inline_layout::measure_text_width(hell, paint);
+        auto overflow_constraints = inline_layout::InlineConstraints{
+            hell_width,  // remaining_width
+            hell_width,  // total_width
+            0,           // padding_before
+            0            // padding_after
+        };
+        auto overflow_result =
+            inline_layout::Span::layout(span_overflow, overflow_constraints);
+        REQUIRE(overflow_result.type ==
+                inline_layout::InlineLayoutResult::Type::split);
+        fit_span = dynamic_cast<inline_layout::TextSpan*>(
+            overflow_result.fit_span.value().get());
+        REQUIRE(fit_span->text == hell);
     }
 }
