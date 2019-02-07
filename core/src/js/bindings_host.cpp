@@ -16,7 +16,7 @@ std::string jsstring_to_std(JSStringRef jsstring) {
     auto stdstring = std::string(buffer);
     delete[] buffer;
     return stdstring;
-};
+}
 
 JSValueRef log(
     JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
@@ -25,17 +25,16 @@ JSValueRef log(
     for (auto i = 0; i < argument_count; i++) {
         if (i != 0) std::cout <<  " ";
         auto str = JSValueToStringCopy(ctx, arguments[i], nullptr);
-        std::cout << jsstring_to_std(str) << std::endl;
+        std::cout << jsstring_to_std(str);
         JSStringRelease(str);
     }
     std::cout << std::endl;
     return JSValueMakeUndefined(ctx);
-};
+}
 
 // DesktopApp
 void desktop_app_finalize(JSObjectRef object) {
-    // TODO finalize
-    // get_bindings_host(ctx)->desktop_app_index.remove(object);
+    ObjectsIndex<DesktopApp>::remove(object);
 }
 
 JSValueRef desktop_app_run(JSContextRef ctx, JSObjectRef function,
@@ -45,7 +44,7 @@ JSValueRef desktop_app_run(JSContextRef ctx, JSObjectRef function,
     auto app = get_bindings_host(ctx)->desktop_app_index->get_instance(object);
     app->run();
     return JSValueMakeUndefined(ctx);
-};
+}
 
 JSValueRef desktop_app_create_window(JSContextRef ctx, JSObjectRef function,
                                      JSObjectRef object, size_t argument_count,
@@ -57,7 +56,7 @@ JSValueRef desktop_app_create_window(JSContextRef ctx, JSObjectRef function,
     auto height = static_cast<float>(JSValueToNumber(ctx, arguments[1], 0));
     auto window = app->create_window(Size{width, height});
     return host->desktop_window_index->get_or_create_object(window);
-};
+}
 
 JSValueRef desktop_app_stop(JSContextRef ctx, JSObjectRef function,
                            JSObjectRef object, size_t argument_count,
@@ -66,14 +65,14 @@ JSValueRef desktop_app_stop(JSContextRef ctx, JSObjectRef function,
     auto app = get_bindings_host(ctx)->desktop_app_index->get_instance(object);
     app->stop();
     return JSValueMakeUndefined(ctx);
-};
+}
 
 JSValueRef desktop_app_get_windows(JSContextRef ctx, JSObjectRef object,
                                    JSStringRef property_name,
                                    JSValueRef* exception) {
     // auto app = get_host(ctx).desktop_app_index.get_instance(object);
     return JSValueMakeNumber(ctx, static_cast<double>(123));
-};
+}
 
 JSClassRef desktop_app_create_class() {
     auto definition = kJSClassDefinitionEmpty;
@@ -106,8 +105,7 @@ JSObjectRef desktop_app_call_as_constructor(JSContextRef ctx,
 // DesktopWindow
 
 void desktop_window_finalize(JSObjectRef object) {
-    // ?
-    // get_bindings_host(ctx)->desktop_window_index.remove(object);
+    ObjectsIndex<DesktopWindow>::remove(object);
 }
 
 JSValueRef desktop_window_get_width(JSContextRef ctx, JSObjectRef object,
@@ -193,7 +191,7 @@ void BindingsHost::add_object(const char* name, JSObjectRef object,
                         attributes,                           // attributes
                         nullptr                               // exception
     );
-};
+}
 
 void BindingsHost::add_constructor(
     const char* name, JSClassRef jsclass,

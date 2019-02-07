@@ -1,6 +1,7 @@
 #include "document.hpp"
 #include <iostream>
 #include "SkPathOps.h"
+#include "elements/placeholder.hpp"
 
 namespace aardvark {
 
@@ -22,7 +23,11 @@ Document::Document(std::shared_ptr<Element> root) {
     screen = Layer::make_screen_layer(gr_context);
     reconciler = std::make_unique<ResponderReconciler>();
     hit_tester = std::make_unique<HitTester>();
-    if (root != nullptr) set_root(root);
+    if (root == nullptr) {
+        set_root(std::make_shared<elements::Placeholder>());
+    } else {
+        set_root(root);
+    }
 }
 
 void Document::set_root(std::shared_ptr<Element> new_root) {
