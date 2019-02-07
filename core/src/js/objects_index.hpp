@@ -1,3 +1,4 @@
+#include <iostream>
 #include <memory>
 #include <unordered_map>
 #include "JavaScriptCore/JavaScript.h"

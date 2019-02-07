@@ -189,6 +189,7 @@ add_library(aardvark
   src/inline_layout/line_metrics.cpp
   src/inline_layout/text_span.cpp
   src/inline_layout/utils.cpp
+  src/js/bindings_host.cpp
   src/elements/align.cpp
   src/elements/background.cpp
   src/elements/border.cpp
@@ -236,7 +237,7 @@ if(AARDVARK_BUILD_EXAMPLES)
     # add_executable(paragraph_example src/examples/paragraph_example.cpp)
     # target_link_libraries(paragraph_example aardvark)
 
-    add_executable(jsc_example src/examples/jsc_example.cpp)
+    add_executable(jsc_example src/examples/jsc_example2.cpp)
     target_link_libraries(jsc_example aardvark)
 endif()
 
