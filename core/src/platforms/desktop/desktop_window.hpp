@@ -14,6 +14,7 @@ class DesktopWindow {
   // Disable copy and assignment
   DesktopWindow(const DesktopWindow&) = delete;
   DesktopWindow& operator=(DesktopWindow const&) = delete;
+  Size size;
   void make_current();
   void swap_now();
   void swap();

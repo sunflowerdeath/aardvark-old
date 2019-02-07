@@ -233,8 +233,11 @@ if(AARDVARK_BUILD_EXAMPLES)
     # add_executable(layer_example src/examples/layer_example.cpp)
     # target_link_libraries(layer_example aardvark)
 
-    add_executable(paragraph_example src/examples/paragraph_example.cpp)
-    target_link_libraries(paragraph_example aardvark)
+    # add_executable(paragraph_example src/examples/paragraph_example.cpp)
+    # target_link_libraries(paragraph_example aardvark)
+
+    add_executable(jsc_example src/examples/jsc_example.cpp)
+    target_link_libraries(jsc_example aardvark)
 endif()
 
 # tests
@@ -243,6 +246,7 @@ if(AARDVARK_BUILD_TESTS)
       src/tests/index.cpp
       src/tests/base_types_test.cpp
       src/tests/box_constraints_test.cpp
+      src/tests/js_objects_index.cpp
       src/tests/responder_test.cpp
       src/tests/align_test.cpp
       src/tests/text_span_test.cpp)

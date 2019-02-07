@@ -5,7 +5,7 @@ namespace aardvark {
 const int STENCIL_BITS = 8;
 const int MSAA_SAMPLE_COUNT = 4;  // 4;
 
-DesktopWindow::DesktopWindow(Size size) {
+DesktopWindow::DesktopWindow(Size size): size(size) {
   if (!glfwInit()) {
     std::cout << "glfw init error" << std::endl;
   }
