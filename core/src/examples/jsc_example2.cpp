@@ -4,7 +4,20 @@ int main() {
     auto host = aardvark::js::BindingsHost();
 	    
     auto src = JSStringCreateWithUTF8CString(
-        "let app = new DesktopApp();log('create app');let window = app.createWindow(640, 480);log('create window');log(window.width, window.height);app.run();");
+        "let app = new DesktopApp();"
+        "log('create app');"
+        "let window = app.createWindow(640, 480);"
+        "log('create window');"
+        "log(window.width, window.height);"
+        "let doc = app.getDocument(window);"
+        "log('get doc');"
+        "let root = doc.root;"
+        "log('get root');"
+        "let background = new Background();"
+        "doc.root = background;"
+        "log('set root');"
+        "app.run();"
+    );
     auto exception = JSValueRef();
     auto result = JSEvaluateScript(host.ctx,   // ctx,
                                    src,        // script

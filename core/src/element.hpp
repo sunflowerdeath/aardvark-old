@@ -102,6 +102,9 @@ class Element {
     // Document is set when this element is painted
     Document* document = nullptr;
 
+    // Absolute position is calculated before painting the element
+    Position abs_position;
+
   protected:
     // Is protected to allow ancestor of element class to access own tree
     std::shared_ptr<LayerTree> layer_tree;
@@ -110,9 +113,6 @@ class Element {
     // Whether the element was changed by updating props or performig relayout
     // since last repaint.
     bool is_changed;
-
-    // Absolute position is calculated before painting the element
-    Position abs_position;
 
     // When element is relayout boundary, changes inside it do not affect
     // layout of parents. This happens when element recieves tight constraints,

@@ -189,7 +189,6 @@ add_library(aardvark
   src/inline_layout/line_metrics.cpp
   src/inline_layout/text_span.cpp
   src/inline_layout/utils.cpp
-  src/js/bindings_host.cpp
   src/elements/align.cpp
   src/elements/background.cpp
   src/elements/border.cpp
@@ -202,6 +201,16 @@ add_library(aardvark
   src/elements/stack.cpp
   src/elements/text.cpp
 )
+
+set(JS_BINDINGS_SOURCE
+  src/js/bindings_host.cpp
+  src/js/desktop_app_bindings.cpp
+  src/js/desktop_window_bindings.cpp
+  src/js/document_bindings.cpp
+  src/js/elements_bindings.cpp
+)
+
+target_sources(aardvark PRIVATE ${JS_BINDINGS_SOURCE})
 
 if("${PLATFORM}" STREQUAL "DESKTOP")
   target_sources(aardvark PRIVATE

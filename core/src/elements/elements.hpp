@@ -7,5 +7,6 @@
 #include "gesture_responder.hpp"
 #include "layer.hpp"
 #include "paragraph.hpp"
+#include "placeholder.hpp"
 #include "stack.hpp"
 #include "text.hpp"

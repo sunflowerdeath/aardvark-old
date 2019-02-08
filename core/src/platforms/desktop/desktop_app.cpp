@@ -66,12 +66,13 @@ std::shared_ptr<DesktopWindow> DesktopApp::create_window(Size size) {
     glfwSetMouseButtonCallback(window->window, mouse_button_callback);
     // Keyboard events
     glfwSetKeyCallback(window->window, key_callback);
-    documents[window] = Document();
+    documents[window] = std::make_shared<Document>();
     return window;
 };
 
-Document* DesktopApp::get_document(std::shared_ptr<DesktopWindow> window) {
-    return &documents[window];
+std::shared_ptr<Document> DesktopApp::get_document(
+    std::shared_ptr<DesktopWindow> window) {
+    return documents[window];
 };
 
 void DesktopApp::destroy_window(std::shared_ptr<DesktopWindow> window) {
@@ -100,7 +101,7 @@ void DesktopApp::run() {
         painted = false;
         for (auto& window : windows) {
             window->make_current();
-            painted = painted || documents[window].paint();
+            painted = painted || documents[window]->paint();
             window->swap_now();
         }
         auto end = std::chrono::high_resolution_clock::now();

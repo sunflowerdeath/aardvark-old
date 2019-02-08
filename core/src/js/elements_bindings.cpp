@@ -1,0 +1,183 @@
+#include "elements_bindings.hpp"
+#include "../elements/elements.hpp"
+#include "bindings_host.hpp"
+
+namespace aardvark::js {
+
+// Element
+std::shared_ptr<Element> get_elem(JSContextRef ctx, JSObjectRef object) {
+    return BindingsHost::get(ctx)->element_index->get_native_object(object);
+}
+
+JSValueRef element_get_width(JSContextRef ctx, JSObjectRef object,
+                             JSStringRef property_name, JSValueRef* exception) {
+    auto elem = get_elem(ctx, object);
+    return JSValueMakeNumber(ctx, static_cast<double>(elem->size.width));
+}
+
+JSValueRef element_get_height(JSContextRef ctx, JSObjectRef object,
+                              JSStringRef property_name,
+                              JSValueRef* exception) {
+    auto elem = get_elem(ctx, object);
+    return JSValueMakeNumber(ctx, static_cast<double>(elem->size.height));
+}
+
+JSValueRef element_get_left(JSContextRef ctx, JSObjectRef object,
+                            JSStringRef property_name, JSValueRef* exception) {
+    auto elem = get_elem(ctx, object);
+    return JSValueMakeNumber(ctx, static_cast<double>(elem->abs_position.left));
+}
+
+JSValueRef element_get_top(JSContextRef ctx, JSObjectRef object,
+                           JSStringRef property_name, JSValueRef* exception) {
+    auto elem = get_elem(ctx, object);
+    return JSValueMakeNumber(ctx, static_cast<double>(elem->abs_position.top));
+}
+
+JSValueRef element_get_parent(JSContextRef ctx, JSObjectRef object,
+                              JSStringRef property_name,
+                              JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto elem = host->element_index->get_native_object(object);
+    auto parent = elem->parent;
+    if (parent == nullptr) {
+        return JSValueMakeUndefined(ctx);
+    } else {
+        return host->element_index->get_js_object(parent);
+    }
+}
+
+// TODO
+// JSValueRef element_get_children() {}
+
+JSValueRef element_append_child(JSContextRef ctx, JSObjectRef function,
+                                JSObjectRef object, size_t argument_count,
+                                const JSValueRef arguments[],
+                                JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto elem = host->element_index->get_native_object(object);
+    auto child = host->element_index->get_native_object(
+        JSValueToObject(ctx, arguments[0], exception));
+    elem->append_child(child);
+    return JSValueMakeUndefined(ctx);
+}
+
+JSValueRef element_remove_child(JSContextRef ctx, JSObjectRef function,
+                                JSObjectRef object, size_t argument_count,
+                                const JSValueRef arguments[],
+                                JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto elem = host->element_index->get_native_object(object);
+    auto child = host->element_index->get_native_object(
+        JSValueToObject(ctx, arguments[0], exception));
+    elem->remove_child(child);
+    return JSValueMakeUndefined(ctx);
+}
+
+// TODO
+// JSValueRef element_insert_child_before(
+
+void element_finalize(JSObjectRef object) {
+    ObjectsIndex<Element>::remove(object);
+}
+
+JSClassRef element_create_class() {
+    auto definition = kJSClassDefinitionEmpty;
+    JSStaticFunction static_functions[] = {
+        {"appendChild", element_append_child, property_attributes_immutable},
+        {"removeChild", element_remove_child, property_attributes_immutable},
+        {0, 0, 0}};
+    JSStaticValue static_values[] = {
+        {"width", element_get_width, nullptr, property_attributes_immutable},
+        {"height", element_get_height, nullptr, property_attributes_immutable},
+        {"left", element_get_left, nullptr, property_attributes_immutable},
+        {"top", element_get_top, nullptr, property_attributes_immutable},
+        {"parent", element_get_parent, nullptr, property_attributes_immutable},
+        {0, 0, 0, 0}};
+    definition.className = "Element";
+    definition.finalize = element_finalize;
+    definition.staticFunctions = static_functions;
+    definition.staticValues = static_values;
+    return JSClassCreate(&definition);
+}
+
+//------------------------------------------------------------------------------
+// Align
+//------------------------------------------------------------------------------
+
+JSValueRef align_element_set_align() {}
+
+JSValueRef align_element_get_align() {}
+
+JSClassRef align_element_create_class(JSClassRef element_class) {
+    auto definition = kJSClassDefinitionEmpty;
+    definition.className = "AlignElement";
+    definition.parentClass = element_class;
+    return JSClassCreate(&definition);
+}
+
+JSObjectRef align_element_call_as_constructor(JSContextRef ctx,
+                                              JSObjectRef constructor,
+                                              size_t argumentCount,
+                                              const JSValueRef arguments[],
+                                              JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto insets = elements::EdgeInsets{};
+    auto elem = std::make_shared<elements::Align>(
+        std::make_shared<elements::Placeholder>(), insets);
+    return host->element_index->create_js_object(elem,
+                                                 host->align_element_class);
+}
+
+//------------------------------------------------------------------------------
+// Background
+//------------------------------------------------------------------------------
+
+JSValueRef background_element_get_background(JSContextRef ctx,
+                                             JSObjectRef object,
+                                             JSStringRef property_name,
+                                             JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto elem = host->element_index->get_native_object(object);
+    auto bg_elem = dynamic_cast<elements::Background*>(elem.get());
+    return JSValueMakeNumber(ctx, 123.0);
+}
+
+bool background_element_set_background(JSContextRef ctx,
+                                             JSObjectRef object,
+                                             JSStringRef propertyName,
+                                             JSValueRef value,
+                                             JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto elem = host->element_index->get_native_object(object);
+    auto bg_elem = dynamic_cast<elements::Background*>(elem.get());
+    bg_elem->color = SK_ColorRED;
+    return true;
+}
+
+JSClassRef background_element_create_class(JSClassRef element_class) {
+    auto definition = kJSClassDefinitionEmpty;
+    JSStaticValue static_values[] = {
+        {"background", background_element_get_background,
+         background_element_set_background, property_attributes_immutable},
+        {0, 0, 0, 0}};
+    definition.className = "BackgroundElement";
+    definition.parentClass = element_class;
+    definition.staticValues = static_values;
+    return JSClassCreate(&definition);
+}
+
+JSObjectRef background_element_call_as_constructor(JSContextRef ctx,
+                                                   JSObjectRef constructor,
+                                                   size_t argument_count,
+                                                   const JSValueRef arguments[],
+                                                   JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto elem = std::make_shared<elements::Background>(SK_ColorRED);
+    std::cout << "constructor" << std::endl;
+    return host->element_index->create_js_object(
+        elem, host->background_element_class);
+}
+
+
+}  // namespace aardvark::js

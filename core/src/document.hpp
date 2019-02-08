@@ -58,9 +58,9 @@ class Document {
     bool is_initial_paint;
 
     void handle_event(Event event);
+    std::shared_ptr<Element> root;
   private:
     sk_sp<GrContext> gr_context;
-    std::shared_ptr<Element> root;
     ElementsSet changed_elements;
     // Currently painted element
     Element* current_element = nullptr;
