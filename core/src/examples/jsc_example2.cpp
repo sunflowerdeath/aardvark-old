@@ -11,11 +11,11 @@ int main() {
         "log(window.width, window.height);"
         "let doc = app.getDocument(window);"
         "log('get doc');"
-        "let root = doc.root;"
-        "log('get root');"
         "let background = new Background();"
+        "log('create background');"
         "doc.root = background;"
         "log('set root');"
+        "log(doc.root instanceof Background);"
         "app.run();"
     );
     auto exception = JSValueRef();

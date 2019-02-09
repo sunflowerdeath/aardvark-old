@@ -125,8 +125,7 @@ JSObjectRef align_element_call_as_constructor(JSContextRef ctx,
     auto insets = elements::EdgeInsets{};
     auto elem = std::make_shared<elements::Align>(
         std::make_shared<elements::Placeholder>(), insets);
-    return host->element_index->create_js_object(elem,
-                                                 host->align_element_class);
+    return host->element_index->create_js_object(elem);
 }
 
 //------------------------------------------------------------------------------
@@ -174,9 +173,7 @@ JSObjectRef background_element_call_as_constructor(JSContextRef ctx,
                                                    JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
     auto elem = std::make_shared<elements::Background>(SK_ColorRED);
-    std::cout << "constructor" << std::endl;
-    return host->element_index->create_js_object(
-        elem, host->background_element_class);
+    return host->element_index->create_js_object(elem);
 }
 
 

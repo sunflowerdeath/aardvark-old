@@ -30,6 +30,7 @@ class BindingsHost {
 
     static BindingsHost* get(JSContextRef ctx);
   private:
+    JSClassRef get_element_js_class(Element* elem);
     void add_function(
         const char* name, JSObjectCallAsFunctionCallback function,
         JSPropertyAttributes attributes = property_attributes_immutable);

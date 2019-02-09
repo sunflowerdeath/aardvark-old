@@ -1,8 +1,11 @@
 #include "bindings_host.hpp"
+#include <typeinfo>
+#include <functional>
 #include "desktop_app_bindings.hpp"
 #include "desktop_window_bindings.hpp"
 #include "document_bindings.hpp"
 #include "elements_bindings.hpp"
+#include "../elements/elements.hpp"
 
 namespace aardvark::js {
 
@@ -58,15 +61,21 @@ BindingsHost::BindingsHost() {
     add_constructor("Document", document_class, nullptr);
 
     auto element_class = element_create_class();
-    // JSClassRetain(element_class);
-    element_index = ObjectsIndex<Element>(ctx, element_class);
-    // align_element_class = align_element_create_class(element_class);
-    // add_constructor("Align", align_element_class,
-                    // align_element_call_as_constructor);
+    element_index = ObjectsIndex<Element>(ctx, [this](Element* elem) {
+        return this->get_element_js_class(elem);
+    });
+    align_element_class = align_element_create_class(element_class);
+    add_constructor("Align", align_element_class,
+                    align_element_call_as_constructor);
     background_element_class = background_element_create_class(element_class);
-    // JSClassRetain(background_element_class);
     add_constructor("Background", background_element_class,
                     background_element_call_as_constructor);
+}
+
+JSClassRef BindingsHost::get_element_js_class(Element* elem) {
+    auto& id = typeid(elem);
+    if (id == typeid(elements::Align)) return align_element_class;
+    if (id == typeid(elements::Background)) return background_element_class;
 }
 
 BindingsHost::~BindingsHost() {
