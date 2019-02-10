@@ -206,6 +206,7 @@ add_library(aardvark
 
 set(JS_BINDINGS_SOURCE
   src/js/bindings_host.cpp
+  src/js/base_types_bindings.cpp
   src/js/desktop_app_bindings.cpp
   src/js/desktop_window_bindings.cpp
   src/js/document_bindings.cpp

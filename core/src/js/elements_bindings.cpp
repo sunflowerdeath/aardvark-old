@@ -1,6 +1,7 @@
 #include "elements_bindings.hpp"
 #include "../elements/elements.hpp"
 #include "bindings_host.hpp"
+#include "base_types_bindings.hpp"
 
 namespace aardvark::js {
 
@@ -105,14 +106,33 @@ JSClassRef element_create_class() {
 // Align
 //------------------------------------------------------------------------------
 
-JSValueRef align_element_set_align() {}
+bool align_element_set_align(JSContextRef ctx, JSObjectRef object,
+                             JSStringRef property_name, JSValueRef value,
+                             JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto elem = host->element_index->get_native_object(object);
+    auto align_elem = dynamic_cast<elements::Align*>(elem.get());
+    auto insets = alignment_from_js(ctx, JSValueToObject(ctx, value, nullptr));
+    align_elem->insets = insets;
+    align_elem->change();
+    return true;
+}
 
-JSValueRef align_element_get_align() {}
+JSValueRef align_element_get_align(JSContextRef ctx, JSObjectRef object,
+                                   JSStringRef property_name,
+                                   JSValueRef* exception) {
+    return JSValueMakeNumber(ctx, 323.0);
+}
 
 JSClassRef align_element_create_class(JSClassRef element_class) {
     auto definition = kJSClassDefinitionEmpty;
+    JSStaticValue static_values[] = {
+        {"align", align_element_get_align, align_element_set_align,
+         kJSPropertyAttributeNone},
+        {0, 0, 0, 0}};
     definition.className = "AlignElement";
     definition.parentClass = element_class;
+    definition.staticValues = static_values;
     return JSClassCreate(&definition);
 }
 
@@ -142,11 +162,10 @@ JSValueRef background_element_get_background(JSContextRef ctx,
     return JSValueMakeNumber(ctx, 123.0);
 }
 
-bool background_element_set_background(JSContextRef ctx,
-                                             JSObjectRef object,
-                                             JSStringRef propertyName,
-                                             JSValueRef value,
-                                             JSValueRef* exception) {
+bool background_element_set_background(JSContextRef ctx, JSObjectRef object,
+                                       JSStringRef propertyName,
+                                       JSValueRef value,
+                                       JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
     auto elem = host->element_index->get_native_object(object);
     auto bg_elem = dynamic_cast<elements::Background*>(elem.get());

@@ -79,9 +79,10 @@ BindingsHost::BindingsHost() {
 }
 
 JSClassRef BindingsHost::get_element_js_class(Element* elem) {
-    auto& id = typeid(elem);
+    auto& id = typeid(*elem);
     if (id == typeid(elements::Align)) return align_element_class;
     if (id == typeid(elements::Background)) return background_element_class;
+    if (id == typeid(elements::Stack)) return stack_element_class;
 }
 
 BindingsHost::~BindingsHost() {

@@ -1,4 +1,5 @@
 #pragma once
+
 namespace aardvark {
 
 class Value {
@@ -7,8 +8,8 @@ class Value {
 
     Value(ValueType type, float value) : type(type), value(value){};
 
-    float calc(float total) {
-        if (type == ValueType::none) return 0;
+    float calc(float total, float fallback = 0) {
+        if (type == ValueType::none) return fallback;
         if (type == ValueType::abs) return value;
         return value * total;  // rel
     };

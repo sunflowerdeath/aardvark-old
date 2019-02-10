@@ -8,8 +8,14 @@ let doc = app.getDocument(window);
 log('get doc');
 
 let stack = new Stack();
+let align = new Align();
+align.align = {
+    left: {type: 'abs', value: 50},
+    top: {type: 'abs', value: 100}
+};
 let red = new Background();
-stack.appendChild(red);
+align.appendChild(red)
+stack.appendChild(align);
 
 doc.root = stack;
 log('set root');
