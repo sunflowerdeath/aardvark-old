@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <vector>
 #include "SkCanvas.h"
 #include "SkPicture.h"
 #include "SkPictureRecorder.h"

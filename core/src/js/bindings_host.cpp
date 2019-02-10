@@ -50,6 +50,9 @@ BindingsHost::BindingsHost() {
     desktop_app_index = ObjectsIndex<DesktopApp>(ctx, desktop_app_class);
     add_constructor("DesktopApp", desktop_app_class,
                     desktop_app_call_as_constructor);
+    auto desktop_app_window_list_class = desktop_app_window_list_create_class();
+    desktop_app_window_list_index =
+        ObjectsIndex<DesktopApp>(ctx, desktop_app_window_list_class);
 
     auto desktop_window_class = desktop_window_create_class();
     desktop_window_index =
@@ -70,6 +73,9 @@ BindingsHost::BindingsHost() {
     background_element_class = background_element_create_class(element_class);
     add_constructor("Background", background_element_class,
                     background_element_call_as_constructor);
+    stack_element_class = stack_element_create_class(element_class);
+    add_constructor("Stack", stack_element_class,
+                    stack_element_call_as_constructor);
 }
 
 JSClassRef BindingsHost::get_element_js_class(Element* elem) {

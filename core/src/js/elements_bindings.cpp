@@ -84,15 +84,15 @@ void element_finalize(JSObjectRef object) {
 JSClassRef element_create_class() {
     auto definition = kJSClassDefinitionEmpty;
     JSStaticFunction static_functions[] = {
-        {"appendChild", element_append_child, property_attributes_immutable},
-        {"removeChild", element_remove_child, property_attributes_immutable},
+        {"appendChild", element_append_child, PROP_ATTR_STATIC},
+        {"removeChild", element_remove_child, PROP_ATTR_STATIC},
         {0, 0, 0}};
     JSStaticValue static_values[] = {
-        {"width", element_get_width, nullptr, property_attributes_immutable},
-        {"height", element_get_height, nullptr, property_attributes_immutable},
-        {"left", element_get_left, nullptr, property_attributes_immutable},
-        {"top", element_get_top, nullptr, property_attributes_immutable},
-        {"parent", element_get_parent, nullptr, property_attributes_immutable},
+        {"width", element_get_width, nullptr, PROP_ATTR_STATIC},
+        {"height", element_get_height, nullptr, PROP_ATTR_STATIC},
+        {"left", element_get_left, nullptr, PROP_ATTR_STATIC},
+        {"top", element_get_top, nullptr, PROP_ATTR_STATIC},
+        {"parent", element_get_parent, nullptr, PROP_ATTR_STATIC},
         {0, 0, 0, 0}};
     definition.className = "Element";
     definition.finalize = element_finalize;
@@ -158,7 +158,7 @@ JSClassRef background_element_create_class(JSClassRef element_class) {
     auto definition = kJSClassDefinitionEmpty;
     JSStaticValue static_values[] = {
         {"background", background_element_get_background,
-         background_element_set_background, property_attributes_immutable},
+         background_element_set_background, PROP_ATTR_STATIC},
         {0, 0, 0, 0}};
     definition.className = "BackgroundElement";
     definition.parentClass = element_class;
@@ -176,5 +176,25 @@ JSObjectRef background_element_call_as_constructor(JSContextRef ctx,
     return host->element_index->create_js_object(elem);
 }
 
+//------------------------------------------------------------------------------
+// Stack
+//------------------------------------------------------------------------------
+
+JSClassRef stack_element_create_class(JSClassRef element_class) {
+    auto definition = kJSClassDefinitionEmpty;
+    definition.className = "Stack";
+    definition.parentClass = element_class;
+    return JSClassCreate(&definition);
+}
+
+JSObjectRef stack_element_call_as_constructor(JSContextRef ctx,
+                                              JSObjectRef constructor,
+                                              size_t argument_count,
+                                              const JSValueRef arguments[],
+                                              JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto elem = std::make_shared<elements::Stack>();
+    return host->element_index->create_js_object(elem);
+}
 
 }  // namespace aardvark::js

@@ -22,4 +22,12 @@ JSObjectRef align_element_call_as_constructor(JSContextRef ctx,
                                               const JSValueRef arguments[],
                                               JSValueRef* exception);
 
+JSClassRef stack_element_create_class(JSClassRef element_class);
+
+JSObjectRef stack_element_call_as_constructor(JSContextRef ctx,
+                                              JSObjectRef constructor,
+                                              size_t argument_count,
+                                              const JSValueRef arguments[],
+                                              JSValueRef* exception);
+
 }  // namespace aardvark::js

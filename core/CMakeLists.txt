@@ -40,7 +40,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -fno-omit-frame-pointer")
 set(CMAKE_CXX_FLAGS_RELEASE
   "-Os -ffunction-sections -fdata-sections")
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(CMAKE_EXE_LINKER_FLAGS "-Wl,--gc-sections -Wl,-s")
+    set(CMAKE_EXE_LINKER_FLAGS
+        "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections -Wl,-s")
 endif()
 
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Os -g -fno-omit-frame-pointer")
@@ -247,7 +248,7 @@ if(AARDVARK_BUILD_EXAMPLES)
     # target_link_libraries(paragraph_example aardvark)
 
     add_executable(jsc_example src/examples/jsc_example2.cpp)
-    target_link_libraries(jsc_example aardvark)
+    target_link_libraries(jsc_example aardvark stdc++fs)
 endif()
 
 # tests

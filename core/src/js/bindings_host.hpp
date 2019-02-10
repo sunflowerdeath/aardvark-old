@@ -10,6 +10,8 @@
 
 namespace aardvark::js {
 
+constexpr auto PROP_ATTR_STATIC =
+    kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete;
 const auto property_attributes_immutable =
     kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete;
 
@@ -22,11 +24,13 @@ class BindingsHost {
 
     // Use optional to defer initialization
     std::optional<ObjectsIndex<DesktopApp>> desktop_app_index;
+    std::optional<ObjectsIndex<DesktopApp>> desktop_app_window_list_index;
     std::optional<ObjectsIndex<DesktopWindow>> desktop_window_index;
     std::optional<ObjectsIndex<Document>> document_index;
     std::optional<ObjectsIndex<Element>> element_index;
     JSClassRef align_element_class;
     JSClassRef background_element_class;
+    JSClassRef stack_element_class;
 
     static BindingsHost* get(JSContextRef ctx);
   private:

@@ -1,4 +1,5 @@
 #include "border.hpp"
+#include <optional>
 
 namespace aardvark::elements {
 
@@ -65,7 +66,8 @@ void Border::paint(bool is_changed) {
         clip_side(borders.bottom, borders.left, borders.top,
                   radiuses.bottomLeft, radiuses.topLeft);
     }
-    child->clip = need_custom_clip ? std::optional(clip_path) : std::nullopt;
+    child->clip =
+        need_custom_clip ? std::make_optional(clip_path) : std::nullopt;
     document->paint_element(child.get());
 };
 
