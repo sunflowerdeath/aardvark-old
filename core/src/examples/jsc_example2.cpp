@@ -1,31 +1,15 @@
-#include <experimental/filesystem>
-#include <fstream>
 #include "../js/bindings_host.hpp"
+#include "../utils/files_utils.hpp"
+#include <experimental/filesystem>
 
 namespace fs = std::experimental::filesystem;
 
-std::string get_selfpath() {
-    char buffer[PATH_MAX];
-    auto len = ::readlink("/proc/self/exe", buffer, sizeof(buffer)-1);
-    buffer[len] = '\0';
-    auto path = std::string(buffer);
-    return path.substr(0, path.rfind('/'));
-}
-
-std::string read_file(fs::path path) {
-    auto size = fs::file_size(path);
-    auto result = std::string(size, ' ');
-    auto stream = std::ifstream(path.string());
-    stream.read(result.data(), size);
-    return result;
-}
-
 int main() {
     auto host = aardvark::js::BindingsHost();
-	    
-    std::cout << get_selfpath() << std::endl;
-    auto src_path = fs::path(get_selfpath()).append("../src/examples/src.js");
-    auto src_str = read_file(src_path);
+
+    auto src_path = fs::path(aardvark::utils::get_self_path())
+                        .append("../src/examples/src.js");
+    auto src_str = aardvark::utils::read_text_file(src_path);
     auto src = JSStringCreateWithUTF8CString(src_str.c_str());
 
     auto exception = JSValueRef();

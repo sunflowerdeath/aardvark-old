@@ -201,6 +201,7 @@ add_library(aardvark
   src/elements/paragraph.cpp
   src/elements/stack.cpp
   src/elements/text.cpp
+  src/utils/files_utils.cpp
 )
 
 set(JS_BINDINGS_SOURCE
