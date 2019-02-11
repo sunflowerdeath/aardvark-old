@@ -2,9 +2,10 @@
 
 namespace aardvark {
 
-class Value {
-  public:
+struct Value {
     enum class ValueType { none, abs, rel };
+    ValueType type;
+    float value;
 
     Value(ValueType type, float value) : type(type), value(value){};
 
@@ -14,15 +15,11 @@ class Value {
         return value * total;  // rel
     };
 
-    float is_none() { return type == ValueType::none; };
+    bool is_none() const { return type == ValueType::none; };
 
     static Value abs(float value) { return Value(ValueType::abs, value); };
     static Value rel(float value) { return Value(ValueType::rel, value); };
     static Value none() { return Value(ValueType::none, 0); };
-
-  private:
-    ValueType type;
-    float value;
 };
 
 struct Scale {

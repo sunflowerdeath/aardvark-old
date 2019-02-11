@@ -17,6 +17,8 @@ let red = new Background();
 align.appendChild(red)
 stack.appendChild(align);
 
+log(JSON.stringify(align.align));
+
 doc.root = stack;
 log('set root');
 

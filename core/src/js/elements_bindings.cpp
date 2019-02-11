@@ -106,12 +106,16 @@ JSClassRef element_create_class() {
 // Align
 //------------------------------------------------------------------------------
 
+elements::Align* get_align_elem(JSContextRef ctx, JSObjectRef object) {
+    auto host = BindingsHost::get(ctx);
+    auto elem = host->element_index->get_native_object(object);
+    return dynamic_cast<elements::Align*>(elem.get());
+}
+
 bool align_element_set_align(JSContextRef ctx, JSObjectRef object,
                              JSStringRef property_name, JSValueRef value,
                              JSValueRef* exception) {
-    auto host = BindingsHost::get(ctx);
-    auto elem = host->element_index->get_native_object(object);
-    auto align_elem = dynamic_cast<elements::Align*>(elem.get());
+    auto align_elem = get_align_elem(ctx, object);
     auto insets = alignment_from_js(ctx, JSValueToObject(ctx, value, nullptr));
     align_elem->insets = insets;
     align_elem->change();
@@ -121,7 +125,8 @@ bool align_element_set_align(JSContextRef ctx, JSObjectRef object,
 JSValueRef align_element_get_align(JSContextRef ctx, JSObjectRef object,
                                    JSStringRef property_name,
                                    JSValueRef* exception) {
-    return JSValueMakeNumber(ctx, 323.0);
+    auto align_elem = get_align_elem(ctx, object);
+    return alignment_to_js(ctx, align_elem->insets);
 }
 
 JSClassRef align_element_create_class(JSClassRef element_class) {
