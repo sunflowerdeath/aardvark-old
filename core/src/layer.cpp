@@ -43,6 +43,13 @@ void Layer::paint_layer(Layer* layer, Position pos) {
 const int STENCIL_BITS = 8;
 const int MSAA_SAMPLE_COUNT = 4;
 
+void measure_current_viewport_size(GLint* width, GLint* height) {
+    GLint dimensions[4];
+    glGetIntegerv(GL_VIEWPORT, dimensions);
+    *width = dimensions[2];
+    *height = dimensions[3];
+}
+
 std::shared_ptr<Layer> Layer::make_screen_layer(sk_sp<GrContext> gr_context) {
     // sk_sp<GrContext> gr_context = GrContext::MakeGL();
     // These values may be different on some devices
@@ -55,11 +62,11 @@ std::shared_ptr<Layer> Layer::make_screen_layer(sk_sp<GrContext> gr_context) {
     GrGLFramebufferInfo info;
     info.fFBOID = (GrGLuint)buffer;
     info.fFormat = color_format;
+    // Measure size
+    GLint width;
+    GLint height;
+    measure_current_viewport_size(&width, &height);
     // Create skia render target
-    GLint dimensions[4];
-    glGetIntegerv(GL_VIEWPORT, dimensions);
-    GLint width = dimensions[2];
-    GLint height = dimensions[3];
     GrBackendRenderTarget target(width, height, MSAA_SAMPLE_COUNT, STENCIL_BITS,
                                  info);
     // Setup skia surface
