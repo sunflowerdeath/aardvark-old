@@ -42,6 +42,7 @@ inline bool operator!=(const Size& lhs, const Size& rhs) {
 };
 
 struct Position {
+    Position(float left = 0, float top = 0) : left(left), top(top) {};
     float left = 0;
     float top = 0;
     static Position add(Position a, Position b);
@@ -56,10 +57,10 @@ inline bool operator!=(const Position& lhs, const Position& rhs) {
 };
 
 inline Position operator+(const Position& lhs, const Position& rhs) {
-    return Position{
+    return Position(
         lhs.left + rhs.left,  // left
         lhs.top + rhs.top     // top
-    };
+    );
 };
 
 };  // namespace aardvark

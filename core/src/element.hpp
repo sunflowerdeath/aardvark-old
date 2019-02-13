@@ -31,6 +31,8 @@ class Element {
   public:
     Element(bool is_repaint_boundary, bool size_depends_on_parent);
 
+    virtual ~Element(){};
+
     // -------------------------------------------------------------------------
     // These fields can be set with default constructor:
     // -------------------------------------------------------------------------

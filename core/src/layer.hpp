@@ -1,6 +1,11 @@
 #pragma once
 
+#ifdef ADV_PLATFORM_ANDROID
+#include <GLES/gl.h>
+#endif
+#ifdef ADV_PLATFORM_DESKTOP
 #include <GL/gl.h>
+#endif
 #include <memory>
 #include "GrBackendSurface.h"
 #include "SkCanvas.h"

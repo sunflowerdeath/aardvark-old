@@ -8,7 +8,7 @@ int main() {
     auto host = aardvark::js::BindingsHost();
 
     auto src_path = fs::path(aardvark::utils::get_self_path())
-                        .append("../src/examples/src.js");
+                        .append("src.js");
     auto src_str = aardvark::utils::read_text_file(src_path);
     auto src = JSStringCreateWithUTF8CString(src_str.c_str());
 

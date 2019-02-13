@@ -1,42 +1,49 @@
 cmake_minimum_required(VERSION 3.10)
 
+# Compiler must be set before "project"
 set(CMAKE_C_COMPILER "/usr/bin/clang")
 set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 
-project(AARDVARK LANGUAGES CXX)
+# Toolchain must be set before "project"
+if(ADV_PLATFORM STREQUAL "Android")
+    set(ANDROID_NDK "$ENV{ANDROID_HOME}/ndk-bundle")
+    set(ANDROID_ABI "arm64-v8a")
+    set(ANDROID_PLATFORM "21")
+    set(ANDROID_STL "c++_shared")
+    set(CMAKE_TOOLCHAIN_FILE
+        "${ANDROID_NDK}/build/cmake/android.toolchain.cmake")
+endif()
 
-option(AADV_ENABLE_JS "Enable javascript bindings" OFF)
-option(AADV_BUILD_EXAMPLE "Build examples" OFF)
-option(AADV_BUILD_TESTS "Build tests" OFF)
+project(AARDVARK LANGUAGES C CXX)
 
-if(NOT AADV_PLATFORM)
-    set(AADV_PLATFORM "Desktop")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
+#-------------------------------------------------------------------------------
+# OPTIONS
+#-------------------------------------------------------------------------------
+option(ADV_ENABLE_JS "Enable javascript bindings" OFF)
+option(ADV_BUILD_EXAMPLES "Build examples" OFF)
+option(ADV_BUILD_TESTS "Build tests" OFF)
+option(ADV_STATIC_LIB "Build as static library" OFF)
+
+if(NOT ADV_PLATFORM)
+    set(ADV_PLATFORM Desktop)
+endif()
+
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
 endif()
 
 # Export compile commands to 'compile_commands.json'
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-
 #-------------------------------------------------------------------------------
-# COMPILATION OPTIONS
+# COMPILATION SETTINGS
 #-------------------------------------------------------------------------------
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
-endif()
-
-if(AADV_PLATFORM STREQUAL "Android")
-    set(ANDROID_NDK "$ENV{ANDROID_HOME}/ndk-bundle")
-    set(CMAKE_TOOLCHAIN_FILE
-        "${ANDROID_NDK}/build/cmake/android.toolchain.cmake")
-    set(CMAKE_MAKE_PROGRAM ${ANDROID_NDK})
-    set(ANDROID_ABI "arm64-v8a")
-endif()
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fno-omit-frame-pointer")
 
@@ -52,20 +59,20 @@ set(CMAKE_CXX_FLAGS_RELEASE
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CMAKE_EXE_LINKER_FLAGS
         "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections -Wl,-s")
+    set(CMAKE_SHARED_LINKER_FLAGS
+        "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -Wl,-s")
 endif()
 
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Os -g -fno-omit-frame-pointer")
 
-
 #-------------------------------------------------------------------------------
 # DEPENDENCIES
 #-------------------------------------------------------------------------------
-
 # fmt
 # add_subdirectory("${CMAKE_SOURCE_DIR}/externals/fmt")
 
 # skia
-set(SKIA_DIR "${CMAKE_SOURCE_DIR}/externals/skia")
+set(SKIA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/externals/skia")
 
 set(SKIA_INCLUDE_DIRS
 	${SKIA_DIR}/include/c
@@ -79,58 +86,57 @@ set(SKIA_INCLUDE_DIRS
 	${SKIA_DIR}/include/ports
 	${SKIA_DIR}/include/svg
 	${SKIA_DIR}/include/utils
-	${SKIA_DIR}/include/private
-)
+	${SKIA_DIR}/include/private)
 
-# This must match what BUILD.gn sets
+# This must match what skia's BUILD.gn sets
 set(SKIA_DEFINES
-	"SK_SAMPLES_FOR_X" # always set for linux, even if there's no X used
-	"SK_SUPPORT_GPU=1" # skia_enable_gpu
-	"SK_HAS_JPEG_LIBRARY" # skia_use_libjpeg_turbo
-	"SK_HAS_PNG_LIBRARY" # skia_use_libpng
-	# "SK_SUPPORT_PDF" # skia_enable_pdf
-	"SK_PDF_USE_SFNTLY" # skia_use_sfntly
+	"SK_SUPPORT_GPU=1"      # skia_enable_gpu
+	"SK_HAS_JPEG_LIBRARY"   # skia_use_libjpeg_turbo
+	"SK_HAS_PNG_LIBRARY"    # skia_use_libpng
+	# "SK_SUPPORT_PDF"      # skia_enable_pdf
+	# "SK_PDF_USE_SFNTLY"   # skia_use_sfntly
 	# "SK_HAS_WEBP_LIBRARY" # skia_use_libwebp
-	"SK_XML" # skia_use_expat
-    # "SK_BUILD_FOR_ANDROID"
+	"SK_XML"                # skia_use_expat
 )
 
 find_library(DL_LIB libdl.so)
-find_library(PTHREAD_LIB libpthread.so)
-find_library(EXPAT_LIB expat) # skia_use_expat skia_use_system_expat
-find_library(JPEG_LIB jpeg) # skia_use_system_libjpeg_turbo
-find_library(PNG_LIB png) # skia_use_system_libpng
-find_library(Z_LIB z) # skia_use_system_zlib
+find_package(Threads)
+
 # find_library(WEBP_LIB webp.a) # skia_use_libwebp skia_use_system_libwebp
 # find_library(WEBP_DEMUX_LIB webpdemux.a)
 # find_library(WEBP_MUX_LIB webpmux.a)
-find_library(FONTCONFIG_LIB libfontconfig.so) # skia_use_fontconfig
-find_library(FREETYPE_LIB freetype) # skia_use_system_freetype2
-
 	# ${WEBP_LIB}
 	# ${WEBP_DEMUX_LIB}
 	# ${WEBP_MUX_LIB}
 
-set(SKIA_DEPS
-	${DL_LIB}
-	${PTHREAD_LIB}
-	${EXPAT_LIB}
-	${JPEG_LIB}
-	${PNG_LIB}
-	${Z_LIB}
-	${FONTCONFIG_LIB}
-	${FREETYPE_LIB}
-)
+set(SKIA_DEPS ${DL_LIB} ${CMAKE_THREAD_LIBS_INIT})
 
-message(${SKIA_DEPS})
-
-if (AADV_PLATFORM STREQUAL "Desktop")
+if (ADV_PLATFORM STREQUAL "Desktop")
     set(SKIA_LIB "${SKIA_DIR}/lib/linux-x86-64/libskia.a")
+    set(SKIA_DEFINES ${SKIA_DEFINES} "SK_SAMPLES_FOR_X") # always set for linux
+
+    cmake_policy(SET CMP0072 NEW) # prefer GLVND libs to legacy GL lib
     find_package(OpenGL)
-    set(SKIA_DEPS "${SKIA_DEPS};OpenGL::GL")
+    find_library(Z_LIB z)               # "skia_use_system_zlib"
+    find_library(FONTCONFIG_LIB libfontconfig.so) # skia_use_fontconfig
+    find_library(EXPAT_LIB expat)       # skia_use_expat skia_use_system_expat
+    find_library(FREETYPE_LIB freetype) # skia_use_system_freetype2
+    find_library(JPEG_LIB jpeg)         # skia_use_system_libjpeg_turbo
+    find_library(PNG_LIB png)           # skia_use_system_libpng
+
+    set(SKIA_DEPS 
+        ${SKIA_DEPS}
+        OpenGL::GL
+        ${Z_LIB}
+        ${EXPAT_LIB}
+        ${FONTCONFIG_LIB}
+        ${FREETYPE_LIB}
+        ${JPEG_LIB}
+        ${PNG_LIB})
 endif()
-if (AADV_PLATFORM STREQUAL "Android")
-    set(SKIA_DEPS "${SKIA_DEPS} EGL")
+if (ADV_PLATFORM STREQUAL "Android")
+    set(SKIA_DEFINES ${SKIA_DEFINES} "SK_BUILD_FOR_ANDROID")
+    set(SKIA_DEPS  ${SKIA_DEPS} "EGL")
     if (ANDROID_ABI STREQUAL "arm64-v8a")
         set(SKIA_LIB "${SKIA_DIR}/lib/android-arm64/libskia.a")
     endif()
@@ -141,19 +147,17 @@ set_target_properties(skia PROPERTIES
 	IMPORTED_LOCATION "${SKIA_LIB}"
 	INTERFACE_INCLUDE_DIRECTORIES "${SKIA_INCLUDE_DIRS}"
 	INTERFACE_COMPILE_DEFINITIONS "${SKIA_DEFINES}"
-	INTERFACE_LINK_LIBRARIES "${SKIA_DEPS}"
-)
+	INTERFACE_LINK_LIBRARIES "${SKIA_DEPS}")
 
 # ICU
-set(ICU_DIR ${CMAKE_SOURCE_DIR}/externals/icu)
+set(ICU_DIR ${CMAKE_CURRENT_SOURCE_DIR}/externals/icu)
 
 add_library(ICU STATIC IMPORTED)
 set_target_properties(ICU PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES ${ICU_DIR}/source/common
     IMPORTED_LOCATION "${ICU_DIR}/build/lib/libicuuc.a"
     INTERFACE_COMPILE_DEFINITIONS
-    "UCONFIG_NO_COLLATION=1 UCONFIG_NO_FORMATTING=1 U_STATIC_IMPLEMENTATION=1"
-)
+    "UCONFIG_NO_COLLATION=1 UCONFIG_NO_FORMATTING=1 U_STATIC_IMPLEMENTATION=1")
 
 add_library(ICU_DATA STATIC IMPORTED)
 set_target_properties(ICU_DATA PROPERTIES
@@ -161,121 +165,118 @@ set_target_properties(ICU_DATA PROPERTIES
     IMPORTED_LOCATION "${ICU_DIR}/build/lib/libicudata.a"
 )
 
-if(AADV_ENABLE_JS)
+if(ADV_ENABLE_JS)
     # JavaScriptCore
-    set(WEBKIT_DIR ${CMAKE_SOURCE_DIR}/externals/WebKit)
+    set(WEBKIT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/externals/WebKit)
 
     add_library(WTF STATIC IMPORTED)
     set_target_properties(WTF PROPERTIES
         IMPORTED_LOCATION ${WEBKIT_DIR}/lib/libWTF.a
         INTERFACE_INCLUDE_DIRECTORIES "${WEBKIT_DIR}/Source/WTF/wtf"
         INTERFACE_LINK_LIBRARIES "${DL_LIB};ICU;ICU_DATA"
-        INTERFACE_COMPILE_DEFINITIONS "ENABLE_INTL=0"
-    )
+        INTERFACE_COMPILE_DEFINITIONS "ENABLE_INTL=0")
 
     add_library(JavaScriptCore STATIC IMPORTED)
     set_target_properties(JavaScriptCore PROPERTIES
         IMPORTED_LOCATION ${WEBKIT_DIR}/lib/libJavaScriptCore.a
         INTERFACE_INCLUDE_DIRECTORIES "${WEBKIT_DIR}/include"
-        INTERFACE_LINK_LIBRARIES WTF
-    )
+        INTERFACE_LINK_LIBRARIES WTF)
 endif()
 
-if(AADV_PLATFORM STREQUAL "Desktop")
+if(ADV_PLATFORM STREQUAL "Desktop")
     # glfw
     set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
     find_package(X11 REQUIRED)
-    add_subdirectory(${CMAKE_SOURCE_DIR}/externals/glfw)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/externals/glfw)
 endif()
 
-if(AADV_PLATFORM STREQUAL "Android")
+if(ADV_PLATFORM STREQUAL "Android")
     # native_app_glue
-    add_library(native_app_glue STATIC
-        ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c
-    )
-    target_include_directories(native_app_glue INTERFACE
-        ${ANDROID_NDK}/sources/android/native_app_glue
-    )
+    # add_library(native_app_glue STATIC
+        # ${CMAKE_ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c
+    # )
+    # target_include_directories(native_app_glue INTERFACE
+        # ${CMAKE_ANDROID_NDK}/sources/android/native_app_glue
+    # )
 endif()
 
-if(AADV_BUILD_TESTS)
+if(ADV_BUILD_TESTS)
     # Catch2
     add_library(Catch2 INTERFACE)
     set_target_properties(Catch2 PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES
-        ${CMAKE_BINARY_DIR}/externals/Catch2/include
-    )
+        ${CMAKE_CURRENT_BINARY_DIR}/externals/Catch2/include)
 endif()
 
 #-------------------------------------------------------------------------------
 # LIBRARY
 #-------------------------------------------------------------------------------
+if (ADV_STATIC_LIB)
+    set(ADV_LIB_TYPE STATIC)
+else()
+    set(ADV_LIB_TYPE SHARED)
+endif()
 
-add_library(aardvark
-  src/base_types.cpp
-  src/box_constraints.cpp
-  src/hit_tester.cpp
-  src/layer.cpp
-  src/layer_tree.cpp
-  src/document.cpp
-  src/element.cpp
-  src/paint_cache.cpp
-  src/responder.cpp
-  src/inline_layout/span.cpp
-  src/inline_layout/decoration_span.cpp
-  src/inline_layout/line_metrics.cpp
-  src/inline_layout/text_span.cpp
-  src/inline_layout/utils.cpp
-  src/elements/align.cpp
-  src/elements/background.cpp
-  src/elements/border.cpp
-  src/elements/center.cpp
-  src/elements/clip.cpp
-  src/elements/fixed_size.cpp
-  src/elements/gesture_responder.cpp
-  src/elements/layer.cpp
-  src/elements/paragraph.cpp
-  src/elements/stack.cpp
-  src/elements/text.cpp
-  src/utils/files_utils.cpp
+add_library(aardvark STATIC
+    src/base_types.cpp
+    src/box_constraints.cpp
+    src/hit_tester.cpp
+    src/layer.cpp
+    src/layer_tree.cpp
+    src/document.cpp
+    src/element.cpp
+    src/paint_cache.cpp
+    src/responder.cpp
+    src/inline_layout/span.cpp
+    src/inline_layout/decoration_span.cpp
+    src/inline_layout/line_metrics.cpp
+    src/inline_layout/text_span.cpp
+    src/inline_layout/utils.cpp
+    src/elements/align.cpp
+    src/elements/background.cpp
+    src/elements/border.cpp
+    src/elements/center.cpp
+    src/elements/clip.cpp
+    src/elements/fixed_size.cpp
+    src/elements/gesture_responder.cpp
+    src/elements/layer.cpp
+    src/elements/paragraph.cpp
+    src/elements/stack.cpp
+    src/elements/text.cpp
+    src/utils/files_utils.cpp
 )
 
-target_link_libraries(aardvark skia ICU ICU_DATA)
+target_link_libraries(aardvark skia ICU ICU_DATA) # stdc++fs
 
-if(AADV_ENABLE_JS)
+if(ADV_ENABLE_JS)
     target_sources(aardvark PRIVATE
-      src/js/bindings_host.cpp
-      src/js/base_types_bindings.cpp
-      src/js/desktop_app_bindings.cpp
-      src/js/desktop_window_bindings.cpp
-      src/js/document_bindings.cpp
-      src/js/elements_bindings.cpp)
+        src/js/bindings_host.cpp
+        src/js/base_types_bindings.cpp
+        src/js/desktop_app_bindings.cpp
+        src/js/desktop_window_bindings.cpp
+        src/js/document_bindings.cpp
+        src/js/elements_bindings.cpp)
     target_link_libraries(aardvark JavaScriptCore)
 endif()
 
-if(AADV_PLATFORM STREQUAL "Desktop")
-  target_sources(aardvark PRIVATE
-    src/platforms/desktop/desktop_window.cpp
-    src/platforms/desktop/desktop_app.cpp
-  )
-  target_link_libraries(aardvark glfw ${X11_LIBRARIES})
-endif()
-
-if(AADV_PLATFORM STREQUAL "Android")
+if(ADV_PLATFORM STREQUAL "Desktop")
+    target_compile_definitions(aardvark PRIVATE "ADV_PLATFORM_DESKTOP=1")
     target_sources(aardvark PRIVATE
-        src/platforms/desktop/android_window.cpp
-    )
-    target_link_libraries(aardvark android native_app_glue EGL GLESv2 log)
+        src/platforms/desktop/desktop_window.cpp
+        src/platforms/desktop/desktop_app.cpp)
+    target_link_libraries(aardvark glfw ${X11_LIBRARIES})
 endif()
 
+if(ADV_PLATFORM STREQUAL "Android")
+    target_compile_definitions(aardvark PRIVATE "ADV_PLATFORM_ANDROID=1")
+    target_sources(aardvark PRIVATE
+        src/platforms/android/android_window.cpp)
+    target_link_libraries(aardvark android EGL GLESv2 log) # native_app_glue
+endif()
 
-#-------------------------------------------------------------------------------
-# EXAMPLES
-#-------------------------------------------------------------------------------
-
-if(AADV_BUILD_EXAMPLES)
+if(ADV_BUILD_EXAMPLES)
     # add_executable(align_example src/examples/align_example.cpp)
     # target_link_libraries(align_example aardvark)
 
@@ -297,24 +298,24 @@ if(AADV_BUILD_EXAMPLES)
     # add_executable(paragraph_example src/examples/paragraph_example.cpp)
     # target_link_libraries(paragraph_example aardvark)
 
-    if(AADV_ENABLE_JS)
+    if(ADV_ENABLE_JS)
         add_executable(jsc_example src/examples/jsc_example2.cpp)
-        target_link_libraries(jsc_example aardvark stdc++fs)
+        target_link_libraries(jsc_example aardvark)
+        configure_file(
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/examples/src.js" 
+            "${CMAKE_CURRENT_BINARY_DIR}/bin/src.js"
+            COPYONLY)
     endif()
 endif()
 
-#-------------------------------------------------------------------------------
-# TESTS
-#-------------------------------------------------------------------------------
-
-if(AADV_BUILD_TESTS)
+if(ADV_BUILD_TESTS)
     add_executable(tests
-      src/tests/index.cpp
-      src/tests/base_types_test.cpp
-      src/tests/box_constraints_test.cpp
-      src/tests/js_objects_index.cpp
-      src/tests/responder_test.cpp
-      src/tests/align_test.cpp
-      src/tests/text_span_test.cpp)
+        src/tests/index.cpp
+        src/tests/base_types_test.cpp
+        src/tests/box_constraints_test.cpp
+        src/tests/js_objects_index.cpp
+        src/tests/responder_test.cpp
+        src/tests/align_test.cpp
+        src/tests/text_span_test.cpp)
     target_link_libraries(tests Catch2 aardvark)
 endif()
