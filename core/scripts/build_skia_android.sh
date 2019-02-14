@@ -20,4 +20,4 @@ skia_use_system_zlib=false \
 ndk=\"${ANDROID_HOME}/ndk-bundle\" \
 ndk_api=21"
 
-ninja -C $LIB_DIR -j3
+ninja -C $LIB_DIR -j7
