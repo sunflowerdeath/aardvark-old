@@ -18,4 +18,4 @@ skia_enable_pdf=false \
 skia_use_libwebp=false \
 "
 
-ninja -C $SKIA_DIR/lib/linux-x86-64 -j7
+ninja -C $SKIA_DIR/lib/linux-x86_64 -j7

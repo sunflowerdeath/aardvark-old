@@ -1,4 +1,4 @@
-build/
+build-*/
 downloads/
 externals/
 compile_commands.json

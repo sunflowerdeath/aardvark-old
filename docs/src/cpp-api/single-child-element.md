@@ -1,5 +1,7 @@
 # `class SingleChildElement`
 
+Base class for elements that have only one child.
+
 **Defined in:** [`"aardvark/element.hpp"`](@header/element.hpp)
 <br>
 **Extends:** [`Element`](@type/element)

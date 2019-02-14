@@ -1,17 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Compiler must be set before "project"
-set(CMAKE_C_COMPILER "/usr/bin/clang")
-set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
-
-# Toolchain must be set before "project"
-if(ADV_PLATFORM STREQUAL "Android")
-    set(ANDROID_NDK "$ENV{ANDROID_HOME}/ndk-bundle")
-    set(ANDROID_ABI "arm64-v8a")
-    set(ANDROID_PLATFORM "21")
-    set(ANDROID_STL "c++_shared")
-    set(CMAKE_TOOLCHAIN_FILE
-        "${ANDROID_NDK}/build/cmake/android.toolchain.cmake")
+if (ADV_PLATFORM STREQUAL "linux")
+    set(CMAKE_C_COMPILER "/usr/bin/clang")
+    set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 endif()
 
 project(AARDVARK LANGUAGES C CXX)
@@ -29,11 +21,15 @@ option(ADV_BUILD_TESTS "Build tests" OFF)
 option(ADV_STATIC_LIB "Build as static library" OFF)
 
 if(NOT ADV_PLATFORM)
-    set(ADV_PLATFORM Desktop)
+    set(ADV_PLATFORM "linux")
+endif()
+
+if(NOT ADV_ARCH)
+    set(ADV_ARCH "x86_64")
 endif()
 
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
+    set(CMAKE_BUILD_TYPE "Release")
 endif()
 
 # Export compile commands to 'compile_commands.json'
@@ -54,8 +50,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -fno-omit-frame-pointer")
 #	can be removed at link time with --gc-sections
 # -Wl,--gc-sections - Linker option to remove unneeded sections
 # -Wl,-s - Run strip to reduce size of executable
-set(CMAKE_CXX_FLAGS_RELEASE
-  "-Os -ffunction-sections -fdata-sections")
+set(CMAKE_CXX_FLAGS_RELEASE "-Os -ffunction-sections -fdata-sections")
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CMAKE_EXE_LINKER_FLAGS
         "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections -Wl,-s")
@@ -111,11 +106,10 @@ find_package(Threads)
 
 set(SKIA_DEPS ${DL_LIB} ${CMAKE_THREAD_LIBS_INIT})
 
-if (ADV_PLATFORM STREQUAL "Desktop")
-    set(SKIA_LIB "${SKIA_DIR}/lib/linux-x86-64/libskia.a")
+if (ADV_PLATFORM STREQUAL "linux")
     set(SKIA_DEFINES ${SKIA_DEFINES} "SK_SAMPLES_FOR_X") # always set for linux
 
-    cmake_policy(SET CMP0072 NEW) # prefer GLVND libs to legacy GL lib
+    cmake_policy(SET CMP0072 NEW)       # prefer GLVND libs to legacy GL lib
     find_package(OpenGL)
     find_library(Z_LIB z)               # "skia_use_system_zlib"
     find_library(FONTCONFIG_LIB libfontconfig.so) # skia_use_fontconfig
@@ -134,36 +128,33 @@ if (ADV_PLATFORM STREQUAL "Desktop")
         ${JPEG_LIB}
         ${PNG_LIB})
 endif()
-if (ADV_PLATFORM STREQUAL "Android")
+if (ADV_PLATFORM STREQUAL "android")
     set(SKIA_DEFINES ${SKIA_DEFINES} "SK_BUILD_FOR_ANDROID")
     set(SKIA_DEPS  ${SKIA_DEPS} "EGL")
-    if (ANDROID_ABI STREQUAL "arm64-v8a")
-        set(SKIA_LIB "${SKIA_DIR}/lib/android-arm64/libskia.a")
-    endif()
 endif()
 
 add_library(skia STATIC IMPORTED GLOBAL)
 set_target_properties(skia PROPERTIES
-	IMPORTED_LOCATION "${SKIA_LIB}"
+	IMPORTED_LOCATION "${SKIA_DIR}/lib/${ADV_PLATFORM}-${ADV_ARCH}/libskia.a"
 	INTERFACE_INCLUDE_DIRECTORIES "${SKIA_INCLUDE_DIRS}"
 	INTERFACE_COMPILE_DEFINITIONS "${SKIA_DEFINES}"
 	INTERFACE_LINK_LIBRARIES "${SKIA_DEPS}")
 
 # ICU
 set(ICU_DIR ${CMAKE_CURRENT_SOURCE_DIR}/externals/icu)
+set(ICU_LIB_LOCATION ${ICU_DIR}/build-${ADV_PLATFORM}-${ADV_ARCH}/lib)
 
 add_library(ICU STATIC IMPORTED)
 set_target_properties(ICU PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES ${ICU_DIR}/source/common
-    IMPORTED_LOCATION "${ICU_DIR}/build/lib/libicuuc.a"
+    IMPORTED_LOCATION "${ICU_LIB_LOCATION}/libicuuc.a"
     INTERFACE_COMPILE_DEFINITIONS
     "UCONFIG_NO_COLLATION=1 UCONFIG_NO_FORMATTING=1 U_STATIC_IMPLEMENTATION=1")
 
 add_library(ICU_DATA STATIC IMPORTED)
 set_target_properties(ICU_DATA PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES ${ICU_DIR}/source/common
-    IMPORTED_LOCATION "${ICU_DIR}/build/lib/libicudata.a"
-)
+    IMPORTED_LOCATION "${ICU_LIB_LOCATION}/libicudata.a")
 
 if(ADV_ENABLE_JS)
     # JavaScriptCore
@@ -183,7 +174,7 @@ if(ADV_ENABLE_JS)
         INTERFACE_LINK_LIBRARIES WTF)
 endif()
 
-if(ADV_PLATFORM STREQUAL "Desktop")
+if(ADV_PLATFORM STREQUAL "linux")
     # glfw
     set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -192,7 +183,7 @@ if(ADV_PLATFORM STREQUAL "Desktop")
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/externals/glfw)
 endif()
 
-if(ADV_PLATFORM STREQUAL "Android")
+if(ADV_PLATFORM STREQUAL "android")
     # native_app_glue
     # add_library(native_app_glue STATIC
         # ${CMAKE_ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c
@@ -219,7 +210,7 @@ else()
     set(ADV_LIB_TYPE SHARED)
 endif()
 
-add_library(aardvark STATIC
+add_library(aardvark ${ADV_LIB_TYPE}
     src/base_types.cpp
     src/box_constraints.cpp
     src/hit_tester.cpp
@@ -244,9 +235,7 @@ add_library(aardvark STATIC
     src/elements/layer.cpp
     src/elements/paragraph.cpp
     src/elements/stack.cpp
-    src/elements/text.cpp
-    src/utils/files_utils.cpp
-)
+    src/elements/text.cpp)
 
 target_link_libraries(aardvark skia ICU ICU_DATA) # stdc++fs
 
@@ -261,15 +250,16 @@ if(ADV_ENABLE_JS)
     target_link_libraries(aardvark JavaScriptCore)
 endif()
 
-if(ADV_PLATFORM STREQUAL "Desktop")
+if(ADV_PLATFORM STREQUAL "linux")
     target_compile_definitions(aardvark PRIVATE "ADV_PLATFORM_DESKTOP=1")
     target_sources(aardvark PRIVATE
         src/platforms/desktop/desktop_window.cpp
-        src/platforms/desktop/desktop_app.cpp)
-    target_link_libraries(aardvark glfw ${X11_LIBRARIES})
+        src/platforms/desktop/desktop_app.cpp
+        src/utils/files_utils.cpp)
+    target_link_libraries(aardvark glfw ${X11_LIBRARIES} stdc++fs)
 endif()
 
-if(ADV_PLATFORM STREQUAL "Android")
+if(ADV_PLATFORM STREQUAL "android")
     target_compile_definitions(aardvark PRIVATE "ADV_PLATFORM_ANDROID=1")
     target_sources(aardvark PRIVATE
         src/platforms/android/android_window.cpp)

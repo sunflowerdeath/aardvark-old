@@ -21,7 +21,7 @@ android {
     compileSdkVersion 28
     externalNativeBuild {
         cmake {
-            path "src/main/cpp/CMakeLists.txt"
+            path "CMakeLists.txt"
         }
     }
     defaultConfig {
@@ -30,6 +30,7 @@ android {
         targetSdkVersion 28
         externalNativeBuild {
             cmake {
+                version "3.10.2"
                 arguments '-DANDROID_STL=c++_static'
             }
         }
