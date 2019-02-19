@@ -107,8 +107,6 @@ class Element {
     // Absolute position is calculated before painting the element
     Position abs_position;
 
-  protected:
-    // Is protected to allow ancestor of element class to access own tree
     std::shared_ptr<LayerTree> layer_tree;
 
   private:

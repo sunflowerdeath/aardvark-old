@@ -53,7 +53,7 @@ void Document::initial_paint() {
     layout_element(root.get(),
                    BoxConstraints::from_size(screen->size, true /* tight */));
     current_clip = std::nullopt;
-    paint_element(root.get(), /* isRepaintRoot */ true);
+    paint_element(root.get(), /* is_repaint_root */ true);
     compose_layers();
     is_initial_paint = false;
 }
@@ -74,7 +74,7 @@ bool Document::repaint() {
         elem->is_changed = true;
     }
     for (auto elem : repaint_boundaries) {
-        paint_element(elem, /* isRepaintRoot */ true);
+        paint_element(elem, /* is_repaint_root */ true);
     }
     changed_elements.clear();
     compose_layers();

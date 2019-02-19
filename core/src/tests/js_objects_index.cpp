@@ -42,7 +42,7 @@ TEST_CASE("ObjectIndex", "[objects_index]" ) {
         auto index = js::ObjectsIndex<TestClass>(ctx, jsclass);
         auto object1 = index.get_or_create_js_object(s_ptr);
         js::ObjectsIndex<TestClass>::remove(object1);
-        auto object2 = index.get_or_js_create_object(s_ptr);
+        auto object2 = index.get_or_create_js_object(s_ptr);
         REQUIRE(object1 != object2);
     }
 }

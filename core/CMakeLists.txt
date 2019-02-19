@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Compiler must be set before "project"
-if (ADV_PLATFORM STREQUAL "linux")
+if (ADV_COMPILER_CLANG)
     set(CMAKE_C_COMPILER "/usr/bin/clang")
     set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 endif()
@@ -42,6 +42,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fno-omit-frame-pointer")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Os -g -fno-omit-frame-pointer")
 
 # Release
 # -Os - Optimize for size
@@ -57,8 +58,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CMAKE_SHARED_LINKER_FLAGS
         "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -Wl,-s")
 endif()
-
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Os -g -fno-omit-frame-pointer")
 
 #-------------------------------------------------------------------------------
 # DEPENDENCIES
@@ -158,18 +157,19 @@ set_target_properties(ICU_DATA PROPERTIES
 
 if(ADV_ENABLE_JS)
     # JavaScriptCore
-    set(WEBKIT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/externals/WebKit)
+    set(WEBKIT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/externals/WebKit")
+    set(WEBKIT_LIB_DIR "${WEBKIT_DIR}/build-${ADV_PLATFORM}-${ADV_ARCH}/lib")
 
     add_library(WTF STATIC IMPORTED)
     set_target_properties(WTF PROPERTIES
-        IMPORTED_LOCATION ${WEBKIT_DIR}/lib/libWTF.a
+        IMPORTED_LOCATION ${WEBKIT_LIB_DIR}/libWTF.a
         INTERFACE_INCLUDE_DIRECTORIES "${WEBKIT_DIR}/Source/WTF/wtf"
         INTERFACE_LINK_LIBRARIES "${DL_LIB};ICU;ICU_DATA"
         INTERFACE_COMPILE_DEFINITIONS "ENABLE_INTL=0")
 
     add_library(JavaScriptCore STATIC IMPORTED)
     set_target_properties(JavaScriptCore PROPERTIES
-        IMPORTED_LOCATION ${WEBKIT_DIR}/lib/libJavaScriptCore.a
+        IMPORTED_LOCATION ${WEBKIT_LIB_DIR}/libJavaScriptCore.a
         INTERFACE_INCLUDE_DIRECTORIES "${WEBKIT_DIR}/include"
         INTERFACE_LINK_LIBRARIES WTF)
 endif()
@@ -185,12 +185,10 @@ endif()
 
 if(ADV_PLATFORM STREQUAL "android")
     # native_app_glue
-    # add_library(native_app_glue STATIC
-        # ${CMAKE_ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c
-    # )
-    # target_include_directories(native_app_glue INTERFACE
-        # ${CMAKE_ANDROID_NDK}/sources/android/native_app_glue
-    # )
+    add_library(native_app_glue STATIC
+    ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
+    target_include_directories(native_app_glue INTERFACE
+        ${ANDROID_NDK}/sources/android/native_app_glue)
 endif()
 
 if(ADV_BUILD_TESTS)
@@ -198,7 +196,7 @@ if(ADV_BUILD_TESTS)
     add_library(Catch2 INTERFACE)
     set_target_properties(Catch2 PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES
-        ${CMAKE_CURRENT_BINARY_DIR}/externals/Catch2/include)
+        ${CMAKE_CURRENT_SOURCE_DIR}/externals/Catch2/include)
 endif()
 
 #-------------------------------------------------------------------------------
@@ -237,16 +235,22 @@ add_library(aardvark ${ADV_LIB_TYPE}
     src/elements/stack.cpp
     src/elements/text.cpp)
 
-target_link_libraries(aardvark skia ICU ICU_DATA) # stdc++fs
+# TODO include dir
+target_include_directories(aardvark INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+target_link_libraries(aardvark skia ICU ICU_DATA)
 
 if(ADV_ENABLE_JS)
-    target_sources(aardvark PRIVATE
-        src/js/bindings_host.cpp
-        src/js/base_types_bindings.cpp
-        src/js/desktop_app_bindings.cpp
-        src/js/desktop_window_bindings.cpp
-        src/js/document_bindings.cpp
-        src/js/elements_bindings.cpp)
+    # target_sources(aardvark PRIVATE
+        # src/js/bindings_host.cpp
+        # src/js/base_types_bindings.cpp
+        # src/js/document_bindings.cpp
+        # src/js/elements_bindings.cpp)
+    if (ADV_PLATFORM STREQUAL "linux")
+        target_sources(aardvark PRIVATE
+            src/js/desktop_app_bindings.cpp
+            src/js/desktop_window_bindings.cpp)
+    endif()
     target_link_libraries(aardvark JavaScriptCore)
 endif()
 
@@ -262,8 +266,9 @@ endif()
 if(ADV_PLATFORM STREQUAL "android")
     target_compile_definitions(aardvark PRIVATE "ADV_PLATFORM_ANDROID=1")
     target_sources(aardvark PRIVATE
-        src/platforms/android/android_window.cpp)
-    target_link_libraries(aardvark android EGL GLESv2 log) # native_app_glue
+        src/platforms/android/android_window.cpp
+        src/platforms/android/android_app.cpp)
+    target_link_libraries(aardvark android EGL GLESv2 log native_app_glue)
 endif()
 
 if(ADV_BUILD_EXAMPLES)

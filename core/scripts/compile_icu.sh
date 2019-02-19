@@ -48,7 +48,7 @@ if [ "$PLATFORM" = "android" ]; then
         CC=$CC \
         CXX=$CXX \
         AR=$TOOLCHAIN_DIR/$CROSS_COMPILE_PLATFORM-ar \
-        RINLIB=$TOOLCHAIN_DIR/$CROSS_COMPILE_PLATFORM-ranlib
+        RANLIB=$TOOLCHAIN_DIR/$CROSS_COMPILE_PLATFORM-ranlib
 fi
 
 if [ "$PLATFORM" = "linux" ]; then

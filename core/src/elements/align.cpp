@@ -3,9 +3,10 @@
 namespace aardvark::elements {
 
 Align::Align(std::shared_ptr<Element> child, EdgeInsets insets,
-             bool is_repaint_boundary)
+             bool adjust_child, bool is_repaint_boundary)
     : SingleChildElement(child, is_repaint_boundary,
                          /* size_depends_on_parent */ true),
+      adjust_child(adjust_child),
       insets(insets){};
 
 Size Align::layout(BoxConstraints constraints) {
@@ -17,10 +18,12 @@ Size Align::layout(BoxConstraints constraints) {
     auto vert = top + bottom;
 
     auto child_constraints = BoxConstraints{
-        0,                              // min_width
-        constraints.max_width - horiz,  // max_width
-        0,                              // min_height
-        constraints.max_height - vert   // max_height
+        0,  // min_width
+        adjust_child ? (constraints.max_width - horiz)
+                     : constraints.max_width,  // max_width
+        0,                                     // min_height
+        adjust_child ? (constraints.max_height - vert)
+                     : constraints.max_height,  // max_height
     };
     auto size = document->layout_element(child.get(), child_constraints);
     child->size = size;

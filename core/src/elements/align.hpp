@@ -21,10 +21,14 @@ struct EdgeInsets {
 class Align : public SingleChildElement {
   public:
     Align(std::shared_ptr<Element> child, EdgeInsets insets,
-          bool is_repaint_boundary = false);
+          bool adjust_child = true, bool is_repaint_boundary = false);
     std::string get_debug_name() override { return "Align"; };
     Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
+    // Whether to reduce size of the child by the size of insets, or make it 
+    // equal to the size of the container. This is useful when you need to set 
+    // relative size and position at the same time.
+    bool adjust_child;
     EdgeInsets insets;
 };
 

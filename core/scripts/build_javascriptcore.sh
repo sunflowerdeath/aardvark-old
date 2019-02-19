@@ -6,13 +6,11 @@ WEBKIT_DIR=$PWD/externals/WebKit
 # Compiler flags:
 # -DUCONFIG_NO_COLLATION=1 -DUCONFIG_NO_FORMATTING=1 - Disabled ICU features
 # -DU_STATIC_IMPLEMENTATION - Required when ICU is built as static library
-# -DU_SHOW_CPLUSPLUS_API=0 - Not sure why TODO
 C_FLAGS=" \
 -DENABLE_INTL=0 \
 -DUCONFIG_NO_COLLATION=1 \
 -DUCONFIG_NO_FORMATTING=1 \
 -DU_STATIC_IMPLEMENTATION=1 \
--DU_SHOW_CPLUSPLUS_API=0 \
 -ffunction-sections -fdata-sections
 "
 
@@ -26,6 +24,8 @@ export CXXFLAGS="$C_FLAGS"
 # -DENABLE_STATIC_JSC - Build as static library
 # -DUSE_SYSTEM_MALLOC=ON - Do not use webkit memory allocator to reduce size
 # -DCUSTOM_ICU_INCLUDE_DIR, -DCUSTOM_ICU_LIBRARY_DIR - Paths to custom ICU library
+
+# -DUSE_THIN_ARCHIVES=OFF \ // ?
 CMAKE_ARGS="\
 -DCMAKE_BUILD_TYPE=Release \
 -DPORT=JSCOnly \
@@ -35,13 +35,41 @@ CMAKE_ARGS="\
 -DUSE_SYSTEM_MALLOC=ON \
 -DENABLE_INTL=OFF \
 -DCUSTOM_ICU_INCLUDE_DIR=$ICU_DIR/include \
--DCUSTOM_ICU_LIBRARY_DIR=$ICU_DIR/build/lib \
+-DCUSTOM_ICU_LIBRARY_DIR=$ICU_DIR/build-linux-x86_64/lib \
+-DENABLE_JIT=ON \
 -DENABLE_FTL_JIT=OFF \
 -DENABLE_DFG_JIT=ON \
 -DENABLE_WEBASSEMBLY=OFF \
--DENABLE_JIT=ON \
+-DENABLE_XSLT=OFF \
 "
 
-cd $WEBKIT_DIR
-cmake . $CMAKE_ARGS
+if [ "$PLATFORM" = "android" ]; then
+    ANDROID_NDK=$ANDROID_HOME/ndk-bundle
+    ANDROID_API=21
+    TOOLCHAIN_DIR=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64
+
+    if [ "$ARCH" = "arm64" ]; then
+        CROSS_COMPILE_PLATFORM="aarch64-linux-android"
+        ARCH_NAME="aarch64"
+    elif [ "$ARCH" = "arm" ]; then
+        CROSS_COMPILE_PLATFORM="armv7a-linux-androideabi"
+        ARCH_NAME="armv7"
+    fi
+
+    CMAKE_ARGS="$CMAKE_ARGS \
+        -DCMAKE_SYSTEM_NAME=Android \
+        -DANDROID_NDK=$ANDROID_NDK \
+        -DANDROID_PLATFORM=$ANDROID_API \
+        -DANDROID_ABI=arm64-v8a \
+        -DANDROID_STL=c++_static \
+        -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
+        -DCMAKE_C_FLAGS=-DADV=1-DADV=2 \
+    "
+fi
+
+BUILD_DIR=$WEBKIT_DIR/build-$PLATFORM-$ARCH
+rm -rf $BUILD_DIR
+mkdir $BUILD_DIR
+cd $BUILD_DIR
+cmake $CMAKE_ARGS ..
 make -j7
