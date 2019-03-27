@@ -107,6 +107,8 @@ class Element {
     // Absolute position is calculated before painting the element
     Position abs_position;
 
+    bool controls_layer_tree = false;
+
     std::shared_ptr<LayerTree> layer_tree;
 
   private:

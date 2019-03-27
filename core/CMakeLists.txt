@@ -266,9 +266,11 @@ endif()
 if(ADV_PLATFORM STREQUAL "android")
     target_compile_definitions(aardvark PRIVATE "ADV_PLATFORM_ANDROID=1")
     target_sources(aardvark PRIVATE
-        src/platforms/android/android_window.cpp
-        src/platforms/android/android_app.cpp)
-    target_link_libraries(aardvark android EGL GLESv2 log native_app_glue)
+        src/platforms/android/android_app.cpp
+        src/platforms/android/android_jni.cpp
+        src/platforms/android/android_binary_channel.cpp)
+    # src/platforms/android/android_texture_layer.cpp
+    target_link_libraries(aardvark android EGL GLESv2 log)
 endif()
 
 if(ADV_BUILD_EXAMPLES)

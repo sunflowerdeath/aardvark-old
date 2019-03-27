@@ -59,7 +59,10 @@ void Document::initial_paint() {
 }
 
 bool Document::repaint() {
-    if (changed_elements.empty()) return false;  // nothing to repaint
+    if (changed_elements.empty()) {
+        compose_layers();
+        return false;  // nothing to repaint
+    }
     // TODO check when compose is needed
     ElementsSet relayout_boundaries;
     for (auto elem : changed_elements) {
@@ -99,7 +102,18 @@ SkPath offset_path(SkPath* path, Position offset) {
 void Document::paint_element(Element* elem, bool is_repaint_root) {
     // std::cout << "paint element: " << elem->get_debug_name() << std::endl;
     if (!is_repaint_root) elem->parent = current_element;
-    this->current_element = elem;
+    current_element = elem;
+
+    /* 
+    TODO
+    if (elem->controls_layer_tree) {
+        elem->paint(); // Sets elem's `layer_tree` property
+        // External element never changes, only its parent can cause a repaint,
+        // so `current_layer_tree` is always set here.
+        current_layer_tree->add(elem->layer_tree);
+        return;
+    }
+    */
 
     auto pin_prev_layer_tree = elem->layer_tree;  // pin shared pointer
     if (elem->is_repaint_boundary) {
@@ -131,8 +145,9 @@ void Document::paint_element(Element* elem, bool is_repaint_root) {
     // Clipping
     auto prev_clip = current_clip;
     if (is_repaint_root) {
-        // Repaint root doesn't get clip, but it restores it from prev layer
-        // tree
+        // Repaint root doesn't get clip, because its paint is called by 
+        // the document, not by the parent element, so it restores its clip
+        // from the prev layer tree.
         if (!is_initial_paint) current_layer_tree->clip = prev_layer_tree->clip;
     } else {
         if (elem->clip != std::nullopt) {

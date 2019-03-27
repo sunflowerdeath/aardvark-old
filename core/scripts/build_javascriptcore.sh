@@ -11,7 +11,7 @@ C_FLAGS=" \
 -DUCONFIG_NO_COLLATION=1 \
 -DUCONFIG_NO_FORMATTING=1 \
 -DU_STATIC_IMPLEMENTATION=1 \
--ffunction-sections -fdata-sections
+-ffunction-sections -fdata-sections \
 "
 
 # Compiler flags argument contain spaces and CMake does not support quotes,
@@ -63,7 +63,6 @@ if [ "$PLATFORM" = "android" ]; then
         -DANDROID_ABI=arm64-v8a \
         -DANDROID_STL=c++_static \
         -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
-        -DCMAKE_C_FLAGS=-DADV=1-DADV=2 \
     "
 fi
 
