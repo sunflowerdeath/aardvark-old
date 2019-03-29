@@ -56,6 +56,7 @@ class AardvarkView extends GLSurfaceView {
         }
 
         public void onSurfaceChanged(GL10 gl, int width, int height) {
+            activity.onBeforeNativeAppCreate();
             appPtr = NativeWrapper.appCreate(activity, width, height);
             activity.onNativeAppCreate(appPtr);
         }

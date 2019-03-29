@@ -8,7 +8,7 @@ public class BinaryChannel {
         void handle(ByteBuffer message);
     }
 
-    private long nativeChannelAddr;
+    public long nativeChannelAddr;
     private MessageHandler handler;
 
     BinaryChannel() {

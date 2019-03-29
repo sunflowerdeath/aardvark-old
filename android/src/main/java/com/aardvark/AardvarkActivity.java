@@ -19,25 +19,12 @@ public class AardvarkActivity extends Activity {
 
     private AardvarkView view;
     //private WebView webView;
-    private BinaryChannel systemChannel;
+    public BinaryChannel systemChannel;
+    public long test;
 
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
-
-        NativeWrapper.initJni();
-        systemChannel = new BinaryChannel();
-        BinaryChannel.MessageHandler handler = new BinaryChannel.MessageHandler() {
-            public void handle(ByteBuffer message) {
-                try {
-                    String str = new String(message.array(), "UTF-8");
-                    Log.i("MESSAGE", str);
-                } catch(UnsupportedEncodingException exc) {
-                    Log.i("MESSAGE", "Unsupported encoding");
-                }
-            }
-        };
-        systemChannel.setMessageHandler(handler);
 
         view = new AardvarkView(getApplicationContext(), this);
         setContentView(view);
@@ -54,10 +41,28 @@ public class AardvarkActivity extends Activity {
         //view = new AardvarkView(getApplicationContext(), true, holder);
     }
 
-    public static native void init(long appPtr);
+    public static native void init(long appPtr, BinaryChannel platformChannel);
+
+    public void onBeforeNativeAppCreate() {
+        NativeWrapper.initJni();
+        systemChannel = new BinaryChannel();
+        BinaryChannel.MessageHandler handler = new BinaryChannel.MessageHandler() {
+            public void handle(ByteBuffer message) {
+                try {
+                    byte[] bytes = new byte[message.remaining()];
+                    message.get(bytes);
+                    String str = new String(bytes, "UTF-8");
+                    Log.i("MESSAGE", str);
+                } catch(UnsupportedEncodingException exc) {
+                    Log.i("MESSAGE", "Unsupported encoding");
+                }
+            }
+        };
+        systemChannel.setMessageHandler(handler);
+    }
 
     public void onNativeAppCreate(long appPtr) {
-        init(appPtr);
+        init(appPtr, systemChannel);
     }
 
     @Override
