@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import org.json.JSONObject;
 
 /*
 import android.webkit.WebChromeClient;
@@ -20,12 +21,11 @@ public class AardvarkActivity extends Activity {
     private AardvarkView view;
     //private WebView webView;
     public BinaryChannel systemChannel;
-    public long test;
+    public MessageChannel<JSONObject> jsonChannel;
 
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
-
         view = new AardvarkView(getApplicationContext(), this);
         setContentView(view);
 
@@ -45,6 +45,7 @@ public class AardvarkActivity extends Activity {
 
     public void onBeforeNativeAppCreate() {
         NativeWrapper.initJni();
+
         systemChannel = new BinaryChannel();
         BinaryChannel.MessageHandler handler = new BinaryChannel.MessageHandler() {
             public void handle(ByteBuffer message) {
@@ -59,6 +60,14 @@ public class AardvarkActivity extends Activity {
             }
         };
         systemChannel.setMessageHandler(handler);
+
+        jsonChannel = new MessageChannel<JSONObject>(JsonCodec.instance);
+        MessageHandler<JSONObject> jsonHandler = new MessageHandler<JSONObject>() {
+            public void handle(JSONObject message) {
+                Log.i("JSON MESSAGE", message.toString());
+            }
+        };
+        jsonChannel.setMessageHandler(jsonHandler);
     }
 
     public void onNativeAppCreate(long appPtr) {
