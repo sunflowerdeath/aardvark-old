@@ -65,6 +65,12 @@ endif()
 # fmt
 # add_subdirectory("${CMAKE_SOURCE_DIR}/externals/fmt")
 
+#json
+add_library(nlohmann_json INTERFACE)
+set_target_properties(nlohmann_json PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES
+    ${CMAKE_CURRENT_SOURCE_DIR}/externals/nlohmann_json/include)
+
 # skia
 set(SKIA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/externals/skia")
 
@@ -238,7 +244,7 @@ add_library(aardvark ${ADV_LIB_TYPE}
 # TODO include dir
 target_include_directories(aardvark INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(aardvark skia ICU ICU_DATA)
+target_link_libraries(aardvark skia ICU ICU_DATA nlohmann_json)
 
 if(ADV_ENABLE_JS)
     # target_sources(aardvark PRIVATE

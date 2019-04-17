@@ -27,19 +27,10 @@ AndroidBinaryChannel* AndroidBinaryChannel::get_native_channel(
     return reinterpret_cast<AndroidBinaryChannel*>(addr);
 }
 
-void AndroidBinaryChannel::send_message(void* message, int length) {
-    auto buffer = jni_env->NewDirectByteBuffer(message, length);
+void AndroidBinaryChannel::send_message(const BinaryBuffer& message) {
+    auto buffer = jni_env->NewDirectByteBuffer(message.data, message.length);
     jni_env->CallVoidMethod(platform_channel, channel_handle_message_method,
-                        buffer);
-}
-
-void AndroidBinaryChannel::set_message_handler(
-    std::function<void(void*, int)> handler) {
-    this->handler = handler;
-}
-
-void AndroidBinaryChannel::handle_message(void* message, int length) {
-    if (handler != nullptr) handler(message, length);
+                            buffer);
 }
 
 }  // namespace aardvark

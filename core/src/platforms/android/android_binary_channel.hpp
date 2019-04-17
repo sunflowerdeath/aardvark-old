@@ -1,8 +1,8 @@
 #pragma once
 
 #include <functional>
-#include "jni.h"
 #include "../../channels.hpp"
+#include "jni.h"
 
 namespace aardvark {
 
@@ -11,9 +11,7 @@ class AndroidBinaryChannel : public BinaryChannel {
   public:
     AndroidBinaryChannel(jobject platform_channel);
 
-    void send_message(void* message, int length) override;
-    void set_message_handler(std::function<void(void*, int)> handler) override;
-    void handle_message(void* message, int length) override;
+    void send_message(const BinaryBuffer& message) override;
 
     // This method should be called once before using this class to initalize
     // JNI bindings.
@@ -23,7 +21,6 @@ class AndroidBinaryChannel : public BinaryChannel {
 
   private:
     jobject platform_channel;
-    std::function<void(void*, int)> handler;
 };
 
 }  // namespace aardvark

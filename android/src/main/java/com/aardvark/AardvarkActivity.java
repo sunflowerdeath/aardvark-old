@@ -2,10 +2,15 @@ package com.aardvark;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.util.Map;
+import java.util.HashMap;
+
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+
 import org.json.JSONObject;
+import org.json.JSONException;
 
 /*
 import android.webkit.WebChromeClient;
@@ -13,22 +18,27 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
  */
 
+class JsonChannel extends MessageChannel<JSONObject> {
+    JsonChannel() {
+        super(JsonCodec.instance);
+    }
+}
+
 public class AardvarkActivity extends Activity {
     static {
         System.loadLibrary("aardvark-android");
     }
 
     private AardvarkView view;
+    private long nativeAppPtr;
+    private Map<String, Object> channels = new HashMap<String, Object>();
     //private WebView webView;
-    public BinaryChannel systemChannel;
-    public MessageChannel<JSONObject> jsonChannel;
 
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         view = new AardvarkView(getApplicationContext(), this);
         setContentView(view);
-
         /*
         webView = new WebView(getApplicationContext());
         webView.getSettings().setJavaScriptEnabled(true);
@@ -43,35 +53,44 @@ public class AardvarkActivity extends Activity {
 
     public static native void init(long appPtr, BinaryChannel platformChannel);
 
+    public <T> void registerChannel(String name, MessageChannel<T> channel) {
+        channels.put(name, channel);
+    }
+
+    public <T> MessageChannel<T> getChannel(String name) {
+        return (MessageChannel<T>) channels.get(name);
+    }
+
+    public <T> void sendMessage(String name, T message) {
+        getChannel(name).sendMessage(message);
+    }
+
     public void onBeforeNativeAppCreate() {
         NativeWrapper.initJni();
 
-        systemChannel = new BinaryChannel();
-        BinaryChannel.MessageHandler handler = new BinaryChannel.MessageHandler() {
-            public void handle(ByteBuffer message) {
-                try {
-                    byte[] bytes = new byte[message.remaining()];
-                    message.get(bytes);
-                    String str = new String(bytes, "UTF-8");
-                    Log.i("MESSAGE", str);
-                } catch(UnsupportedEncodingException exc) {
-                    Log.i("MESSAGE", "Unsupported encoding");
-                }
-            }
-        };
-        systemChannel.setMessageHandler(handler);
+        // create channel
+        registerChannel("system", new JsonChannel());
 
-        jsonChannel = new MessageChannel<JSONObject>(JsonCodec.instance);
+        // send message to channel
+        try {
+            JSONObject message = new JSONObject("{a: 1}");
+            sendMessage("system", message);
+        } catch (JSONException e) {
+        }
+
+        // handle message from channel
         MessageHandler<JSONObject> jsonHandler = new MessageHandler<JSONObject>() {
             public void handle(JSONObject message) {
                 Log.i("JSON MESSAGE", message.toString());
             }
         };
-        jsonChannel.setMessageHandler(jsonHandler);
+        getChannel("system").setMessageHandler(jsonHandler);
     }
 
     public void onNativeAppCreate(long appPtr) {
-        init(appPtr, systemChannel);
+        nativeAppPtr = appPtr;
+        MessageChannel<JSONObject> channel = this.<JSONObject>getChannel("system");
+        init(appPtr, channel.binaryChannel);
     }
 
     @Override

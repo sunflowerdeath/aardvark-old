@@ -1,14 +1,15 @@
-#include "jni.h"
 #include "android_app.hpp"
 #include "android_binary_channel.hpp"
+#include "jni.h"
 
 extern "C" {
 JNIEXPORT void JNICALL Java_com_aardvark_NativeWrapper_initJni(JNIEnv* env,
-                                                                 jobject obj);
+                                                               jobject obj);
 JNIEXPORT jlong JNICALL Java_com_aardvark_NativeWrapper_appCreate(
     JNIEnv* env, jobject obj, jobject activity, jint width, jint height);
-JNIEXPORT void JNICALL Java_com_aardvark_NativeWrapper_appUpdate(
-    JNIEnv* env, jobject obj, jlong app_ptr);
+JNIEXPORT void JNICALL Java_com_aardvark_NativeWrapper_appUpdate(JNIEnv* env,
+                                                                 jobject obj,
+                                                                 jlong app_ptr);
 JNIEXPORT jlong JNICALL Java_com_aardvark_NativeWrapper_channelCreate(
     JNIEnv* env, jobject obj, jobject platform_channel);
 JNIEXPORT void JNICALL Java_com_aardvark_NativeWrapper_channelHandleMessage(
@@ -16,7 +17,7 @@ JNIEXPORT void JNICALL Java_com_aardvark_NativeWrapper_channelHandleMessage(
 };
 
 JNIEXPORT void JNICALL Java_com_aardvark_NativeWrapper_initJni(JNIEnv* env,
-                                                                 jobject obj) {
+                                                               jobject obj) {
     aardvark::AndroidBinaryChannel::init_jni(env);
 };
 
@@ -39,8 +40,9 @@ JNIEXPORT jlong JNICALL Java_com_aardvark_NativeWrapper_channelCreate(
 
 JNIEXPORT void JNICALL Java_com_aardvark_NativeWrapper_channelHandleMessage(
     JNIEnv* env, jobject obj, jlong chan_ptr, jobject buffer) {
-    auto message = env->GetDirectBufferAddress(buffer);
+    auto data = env->GetDirectBufferAddress(buffer);
     auto length = env->GetDirectBufferCapacity(buffer);
+    auto message = aardvark::BinaryBuffer(data, length);
     auto channel = reinterpret_cast<aardvark::AndroidBinaryChannel*>(chan_ptr);
-    channel->handle_message(message, length);
+    channel->handle_message(message);
 }
