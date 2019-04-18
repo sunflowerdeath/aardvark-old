@@ -19,4 +19,4 @@ add_subdirectory("../core" "../core/build-android-arm64")
 # target_link_libraries(native-activity aardvark)
 
 add_library(aardvark-android SHARED src/main/cpp/main.cpp)
-target_link_libraries(aardvark-android aardvark)
+target_link_libraries(aardvark-android aardvark log)

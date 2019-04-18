@@ -10,7 +10,7 @@ class StringCodec implements MessageCodec<String> {
             ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.length);
             buffer.put(bytes);
             return buffer;
-        } catch(UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException e) {
             throw new IllegalArgumentException("Unsupported encoding", e);
         }
     }

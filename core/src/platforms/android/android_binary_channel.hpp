@@ -11,7 +11,7 @@ class AndroidBinaryChannel : public BinaryChannel {
   public:
     AndroidBinaryChannel(jobject platform_channel);
 
-    void send_message(const BinaryBuffer& message) override;
+    void send_message(const std::vector<char>& message) override;
 
     // This method should be called once before using this class to initalize
     // JNI bindings.

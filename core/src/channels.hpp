@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstring>
+#include <vector>
 #include <functional>
 #include <nlohmann_json.hpp>
 
@@ -8,58 +8,41 @@ namespace aardvark {
 
 using json = nlohmann::json;
 
-// Very simple class that holds binary data
-class BinaryBuffer {
-  public:
-    BinaryBuffer(void* src_data, int length) : length(length) {
-        data = malloc(length);
-        std::memcpy(data, src_data, length);
-    }
-
-    ~BinaryBuffer() {
-        free(data);
-    }
-
-    int length;
-    void* data;
-};
-
 // Сhannel for exchanging messages between platform and native side
 class BinaryChannel {
   public:
     // Sends message through the channel to the platform side
-    virtual void send_message(const BinaryBuffer& message){};
+    virtual void send_message(const std::vector<char>& message){};
 
     virtual void set_message_handler(
-        std::function<void(const BinaryBuffer&)> handler) {
+        std::function<void(const std::vector<char>&)> handler) {
         this->handler = handler;
     }
 
     // Handles message received from the platform side
-    void handle_message(const BinaryBuffer& message) {
+    void handle_message(const std::vector<char>& message) {
         if (handler != nullptr) handler(message);
     };
 
   private:
-    std::function<void(const BinaryBuffer&)> handler;
+    std::function<void(const std::vector<char>&)> handler;
 };
 
 template <class T>
 class MessageCodec {
   public:
-    virtual BinaryBuffer encode(const T& message){};
-    virtual T decode(const BinaryBuffer& message){};
+    virtual std::vector<char> encode(const T& message){};
+    virtual T decode(const std::vector<char>& message){};
 };
 
 class StringCodec : public MessageCodec<std::string> {
   public:
-    BinaryBuffer encode(const std::string& message) override {
-        return BinaryBuffer(const_cast<char*>(message.data()), message.size());
+    std::vector<char> encode(const std::string& message) override {
+        return std::vector<char>(message.begin(), message.end());
     };
 
-    std::string decode(const BinaryBuffer& message) override {
-        return std::string(static_cast<const char*>(message.data),
-                           message.length);
+    std::string decode(const std::vector<char>& message) override {
+        return std::string(message.begin(), message.end());
     };
 
     static StringCodec* get_instance() {
@@ -70,11 +53,11 @@ class StringCodec : public MessageCodec<std::string> {
 
 class JsonCodec : public MessageCodec<json> {
   public:
-    BinaryBuffer encode(const json& message) {
+    std::vector<char> encode(const json& message) {
         return StringCodec::get_instance()->encode(message.dump());
     };
 
-    json decode(const BinaryBuffer& message) {
+    json decode(const std::vector<char>& message) {
         auto str = StringCodec::get_instance()->decode(message);
         return json::parse(str);
     };
@@ -90,7 +73,7 @@ class MessageChannel {
   public:
     MessageChannel(BinaryChannel* binary_channel, MessageCodec<T>* codec)
         : binary_channel(binary_channel), codec(codec) {
-        binary_channel->set_message_handler([=](BinaryBuffer message) {
+        binary_channel->set_message_handler([=](std::vector<char> message) {
             this->handle_message(message);
         });
     };
@@ -99,7 +82,7 @@ class MessageChannel {
         binary_channel->send_message(codec->encode(message));
     };
 
-    void handle_message(const BinaryBuffer& message) {
+    void handle_message(const std::vector<char>& message) {
         if (handler != nullptr) {
             handler(codec->decode(message), user_data);
         }

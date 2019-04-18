@@ -72,11 +72,13 @@ public class AardvarkActivity extends Activity {
         registerChannel("system", new JsonChannel());
 
         // send message to channel
+        /*
         try {
             JSONObject message = new JSONObject("{a: 1}");
             sendMessage("system", message);
         } catch (JSONException e) {
         }
+        */
 
         // handle message from channel
         MessageHandler<JSONObject> jsonHandler = new MessageHandler<JSONObject>() {

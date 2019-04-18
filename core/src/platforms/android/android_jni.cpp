@@ -1,6 +1,7 @@
+#include "jni.h"
 #include "android_app.hpp"
 #include "android_binary_channel.hpp"
-#include "jni.h"
+#include "../../elements/elements.hpp"
 
 extern "C" {
 JNIEXPORT void JNICALL Java_com_aardvark_NativeWrapper_initJni(JNIEnv* env,
@@ -29,7 +30,12 @@ JNIEXPORT jlong JNICALL Java_com_aardvark_NativeWrapper_appCreate(
 
 JNIEXPORT void JNICALL Java_com_aardvark_NativeWrapper_appUpdate(
     JNIEnv* env, jobject caller, jlong app_ptr) {
-    (reinterpret_cast<aardvark::AndroidApp*>(app_ptr))->update();
+    auto app = reinterpret_cast<aardvark::AndroidApp*>(app_ptr);
+    auto align = dynamic_cast<aardvark::elements::Align*>(app->document->root.get());
+    align->insets.left.value += 1;
+    if (align->insets.left.value > 800) align->insets.left.value = 100;
+    align->change();
+    app->update();
 }
 
 JNIEXPORT jlong JNICALL Java_com_aardvark_NativeWrapper_channelCreate(
@@ -40,9 +46,9 @@ JNIEXPORT jlong JNICALL Java_com_aardvark_NativeWrapper_channelCreate(
 
 JNIEXPORT void JNICALL Java_com_aardvark_NativeWrapper_channelHandleMessage(
     JNIEnv* env, jobject obj, jlong chan_ptr, jobject buffer) {
-    auto data = env->GetDirectBufferAddress(buffer);
-    auto length = env->GetDirectBufferCapacity(buffer);
-    auto message = aardvark::BinaryBuffer(data, length);
     auto channel = reinterpret_cast<aardvark::AndroidBinaryChannel*>(chan_ptr);
+    auto data = reinterpret_cast<char*>(env->GetDirectBufferAddress(buffer));
+    auto length = env->GetDirectBufferCapacity(buffer);
+    auto message = std::vector<char>(data, data + length);
     channel->handle_message(message);
 }

@@ -1,8 +1,11 @@
 package com.aardvark;
 
+import org.json.JSONObject;
+import org.json.JSONException;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
+import android.view.MotionEvent;
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLDisplay;
@@ -11,12 +14,15 @@ import javax.microedition.khronos.opengles.GL10;
 class AardvarkView extends GLSurfaceView {
     private static String TAG = "AardvarkView";
 
+    private AardvarkActivity activity;
+
     public AardvarkView(Context context, AardvarkActivity activity) {
         super(context);
+        this.activity = activity;
         this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
         setEGLContextClientVersion(2);
         setEGLConfigChooser(new ConfigChooser());
-        setRenderer(new Renderer(activity));
+        setRenderer(new Renderer(activity, this));
     }
 
     // Chooser that selects RGBA888 to match code creating Skia surfaces on the native side
@@ -47,9 +53,11 @@ class AardvarkView extends GLSurfaceView {
     private static class Renderer implements GLSurfaceView.Renderer {
         private long appPtr;
         private AardvarkActivity activity;
+        private AardvarkView view;
 
-        Renderer(AardvarkActivity activity) {
+        Renderer(AardvarkActivity activity, AardvarkView view) {
             this.activity = activity;
+            this.view = view;
         }
 
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -62,9 +70,27 @@ class AardvarkView extends GLSurfaceView {
         }
 
         public void onDrawFrame(GL10 gl) {
-            //gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
             NativeWrapper.appUpdate(appPtr);
-            //gl.glFlush();
         }
+    }
+
+    public MotionEvent event = null;
+
+    @Override
+    public boolean onTouchEvent(final MotionEvent event) {
+        queueEvent(new Runnable(){
+            public void run() {
+                JSONObject message = new JSONObject();
+                try {
+                    message.put("x", event.getX());
+                    message.put("y", event.getY());
+                    message.put("action", event.getAction());
+                } catch(JSONException e) {
+                    return;
+                }
+                activity.sendMessage("system", message);
+            }
+        });
+        return true;
     }
 }
