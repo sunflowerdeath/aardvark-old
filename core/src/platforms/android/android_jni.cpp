@@ -7,7 +7,8 @@ extern "C" {
 JNIEXPORT void JNICALL Java_com_aardvark_NativeWrapper_initJni(JNIEnv* env,
                                                                jobject obj);
 JNIEXPORT jlong JNICALL Java_com_aardvark_NativeWrapper_appCreate(
-    JNIEnv* env, jobject obj, jobject activity, jint width, jint height);
+    JNIEnv* env, jobject obj, jobject activity, jobject system_channel,
+    jint width, jint height);
 JNIEXPORT void JNICALL Java_com_aardvark_NativeWrapper_appUpdate(JNIEnv* env,
                                                                  jobject obj,
                                                                  jlong app_ptr);
@@ -23,18 +24,16 @@ JNIEXPORT void JNICALL Java_com_aardvark_NativeWrapper_initJni(JNIEnv* env,
 };
 
 JNIEXPORT jlong JNICALL Java_com_aardvark_NativeWrapper_appCreate(
-    JNIEnv* env, jobject obj, jobject activity, jint width, jint height) {
-    auto app = new aardvark::AndroidApp(activity, width, height);
+    JNIEnv* env, jobject obj, jobject activity, jobject system_channel,
+    jint width, jint height) {
+    auto app =
+        new aardvark::AndroidApp(activity, system_channel, width, height);
     return reinterpret_cast<jlong>(app);
 }
 
 JNIEXPORT void JNICALL Java_com_aardvark_NativeWrapper_appUpdate(
     JNIEnv* env, jobject caller, jlong app_ptr) {
     auto app = reinterpret_cast<aardvark::AndroidApp*>(app_ptr);
-    auto align = dynamic_cast<aardvark::elements::Align*>(app->document->root.get());
-    align->insets.left.value += 1;
-    if (align->insets.left.value > 800) align->insets.left.value = 100;
-    align->change();
     app->update();
 }
 

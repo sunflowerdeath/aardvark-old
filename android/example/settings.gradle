@@ -1,0 +1,2 @@
+include ':aardvark'
+project(':aardvark').projectDir=new File('../aardvark')

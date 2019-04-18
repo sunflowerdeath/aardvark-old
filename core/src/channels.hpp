@@ -8,7 +8,7 @@ namespace aardvark {
 
 using json = nlohmann::json;
 
-// Сhannel for exchanging messages between platform and native side
+// Сhannel for exchanging binary messages between platform and native side
 class BinaryChannel {
   public:
     // Sends message through the channel to the platform side

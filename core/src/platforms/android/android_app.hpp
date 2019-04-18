@@ -10,7 +10,7 @@ namespace aardvark {
 
 class AndroidApp {
   public:
-    AndroidApp(jobject activity, int width, int height);
+    AndroidApp(jobject activity, jobject system_channel, int width, int height);
     void update();
     int width;
     int height;
