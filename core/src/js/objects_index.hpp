@@ -22,7 +22,8 @@ class ObjectsIndex {
         return record->native_object;
     };
 
-    // Creates JS object wrapper for native object and store in in the index
+    // Creates JS object corresponding to the native object and stores it in the 
+    // index. Uses `js_class` to determine class of the JS object.
     // Returns created JS object.
     JSObjectRef create_js_object(const std::shared_ptr<T>& s_ptr) {
         auto ptr = s_ptr.get();
@@ -58,6 +59,8 @@ class ObjectsIndex {
     };
 
   private:
+    // This record is stored in the index, and pointer to it is stored in the
+    // private data of the js object
     struct Record {
         std::shared_ptr<T> native_object;
         JSObjectRef js_object;

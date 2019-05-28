@@ -129,23 +129,23 @@ JSValueRef align_element_get_align(JSContextRef ctx, JSObjectRef object,
     return alignment_to_js(ctx, align_elem->insets);
 }
 
-JSClassRef align_element_create_class(JSClassRef element_class) {
+JSClassRef align_elem_create_class(JSClassRef base_class) {
     auto definition = kJSClassDefinitionEmpty;
     JSStaticValue static_values[] = {
         {"align", align_element_get_align, align_element_set_align,
          kJSPropertyAttributeNone},
         {0, 0, 0, 0}};
     definition.className = "AlignElement";
-    definition.parentClass = element_class;
+    definition.parentClass = base_class;
     definition.staticValues = static_values;
     return JSClassCreate(&definition);
 }
 
-JSObjectRef align_element_call_as_constructor(JSContextRef ctx,
-                                              JSObjectRef constructor,
-                                              size_t argumentCount,
-                                              const JSValueRef arguments[],
-                                              JSValueRef* exception) {
+JSObjectRef align_elem_call_as_constructor(JSContextRef ctx,
+                                           JSObjectRef constructor,
+                                           size_t argumentCount,
+                                           const JSValueRef arguments[],
+                                           JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
     auto insets = elements::EdgeInsets{};
     auto elem = std::make_shared<elements::Align>(
@@ -178,7 +178,7 @@ bool background_element_set_background(JSContextRef ctx, JSObjectRef object,
     return true;
 }
 
-JSClassRef background_element_create_class(JSClassRef element_class) {
+JSClassRef background_elem_create_class(JSClassRef element_class) {
     auto definition = kJSClassDefinitionEmpty;
     JSStaticValue static_values[] = {
         {"background", background_element_get_background,
@@ -190,11 +190,11 @@ JSClassRef background_element_create_class(JSClassRef element_class) {
     return JSClassCreate(&definition);
 }
 
-JSObjectRef background_element_call_as_constructor(JSContextRef ctx,
-                                                   JSObjectRef constructor,
-                                                   size_t argument_count,
-                                                   const JSValueRef arguments[],
-                                                   JSValueRef* exception) {
+JSObjectRef background_elem_call_as_constructor(JSContextRef ctx,
+                                                JSObjectRef constructor,
+                                                size_t argument_count,
+                                                const JSValueRef arguments[],
+                                                JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
     auto elem = std::make_shared<elements::Background>(SK_ColorRED);
     return host->element_index->create_js_object(elem);
@@ -204,20 +204,51 @@ JSObjectRef background_element_call_as_constructor(JSContextRef ctx,
 // Stack
 //------------------------------------------------------------------------------
 
-JSClassRef stack_element_create_class(JSClassRef element_class) {
+JSClassRef stack_elem_create_class(JSClassRef element_class) {
     auto definition = kJSClassDefinitionEmpty;
     definition.className = "Stack";
     definition.parentClass = element_class;
     return JSClassCreate(&definition);
 }
 
-JSObjectRef stack_element_call_as_constructor(JSContextRef ctx,
+JSObjectRef stack_elem_call_as_constructor(JSContextRef ctx,
                                               JSObjectRef constructor,
                                               size_t argument_count,
                                               const JSValueRef arguments[],
                                               JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
     auto elem = std::make_shared<elements::Stack>();
+    return host->element_index->create_js_object(elem);
+}
+
+//------------------------------------------------------------------------------
+// Text
+//------------------------------------------------------------------------------
+
+JSClassRef text_elem_create_class(JSClassRef element_class) {
+    auto definition = kJSClassDefinitionEmpty;
+    definition.className = "TextElement";
+    definition.parentClass = element_class;
+    return JSClassCreate(&definition);
+}
+
+JSObjectRef text_elem_call_as_constructor(JSContextRef ctx,
+                                          JSObjectRef constructor,
+                                          size_t argument_count,
+                                          const JSValueRef arguments[],
+                                          JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+
+    auto text = UnicodeString((UChar*)u"SOME TEXT");
+
+    SkPaint paint;
+    paint.setColor(SK_ColorRED);
+    paint.setTextSize(32);
+    paint.setAntiAlias(true);
+    paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
+
+    auto elem = std::make_shared<elements::Text>(text, paint);
+
     return host->element_index->create_js_object(elem);
 }
 

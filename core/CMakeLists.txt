@@ -247,11 +247,11 @@ target_include_directories(aardvark INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(aardvark skia ICU ICU_DATA nlohmann_json)
 
 if(ADV_ENABLE_JS)
-    # target_sources(aardvark PRIVATE
-        # src/js/bindings_host.cpp
-        # src/js/base_types_bindings.cpp
-        # src/js/document_bindings.cpp
-        # src/js/elements_bindings.cpp)
+    target_sources(aardvark PRIVATE
+        src/js/bindings_host.cpp
+        src/js/base_types_bindings.cpp
+        src/js/document_bindings.cpp
+        src/js/elements_bindings.cpp)
     if (ADV_PLATFORM STREQUAL "linux")
         target_sources(aardvark PRIVATE
             src/js/desktop_app_bindings.cpp

@@ -53,6 +53,7 @@ SingleChildElement::SingleChildElement(std::shared_ptr<Element> child,
 
 void SingleChildElement::remove_child(std::shared_ptr<Element> child) {
   if (this->child == child) {
+    this->child->parent = nullptr;
     this->child = nullptr;
     change();
   }

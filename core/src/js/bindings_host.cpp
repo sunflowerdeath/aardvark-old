@@ -1,4 +1,5 @@
 #include "bindings_host.hpp"
+#include <iostream>
 #include <typeinfo>
 #include <functional>
 #include "desktop_app_bindings.hpp"
@@ -63,10 +64,12 @@ BindingsHost::BindingsHost() {
     document_index = ObjectsIndex<Document>(ctx, document_class);
     add_constructor("Document", document_class, nullptr);
 
-    auto element_class = element_create_class();
+    element_class = element_create_class();
     element_index = ObjectsIndex<Element>(ctx, [this](Element* elem) {
         return this->get_element_js_class(elem);
     });
+
+    /*
     align_element_class = align_element_create_class(element_class);
     add_constructor("Align", align_element_class,
                     align_element_call_as_constructor);
@@ -76,13 +79,35 @@ BindingsHost::BindingsHost() {
     stack_element_class = stack_element_create_class(element_class);
     add_constructor("Stack", stack_element_class,
                     stack_element_call_as_constructor);
+    */
+
+    register_elem_class("Align", typeid(elements::Align),
+                        align_elem_create_class,
+                        align_elem_call_as_constructor);
+
+    register_elem_class("Background", typeid(elements::Background),
+                        background_elem_create_class,
+                        background_elem_call_as_constructor);
+
+    register_elem_class("Stack", typeid(elements::Stack),
+                        stack_elem_create_class,
+                        stack_elem_call_as_constructor);
+
+    register_elem_class("Text", typeid(elements::Text), text_elem_create_class,
+                        text_elem_call_as_constructor);
+}
+
+void BindingsHost::register_elem_class(
+    const char* name, const std::type_info& elem_type,
+    JSCreateClassCallback create_class,
+    JSObjectCallAsConstructorCallback call_as_constructor) {
+    auto js_class = create_class(element_class);
+    elements_classes[std::type_index(elem_type)] = js_class;
+    add_constructor(name, js_class, call_as_constructor);
 }
 
 JSClassRef BindingsHost::get_element_js_class(Element* elem) {
-    auto& id = typeid(*elem);
-    if (id == typeid(elements::Align)) return align_element_class;
-    if (id == typeid(elements::Background)) return background_element_class;
-    if (id == typeid(elements::Stack)) return stack_element_class;
+    return elements_classes[std::type_index(typeid(*elem))];
 }
 
 BindingsHost::~BindingsHost() {
