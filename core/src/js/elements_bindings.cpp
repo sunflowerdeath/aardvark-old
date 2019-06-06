@@ -239,7 +239,11 @@ JSObjectRef text_elem_call_as_constructor(JSContextRef ctx,
                                           JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
 
-    auto text = UnicodeString((UChar*)u"SOME TEXT");
+    auto js_str =
+        JSValueToStringCopy(ctx, arguments[0], /* exception */ nullptr);
+    auto uni_str = UnicodeString(JSStringGetCharactersPtr(js_str),
+                                 JSStringGetLength(js_str));
+    // TODO must call JSStringRelease(js_str);
 
     SkPaint paint;
     paint.setColor(SK_ColorRED);
@@ -247,7 +251,7 @@ JSObjectRef text_elem_call_as_constructor(JSContextRef ctx,
     paint.setAntiAlias(true);
     paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
 
-    auto elem = std::make_shared<elements::Text>(text, paint);
+    auto elem = std::make_shared<elements::Text>(uni_str, paint);
 
     return host->element_index->create_js_object(elem);
 }

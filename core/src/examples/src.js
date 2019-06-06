@@ -17,7 +17,7 @@ let red = new Background()
 align.appendChild(red)
 stack.appendChild(align)
 
-let text = new Text()
+let text = new Text("Hello World")
 stack.appendChild(text)
 
 log(JSON.stringify(align.align))
