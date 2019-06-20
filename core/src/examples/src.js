@@ -18,6 +18,10 @@ align.appendChild(red)
 stack.appendChild(align)
 
 let text = new Text("Hello World")
+
+log(text.text)
+text.text = "Hello, Text"
+
 stack.appendChild(text)
 
 log(JSON.stringify(align.align))

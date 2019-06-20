@@ -225,10 +225,49 @@ JSObjectRef stack_elem_call_as_constructor(JSContextRef ctx,
 // Text
 //------------------------------------------------------------------------------
 
+UnicodeString js_value_to_icu_str(JSContextRef ctx, JSValueRef value) {
+    auto js_str =
+        JSValueToStringCopy(ctx, value, /* exception */ nullptr);
+    auto icu_str = UnicodeString(JSStringGetCharactersPtr(js_str),
+                                 JSStringGetLength(js_str));
+    JSStringRelease(js_str);
+    return icu_str;
+}
+
+JSValueRef icu_str_to_js_value(JSContextRef ctx, const UnicodeString& str) {
+    auto js_str = JSStringCreateWithCharacters(str.getBuffer(), str.length());
+    return JSValueMakeString(ctx, js_str);
+}
+
+JSValueRef text_element_get_text(JSContextRef ctx, JSObjectRef object,
+                                 JSStringRef property_name,
+                                 JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto elem = host->element_index->get_native_object(object);
+    auto text_elem = dynamic_cast<elements::Text*>(elem.get());
+    return icu_str_to_js_value(ctx, text_elem->text);
+}
+
+bool text_element_set_text(JSContextRef ctx, JSObjectRef object,
+                           JSStringRef propertyName, JSValueRef value,
+                           JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto elem = host->element_index->get_native_object(object);
+    auto text_elem = dynamic_cast<elements::Text*>(elem.get());
+    text_elem->text = js_value_to_icu_str(ctx, value);
+    text_elem->change();
+    return true;
+}
+
 JSClassRef text_elem_create_class(JSClassRef element_class) {
     auto definition = kJSClassDefinitionEmpty;
+    JSStaticValue static_values[] = {
+        {"text", text_element_get_text, text_element_set_text,
+         kJSPropertyAttributeDontDelete},
+        {0, 0, 0, 0}};
     definition.className = "TextElement";
     definition.parentClass = element_class;
+    definition.staticValues = static_values;
     return JSClassCreate(&definition);
 }
 
@@ -239,19 +278,14 @@ JSObjectRef text_elem_call_as_constructor(JSContextRef ctx,
                                           JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
 
-    auto js_str =
-        JSValueToStringCopy(ctx, arguments[0], /* exception */ nullptr);
-    auto uni_str = UnicodeString(JSStringGetCharactersPtr(js_str),
-                                 JSStringGetLength(js_str));
-    // TODO must call JSStringRelease(js_str);
-
     SkPaint paint;
     paint.setColor(SK_ColorRED);
     paint.setTextSize(32);
     paint.setAntiAlias(true);
     paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
 
-    auto elem = std::make_shared<elements::Text>(uni_str, paint);
+    auto text = js_value_to_icu_str(ctx, arguments[0]);
+    auto elem = std::make_shared<elements::Text>(text, paint);
 
     return host->element_index->create_js_object(elem);
 }
