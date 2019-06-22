@@ -212,10 +212,10 @@ JSClassRef stack_elem_create_class(JSClassRef element_class) {
 }
 
 JSObjectRef stack_elem_call_as_constructor(JSContextRef ctx,
-                                              JSObjectRef constructor,
-                                              size_t argument_count,
-                                              const JSValueRef arguments[],
-                                              JSValueRef* exception) {
+                                           JSObjectRef constructor,
+                                           size_t argument_count,
+                                           const JSValueRef arguments[],
+                                           JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
     auto elem = std::make_shared<elements::Stack>();
     return host->element_index->create_js_object(elem);

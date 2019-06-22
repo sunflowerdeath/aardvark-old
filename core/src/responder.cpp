@@ -10,8 +10,20 @@ bool contains(std::vector<T> vec, T item) {
 };
 
 void ResponderReconciler::reconcile(
+    const PointerEvent& event,
     std::vector<std::shared_ptr<Element>>& hit_elements,
     Element* root_element) {
+    // Find or create current pointer
+    auto current_pointer_it = pointers.find(event.pointer_id);
+    PointerResponders* current_pointer;
+    if (current_pointer_it == pointers.end()) {
+        pointers[event.pointer_id] = PointerResponders();
+        current_pointer = &pointers[event.pointer_id];
+    } else {
+        current_pointer = &current_pointer_it->second;
+    }
+
+    auto active_elements = std::vector<std::shared_ptr<Element>>();
 
     // If some element was capturing, first check that it is not removed from
     // the document and continues to capture.
@@ -26,7 +38,7 @@ void ResponderReconciler::reconcile(
     }
 
     if (capturing_element == std::nullopt) {
-        // Iterate elements from top to bottom
+        // Iterate hit elements from top to bottom
         auto it = hit_elements.rbegin();
         while (it != hit_elements.rend()) {
             auto elem = *it;
@@ -44,7 +56,7 @@ void ResponderReconciler::reconcile(
             } else if (mode == ResponderMode::Absorb) {
                 break;  // Do not pass event handling
             } else if (mode == ResponderMode::Capture) {
-                // Capturing element becomes only element handling event
+                // Capturing element becomes only element that handles event
                 capturing_element = elem;
                 active_elements.erase(active_elements.begin(),
                                       active_elements.end() - 1);
@@ -53,39 +65,51 @@ void ResponderReconciler::reconcile(
         }
     }
 
+    auto active_responders = std::vector<Responder*>();
     for (auto& elem : active_elements) {
-        active_responders.push_back(elem->get_responder());
+        auto responder = elem->get_responder();
+        if (responder != nullptr) active_responders.push_back(responder);
     }
 
+    auto is_termination = event.action == PointerEvent::Action::pointer_up;
+
     if (capturing_element == std::nullopt) {
-        // End responders that are no longer active
-        for (auto responder : prev_active_responders) {
-            if (responder == nullptr) continue;
-            if (!contains(active_responders, responder)) {
+        if (is_termination) {
+            // End all responders
+            for (auto responder : current_pointer->active_responders) {
                 responder->end(/* is_terminated */ false);
             }
-        }
-        // Call handlers of active responders
-        for (auto responder : active_responders) {
-            if (responder == nullptr) continue;
-            if (contains(prev_active_responders, responder)) {
-                responder->update();
-            } else {
-                responder->start();
+        } else {
+            // Call `end` handlers of responders that are no longer active
+            for (auto responder : current_pointer->active_responders) {
+                if (!contains(active_responders, responder)) {
+                    responder->end(/* is_terminated */ false);
+                }
+            }
+            // Call `start` or `update` handlers of active responders
+            for (auto responder : active_responders) {
+                if (contains(current_pointer->active_responders, responder)) {
+                    responder->update();
+                } else {
+                    responder->start();
+                }
             }
         }
     } else {
-        auto capturing_responder = active_responders[0];
-        // Terminate all previously active responders, except capturing one
-        for (auto responder : prev_active_responders) {
-            if (responder == capturing_responder) continue;
-            if (responder != nullptr) {
-                responder->end(/* is_terminated */ true);
-            }
-        }
-        // Call handler of the capturing responder
+        auto capturing_responder = //capturing_element->get_responder();
+            active_responders.size() > 0 ? active_responders[0] : nullptr;
         if (capturing_responder != nullptr) {
-            if (contains(prev_active_responders, capturing_responder)) {
+            // Terminate all previously active responders, except capturing one
+            for (auto& pointer_it : pointers) {
+                for (auto& responder : pointer_it.second.active_responders) {
+                    if (responder != capturing_responder) {
+                        responder->end(/* is_terminated */ true);
+                    }
+                }
+            }
+            // Call handler of the capturing responder
+            if (contains(current_pointer->active_responders,
+                         capturing_responder)) {
                 capturing_responder->update();
             } else {
                 capturing_responder->start();
@@ -93,10 +117,11 @@ void ResponderReconciler::reconcile(
         }
     }
 
-    prev_active_elements = active_elements;
-    active_elements.clear();
-    prev_active_responders = active_responders;
-    active_responders.clear();
+    if (is_termination) {
+        pointers.erase(event.pointer_id);
+    } else {
+        current_pointer->active_responders = active_responders;
+    }
 }
 
 }  // namespace aardvark
