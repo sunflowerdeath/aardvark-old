@@ -11,36 +11,39 @@ struct AppState {
 
 void button_on_start(std::shared_ptr<aardvark::elements::Background> bg,
                      aardvark::PointerEvent event) {
-    if (event.action == aardvark::PointerEvent::Action::pointer_down) {
+    std::cout << "[button] start" << std::endl;
+    // if (event.action == aardvark::PointerEvent::Action::pointer_down) {
         bg->color = SK_ColorBLUE;
         bg->change();
-    }
+    // }
 }
 
 void button_on_end(std::shared_ptr<aardvark::elements::Background> bg,
                    aardvark::PointerEvent event) {
+    std::cout << "[button] end" << std::endl;
     bg->color = SK_ColorRED;
     bg->change();
 }
 
 std::shared_ptr<aardvark::Element> create_button() {
     auto bg = std::make_shared<aardvark::elements::Background>(SK_ColorRED);
-    auto size = std::make_shared<aardvark::elements::FixedSize>(
-        bg, aardvark::Size{200, 50});
-    auto start = [&bg](aardvark::PointerEvent event) {
+    auto start = [bg](aardvark::PointerEvent event) {
         button_on_start(bg, event);
     };
-    auto end = [&bg](aardvark::PointerEvent event, bool is_terminated) {
+    auto update = [](aardvark::PointerEvent event) {};
+    auto end = [bg](aardvark::PointerEvent event, bool is_terminated) {
         button_on_end(bg, event);
     };
     auto responder = std::make_shared<aardvark::elements::GestureResponder>(
-        size,                                   // child
+        bg,                                     // child
         aardvark::ResponderMode::PassToParent,  // mode
         start,                                  // start
-        nullptr,                                // update
+        update,                                 // update
         end                                     // end
     );
-    return responder;
+    auto size = std::make_shared<aardvark::elements::FixedSize>(
+        responder, aardvark::Size{200, 50});
+    return size;
 }
 
 int main() {
