@@ -52,16 +52,16 @@ enum class ResponderMode : unsigned int {
 class Responder {
   public:
     // Is called when element starts responding to events.
-    virtual void start(){};
+    virtual void start(PointerEvent event){};
 
     // Is called for each move on the element.
-    virtual void update(){};
+    virtual void update(PointerEvent event){};
 
     // Is called when element stops responding to events.
     // Responding is terminated, when the event is not ended, but some other
     // responder prevented this element from responding, for example,
     // absorbed or captured the event.
-    virtual void end(bool is_terminated){};
+    virtual void end(PointerEvent event, bool is_terminated){};
 };
 
 // Structure that stores list of responders of the single pointer

@@ -1,0 +1,67 @@
+#include <stdio.h>
+#include <iostream>
+#include "../base_types.hpp"
+#include "../platforms/desktop/desktop_app.hpp"
+#include "../elements/elements.hpp"
+
+struct AppState {
+    std::shared_ptr<aardvark::elements::Align> align;
+    std::shared_ptr<aardvark::elements::Background> background;
+};
+
+void button_on_start(std::shared_ptr<aardvark::elements::Background> bg,
+                     aardvark::PointerEvent event) {
+    if (event.action == aardvark::PointerEvent::Action::pointer_down) {
+        bg->color = SK_ColorBLUE;
+        bg->change();
+    }
+}
+
+void button_on_end(std::shared_ptr<aardvark::elements::Background> bg,
+                   aardvark::PointerEvent event) {
+    bg->color = SK_ColorRED;
+    bg->change();
+}
+
+std::shared_ptr<aardvark::Element> create_button() {
+    auto bg = std::make_shared<aardvark::elements::Background>(SK_ColorRED);
+    auto size = std::make_shared<aardvark::elements::FixedSize>(
+        bg, aardvark::Size{200, 50});
+    auto start = [&bg](aardvark::PointerEvent event) {
+        button_on_start(bg, event);
+    };
+    auto end = [&bg](aardvark::PointerEvent event, bool is_terminated) {
+        button_on_end(bg, event);
+    };
+    auto responder = std::make_shared<aardvark::elements::GestureResponder>(
+        size,                                   // child
+        aardvark::ResponderMode::PassToParent,  // mode
+        start,                                  // start
+        nullptr,                                // update
+        end                                     // end
+    );
+    return responder;
+}
+
+int main() {
+    auto app = aardvark::DesktopApp();
+    auto window = app.create_window(aardvark::Size{500, 500});
+    auto document = app.get_document(window);
+
+    auto button = create_button();
+
+    auto stack = std::make_shared<aardvark::elements::Stack>(
+        std::vector<std::shared_ptr<aardvark::Element>>{
+            std::make_shared<aardvark::elements::Align>(
+                button, aardvark::elements::EdgeInsets{
+                            /* left */ aardvark::Value::abs(100),
+                            /* top */ aardvark::Value::abs(100)})}
+
+    );
+
+    document->set_root(stack);
+    // auto state = AppState{elem, background};
+    // app.user_pointer = (void*)(&state);
+    // app.event_handler = &handle_events;
+    app.run();
+};

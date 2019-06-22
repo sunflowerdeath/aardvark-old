@@ -15,7 +15,7 @@ class Size : public SingleChildElement {
     Value max_height;
     Value min_width;
     Value min_height;
-    std::string get_debug_name() override { return "FixedSize"; };
+    std::string get_debug_name() override { return "Size"; };
     Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
 };

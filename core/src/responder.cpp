@@ -77,21 +77,21 @@ void ResponderReconciler::reconcile(
         if (is_termination) {
             // End all responders
             for (auto responder : current_pointer->active_responders) {
-                responder->end(/* is_terminated */ false);
+                responder->end(event, /* is_terminated */ false);
             }
         } else {
             // Call `end` handlers of responders that are no longer active
             for (auto responder : current_pointer->active_responders) {
                 if (!contains(active_responders, responder)) {
-                    responder->end(/* is_terminated */ false);
+                    responder->end(event, /* is_terminated */ false);
                 }
             }
             // Call `start` or `update` handlers of active responders
             for (auto responder : active_responders) {
                 if (contains(current_pointer->active_responders, responder)) {
-                    responder->update();
+                    responder->update(event);
                 } else {
-                    responder->start();
+                    responder->start(event);
                 }
             }
         }
@@ -103,16 +103,16 @@ void ResponderReconciler::reconcile(
             for (auto& pointer_it : pointers) {
                 for (auto& responder : pointer_it.second.active_responders) {
                     if (responder != capturing_responder) {
-                        responder->end(/* is_terminated */ true);
+                        responder->end(event, /* is_terminated */ true);
                     }
                 }
             }
             // Call handler of the capturing responder
             if (contains(current_pointer->active_responders,
                          capturing_responder)) {
-                capturing_responder->update();
+                capturing_responder->update(event);
             } else {
-                capturing_responder->start();
+                capturing_responder->start(event);
             }
         }
     }

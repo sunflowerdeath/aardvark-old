@@ -15,14 +15,17 @@ class GestureResponder : public SingleChildElement {
       public:
         InnerResponder(GestureResponder* elem) : elem(elem){};
         GestureResponder* elem;
-        void start() override { elem->start(); };
-        void update() override { elem->update(); };
-        void end(bool is_terminated) override { elem->end(is_terminated); };
+        void start(PointerEvent event) override { elem->start(event); };
+        void update(PointerEvent event) override { elem->update(event); };
+        void end(PointerEvent event, bool is_terminated) override {
+            elem->end(event, is_terminated);
+        };
     };
 
     GestureResponder(std::shared_ptr<Element> child, ResponderMode mode,
-                     std::function<void()> start, std::function<void()> update,
-                     std::function<void(bool)> end,
+                     std::function<void(PointerEvent)> start,
+                     std::function<void(PointerEvent)> update,
+                     std::function<void(PointerEvent, bool)> end,
                      bool is_repaint_boundary = false)
         : SingleChildElement(child,
                              /* is_repaint_boundary */ is_repaint_boundary,
@@ -34,9 +37,9 @@ class GestureResponder : public SingleChildElement {
           responder(InnerResponder(this)){};
 
     ResponderMode mode;
-    std::function<void()> start;
-    std::function<void()> update;
-    std::function<void(bool)> end;
+    std::function<void(PointerEvent)> start;
+    std::function<void(PointerEvent)> update;
+    std::function<void(PointerEvent, bool)> end;
     InnerResponder responder;
 
     std::string get_debug_name() override { return "GestureResponder"; };

@@ -295,20 +295,23 @@ if(ADV_BUILD_EXAMPLES)
     # add_executable(app_example src/examples/app_example.cpp)
     # target_link_libraries(app_example aardvark)
 
+    add_executable(responder_example src/examples/responder_example.cpp)
+    target_link_libraries(responder_example aardvark)
+
     # add_executable(layer_example src/examples/layer_example.cpp)
     # target_link_libraries(layer_example aardvark)
 
     # add_executable(paragraph_example src/examples/paragraph_example.cpp)
     # target_link_libraries(paragraph_example aardvark)
 
-    if(ADV_ENABLE_JS)
-        add_executable(jsc_example src/examples/jsc_example2.cpp)
-        target_link_libraries(jsc_example aardvark)
-        configure_file(
-            "${CMAKE_CURRENT_SOURCE_DIR}/src/examples/src.js" 
-            "${CMAKE_CURRENT_BINARY_DIR}/bin/src.js"
-            COPYONLY)
-    endif()
+    # if(ADV_ENABLE_JS)
+        # add_executable(jsc_example src/examples/jsc_example2.cpp)
+        # target_link_libraries(jsc_example aardvark)
+        # configure_file(
+            # "${CMAKE_CURRENT_SOURCE_DIR}/src/examples/src.js" 
+            # "${CMAKE_CURRENT_BINARY_DIR}/bin/src.js"
+            # COPYONLY)
+    # endif()
 endif()
 
 if(ADV_BUILD_TESTS)
