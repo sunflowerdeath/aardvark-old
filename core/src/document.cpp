@@ -261,19 +261,9 @@ void Document::paint_layer_tree(LayerTree* tree) {
     screen->canvas->restore();
 }
 
-void Document::handle_event(Event event) {
-    if (auto mousemove = std::get_if<aardvark::MouseMoveEvent>(&event)) {
-        hit_tester->test(root, mousemove->left, mousemove->top);
-        PointerEvent pointer_event = {
-            PointerEvent::Tool::mouse,           // type
-            0,                                   // pointer_id
-            PointerEvent::Action::pointer_move,  // action
-            mousemove->left,                     // left
-            mousemove->top                       // top
-        };
-        reconciler->reconcile(pointer_event, hit_tester->hit_elements,
-                              root.get());
-    }
+void Document::handle_event(PointerEvent event) {
+    hit_tester->test(root, event.left, event.top);
+    reconciler->reconcile(event, hit_tester->hit_elements, root.get());
 };
 
 };  // namespace aardvark

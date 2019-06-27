@@ -5,6 +5,10 @@
 
 namespace aardvark {
 
+// ? now() {
+    // return std::chrono::high_resolution_clock::now();
+// }
+
 // Window events
 void window_focus_callback(GLFWwindow* window, int focused) {
     auto event = focused ? static_cast<Event>(WindowFocusEvent())
@@ -24,14 +28,29 @@ void cursor_enter_callback(GLFWwindow* window, int entered) {
 };
 
 void cursor_pos_callback(GLFWwindow* window, double left, double top) {
-    DesktopApp::dispatch_event(window, MouseMoveEvent(left, top));
+    auto event = PointerEvent{
+        PointerTool::mouse,           // tool
+        0,                            // pointer_id
+        PointerAction::pointer_move,  // action
+        left,                         // left
+        top                           // top
+    };
+    DesktopApp::dispatch_event(window, event);
 };
 
 void mouse_button_callback(GLFWwindow* window, int button, int action,
                            int mods) {
-    auto event = action == GLFW_PRESS
-                     ? static_cast<Event>(MouseDownEvent{button, mods})
-                     : static_cast<Event>(MouseUpEvent{button, mods});
+    double left, top;
+    glfwGetCursorPos(window, &left, &top);
+    auto event = ButtonEvent{
+        PointerTool::mouse,  // tool
+        0,                   // pointer_id
+        action == GLFW_PRESS ? PointerAction::button_press
+                             : PointerAction::button_release,  // action
+        left,                                                  // left
+        top,                                                   // top
+        button                                                 // button_id
+    };
     DesktopApp::dispatch_event(window, event);
 };
 
@@ -49,6 +68,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action,
 const auto FRAME_TIME = 16000;
 
 void DesktopApp::dispatch_event(GLFWwindow* window, Event event) {
+    // event.timestamp = now();
     auto inst = (DesktopApp*)glfwGetWindowUserPointer(window);
     inst->handle_event(window, event);
 };
@@ -87,16 +107,7 @@ void DesktopApp::run() {
     bool painted = false;
     while (!should_stop) {
         auto start = std::chrono::high_resolution_clock::now();
-        most_recent_mousemove = std::nullopt;
         glfwPollEvents();
-
-        if (most_recent_mousemove != std::nullopt) {
-            auto win = windows[0];
-            auto doc = get_document(win);
-            if (!doc->is_initial_paint) {
-                doc->handle_event(most_recent_mousemove.value());
-            }
-        }
 
         painted = false;
         for (auto& window : windows) {
@@ -121,8 +132,12 @@ void DesktopApp::run() {
 
 void DesktopApp::handle_event(GLFWwindow* window, Event event) {
     if (event_handler) event_handler(this, event);
-    if (auto mousemove = std::get_if<MouseMoveEvent>(&event)) {
-        most_recent_mousemove = *mousemove;
+    if (auto pointer_event = std::get_if<PointerEvent>(&event)) {
+        auto win = windows[0]; // TODO: support multiple windows
+        auto doc = get_document(win);
+        if (!doc->is_initial_paint) {
+            doc->handle_event(*pointer_event);
+        }
     }
 };
 

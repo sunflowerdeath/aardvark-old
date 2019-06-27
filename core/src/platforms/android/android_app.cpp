@@ -11,11 +11,19 @@ AndroidApp::AndroidApp(jobject activity, jobject platform_channel, int width,
     auto system_channel = new aardvark::MessageChannel<json>(
         binary_channel, aardvark::JsonCodec::get_instance());
     register_channel("system", system_channel);
+    system_channel->set_message_handler([=](std::vector<char> message) {
+        this->handle_system_message(message);
+    });
+
     document = std::make_shared<Document>();
 }
 
 void AndroidApp::update() {
     document->paint();
+}
+
+void AndroidApp::handle_system_message(json message) {
+    document->handle_event
 }
 
 }  // namespace aardvark

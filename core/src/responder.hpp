@@ -5,29 +5,11 @@
 #include <vector>
 #include <unordered_map>
 #include "element.hpp"
+#include "events.hpp"
 
 namespace aardvark {
 
 class Element;
-
-struct PointerEvent {
-    enum class Tool { touch, mouse, other };
-
-    enum class Action {
-        pointer_up,
-        pointer_down,
-        pointer_move,
-        button_press,
-        button_release,
-        scroll
-    };
-
-    Tool tool;
-    int pointer_id;
-    Action action;
-    int left;
-    int top;
-};
 
 enum class ResponderMode : unsigned int {
     // After element handles event, it passes it to the element that is behind.

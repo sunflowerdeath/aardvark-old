@@ -34,8 +34,6 @@ class DesktopApp {
     // Pointer to user data, for example, an application state
     void* user_pointer;
 
-    std::optional<MouseMoveEvent> most_recent_mousemove;
-
     std::vector<std::shared_ptr<DesktopWindow>> windows;
 
     // Dispatches event to the corresponding App instance

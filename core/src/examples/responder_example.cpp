@@ -18,6 +18,18 @@ void button_on_start(std::shared_ptr<aardvark::elements::Background> bg,
     // }
 }
 
+void button_on_update(std::shared_ptr<aardvark::elements::Background> bg,
+                      aardvark::PointerEvent event) {
+
+    if (event.action == aardvark::PointerAction::button_press) {
+        std::cout << "[button] press" << std::endl;
+    }
+
+    if (event.action == aardvark::PointerAction::button_release) {
+        std::cout << "[button] release" << std::endl;
+    }
+}
+
 void button_on_end(std::shared_ptr<aardvark::elements::Background> bg,
                    aardvark::PointerEvent event) {
     std::cout << "[button] end" << std::endl;
@@ -30,7 +42,9 @@ std::shared_ptr<aardvark::Element> create_button() {
     auto start = [bg](aardvark::PointerEvent event) {
         button_on_start(bg, event);
     };
-    auto update = [](aardvark::PointerEvent event) {};
+    auto update = [bg](aardvark::PointerEvent event) {
+        button_on_update(bg, event);
+    };
     auto end = [bg](aardvark::PointerEvent event, bool is_terminated) {
         button_on_end(bg, event);
     };

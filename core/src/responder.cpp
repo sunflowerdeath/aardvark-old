@@ -71,7 +71,7 @@ void ResponderReconciler::reconcile(
         if (responder != nullptr) active_responders.push_back(responder);
     }
 
-    auto is_termination = event.action == PointerEvent::Action::pointer_up;
+    auto is_termination = event.action == PointerAction::pointer_up;
 
     if (capturing_element == std::nullopt) {
         if (is_termination) {

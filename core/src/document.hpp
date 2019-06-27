@@ -57,7 +57,7 @@ class Document {
     std::shared_ptr<Layer> screen;
     bool is_initial_paint;
 
-    void handle_event(Event event);
+    void handle_event(PointerEvent event);
     std::shared_ptr<Element> root;
   private:
     sk_sp<GrContext> gr_context;
