@@ -7,19 +7,29 @@
 #include "SkPath.h"
 #include "base_types.hpp"
 #include "box_constraints.hpp"
-#include "responder.hpp"
 #include "document.hpp"
-#include "hit_tester.hpp"
+#include "pointer_events/responder.hpp"
+#include "pointer_events/hit_tester.hpp"
 
 namespace aardvark {
 
 // Forward declarations due to circular includes
 class Document;
 class LayerTree;
-class Responder;
-// In order to forward declare enum, it must tell compiler how much memory
-// it uses
-enum class ResponderMode : unsigned int;
+class HitTester;
+
+enum class HitTestMode {
+    // After element handles event, it passes it to the element that is behind.
+    PassThrough,
+
+    // Passes event to the parent element (or any further ancestor) behind this
+    // element.
+    // This is default mode.
+    PassToParent,
+
+    // Does not pass event after handling.
+    Absorb
+};
 
 using ChildrenVisitor = std::function<void(std::shared_ptr<Element>)>;
 
@@ -50,7 +60,7 @@ class Element {
     // -------------------------------------------------------------------------
 
     // Returns name of the element for debugging
-    virtual std::string get_debug_name() { return "Unknown element"; };
+    virtual std::string get_debug_name() { return "Element"; };
 
     // In this method element should calculate its size, layout children
     // and set their size and relative positions.
@@ -71,7 +81,8 @@ class Element {
     virtual bool hit_test(double left, double top);
 
     // Default is `PassToParent`.
-    virtual ResponderMode get_responder_mode();
+    virtual HitTestMode get_hit_test_mode();
+
     // Element must have only one responder, and it must ensure that returned
     // pointer is valid during all of its lifetime.
     virtual Responder* get_responder() { return nullptr; };
@@ -148,9 +159,7 @@ class MultipleChildrenElement : public Element {
     void append_child(std::shared_ptr<Element> child) override;
     void insert_before_child(std::shared_ptr<Element> child) override;
     void visit_children(ChildrenVisitor visitor) override {
-        for (auto child : children) {
-            visitor(child);
-        }
+        for (auto child : children) visitor(child);
     };
 };
 

@@ -217,13 +217,11 @@ endif()
 add_library(aardvark ${ADV_LIB_TYPE}
     src/base_types.cpp
     src/box_constraints.cpp
-    src/hit_tester.cpp
     src/layer.cpp
     src/layer_tree.cpp
     src/document.cpp
     src/element.cpp
     src/paint_cache.cpp
-    src/responder.cpp
     src/inline_layout/span.cpp
     src/inline_layout/decoration_span.cpp
     src/inline_layout/line_metrics.cpp
@@ -239,7 +237,11 @@ add_library(aardvark ${ADV_LIB_TYPE}
     src/elements/layer.cpp
     src/elements/paragraph.cpp
     src/elements/stack.cpp
-    src/elements/text.cpp)
+    src/elements/text.cpp
+    src/pointer_events/hit_tester.cpp
+    src/pointer_events/pointer_event_manager.cpp
+    src/pointer_events/responder_reconciler.cpp
+)
 
 # TODO include dir
 target_include_directories(aardvark INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/src)

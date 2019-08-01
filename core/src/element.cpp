@@ -17,8 +17,8 @@ bool Element::hit_test(double left, double top) {
           top <= abs_position.top + size.height);
 };
 
-ResponderMode Element::get_responder_mode() {
-  return ResponderMode::PassToParent;
+HitTestMode Element::get_hit_test_mode() {
+  return HitTestMode::PassToParent;
 };
 
 bool Element::is_parent_of(Element* elem) {

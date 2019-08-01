@@ -18,11 +18,23 @@ align.appendChild(red)
 stack.appendChild(align)
 
 let text = new Text("Hello World")
-
 log(text.text)
 text.text = "Hello, Text"
-
 stack.appendChild(text)
+
+/*
+let isPressed = false;
+let responder = new GestureResponder();
+responder.onStart = event => {
+    if (event.type === 'pointer_down') isPressed = true
+}
+responder.onUpdate = event => {
+}
+responder.onEnd = (event, isTerminated) => {
+    if (isPressed && event.type === 'pointer_up') handleClick();
+    pressed = false
+}
+*/
 
 log(JSON.stringify(align.align))
 

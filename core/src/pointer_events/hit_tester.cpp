@@ -2,10 +2,10 @@
 
 namespace aardvark {
 
-void HitTester::test(std::shared_ptr<Element> root, float left, float top) {
+void HitTester::test(float left, float top) {
     transform.reset();
     hit_elements.clear();
-    test_element(root, left, top);
+    test_element(document->root, left, top);
 }
 
 void HitTester::test_element(std::shared_ptr<Element> elem, float left,

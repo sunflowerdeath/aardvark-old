@@ -45,15 +45,13 @@ std::shared_ptr<aardvark::Element> create_button() {
     auto update = [bg](aardvark::PointerEvent event) {
         button_on_update(bg, event);
     };
-    auto end = [bg](aardvark::PointerEvent event, bool is_terminated) {
-        button_on_end(bg, event);
-    };
+    auto end = [bg](aardvark::PointerEvent event) { button_on_end(bg, event); };
     auto responder = std::make_shared<aardvark::elements::GestureResponder>(
-        bg,                                     // child
-        aardvark::ResponderMode::PassToParent,  // mode
-        start,                                  // start
-        update,                                 // update
-        end                                     // end
+        bg,                                   // child
+        aardvark::HitTestMode::PassToParent,  // mode
+        start,                                // start
+        update,                               // update
+        end                                   // end
     );
     auto size = std::make_shared<aardvark::elements::FixedSize>(
         responder, aardvark::Size{200, 50});

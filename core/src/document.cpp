@@ -21,8 +21,7 @@ void add_only_parent(ElementsSet& set, Element* added) {
 Document::Document(std::shared_ptr<Element> root) {
     gr_context = GrContext::MakeGL();
     screen = Layer::make_screen_layer(gr_context);
-    reconciler = std::make_unique<ResponderReconciler>();
-    hit_tester = std::make_unique<HitTester>();
+    pointer_event_manager = std::make_unique<PointerEventManager>(this);
     if (root == nullptr) {
         set_root(std::make_shared<elements::Placeholder>());
     } else {
@@ -261,9 +260,11 @@ void Document::paint_layer_tree(LayerTree* tree) {
     screen->canvas->restore();
 }
 
+/*
 void Document::handle_event(PointerEvent event) {
     hit_tester->test(root, event.left, event.top);
     reconciler->reconcile(event, hit_tester->hit_elements, root.get());
 };
+*/
 
 };  // namespace aardvark

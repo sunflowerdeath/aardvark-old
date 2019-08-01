@@ -3,25 +3,23 @@
 #include <memory>
 #include <optional>
 #include <unordered_set>
+#include <functional>
 #include "GrContext.h"
 #include "SkCanvas.h"
 #include "SkRegion.h"
 #include "base_types.hpp"
 #include "box_constraints.hpp"
 #include "element.hpp"
-#include "hit_tester.hpp"
 #include "layer.hpp"
 #include "layer_tree.hpp"
-#include "events.hpp"
-#include "responder.hpp"
+#include "pointer_events/pointer_event_manager.hpp"
 
 namespace aardvark {
 
 // forward declaration due to circular includes
 class Element;
 class LayerTree;
-class ResponderReconciler;
-class HitTester;
+class PointerEventManager;
 
 using ElementsSet = std::unordered_set<Element*>;
 
@@ -55,10 +53,13 @@ class Document {
     Layer* create_layer(Size size);
 
     std::shared_ptr<Layer> screen;
+
     bool is_initial_paint;
 
-    void handle_event(PointerEvent event);
+    std::unique_ptr<PointerEventManager> pointer_event_manager;
+
     std::shared_ptr<Element> root;
+
   private:
     sk_sp<GrContext> gr_context;
     ElementsSet changed_elements;
@@ -78,8 +79,6 @@ class Document {
     bool repaint();
     void compose_layers();
     void paint_layer_tree(LayerTree* tree);
-    std::unique_ptr<HitTester> hit_tester;
-    std::unique_ptr<ResponderReconciler> reconciler;
 };
 
 }  // namespace aardvark

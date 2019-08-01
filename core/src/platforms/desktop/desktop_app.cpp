@@ -136,7 +136,7 @@ void DesktopApp::handle_event(GLFWwindow* window, Event event) {
         auto win = windows[0]; // TODO: support multiple windows
         auto doc = get_document(win);
         if (!doc->is_initial_paint) {
-            doc->handle_event(*pointer_event);
+            doc->pointer_event_manager->handle_event(*pointer_event);
         }
     }
 };
