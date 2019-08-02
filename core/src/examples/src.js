@@ -41,7 +41,7 @@ log(JSON.stringify(align.align))
 doc.root = stack
 log('set root')
 
-let handler = event => log('pointer event ' + event)
+let handler = event => log('pointer event ' + JSON.stringify(event))
 let removeHandler = doc.addHandler(handler)
 
 app.run()

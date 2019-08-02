@@ -259,7 +259,9 @@ if(ADV_ENABLE_JS)
         src/js/bindings_host.cpp
         src/js/base_types_bindings.cpp
         src/js/document_bindings.cpp
-        src/js/elements_bindings.cpp)
+        src/js/elements_bindings.cpp
+        src/js/events_bindings.cpp
+    )
     if (ADV_PLATFORM STREQUAL "linux")
         target_sources(aardvark PRIVATE
             src/js/desktop_app_bindings.cpp
