@@ -7,7 +7,7 @@ void set_num_prop(JSContextRef ctx, JSObjectRef object, char* name, T value) {
     JSObjectSetProperty(ctx, object,
                         JSStringCreateWithUTF8CString(name),  // propertyName
                         JSValueMakeNumber(ctx, value),        // value,
-                        kJSPropertyAttributeNone,             // attributes,
+                        kJSPropertyAttributeNone,             // attributes
                         nullptr                               // exception
     );
 }
