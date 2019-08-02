@@ -60,13 +60,13 @@ std::shared_ptr<aardvark::Element> create_button() {
 
 void before(aardvark::PointerEvent event) {
     if (event.action == aardvark::PointerAction::button_press) {
-        std::cout << "--- before handler" << std::endl;
+        std::cout << "before handler" << std::endl;
     }
 }
 
 void after(aardvark::PointerEvent event) {
     if (event.action == aardvark::PointerAction::button_press) {
-        std::cout << "--- after handler" << std::endl;
+        std::cout << "after handler" << std::endl;
     }
 }
 

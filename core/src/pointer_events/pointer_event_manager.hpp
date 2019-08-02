@@ -26,15 +26,9 @@ class PointerEventManager {
     nod::connection add_handler(PointerEventHandler handler,
                                 bool after = false);
 
-    // Removes handler of pointer events
-    // void remove_handler(PointerEventHandler handler, bool after = false);
-
-    // Register handler to track all events of the specified pointer
+    // Register handler to track events of the specified pointer
     nod::connection start_tracking_pointer(int pointer_id,
                                            PointerEventHandler handler);
-
-    // Stops tracking pointer by the handler
-    // void stop_tracking_pointer(int pointer_id, PointerEventHandler handler);
 
     void handle_event(PointerEvent event);
 

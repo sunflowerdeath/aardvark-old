@@ -41,4 +41,7 @@ log(JSON.stringify(align.align))
 doc.root = stack
 log('set root')
 
+let handler = () => log('HANDLER')
+doc.addHandler(handler)
+
 app.run()
