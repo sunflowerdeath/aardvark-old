@@ -58,6 +58,18 @@ std::shared_ptr<aardvark::Element> create_button() {
     return size;
 }
 
+void before(aardvark::PointerEvent event) {
+    if (event.action == aardvark::PointerAction::button_press) {
+        std::cout << "--- before handler" << std::endl;
+    }
+}
+
+void after(aardvark::PointerEvent event) {
+    if (event.action == aardvark::PointerAction::button_press) {
+        std::cout << "--- after handler" << std::endl;
+    }
+}
+
 int main() {
     auto app = aardvark::DesktopApp();
     auto window = app.create_window(aardvark::Size{500, 500});
@@ -73,6 +85,9 @@ int main() {
                             /* top */ aardvark::Value::abs(100)})}
 
     );
+
+    document->pointer_event_manager->add_handler(before, false);
+    document->pointer_event_manager->add_handler(after, true);
 
     document->set_root(stack);
     // auto state = AppState{elem, background};

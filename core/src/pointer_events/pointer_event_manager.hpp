@@ -3,6 +3,7 @@
 #include <memory>
 #include <map>
 #include <vector>
+#include <nod/nod.hpp>
 #include "../document.hpp"
 #include "hit_tester.hpp"
 #include "responder.hpp"
@@ -22,16 +23,18 @@ class PointerEventManager {
 
     // Registers handler for all pointer events of the document.
     // When `after` is true, handler will be called after all other handlers.
-    void add_handler(PointerEventHandler handler, bool after = false);
+    nod::connection add_handler(PointerEventHandler handler,
+                                bool after = false);
 
     // Removes handler of pointer events
-    void remove_handler(PointerEventHandler handler, bool after = false);
+    // void remove_handler(PointerEventHandler handler, bool after = false);
 
     // Register handler to track all events of the specified pointer
-    void start_tracking_pointer(int pointer_id, PointerEventHandler handler);
+    nod::connection start_tracking_pointer(int pointer_id,
+                                           PointerEventHandler handler);
 
     // Stops tracking pointer by the handler
-    void stop_tracking_pointer(int pointer_id, PointerEventHandler handler);
+    // void stop_tracking_pointer(int pointer_id, PointerEventHandler handler);
 
     void handle_event(PointerEvent event);
 
@@ -39,9 +42,9 @@ class PointerEventManager {
     Document* document;
     std::unique_ptr<HitTester> hit_tester;
     std::unique_ptr<ResponderReconciler> reconciler;
-    std::vector<PointerEventHandler> before_handlers;
-    std::vector<PointerEventHandler> after_handlers;
-    std::map<int, std::vector<PointerEventHandler>> tracked_pointers_handlers;
+    nod::signal<void(PointerEvent)> before_signal;
+    nod::signal<void(PointerEvent)> after_signal;
+    std::map<int, nod::signal<void(PointerEvent)>> pointers_signals;
 };
 
 }
