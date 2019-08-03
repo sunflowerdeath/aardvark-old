@@ -5,13 +5,13 @@
 #include <unordered_map>
 
 #include "JavaScriptCore/JavaScript.h"
+#include <nod/nod.hpp>
 
 #include "../document.hpp"
 #include "../element.hpp"
 #include "../platforms/desktop/desktop_app.hpp"
 #include "../platforms/desktop/desktop_window.hpp"
 #include "objects_index.hpp"
-#include "elements_bindings.hpp"
 
 namespace aardvark::js {
 
@@ -36,6 +36,7 @@ class BindingsHost {
     std::optional<ObjectsIndex<DesktopWindow>> desktop_window_index;
     std::optional<ObjectsIndex<Document>> document_index;
     std::optional<ObjectsIndex<Element>> element_index;
+    std::optional<ObjectsIndex<nod::connection>> signal_connection_index;
     JSClassRef element_class;
 
     // `type_info` can't be used as map key, it should be wrapped into

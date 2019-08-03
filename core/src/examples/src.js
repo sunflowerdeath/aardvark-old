@@ -41,10 +41,18 @@ log(JSON.stringify(align.align))
 doc.root = stack
 log('set root')
 
-let handler = event => log('pointer event ' + JSON.stringify(event))
-let removeHandler = doc.addHandler(handler)
+let removeHandler
+let handler = event => {
+    log('pointer event ' + JSON.stringify(event))
+    if (event.action == 3) removeHandler()
+}
+removeHandler = doc.addHandler(handler)
 
-let trackHandler = event => log('tracked pointer event ' + JSON.stringify(event))
-doc.startTrackingPointer(0, trackHandler)
+let stopTracking
+let trackHandler = event => {
+    log('tracked pointer ' + JSON.stringify(event))
+    if (event.action == 3) stopTracking()
+}
+stopTracking = doc.startTrackingPointer(0, trackHandler)
 
 app.run()

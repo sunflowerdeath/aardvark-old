@@ -1,12 +1,15 @@
 #include "bindings_host.hpp"
+
 #include <iostream>
 #include <typeinfo>
 #include <functional>
+
+#include "../elements/elements.hpp"
 #include "desktop_app_bindings.hpp"
 #include "desktop_window_bindings.hpp"
 #include "document_bindings.hpp"
 #include "elements_bindings.hpp"
-#include "../elements/elements.hpp"
+#include "signal_connection_bindings.hpp"
 
 namespace aardvark::js {
 
@@ -42,6 +45,8 @@ BindingsHost::BindingsHost() {
     // storage for private data
     auto global_class = JSClassCreate(&kJSClassDefinitionEmpty);
     ctx = JSGlobalContextCreate(global_class);
+    
+    // Store pointer to the host in private data of the global object
     auto global_object = JSContextGetGlobalObject(ctx);
     JSObjectSetPrivate(global_object, static_cast<void*>(this));
 
@@ -51,6 +56,7 @@ BindingsHost::BindingsHost() {
     desktop_app_index = ObjectsIndex<DesktopApp>(ctx, desktop_app_class);
     add_constructor("DesktopApp", desktop_app_class,
                     desktop_app_call_as_constructor);
+
     auto desktop_app_window_list_class = desktop_app_window_list_create_class();
     desktop_app_window_list_index =
         ObjectsIndex<DesktopApp>(ctx, desktop_app_window_list_class);
@@ -64,22 +70,14 @@ BindingsHost::BindingsHost() {
     document_index = ObjectsIndex<Document>(ctx, document_class);
     add_constructor("Document", document_class, nullptr);
 
+    auto signal_connection_class = signal_connection_create_class();
+    signal_connection_index =
+        ObjectsIndex<nod::connection>(ctx, signal_connection_class);
+
     element_class = element_create_class();
     element_index = ObjectsIndex<Element>(ctx, [this](Element* elem) {
         return this->get_element_js_class(elem);
     });
-
-    /*
-    align_element_class = align_element_create_class(element_class);
-    add_constructor("Align", align_element_class,
-                    align_element_call_as_constructor);
-    background_element_class = background_element_create_class(element_class);
-    add_constructor("Background", background_element_class,
-                    background_element_call_as_constructor);
-    stack_element_class = stack_element_create_class(element_class);
-    add_constructor("Stack", stack_element_class,
-                    stack_element_call_as_constructor);
-    */
 
     register_elem_class("Align", typeid(elements::Align),
                         align_elem_create_class,

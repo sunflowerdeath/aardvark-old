@@ -261,6 +261,7 @@ if(ADV_ENABLE_JS)
         src/js/document_bindings.cpp
         src/js/elements_bindings.cpp
         src/js/events_bindings.cpp
+        src/js/signal_connection_bindings.cpp
     )
     if (ADV_PLATFORM STREQUAL "linux")
         target_sources(aardvark PRIVATE
