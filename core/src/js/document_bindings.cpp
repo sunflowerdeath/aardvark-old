@@ -1,7 +1,7 @@
 #include "document_bindings.hpp"
 #include <nod/nod.hpp>
-#include "bindings_host.hpp"
 #include "../document.hpp"
+#include "bindings_host.hpp"
 #include "function_wrapper.hpp"
 #include "events_bindings.hpp"
 
@@ -65,8 +65,10 @@ JSValueRef document_add_handler(JSContextRef ctx, JSObjectRef function,
     auto host = BindingsHost::get(ctx);
     auto document = host->document_index->get_native_object(object);
     auto handler = pointer_event_handler_wrap(ctx, arguments[0]);
-    // TODO before after
-    auto connection = document->pointer_event_manager->add_handler(handler);
+    auto after =
+        argument_count > 1 ? JSValueToBoolean(ctx, arguments[1]) : false;
+    auto connection =
+        document->pointer_event_manager->add_handler(handler, after);
     return signal_connection_to_js(ctx, std::move(connection));
 }
 
