@@ -2,7 +2,30 @@
 
 namespace aardvark::js {
 
-Value value_from_js(JSContextRef ctx, JSObjectRef object) {
+// Helpers
+
+template <class T, T (*from_js)(JSContextRef, JSValueRef)>
+void map_prop_from_js(JSContextRef ctx, JSObjectRef object,
+                      const char* prop_name, T* out) {
+    auto prop_name_str = JSStringCreateWithUTF8CString(prop_name);
+    if (JSObjectHasProperty(ctx, object, prop_name_str)) {
+        auto prop_value =
+            JSObjectGetProperty(ctx, object, prop_name_str, nullptr);
+        *out = from_js(ctx, prop_value);
+    }
+}
+
+template <class T, JSValueRef (*to_js)(JSContextRef, const T&)>
+void map_prop_to_js(JSContextRef ctx, JSObjectRef object, const char* prop_name,
+                    const T& value) {
+    JSObjectSetProperty(ctx, object, JSStringCreateWithUTF8CString(prop_name),
+                        to_js(ctx, value), kJSPropertyAttributeNone, nullptr);
+}
+
+// Value
+
+Value value_from_js(JSContextRef ctx, JSValueRef js_value) {
+    auto object = JSValueToObject(ctx, js_value, nullptr);
     auto type_prop = JSObjectGetProperty(
         ctx, object, JSStringCreateWithUTF8CString("type"), nullptr);
     auto type_str = JSValueToStringCopy(ctx, type_prop, nullptr);
@@ -23,7 +46,7 @@ Value value_from_js(JSContextRef ctx, JSObjectRef object) {
     return Value(type, value);
 }
 
-JSObjectRef value_to_js(JSContextRef ctx, const Value& value) {
+JSValueRef value_to_js(JSContextRef ctx, const Value& value) {
     auto object = JSObjectMake(ctx, nullptr, nullptr);
     JSStringRef type;
     if (value.type == Value::ValueType::abs) {
@@ -42,38 +65,53 @@ JSObjectRef value_to_js(JSContextRef ctx, const Value& value) {
     return object;
 }
 
-void alignment_side_from_js(JSContextRef ctx, JSObjectRef object,
-                            const char* side_name, Value* side) {
-    auto prop_name = JSStringCreateWithUTF8CString(side_name);
-    if (JSObjectHasProperty(ctx, object, prop_name)) {
-        auto side_prop = JSObjectGetProperty(ctx, object, prop_name, nullptr);
-        *side = value_from_js(ctx, JSValueToObject(ctx, side_prop, nullptr));
-    }
-}
+// Alignment
 
 elements::EdgeInsets alignment_from_js(JSContextRef ctx, JSObjectRef object) {
     elements::EdgeInsets alignment;
-    alignment_side_from_js(ctx, object, "left", &alignment.left);
-    alignment_side_from_js(ctx, object, "top", &alignment.top);
-    alignment_side_from_js(ctx, object, "right", &alignment.right);
-    alignment_side_from_js(ctx, object, "bottom", &alignment.bottom);
+    map_prop_from_js<Value, value_from_js>(ctx, object, "left",
+                                           &alignment.left);
+    map_prop_from_js<Value, value_from_js>(ctx, object, "top", &alignment.top);
+    map_prop_from_js<Value, value_from_js>(ctx, object, "right",
+                                           &alignment.right);
+    map_prop_from_js<Value, value_from_js>(ctx, object, "bottom",
+                                           &alignment.bottom);
     return alignment;
-}
-
-void alignment_side_to_js(JSContextRef ctx, JSObjectRef object,
-                          const char* side_name, const Value& side) {
-    JSObjectSetProperty(ctx, object, JSStringCreateWithUTF8CString(side_name),
-                        value_to_js(ctx, side), kJSPropertyAttributeNone,
-                        nullptr);
 }
 
 JSObjectRef alignment_to_js(JSContextRef ctx,
                             const elements::EdgeInsets& alignment) {
     auto object = JSObjectMake(ctx, nullptr, nullptr);
-    alignment_side_to_js(ctx, object, "left", alignment.left);
-    alignment_side_to_js(ctx, object, "top", alignment.top);
-    alignment_side_to_js(ctx, object, "right", alignment.right);
-    alignment_side_to_js(ctx, object, "bottom", alignment.bottom);
+    map_prop_to_js<Value, value_to_js>(ctx, object, "left", alignment.left);
+    map_prop_to_js<Value, value_to_js>(ctx, object, "top", alignment.top);
+    map_prop_to_js<Value, value_to_js>(ctx, object, "right", alignment.right);
+    map_prop_to_js<Value, value_to_js>(ctx, object, "bottom", alignment.bottom);
+    return object;
+}
+
+// Size
+
+elements::ASize size_from_js(JSContextRef ctx, JSObjectRef object) {
+    elements::ASize size;
+    map_prop_from_js<Value, value_from_js>(ctx, object, "maxWidth",
+                                           &size.max_width);
+    map_prop_from_js<Value, value_from_js>(ctx, object, "maxHeight",
+                                           &size.max_height);
+    map_prop_from_js<Value, value_from_js>(ctx, object, "minWidth",
+                                           &size.min_width);
+    map_prop_from_js<Value, value_from_js>(ctx, object, "minHeight",
+                                           &size.min_height);
+    return size;
+}
+
+JSObjectRef size_to_js(JSContextRef ctx, const elements::ASize& size) {
+    auto object = JSObjectMake(ctx, nullptr, nullptr);
+    map_prop_to_js<Value, value_to_js>(ctx, object, "maxWidth", size.max_width);
+    map_prop_to_js<Value, value_to_js>(ctx, object, "maxHeight",
+                                       size.max_height);
+    map_prop_to_js<Value, value_to_js>(ctx, object, "minWidth", size.min_width);
+    map_prop_to_js<Value, value_to_js>(ctx, object, "minHeight",
+                                       size.min_height);
     return object;
 }
 

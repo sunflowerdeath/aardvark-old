@@ -290,4 +290,56 @@ JSObjectRef text_elem_call_as_constructor(JSContextRef ctx,
     return host->element_index->create_js_object(elem);
 }
 
+
+//------------------------------------------------------------------------------
+// Size
+//------------------------------------------------------------------------------
+
+template <class E>
+E* get_elem(JSContextRef ctx, JSObjectRef object) {
+    auto host = BindingsHost::get(ctx);
+    auto elem = host->element_index->get_native_object(object);
+    return dynamic_cast<E*>(elem.get());
+}
+
+bool size_element_set_size(JSContextRef ctx, JSObjectRef object,
+                           JSStringRef property_name, JSValueRef value,
+                           JSValueRef* exception) {
+    auto elem = get_elem<elements::SizeElement>(ctx, object);
+    elem->size = size_from_js(ctx, JSValueToObject(ctx, value, nullptr));;
+    elem->change();
+    return true;
+}
+
+JSValueRef size_element_get_size(JSContextRef ctx, JSObjectRef object,
+                                 JSStringRef property_name,
+                                 JSValueRef* exception) {
+    auto elem = get_elem<elements::SizeElement>(ctx, object);
+    return size_to_js(ctx, elem->size);
+}
+
+JSClassRef size_elem_create_class(JSClassRef base_class) {
+    auto definition = kJSClassDefinitionEmpty;
+    JSStaticValue static_values[] = {
+        {"size", size_element_get_size, size_element_set_size,
+         kJSPropertyAttributeNone},
+        {0, 0, 0, 0}};
+    definition.className = "SizeElement";
+    definition.parentClass = base_class;
+    definition.staticValues = static_values;
+    return JSClassCreate(&definition);
+}
+
+JSObjectRef size_elem_call_as_constructor(JSContextRef ctx,
+                                          JSObjectRef constructor,
+                                          size_t argument_count,
+                                          const JSValueRef arguments[],
+                                          JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto size = elements::ASize{};
+    auto elem = std::make_shared<elements::SizeElement>(
+        std::make_shared<elements::Placeholder>(), size);
+    return host->element_index->create_js_object(elem);
+}
+
 }  // namespace aardvark::js

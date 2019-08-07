@@ -9,4 +9,5 @@
 #include "paragraph.hpp"
 #include "placeholder.hpp"
 #include "stack.hpp"
+#include "size.hpp"
 #include "text.hpp"
