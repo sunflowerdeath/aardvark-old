@@ -8,13 +8,25 @@ let doc = app.getDocument(window)
 log('get doc')
 
 let stack = new Stack()
+
 let align = new Align()
 align.align = {
     left: {type: 'abs', value: 50},
     top: {type: 'abs', value: 100}
 }
+
+let size = new Sized()
+size.sizeConstraints = {
+    minWidth: {type: 'abs', value: 200},
+    maxWidth: {type: 'abs', value: 200},
+    minHeight: {type: 'abs', value: 50},
+    maxHeight: {type: 'abs', value: 50}
+}
+
 let red = new Background()
-align.appendChild(red)
+
+size.appendChild(red)
+align.appendChild(size)
 stack.appendChild(align)
 
 let text = new Text("Hello World")

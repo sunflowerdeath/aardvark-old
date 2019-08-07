@@ -3,7 +3,7 @@
 #include "JavaScriptCore/JavaScript.h"
 #include "../base_types.hpp"
 #include "../elements/align.hpp"
-#include "../elements/size.hpp"
+#include "../elements/sized.hpp"
 
 namespace aardvark::js {
 
@@ -14,8 +14,10 @@ elements::EdgeInsets alignment_from_js(JSContextRef ctx, JSObjectRef object);
 JSObjectRef alignment_to_js(JSContextRef ctx,
                             const elements::EdgeInsets& alignment);
 
-elements::ASize size_from_js(JSContextRef ctx, JSObjectRef object);
-JSObjectRef size_to_js(JSContextRef ctx, const elements::ASize& size);
+elements::SizeConstraints size_constraints_from_js(JSContextRef ctx,
+                                                   JSObjectRef object);
+JSObjectRef size_constraints_to_js(JSContextRef ctx,
+                                   const elements::SizeConstraints& size);
 
 }  // namespace aardvark::js
 

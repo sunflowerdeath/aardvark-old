@@ -91,6 +91,10 @@ BindingsHost::BindingsHost() {
                         stack_elem_create_class,
                         stack_elem_call_as_constructor);
 
+    register_elem_class("Sized", typeid(elements::Sized),
+                        sized_elem_create_class,
+                        sized_elem_call_as_constructor);
+
     register_elem_class("Text", typeid(elements::Text), text_elem_create_class,
                         text_elem_call_as_constructor);
 }

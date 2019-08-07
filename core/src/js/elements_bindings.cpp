@@ -302,43 +302,46 @@ E* get_elem(JSContextRef ctx, JSObjectRef object) {
     return dynamic_cast<E*>(elem.get());
 }
 
-bool size_element_set_size(JSContextRef ctx, JSObjectRef object,
-                           JSStringRef property_name, JSValueRef value,
-                           JSValueRef* exception) {
-    auto elem = get_elem<elements::SizeElement>(ctx, object);
-    elem->size = size_from_js(ctx, JSValueToObject(ctx, value, nullptr));;
+bool sized_elem_set_size_constraints(JSContextRef ctx, JSObjectRef object,
+                                       JSStringRef property_name,
+                                       JSValueRef value,
+                                       JSValueRef* exception) {
+    auto elem = get_elem<elements::Sized>(ctx, object);
+    elem->size_constraints =
+        size_constraints_from_js(ctx, JSValueToObject(ctx, value, nullptr));
     elem->change();
     return true;
 }
 
-JSValueRef size_element_get_size(JSContextRef ctx, JSObjectRef object,
-                                 JSStringRef property_name,
-                                 JSValueRef* exception) {
-    auto elem = get_elem<elements::SizeElement>(ctx, object);
-    return size_to_js(ctx, elem->size);
+JSValueRef sized_elem_get_size_constraints(JSContextRef ctx,
+                                             JSObjectRef object,
+                                             JSStringRef property_name,
+                                             JSValueRef* exception) {
+    auto elem = get_elem<elements::Sized>(ctx, object);
+    return size_constraints_to_js(ctx, elem->size_constraints);
 }
 
-JSClassRef size_elem_create_class(JSClassRef base_class) {
+JSClassRef sized_elem_create_class(JSClassRef base_class) {
     auto definition = kJSClassDefinitionEmpty;
     JSStaticValue static_values[] = {
-        {"size", size_element_get_size, size_element_set_size,
-         kJSPropertyAttributeNone},
+        {"sizeConstraints", sized_elem_get_size_constraints,
+         sized_elem_set_size_constraints, kJSPropertyAttributeNone},
         {0, 0, 0, 0}};
-    definition.className = "SizeElement";
+    definition.className = "Sized";
     definition.parentClass = base_class;
     definition.staticValues = static_values;
     return JSClassCreate(&definition);
 }
 
-JSObjectRef size_elem_call_as_constructor(JSContextRef ctx,
+JSObjectRef sized_elem_call_as_constructor(JSContextRef ctx,
                                           JSObjectRef constructor,
                                           size_t argument_count,
                                           const JSValueRef arguments[],
                                           JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
-    auto size = elements::ASize{};
-    auto elem = std::make_shared<elements::SizeElement>(
-        std::make_shared<elements::Placeholder>(), size);
+    auto size_constrains = elements::SizeConstraints{};
+    auto elem = std::make_shared<elements::Sized>(
+        std::make_shared<elements::Placeholder>(), size_constrains);
     return host->element_index->create_js_object(elem);
 }
 

@@ -242,7 +242,7 @@ add_library(aardvark ${ADV_LIB_TYPE}
     src/elements/gesture_responder.cpp
     src/elements/layer.cpp
     src/elements/paragraph.cpp
-    src/elements/size.cpp
+    src/elements/sized.cpp
     src/elements/stack.cpp
     src/elements/text.cpp
     src/pointer_events/hit_tester.cpp
