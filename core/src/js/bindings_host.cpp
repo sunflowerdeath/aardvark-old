@@ -87,6 +87,10 @@ BindingsHost::BindingsHost() {
                         background_elem_create_class,
                         background_elem_call_as_constructor);
 
+    register_elem_class("Responder", typeid(elements::ResponderElement),
+                        responder_elem_create_class,
+                        responder_elem_call_as_constructor);
+
     register_elem_class("Stack", typeid(elements::Stack),
                         stack_elem_create_class,
                         stack_elem_call_as_constructor);

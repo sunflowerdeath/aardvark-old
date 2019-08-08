@@ -21,6 +21,7 @@ class FunctionWrapper {
         JSValueProtect(ctx, function);
     }
 
+    // Copy
     FunctionWrapper(const FunctionWrapper& wrapper) {
         ctx = wrapper.ctx;
         function = wrapper.function;

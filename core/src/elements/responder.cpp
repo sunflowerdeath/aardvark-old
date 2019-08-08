@@ -1,8 +1,8 @@
-#include "gesture_responder.hpp"
+#include "responder.hpp"
 
 namespace aardvark::elements {
 
-Size GestureResponder::layout(BoxConstraints constraints) {
+Size ResponderElement::layout(BoxConstraints constraints) {
     auto child_size =
         document->layout_element(child.get(), constraints.make_loose());
     child->size = child_size;
@@ -10,7 +10,7 @@ Size GestureResponder::layout(BoxConstraints constraints) {
     return constraints.max_size();
 };
 
-void GestureResponder::paint(bool is_changed) {
+void ResponderElement::paint(bool is_changed) {
     document->paint_element(child.get());
 };
 

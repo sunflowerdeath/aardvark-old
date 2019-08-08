@@ -239,9 +239,9 @@ add_library(aardvark ${ADV_LIB_TYPE}
     src/elements/center.cpp
     src/elements/clip.cpp
     src/elements/fixed_size.cpp
-    src/elements/gesture_responder.cpp
     src/elements/layer.cpp
     src/elements/paragraph.cpp
+    src/elements/responder.cpp
     src/elements/sized.cpp
     src/elements/stack.cpp
     src/elements/text.cpp

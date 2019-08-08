@@ -55,21 +55,21 @@ void ResponderReconciler::reconcile(
     if (is_pointer_remove) {
         // End all responders
         for (auto responder : current_pointer->active_responders) {
-            responder->pointer_remove(event);
+            responder->handler(event, 2); // remove
         }
     } else {
         // Call `remove` handlers of responders that are no longer active
         for (auto responder : current_pointer->active_responders) {
             if (!contains(active_responders, responder)) {
-                responder->pointer_remove(event);
+                responder->handler(event, 2); // remove
             }
         }
         // Call `add` or `update` handlers of active responders
         for (auto responder : active_responders) {
             if (contains(current_pointer->active_responders, responder)) {
-                responder->pointer_update(event);
+                responder->handler(event, 1); // update
             } else {
-                responder->pointer_add(event);
+                responder->handler(event, 0); // add
             }
         }
     }

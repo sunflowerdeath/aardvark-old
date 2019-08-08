@@ -1,14 +1,34 @@
 #include "elements_bindings.hpp"
+
 #include "../elements/elements.hpp"
-#include "bindings_host.hpp"
 #include "base_types_bindings.hpp"
+#include "bindings_host.hpp"
+#include "events_bindings.hpp"
+#include "function_wrapper.hpp"
 
 namespace aardvark::js {
 
-// Element
+// helpers
+
+UnicodeString js_value_to_icu_str(JSContextRef ctx, JSValueRef value) {
+    auto js_str =
+        JSValueToStringCopy(ctx, value, /* exception */ nullptr);
+    auto icu_str = UnicodeString(JSStringGetCharactersPtr(js_str),
+                                 JSStringGetLength(js_str));
+    JSStringRelease(js_str);
+    return icu_str;
+}
+
 std::shared_ptr<Element> get_elem(JSContextRef ctx, JSObjectRef object) {
     return BindingsHost::get(ctx)->element_index->get_native_object(object);
 }
+
+template <class E>
+E* get_elem(JSContextRef ctx, JSObjectRef object) {
+    return dynamic_cast<E*>(get_elem(ctx, object).get());
+}
+
+// Element
 
 JSValueRef element_get_width(JSContextRef ctx, JSObjectRef object,
                              JSStringRef property_name, JSValueRef* exception) {
@@ -201,6 +221,57 @@ JSObjectRef background_elem_call_as_constructor(JSContextRef ctx,
 }
 
 //------------------------------------------------------------------------------
+// Responder
+//------------------------------------------------------------------------------
+
+std::vector<JSValueRef> responder_handler_args_to_js(JSContextRef ctx,
+                                                     PointerEvent event,
+                                                     int hz) {
+    return std::vector<JSValueRef>{pointer_event_to_js(ctx, event),
+                                   JSValueMakeNumber(ctx, hz)};
+}
+
+void responder_handler_ret_val_from_js(JSContextRef ctx, JSValueRef value){};
+
+JSValueRef responder_elem_set_handler(JSContextRef ctx, JSObjectRef function,
+                                      JSObjectRef object, size_t argument_count,
+                                      const JSValueRef arguments[],
+                                      JSValueRef* exception) {
+    auto responder = get_elem<elements::ResponderElement>(ctx, object);
+    responder->handler = FunctionWrapper<void, PointerEvent, int>(
+        JSContextGetGlobalContext(ctx),    // ctx
+        function,                          // function
+        responder_handler_args_to_js,      // args_to_js
+        responder_handler_ret_val_from_js  // ret_val_from_js
+    );
+    responder->change();
+    return JSValueMakeUndefined(ctx);
+}
+
+JSClassRef responder_elem_create_class(JSClassRef element_class) {
+    auto definition = kJSClassDefinitionEmpty;
+    JSStaticFunction static_functions[] = {
+        {"setHandler", responder_elem_set_handler, PROP_ATTR_STATIC},
+        {0, 0, 0}};
+    definition.className = "ResponderElement";
+    definition.parentClass = element_class;
+    definition.staticFunctions = static_functions;
+    return JSClassCreate(&definition);
+}
+
+JSObjectRef responder_elem_call_as_constructor(JSContextRef ctx,
+                                               JSObjectRef constructor,
+                                               size_t argument_count,
+                                               const JSValueRef arguments[],
+                                               JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto elem = std::make_shared<elements::ResponderElement>(
+        std::make_shared<elements::Placeholder>(), HitTestMode::PassToParent,
+        nullptr);
+    return host->element_index->create_js_object(elem);
+}
+
+//------------------------------------------------------------------------------
 // Stack
 //------------------------------------------------------------------------------
 
@@ -224,15 +295,6 @@ JSObjectRef stack_elem_call_as_constructor(JSContextRef ctx,
 //------------------------------------------------------------------------------
 // Text
 //------------------------------------------------------------------------------
-
-UnicodeString js_value_to_icu_str(JSContextRef ctx, JSValueRef value) {
-    auto js_str =
-        JSValueToStringCopy(ctx, value, /* exception */ nullptr);
-    auto icu_str = UnicodeString(JSStringGetCharactersPtr(js_str),
-                                 JSStringGetLength(js_str));
-    JSStringRelease(js_str);
-    return icu_str;
-}
 
 JSValueRef icu_str_to_js_value(JSContextRef ctx, const UnicodeString& str) {
     auto js_str = JSStringCreateWithCharacters(str.getBuffer(), str.length());
@@ -294,13 +356,6 @@ JSObjectRef text_elem_call_as_constructor(JSContextRef ctx,
 //------------------------------------------------------------------------------
 // Size
 //------------------------------------------------------------------------------
-
-template <class E>
-E* get_elem(JSContextRef ctx, JSObjectRef object) {
-    auto host = BindingsHost::get(ctx);
-    auto elem = host->element_index->get_native_object(object);
-    return dynamic_cast<E*>(elem.get());
-}
 
 bool sized_elem_set_size_constraints(JSContextRef ctx, JSObjectRef object,
                                        JSStringRef property_name,
