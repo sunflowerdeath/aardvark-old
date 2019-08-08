@@ -9,49 +9,39 @@ struct AppState {
     std::shared_ptr<aardvark::elements::Background> background;
 };
 
-void button_on_start(std::shared_ptr<aardvark::elements::Background> bg,
-                     aardvark::PointerEvent event) {
+void rhandler(std::shared_ptr<aardvark::elements::Background> bg,
+                     aardvark::PointerEvent event, int hz) {
     std::cout << "[button] start" << std::endl;
-    // if (event.action == aardvark::PointerEvent::Action::pointer_down) {
-        bg->color = SK_ColorBLUE;
+
+    if (hz == 0) {
+        // if (event.action == aardvark::PointerEvent::Action::pointer_down) {
+            bg->color = SK_ColorBLUE;
+            bg->change();
+        // }
+    } else if (hz == 1) {
+        if (event.action == aardvark::PointerAction::button_press) {
+            std::cout << "[button] press" << std::endl;
+        }
+
+        if (event.action == aardvark::PointerAction::button_release) {
+            std::cout << "[button] release" << std::endl;
+        }
+    } else {
+        std::cout << "[button] end" << std::endl;
+        bg->color = SK_ColorRED;
         bg->change();
-    // }
-}
-
-void button_on_update(std::shared_ptr<aardvark::elements::Background> bg,
-                      aardvark::PointerEvent event) {
-
-    if (event.action == aardvark::PointerAction::button_press) {
-        std::cout << "[button] press" << std::endl;
     }
-
-    if (event.action == aardvark::PointerAction::button_release) {
-        std::cout << "[button] release" << std::endl;
-    }
-}
-
-void button_on_end(std::shared_ptr<aardvark::elements::Background> bg,
-                   aardvark::PointerEvent event) {
-    std::cout << "[button] end" << std::endl;
-    bg->color = SK_ColorRED;
-    bg->change();
 }
 
 std::shared_ptr<aardvark::Element> create_button() {
     auto bg = std::make_shared<aardvark::elements::Background>(SK_ColorRED);
-    auto start = [bg](aardvark::PointerEvent event) {
-        button_on_start(bg, event);
+    auto handler = [bg](aardvark::PointerEvent event, int hz) {
+        rhandler(bg, event, hz);
     };
-    auto update = [bg](aardvark::PointerEvent event) {
-        button_on_update(bg, event);
-    };
-    auto end = [bg](aardvark::PointerEvent event) { button_on_end(bg, event); };
-    auto responder = std::make_shared<aardvark::elements::GestureResponder>(
+    auto responder = std::make_shared<aardvark::elements::ResponderElement>(
         bg,                                   // child
         aardvark::HitTestMode::PassToParent,  // mode
-        start,                                // start
-        update,                               // update
-        end                                   // end
+        handler                               // handler
     );
     auto size = std::make_shared<aardvark::elements::FixedSize>(
         responder, aardvark::Size{200, 50});

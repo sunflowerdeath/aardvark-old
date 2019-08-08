@@ -240,11 +240,10 @@ JSValueRef responder_elem_set_handler(JSContextRef ctx, JSObjectRef function,
     auto responder = get_elem<elements::ResponderElement>(ctx, object);
     responder->handler = FunctionWrapper<void, PointerEvent, int>(
         JSContextGetGlobalContext(ctx),    // ctx
-        function,                          // function
+        arguments[0],                      // function
         responder_handler_args_to_js,      // args_to_js
         responder_handler_ret_val_from_js  // ret_val_from_js
     );
-    responder->change();
     return JSValueMakeUndefined(ctx);
 }
 

@@ -25,34 +25,29 @@ size.sizeConstraints = {
 
 let red = new Background()
 
-size.appendChild(red)
+let responder = new Responder()
+responder.appendChild(red)
+let responderHandler = (event, hz) =>
+    log('responder handler: ' + hz + ', ' + JSON.stringify(event))
+responder.setHandler(responderHandler)
+
+size.appendChild(responder)
 align.appendChild(size)
-stack.appendChild(align)
 
 let text = new Text("Hello World")
 log(text.text)
 text.text = "Hello, Text"
 stack.appendChild(text)
 
-/*
-let isPressed = false;
-let responder = new GestureResponder();
-responder.onStart = event => {
-    if (event.type === 'pointer_down') isPressed = true
-}
-responder.onUpdate = event => {
-}
-responder.onEnd = (event, isTerminated) => {
-    if (isPressed && event.type === 'pointer_up') handleClick();
-    pressed = false
-}
-*/
+stack.appendChild(align)
+
 
 log(JSON.stringify(align.align))
 
 doc.root = stack
 log('set root')
 
+/*
 let removeHandler
 let handler = event => {
     log('pointer event ' + JSON.stringify(event))
@@ -66,5 +61,6 @@ let trackHandler = event => {
     if (event.action == 3) stopTracking()
 }
 stopTracking = doc.startTrackingPointer(0, trackHandler)
+*/
 
 app.run()

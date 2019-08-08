@@ -307,8 +307,8 @@ if(ADV_BUILD_EXAMPLES)
     # add_executable(app_example src/examples/app_example.cpp)
     # target_link_libraries(app_example aardvark)
 
-    # add_executable(responder_example src/examples/responder_example.cpp)
-    # target_link_libraries(responder_example aardvark)
+    add_executable(responder_example src/examples/responder_example.cpp)
+    target_link_libraries(responder_example aardvark)
 
     # add_executable(layer_example src/examples/layer_example.cpp)
     # target_link_libraries(layer_example aardvark)

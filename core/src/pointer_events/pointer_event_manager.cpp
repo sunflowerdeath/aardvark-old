@@ -17,8 +17,8 @@ void PointerEventManager::handle_event(PointerEvent event) {
     before_signal(event);
 
     // call elements responders handlers
-    // hit_tester->test(event.left, event.top);
-    // reconciler->reconcile(event, hit_tester->hit_elements);
+    hit_tester->test(event.left, event.top);
+    reconciler->reconcile(event, hit_tester->hit_elements);
 
     if (map_contains(pointers_signals, event.pointer_id)) {
         pointers_signals[event.pointer_id](event);
