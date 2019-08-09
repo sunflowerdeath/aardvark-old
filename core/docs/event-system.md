@@ -9,7 +9,7 @@ First, it performs hit testing - detecting which elements are positioned under
 pointer.
 Then it iterates through stack of hit elements from top to bottom, and 
 
-Responder modes:
+Hit test modes:
 
 - `PassThrough`
 

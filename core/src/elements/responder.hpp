@@ -15,14 +15,16 @@ class ResponderElement : public SingleChildElement {
       public:
         InnerResponder(ResponderElement* elem) : elem(elem){};
         ResponderElement* elem;
-        void handler(PointerEvent event, int hz) override {
-            if (elem->handler) elem->handler(event, hz);
+        void handler(PointerEvent event,
+                     ResponderEventType event_type) override {
+            if (elem->handler) elem->handler(event, event_type);
         };
     };
 
-    ResponderElement(std::shared_ptr<Element> child, HitTestMode mode,
-                     std::function<void(PointerEvent, int)> handler,
-                     bool is_repaint_boundary = false)
+    ResponderElement(
+        std::shared_ptr<Element> child, HitTestMode mode,
+        std::function<void(PointerEvent, ResponderEventType)> handler,
+        bool is_repaint_boundary = false)
         : SingleChildElement(child,
                              /* is_repaint_boundary */ is_repaint_boundary,
                              /* size_by_parent */ true),
@@ -31,7 +33,7 @@ class ResponderElement : public SingleChildElement {
           responder(InnerResponder(this)){};
 
     HitTestMode mode;
-    std::function<void(PointerEvent, int)> handler;
+    std::function<void(PointerEvent, ResponderEventType)> handler;
     InnerResponder responder;
 
     std::string get_debug_name() override { return "Responder"; };

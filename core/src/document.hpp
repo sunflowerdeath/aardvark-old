@@ -4,9 +4,11 @@
 #include <optional>
 #include <unordered_set>
 #include <functional>
+
 #include "GrContext.h"
 #include "SkCanvas.h"
 #include "SkRegion.h"
+
 #include "base_types.hpp"
 #include "box_constraints.hpp"
 #include "element.hpp"

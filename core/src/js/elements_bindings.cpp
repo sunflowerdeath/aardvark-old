@@ -224,11 +224,12 @@ JSObjectRef background_elem_call_as_constructor(JSContextRef ctx,
 // Responder
 //------------------------------------------------------------------------------
 
-std::vector<JSValueRef> responder_handler_args_to_js(JSContextRef ctx,
-                                                     PointerEvent event,
-                                                     int hz) {
+std::vector<JSValueRef> responder_handler_args_to_js(
+    JSContextRef ctx, PointerEvent event, ResponderEventType event_type) {
+    auto event_type_num =
+        static_cast<std::underlying_type_t<ResponderEventType>>(event_type);
     return std::vector<JSValueRef>{pointer_event_to_js(ctx, event),
-                                   JSValueMakeNumber(ctx, hz)};
+                                   JSValueMakeNumber(ctx, event_type_num)};
 }
 
 void responder_handler_ret_val_from_js(JSContextRef ctx, JSValueRef value){};
@@ -238,12 +239,13 @@ JSValueRef responder_elem_set_handler(JSContextRef ctx, JSObjectRef function,
                                       const JSValueRef arguments[],
                                       JSValueRef* exception) {
     auto responder = get_elem<elements::ResponderElement>(ctx, object);
-    responder->handler = FunctionWrapper<void, PointerEvent, int>(
-        JSContextGetGlobalContext(ctx),    // ctx
-        arguments[0],                      // function
-        responder_handler_args_to_js,      // args_to_js
-        responder_handler_ret_val_from_js  // ret_val_from_js
-    );
+    responder->handler =
+        FunctionWrapper<void, PointerEvent, ResponderEventType>(
+            JSContextGetGlobalContext(ctx),    // ctx
+            arguments[0],                      // function
+            responder_handler_args_to_js,      // args_to_js
+            responder_handler_ret_val_from_js  // ret_val_from_js
+        );
     return JSValueMakeUndefined(ctx);
 }
 

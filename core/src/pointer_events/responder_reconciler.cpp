@@ -1,6 +1,6 @@
 #include "responder_reconciler.hpp"
+
 #include <algorithm>
-#include <iostream>
 
 namespace aardvark {
 
@@ -55,21 +55,21 @@ void ResponderReconciler::reconcile(
     if (is_pointer_remove) {
         // End all responders
         for (auto responder : current_pointer->active_responders) {
-            responder->handler(event, 2); // remove
+            responder->handler(event, ResponderEventType::remove);
         }
     } else {
         // Call `remove` handlers of responders that are no longer active
         for (auto responder : current_pointer->active_responders) {
             if (!contains(active_responders, responder)) {
-                responder->handler(event, 2); // remove
+                responder->handler(event, ResponderEventType::remove);
             }
         }
         // Call `add` or `update` handlers of active responders
         for (auto responder : active_responders) {
             if (contains(current_pointer->active_responders, responder)) {
-                responder->handler(event, 1); // update
+                responder->handler(event, ResponderEventType::update);
             } else {
-                responder->handler(event, 0); // add
+                responder->handler(event, ResponderEventType::add);
             }
         }
     }

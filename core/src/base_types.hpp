@@ -4,10 +4,11 @@ namespace aardvark {
 
 struct Value {
     enum class ValueType { none, abs, rel };
-    ValueType type;
-    float value;
 
     Value(ValueType type, float value) : type(type), value(value){};
+
+    ValueType type;
+    float value;
 
     float calc(float total, float fallback = 0) {
         if (type == ValueType::none) return fallback;
