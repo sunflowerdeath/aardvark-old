@@ -1,0 +1,10 @@
+{
+  "name": "aardvark-std",
+  "version": "0.0.1",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+  },
+  "author": "sunflowerdeath",
+  "license": "Unlicense"
+}

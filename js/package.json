@@ -1,0 +1,17 @@
+{
+  "name": "aardvark-monorepo",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "sunflowerdeath",
+  "license": "Unlicense",
+  "dependencies": {
+    "lerna": "^3.16.4",
+    "prettier": "^1.18.2",
+    "webpack": "^4.39.1",
+    "webpack-cli": "^3.3.6"
+  }
+}

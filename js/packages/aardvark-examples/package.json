@@ -1,0 +1,16 @@
+{
+  "name": "aardvark-examples",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "../../node_modules/.bin/webpack"
+  },
+  "dependencies": {
+    "aardvark-std": "*",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0"
+  },
+  "author": "sunflowerdeath",
+  "license": "Unlicense"
+}
