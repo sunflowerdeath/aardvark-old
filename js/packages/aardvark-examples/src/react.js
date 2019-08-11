@@ -2,23 +2,20 @@ import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import ReactAardvark from 'aardvark-react'
 
-let Hello = () => React.createElement('div', null, 'Hello world!')
-let res = ReactDOMServer.renderToString(React.createElement(Hello))
-log(res)
-
 let app = new DesktopApp()
 let window = app.createWindow(640, 480)
 let document = app.getDocument(window)
 
 let App = () => {
+    log('render app')
 	return (
-		<Align
+		<align
 			align={{
 				left: { type: 'abs', value: 50 },
 				top: { type: 'abs', value: 100 }
 			}}
 		>
-			<Sized
+			<sized
 				sizeConstraints={{
 					minWidth: { type: 'abs', value: 200 },
 					maxWidth: { type: 'abs', value: 200 },
@@ -26,10 +23,12 @@ let App = () => {
 					maxHeight: { type: 'abs', value: 50 }
 				}}
 			>
-				<Background />
-			</Sized>
-		</Align>
+				<background />
+			</sized>
+		</align>
 	)
 }
 
 ReactAardvark.render(<App />, document)
+
+app.run()

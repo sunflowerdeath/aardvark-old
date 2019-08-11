@@ -27,6 +27,13 @@ const resetAfterCommit = containerInfo => {
 	// Noop
 }
 
+const elements = {
+    align: Align,
+    background: Background,
+    sized: Sized,
+    stack: Stack
+}
+
 const createInstance = (
 	type,
 	props,
@@ -34,8 +41,8 @@ const createInstance = (
 	hostContext,
 	internalInstanceHandle
 ) => {
-	log('createInstance')
-    const elem = new global[type]
+	log('createInstance ' + type)
+    const elem = new elements[type]
     for (const prop in props) {
         elem[prop] = props[prop]
     }
@@ -44,7 +51,7 @@ const createInstance = (
 
 const appendInitialChild = (parentInstance, child) => {
 	log('appendInitialChild')
-	parentInstance.appenChild(child)
+	parentInstance.appendChild(child)
 }
 
 const finalizeInitialChildren = (
@@ -94,7 +101,7 @@ const scheduleTimeout = setTimeout
 
 const cancelTimeout = clearTimeout
 
-const noTimeout = -1
+const noTimeout = 0
 
 const now = Date.now
 
@@ -138,7 +145,6 @@ const insertBefore = (parentInstance, child, beforeChild) => {
 	// TODO Move existing child or add new child?
 	parentInstance.insertBefore(beforeChild, child)
 }
-
 const insertInContainerBefore = (parentInstance, child, beforeChild) => {
 	log('Container does not support insertBefore operation')
 }
@@ -176,15 +182,35 @@ const HostConfig = {
 	now,
 	isPrimaryRenderer,
 	warnsIfNotActing,
-	supportsMutation
+	supportsMutation,
+    appendChild,
+    appendChildToContainer,
+    commitTextUpdate,
+    commitMount,
+    commitUpdate,
+    insertBefore,
+    insertInContainerBefore,
+    removeChild,
+    removeChildFromContainer,
+    resetTextContent
 }
 
 const MyRenderer = Reconciler(HostConfig)
 
 const RendererPublicAPI = {
 	render(element, container, callback) {
-		// Call MyRenderer.updateContainer() to schedule changes on the roots.
-		// See ReactDOM, React Native, or React ART for practical examples.
+        // Create a root Container if it doesnt exist
+        if (!container._rootContainer) {
+            container._rootContainer = 
+                MyRenderer.createContainer(container, false);
+        }
+
+        // update the root Container
+        return MyRenderer.updateContainer(element, container._rootContainer,
+                                          null, callback);
+
+        // Call MyRenderer.updateContainer() to schedule changes on the roots.
+        // See ReactDOM, React Native, or React ART for practical examples.
 	}
 }
 
