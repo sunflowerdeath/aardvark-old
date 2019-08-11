@@ -7,7 +7,7 @@ Size ResponderElement::layout(BoxConstraints constraints) {
         document->layout_element(child.get(), constraints.make_loose());
     child->size = child_size;
     child->rel_position = Position{0, 0};
-    return constraints.max_size();
+    return child_size;
 };
 
 void ResponderElement::paint(bool is_changed) {

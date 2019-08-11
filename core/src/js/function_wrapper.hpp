@@ -37,6 +37,9 @@ class FunctionWrapper {
     RetValType operator()(ArgsTypes... args) {
         auto js_args = args_to_js(ctx, args...);
         auto object = JSValueToObject(ctx, function, nullptr);
+        // Pin because during the call wrapper may be destroyed
+        auto pin_ret_val_from_js = ret_val_from_js;
+        auto pin_ctx = ctx;
         auto js_ret_val =
             JSObjectCallAsFunction(ctx,             // ctx
                                    object,          // object
@@ -45,7 +48,7 @@ class FunctionWrapper {
                                    js_args.data(),  // arguments[],
                                    nullptr          // exception
             );
-        return ret_val_from_js(ctx, js_ret_val);
+        return pin_ret_val_from_js(pin_ctx, js_ret_val);
     }
 
   private:

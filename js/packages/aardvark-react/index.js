@@ -1,7 +1,7 @@
 const Reconciler = require('react-reconciler')
 
 const getRootHostContext = rootContainerInstance => {
-	log('getRootHostContext')
+	// log('getRootHostContext')
 	return {}
 }
 
@@ -10,12 +10,12 @@ const getChildHostContext = (
 	type,
 	rootContainerInstance
 ) => {
-	log('getChildHostContext')
+	// log('getChildHostContext')
 	return parentHostContext
 }
 
 const getPublicInstance = instance => {
-	log('getPublicInstance')
+	// log('getPublicInstance')
 	return instance
 }
 
@@ -30,6 +30,7 @@ const resetAfterCommit = containerInfo => {
 const elements = {
     align: Align,
     background: Background,
+    responder: Responder,
     sized: Sized,
     stack: Stack
 }
@@ -41,16 +42,23 @@ const createInstance = (
 	hostContext,
 	internalInstanceHandle
 ) => {
-	log('createInstance ' + type)
+	// log('createInstance ' + type)
     const elem = new elements[type]
     for (const prop in props) {
-        elem[prop] = props[prop]
+        log(prop)
+        if (prop === 'children') continue
+        if (type === 'responder' && prop === 'handler') {
+            log('set handler')
+            elem.setHandler(props[prop])
+        } else {
+            elem[prop] = props[prop]
+        }
     }
     return elem
 }
 
 const appendInitialChild = (parentInstance, child) => {
-	log('appendInitialChild')
+	// log('appendInitialChild')
 	parentInstance.appendChild(child)
 }
 
@@ -61,7 +69,7 @@ const finalizeInitialChildren = (
 	rootContainerInstance,
 	hostContext
 ) => {
-	log('finalizeInitialChildren')
+	// log('finalizeInitialChildren')
 }
 
 const prepareUpdate = (
@@ -74,17 +82,17 @@ const prepareUpdate = (
 ) => {
 	// Computes the diff for an instance. Fiber can reuse this work even if it
 	// pauses or abort rendering a part of the tree.
-	log('prepareUpdate')
-	return null
+	// log('prepareUpdate')
+	return {}
 }
 
 const shouldSetTextContent = (type, props) => {
-	log('shouldSetTextContent')
+	// log('shouldSetTextContent')
 	return false
 }
 
 const shouldDeprioritizeSubtree = (type, props) => {
-	log('shouldDeprioritizeSubtree')
+	// log('shouldDeprioritizeSubtree')
 	return false
 }
 
@@ -94,7 +102,7 @@ const createTextInstance = (
 	hostContext,
 	internalInstanceHandle
 ) => {
-	log('createTextInstance: ' + text)
+	// log('createTextInstance: ' + text)
 }
 
 const scheduleTimeout = setTimeout
@@ -112,17 +120,17 @@ const warnsIfNotActing = true
 const supportsMutation = true
 
 const appendChild = (parentInstance, child) => {
-	log('appendChild')
+    log('appendChild')
 	parentInstance.appendChild(child)
 }
 
 const appendChildToContainer = (parentInstance, child) => {
-	log('appendChildToContainer')
+    // log('appendChildToContainer')
 	parentInstance.root = child
 }
 
 const commitTextUpdate = (textInstance, oldText, newText) => {
-	log('commitTextUpdate')
+	// log('commitTextUpdate')
 	textInstance.text = newText
 }
 
@@ -132,30 +140,43 @@ const commitMount = (instance, type, newProps, internalInstanceHandle) => {
 
 const commitUpdate = (
 	instance,
-	updatePayloadTODO,
+	updatePayload,
 	type,
 	oldProps,
 	newProps,
 	internalInstanceHandle
 ) => {
-	log('commitUpdate')
+    // log('commitUpdate')
+    for (const key in oldProps) {
+        if (!(key in newProps)) {} // delete prop
+    }
+    for (const key in newProps) {
+        if (!(key in oldProps) || oldProps[key] !== newProps[key]) {
+            if (type === 'responder' && key === 'handler') {
+                instance.setHandler(newProps[key])
+            } else {
+                instance[prop] = props[key]
+            }
+        }
+    }
 }
 
 const insertBefore = (parentInstance, child, beforeChild) => {
 	// TODO Move existing child or add new child?
+    log('insertBeforeChild')
 	parentInstance.insertBeforeChild(child, beforeChild)
 }
 const insertInContainerBefore = (parentInstance, child, beforeChild) => {
-	log('Container does not support insertBefore operation')
+	// log('Container does not support insertBefore operation')
 }
 
 const removeChild = (parentInstance, child) => {
-	log('removeChild')
+    log('removeChild')
 	parentInstance.removeChild(child)
 }
 
 const removeChildFromContainer = (parentInstance, child) => {
-	log('removeChildFromContainer')
+    log('removeChildFromContainer')
 	parentInstance.root = new Placeholder()
 }
 
