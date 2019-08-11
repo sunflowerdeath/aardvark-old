@@ -10,7 +10,7 @@ JSValueRef desktop_app_run(JSContextRef ctx, JSObjectRef function,
                            JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
     auto app = host->desktop_app_index->get_native_object(object);
-    app->run();
+    app->run(std::bind(&TimersHost::call_expired, &host->timers_host));
     return JSValueMakeUndefined(ctx);
 }
 

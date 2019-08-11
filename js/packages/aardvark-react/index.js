@@ -1,38 +1,5 @@
 const Reconciler = require('react-reconciler')
 
-const appendInitialChild = (parentInstance, child) => {
-	log('appendInitialChild')
-	parentInstance.appenChild(child)
-}
-const createInstance = (
-	type,
-	props,
-	rootContainerInstance,
-	hostContext,
-	internalInstanceHandle
-) => {
-	log('createInstance')
-}
-
-const createTextInstance = (
-	text,
-	rootContainerInstance,
-	hostContext,
-	internalInstanceHandle
-) => {
-	log('createTextInstance: ' + text)
-}
-
-const finalizeInitialChildren = (
-	parentInstance,
-	type,
-	props,
-	rootContainerInstance,
-	hostContext
-) => {
-	log('finalizeInitialChildren')
-}
-
 const getRootHostContext = rootContainerInstance => {
 	log('getRootHostContext')
 	return {}
@@ -56,7 +23,39 @@ const prepareForCommit = containerInfo => {
 	// Noop
 }
 
-const UPDATE_SIGNAL = {}
+const resetAfterCommit = containerInfo => {
+	// Noop
+}
+
+const createInstance = (
+	type,
+	props,
+	rootContainerInstance,
+	hostContext,
+	internalInstanceHandle
+) => {
+	log('createInstance')
+    const elem = new global[type]
+    for (const prop in props) {
+        elem[prop] = props[prop]
+    }
+    return elem
+}
+
+const appendInitialChild = (parentInstance, child) => {
+	log('appendInitialChild')
+	parentInstance.appenChild(child)
+}
+
+const finalizeInitialChildren = (
+	parentInstance,
+	type,
+	props,
+	rootContainerInstance,
+	hostContext
+) => {
+	log('finalizeInitialChildren')
+}
 
 const prepareUpdate = (
 	instance,
@@ -69,29 +68,39 @@ const prepareUpdate = (
 	// Computes the diff for an instance. Fiber can reuse this work even if it
 	// pauses or abort rendering a part of the tree.
 	log('prepareUpdate')
-	return UPDATE_SIGNAL
-}
-
-const resetAfterCommit = containerInfo => {
-	// Noop
-}
-
-const isPrimaryRenderer = true
-const warnsIfNotActing = true
-
-const scheduleTimeout = setTimeout
-const cancelTimeout = clearTimeout
-const noTimeout = -1
-
-const shouldDeprioritizeSubtree = (type, props) => {
-	log('shouldDeprioritizeSubtree')
-	return false
+	return null
 }
 
 const shouldSetTextContent = (type, props) => {
 	log('shouldSetTextContent')
 	return false
 }
+
+const shouldDeprioritizeSubtree = (type, props) => {
+	log('shouldDeprioritizeSubtree')
+	return false
+}
+
+const createTextInstance = (
+	text,
+	rootContainerInstance,
+	hostContext,
+	internalInstanceHandle
+) => {
+	log('createTextInstance: ' + text)
+}
+
+const scheduleTimeout = setTimeout
+
+const cancelTimeout = clearTimeout
+
+const noTimeout = -1
+
+const now = Date.now
+
+const isPrimaryRenderer = true
+
+const warnsIfNotActing = true
 
 const supportsMutation = true
 
@@ -149,7 +158,25 @@ const resetTextContent = instance => {
 }
 
 const HostConfig = {
-    now
+	getPublicInstance,
+	getRootHostContext,
+	getChildHostContext,
+	prepareForCommit,
+	resetAfterCommit,
+	createInstance,
+	appendInitialChild,
+	finalizeInitialChildren,
+	prepareUpdate,
+	shouldSetTextContent,
+	shouldDeprioritizeSubtree,
+	createTextInstance,
+	scheduleTimeout,
+	cancelTimeout,
+	noTimeout,
+	now,
+	isPrimaryRenderer,
+	warnsIfNotActing,
+	supportsMutation
 }
 
 const MyRenderer = Reconciler(HostConfig)

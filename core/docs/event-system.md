@@ -1,31 +1,18 @@
 # Event system
 
-Application object dipatches events from windows to corresponding documents.
+Document receives pointer events from the window.
 
-Then document determines which elements should handle this event and call
-their handlers.
+First, it determines which elements are positioned under the pointer.
+Then it iterates through these elements from top to bottom and calls their event
+handlers.
 
-First, it performs hit testing - detecting which elements are positioned under
-pointer.
-Then it iterates through stack of hit elements from top to bottom, and 
+When iterating, it takes into account elements hit test mode. 
+It can be one of the following:
 
-Hit test modes:
+- `PassThrough` - After element handles event, it passes it to the element 
+  that is behind.
 
-- `PassThrough`
+- `PassToParent` - Passes event to the parent element (or any further ancestor)
+  that is behind this element.
 
-  After element handles event, it passes it to the element that is behind.
-
-- `PassToParent`
-
-  Passes event to the parent element (or any further ancestor) behind this 
-  element. This is default mode.
-
-- `Absorb`
-
-  Does not pass event after handling.
-
-- `Capture`
-
-  Makes this element handle events exclusively and even when it is no longer
-  hit by pointer. Element continues to handle event until it stops capturing
-  or is removed from the document.
+- `Absorb` - Does not pass event after handling.

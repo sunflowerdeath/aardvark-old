@@ -12,6 +12,7 @@
 #include "../platforms/desktop/desktop_app.hpp"
 #include "../platforms/desktop/desktop_window.hpp"
 #include "objects_index.hpp"
+#include "timers_host.hpp"
 
 namespace aardvark::js {
 
@@ -29,6 +30,7 @@ class BindingsHost {
     ~BindingsHost();
 
     JSGlobalContextRef ctx;
+    TimersHost timers_host;
 
     // Use optional to defer initialization
     std::optional<ObjectsIndex<DesktopApp>> desktop_app_index;

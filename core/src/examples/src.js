@@ -8,6 +8,7 @@ let window = app.createWindow(640, 480)
 log('create window')
 log('app.windows.size =', app.windows.size)
 log('app.windows[0].width =', app.windows[0].width)
+// TODO window.document ?
 let doc = app.getDocument(window)
 log('get doc')
 

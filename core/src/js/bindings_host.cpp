@@ -38,6 +38,22 @@ JSValueRef log(
     return JSValueMakeUndefined(ctx);
 }
 
+JSValueRef set_timeout(JSContextRef ctx, JSObjectRef function,
+                       JSObjectRef this_object, size_t argument_count,
+                       const JSValueRef arguments[], JSValueRef* exception) {
+    auto id = BindingsHost::get(ctx)->timers_host.set_timeout(
+        arguments[0], JSValueToNumber(ctx, arguments[1], nullptr));
+    return JSValueMakeNumber(ctx, id);
+}
+
+JSValueRef clear_timeout(JSContextRef ctx, JSObjectRef function,
+                         JSObjectRef this_object, size_t argument_count,
+                         const JSValueRef arguments[], JSValueRef* exception) {
+    BindingsHost::get(ctx)->timers_host.clear_timeout(
+        JSValueToNumber(ctx, arguments[0], nullptr));
+    return JSValueMakeUndefined(ctx);
+}
+
 // BindingsHost
 
 BindingsHost::BindingsHost() {
@@ -45,12 +61,15 @@ BindingsHost::BindingsHost() {
     // storage for private data
     auto global_class = JSClassCreate(&kJSClassDefinitionEmpty);
     ctx = JSGlobalContextCreate(global_class);
+    timers_host.ctx = ctx;
     
     // Store pointer to the host in private data of the global object
     auto global_object = JSContextGetGlobalObject(ctx);
     JSObjectSetPrivate(global_object, static_cast<void*>(this));
 
     add_function("log", &log);
+    add_function("setTimeout", &set_timeout);
+    add_function("clearTimeout", &clear_timeout);
 
     auto desktop_app_class = desktop_app_create_class();
     desktop_app_index = ObjectsIndex<DesktopApp>(ctx, desktop_app_class);

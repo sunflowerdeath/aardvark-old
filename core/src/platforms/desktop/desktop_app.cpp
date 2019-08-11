@@ -5,10 +5,6 @@
 
 namespace aardvark {
 
-// ? now() {
-    // return std::chrono::high_resolution_clock::now();
-// }
-
 // Window events
 void window_focus_callback(GLFWwindow* window, int focused) {
     auto event = focused ? static_cast<Event>(WindowFocusEvent())
@@ -102,11 +98,12 @@ void DesktopApp::destroy_window(std::shared_ptr<DesktopWindow> window) {
 
 void DesktopApp::stop() { should_stop = true; };
 
-void DesktopApp::run() {
+void DesktopApp::run(std::function<void(void)> update_callback) {
     should_stop = false;
     bool painted = false;
     while (!should_stop) {
         auto start = std::chrono::high_resolution_clock::now();
+        if (update_callback) update_callback();
         glfwPollEvents();
 
         painted = false;

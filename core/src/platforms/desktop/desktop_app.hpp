@@ -15,7 +15,8 @@ namespace aardvark {
 class DesktopApp {
   public:
     // Runs application loop - polls events, calls handlers and repaints
-    void run();
+    void run(std::function<void(void)> update_callback =
+                 std::function<void(void)>());
 
     // Stops application loop
     void stop();

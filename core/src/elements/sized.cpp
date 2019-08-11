@@ -10,17 +10,17 @@ Sized::Sized(std::shared_ptr<Element> child, SizeConstraints size_constraints,
 
 Size Sized::layout(BoxConstraints constraints) {
     auto child_constraints = BoxConstraints{
-        size_constraints.min_width.calc(constraints.max_width,
-                                        constraints.min_width),  // min_width
+        size_constraints.min_width.calc(constraints.max_width, 0),  // min_width
         size_constraints.max_width.calc(constraints.max_width,
                                         constraints.max_width),  // max_width
         size_constraints.min_height.calc(constraints.max_height,
-                                         constraints.min_height),  // min_height
+                                         0),  // min_height
         size_constraints.max_height.calc(
             constraints.max_height, constraints.max_height)};  // max_height
     auto child_size = document->layout_element(child.get(), child_constraints);
     child->size = child_size;
     child->rel_position = Position{0 /* left */, 0 /* top */};
+    // auto self_size = constraints.sheet(child_size);
     return child_size;
 };
 
