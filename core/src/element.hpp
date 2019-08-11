@@ -90,7 +90,8 @@ class Element {
     // These methods only needed for elements with children
     virtual void append_child(std::shared_ptr<Element> child){};
     virtual void remove_child(std::shared_ptr<Element> child){};
-    virtual void insert_before_child(std::shared_ptr<Element> child){};
+    virtual void insert_before_child(std::shared_ptr<Element> child,
+                                     std::shared_ptr<Element> before_child){};
 
     // -------------------------------------------------------------------------
     // These props should be set by the parent element during layout
@@ -157,7 +158,8 @@ class MultipleChildrenElement : public Element {
     std::vector<std::shared_ptr<Element>> children;
     void remove_child(std::shared_ptr<Element> child) override;
     void append_child(std::shared_ptr<Element> child) override;
-    void insert_before_child(std::shared_ptr<Element> child) override;
+    void insert_before_child(std::shared_ptr<Element> child,
+                             std::shared_ptr<Element> before_child) override;
     void visit_children(ChildrenVisitor visitor) override {
         for (auto child : children) visitor(child);
     };

@@ -143,7 +143,7 @@ const commitUpdate = (
 
 const insertBefore = (parentInstance, child, beforeChild) => {
 	// TODO Move existing child or add new child?
-	parentInstance.insertBefore(beforeChild, child)
+	parentInstance.insertBeforeChild(child, beforeChild)
 }
 const insertInContainerBefore = (parentInstance, child, beforeChild) => {
 	log('Container does not support insertBefore operation')

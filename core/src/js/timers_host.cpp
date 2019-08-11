@@ -11,7 +11,7 @@ int TimersHost::set_timeout(JSValueRef function, int delay) {
     timer->key = key;
     timer->thread = std::thread([this, timer, delay]() {
         std::this_thread::sleep_for(std::chrono::milliseconds(delay));
-        scheduled_timers.push_back(timer);
+        expired_timers.push_back(timer);
     });
     timer->thread.detach();
     return key;

@@ -95,8 +95,19 @@ JSValueRef element_remove_child(JSContextRef ctx, JSObjectRef function,
     return JSValueMakeUndefined(ctx);
 }
 
-// TODO
-// JSValueRef element_insert_child_before(
+JSValueRef element_insert_before_child(JSContextRef ctx, JSObjectRef function,
+                                       JSObjectRef object,
+                                       size_t argument_count,
+                                       const JSValueRef arguments[],
+                                       JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto elem = host->element_index->get_native_object(object);
+    auto child = get_elem(ctx, JSValueToObject(ctx, arguments[0], exception));
+    auto before_child =
+        get_elem(ctx, JSValueToObject(ctx, arguments[1], exception));
+    elem->insert_before_child(child, before_child);
+    return JSValueMakeUndefined(ctx);
+}
 
 void element_finalize(JSObjectRef object) {
     ObjectsIndex<Element>::remove(object);
@@ -107,6 +118,7 @@ JSClassRef element_create_class() {
     JSStaticFunction static_functions[] = {
         {"appendChild", element_append_child, PROP_ATTR_STATIC},
         {"removeChild", element_remove_child, PROP_ATTR_STATIC},
+        {"insertBeforeChild", element_insert_before_child, PROP_ATTR_STATIC},
         {0, 0, 0}};
     JSStaticValue static_values[] = {
         {"width", element_get_width, nullptr, PROP_ATTR_STATIC},
