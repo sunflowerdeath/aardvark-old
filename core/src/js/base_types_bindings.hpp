@@ -7,6 +7,9 @@
 
 namespace aardvark::js {
 
+SkColor color_from_js(JSContextRef ctx, JSValueRef js_value);
+JSValueRef color_to_js(JSContextRef ctx, SkColor color);
+
 Value value_from_js(JSContextRef ctx, JSValueRef object);
 JSValueRef value_to_js(JSContextRef ctx, const Value& value);
 

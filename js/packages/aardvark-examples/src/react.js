@@ -82,7 +82,7 @@ const unpress = (event, ctx) => {
 	const { state, setState, props, ref } = ctx
 	ref.current.stopTrackingPointer()
 	ref.current = undefined
-    setState(INITIAL_STATE)
+	setState(INITIAL_STATE)
 	props.onChangeTapState &&
 		props.onChangeState({ isPressed: false, isHovered: false })
 }
@@ -116,7 +116,11 @@ Button.propTypes = {
     */
 }
 
-let App = () => {
+const COLOR_RED = { alpha: 255, red: 0, green: 255, blue: 0 }
+const COLOR_GREEN = { alpha: 255, red: 255, green: 0, blue: 0 }
+
+const App = () => {
+	log('render app')
 	return (
 		<align
 			align={{
@@ -125,16 +129,25 @@ let App = () => {
 			}}
 		>
 			<Button onClick={() => log('click')}>
-				<sized
-					sizeConstraints={{
-						minWidth: { type: 'abs', value: 200 },
-						maxWidth: { type: 'abs', value: 200 },
-						minHeight: { type: 'abs', value: 50 },
-						maxHeight: { type: 'abs', value: 50 }
-					}}
-				>
-					<background />
-				</sized>
+				{state => {
+					log(JSON.stringify(state))
+					return (
+						<sized
+							sizeConstraints={{
+								minWidth: { type: 'abs', value: 200 },
+								maxWidth: { type: 'abs', value: 200 },
+								minHeight: { type: 'abs', value: 50 },
+								maxHeight: { type: 'abs', value: 50 }
+							}}
+						>
+							<background
+								color={
+									state.isPressed ? COLOR_RED : COLOR_GREEN
+								}
+							/>
+						</sized>
+					)
+				}}
 			</Button>
 		</align>
 	)

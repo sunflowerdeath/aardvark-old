@@ -32,7 +32,8 @@ const elements = {
     background: Background,
     responder: Responder,
     sized: Sized,
-    stack: Stack
+    stack: Stack,
+    // placeholder: Placeholder
 }
 
 const createInstance = (
@@ -42,7 +43,7 @@ const createInstance = (
 	hostContext,
 	internalInstanceHandle
 ) => {
-	// log('createInstance ' + type)
+    // log('createInstance ' + type)
     const elem = new elements[type]
     for (const prop in props) {
         log(prop)
@@ -58,7 +59,7 @@ const createInstance = (
 }
 
 const appendInitialChild = (parentInstance, child) => {
-	// log('appendInitialChild')
+    // log('appendInitialChild')
 	parentInstance.appendChild(child)
 }
 
@@ -69,7 +70,8 @@ const finalizeInitialChildren = (
 	rootContainerInstance,
 	hostContext
 ) => {
-	// log('finalizeInitialChildren')
+    // log('finalizeInitialChildren')
+    return false
 }
 
 const prepareUpdate = (
@@ -83,7 +85,7 @@ const prepareUpdate = (
 	// Computes the diff for an instance. Fiber can reuse this work even if it
 	// pauses or abort rendering a part of the tree.
 	// log('prepareUpdate')
-	return {}
+	return true
 }
 
 const shouldSetTextContent = (type, props) => {
@@ -120,7 +122,7 @@ const warnsIfNotActing = true
 const supportsMutation = true
 
 const appendChild = (parentInstance, child) => {
-    log('appendChild')
+    // log('appendChild')
 	parentInstance.appendChild(child)
 }
 
@@ -155,7 +157,7 @@ const commitUpdate = (
             if (type === 'responder' && key === 'handler') {
                 instance.setHandler(newProps[key])
             } else {
-                instance[prop] = props[key]
+                instance[key] = newProps[key]
             }
         }
     }
@@ -163,21 +165,21 @@ const commitUpdate = (
 
 const insertBefore = (parentInstance, child, beforeChild) => {
 	// TODO Move existing child or add new child?
-    log('insertBeforeChild')
+    // log('insertBeforeChild')
 	parentInstance.insertBeforeChild(child, beforeChild)
 }
 const insertInContainerBefore = (parentInstance, child, beforeChild) => {
-	// log('Container does not support insertBefore operation')
+    // log('Container does not support insertBefore operation')
 }
 
 const removeChild = (parentInstance, child) => {
-    log('removeChild')
+    // log('removeChild')
 	parentInstance.removeChild(child)
 }
 
 const removeChildFromContainer = (parentInstance, child) => {
     log('removeChildFromContainer')
-	parentInstance.root = new Placeholder()
+    parentInstance.root = new Stack()
 }
 
 const resetTextContent = instance => {
@@ -220,6 +222,7 @@ const MyRenderer = Reconciler(HostConfig)
 
 const RendererPublicAPI = {
 	render(element, container, callback) {
+        log('RENDER')
         // Create a root Container if it doesnt exist
         if (!container._rootContainer) {
             container._rootContainer = 

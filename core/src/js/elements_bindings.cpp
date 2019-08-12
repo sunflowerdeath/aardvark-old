@@ -138,27 +138,21 @@ JSClassRef element_create_class() {
 // Align
 //------------------------------------------------------------------------------
 
-elements::Align* get_align_elem(JSContextRef ctx, JSObjectRef object) {
-    auto host = BindingsHost::get(ctx);
-    auto elem = host->element_index->get_native_object(object);
-    return dynamic_cast<elements::Align*>(elem.get());
-}
-
 bool align_element_set_align(JSContextRef ctx, JSObjectRef object,
                              JSStringRef property_name, JSValueRef value,
                              JSValueRef* exception) {
-    auto align_elem = get_align_elem(ctx, object);
+    auto elem = get_elem<elements::Align>(ctx, object);
     auto insets = alignment_from_js(ctx, JSValueToObject(ctx, value, nullptr));
-    align_elem->insets = insets;
-    align_elem->change();
+    elem->insets = insets;
+    elem->change();
     return true;
 }
 
 JSValueRef align_element_get_align(JSContextRef ctx, JSObjectRef object,
                                    JSStringRef property_name,
                                    JSValueRef* exception) {
-    auto align_elem = get_align_elem(ctx, object);
-    return alignment_to_js(ctx, align_elem->insets);
+    auto elem = get_elem<elements::Align>(ctx, object);
+    return alignment_to_js(ctx, elem->insets);
 }
 
 JSClassRef align_elem_create_class(JSClassRef base_class) {
@@ -175,7 +169,7 @@ JSClassRef align_elem_create_class(JSClassRef base_class) {
 
 JSObjectRef align_elem_call_as_constructor(JSContextRef ctx,
                                            JSObjectRef constructor,
-                                           size_t argumentCount,
+                                           size_t argument_count,
                                            const JSValueRef arguments[],
                                            JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
@@ -189,32 +183,27 @@ JSObjectRef align_elem_call_as_constructor(JSContextRef ctx,
 // Background
 //------------------------------------------------------------------------------
 
-JSValueRef background_element_get_background(JSContextRef ctx,
-                                             JSObjectRef object,
-                                             JSStringRef property_name,
-                                             JSValueRef* exception) {
-    auto host = BindingsHost::get(ctx);
-    auto elem = host->element_index->get_native_object(object);
-    auto bg_elem = dynamic_cast<elements::Background*>(elem.get());
-    return JSValueMakeNumber(ctx, 123.0);
+JSValueRef background_element_get_color(JSContextRef ctx, JSObjectRef object,
+                                        JSStringRef property_name,
+                                        JSValueRef* exception) {
+    auto elem = get_elem<elements::Background>(ctx, object);
+    return color_to_js(ctx, elem->color);
 }
 
-bool background_element_set_background(JSContextRef ctx, JSObjectRef object,
-                                       JSStringRef propertyName,
-                                       JSValueRef value,
-                                       JSValueRef* exception) {
-    auto host = BindingsHost::get(ctx);
-    auto elem = host->element_index->get_native_object(object);
-    auto bg_elem = dynamic_cast<elements::Background*>(elem.get());
-    bg_elem->color = SK_ColorRED;
+bool background_element_set_color(JSContextRef ctx, JSObjectRef object,
+                                  JSStringRef property_name, JSValueRef value,
+                                  JSValueRef* exception) {
+    std::cout << "set color" << std::endl;
+    auto elem = get_elem<elements::Background>(ctx, object);
+    elem->color = color_from_js(ctx, value);
     return true;
 }
 
 JSClassRef background_elem_create_class(JSClassRef element_class) {
     auto definition = kJSClassDefinitionEmpty;
     JSStaticValue static_values[] = {
-        {"background", background_element_get_background,
-         background_element_set_background, PROP_ATTR_STATIC},
+        {"color", background_element_get_color, background_element_set_color,
+         kJSPropertyAttributeNone},
         {0, 0, 0, 0}};
     definition.className = "BackgroundElement";
     definition.parentClass = element_class;
