@@ -77,6 +77,14 @@ set_target_properties(nod PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/externals/nod/include)
 
+#asio
+add_library(asio INTERFACE)
+set_target_properties(asio PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES
+    ${CMAKE_CURRENT_SOURCE_DIR}/externals/asio/include
+    INTERFACE_COMPILE_DEFINITIONS "ASIO_STANDALONE=1"
+)
+
 # skia
 set(SKIA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/externals/skia")
 
@@ -248,12 +256,13 @@ add_library(aardvark ${ADV_LIB_TYPE}
     src/pointer_events/hit_tester.cpp
     src/pointer_events/pointer_event_manager.cpp
     src/pointer_events/responder_reconciler.cpp
+    src/utils/event_loop.cpp
 )
 
 # TODO include dir
 target_include_directories(aardvark INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(aardvark skia ICU ICU_DATA nlohmann_json nod)
+target_link_libraries(aardvark skia ICU ICU_DATA nlohmann_json nod asio)
 
 if(ADV_ENABLE_JS)
     target_sources(aardvark PRIVATE
@@ -315,7 +324,7 @@ if(ADV_BUILD_EXAMPLES)
     # target_link_libraries(layer_example aardvark)
 
     # add_executable(paragraph_example src/examples/paragraph_example.cpp)
-    # target_link_libraries(paragraph_example aardvark)
+#target_link_libraries(paragraph_example aardvark)
 
     if(ADV_ENABLE_JS)
         add_executable(jsc_example src/examples/jsc_example2.cpp)
@@ -333,8 +342,10 @@ if(ADV_BUILD_TESTS)
         src/tests/base_types_test.cpp
         src/tests/box_constraints_test.cpp
         src/tests/js_objects_index.cpp
-        src/tests/responder_test.cpp
-        src/tests/align_test.cpp
-        src/tests/text_span_test.cpp)
+        # src/tests/responder_test.cpp
+        # src/tests/align_test.cpp
+        src/tests/text_span_test.cpp
+        src/tests/event_loop_test.cpp
+    )
     target_link_libraries(tests Catch2 aardvark)
 endif()
