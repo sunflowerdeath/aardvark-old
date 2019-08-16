@@ -2,7 +2,9 @@
 
 #include <optional>
 #include <typeindex>
+#include <memory>
 #include <unordered_map>
+#include <string>
 
 #include "JavaScriptCore/JavaScript.h"
 #include <nod/nod.hpp>
@@ -29,8 +31,11 @@ class BindingsHost {
     BindingsHost();
     ~BindingsHost();
 
+    JSValueRef eval_script(const std::string& src,
+                           JSValueRef exception = nullptr);
+
     JSGlobalContextRef ctx;
-    EventLoop event_loop = EventLoop();
+    std::shared_ptr<EventLoop> event_loop = std::make_shared<EventLoop>();
 
     // Use optional to defer initialization
     std::optional<ObjectsIndex<DesktopApp>> desktop_app_index;

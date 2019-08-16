@@ -25,7 +25,7 @@ TEST_CASE("EventLoop", "[event_loop]") {
             loop.set_timeout([&cb2_is_called]() { cb2_is_called = true; }, 10);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(15));
-        loop.execute_callbacks();
+        loop.poll();
 
         REQUIRE(cb1_is_called);
         REQUIRE(!cb2_is_called);
@@ -47,7 +47,7 @@ TEST_CASE("EventLoop", "[event_loop]") {
 
         cb2 = loop.post_callback([&cb2_is_called]() { cb2_is_called = true; });
 
-        loop.execute_callbacks();
+        loop.poll();
 
         REQUIRE(cb1_is_called);
         REQUIRE(!cb2_is_called);

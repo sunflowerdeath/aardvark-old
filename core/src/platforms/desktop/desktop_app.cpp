@@ -100,32 +100,33 @@ void DesktopApp::stop() { should_stop = true; };
 
 void DesktopApp::run(std::function<void(void)> update_callback) {
     should_stop = false;
-    bool painted = false;
-    while (!should_stop) {
-        auto start = std::chrono::high_resolution_clock::now();
-        if (update_callback) update_callback();
-        glfwPollEvents();
-
-        painted = false;
-        for (auto& window : windows) {
-            window->make_current();
-            painted = painted || documents[window]->paint();
-            window->swap_now();
-        }
-        auto end = std::chrono::high_resolution_clock::now();
-        auto time =
-            std::chrono::duration_cast<std::chrono::microseconds>(end - start)
-                .count();
-        if (painted) {
-            std::cout << "frame time: " << (time / 1000.0) << "ms" << std::endl;
-        }
-        if (time < FRAME_TIME) {
-            // framerate is too high, need to wait
-            std::this_thread::sleep_for(
-                std::chrono::microseconds(16000 - time));
-        }
-    }
+    event_loop->post_callback(
+        std::bind(&DesktopApp::render, this, update_callback));
 };
+
+void DesktopApp::render(std::function<void(void)> update_callback) {
+    if (should_stop) return;
+
+    auto start = std::chrono::high_resolution_clock::now();
+    glfwPollEvents();
+
+    bool painted = false;
+    for (auto& window : windows) {
+        window->make_current();
+        painted = painted || documents[window]->paint();
+        window->swap_now();
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    auto time =
+        std::chrono::duration_cast<std::chrono::microseconds>(end - start)
+            .count();
+    if (painted) {
+        std::cout << "frame time: " << (time / 1000.0) << "ms" << std::endl;
+    }
+    event_loop->set_timeout(
+        std::bind(&DesktopApp::render, this, update_callback),
+        (time < FRAME_TIME) ? (16000 - time) : 0);
+}
 
 void DesktopApp::handle_event(GLFWwindow* window, Event event) {
     if (event_handler) event_handler(this, event);

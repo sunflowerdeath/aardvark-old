@@ -10,7 +10,7 @@ JSValueRef desktop_app_run(JSContextRef ctx, JSObjectRef function,
                            JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
     auto app = host->desktop_app_index->get_native_object(object);
-    app->run(std::bind(&EventLoop::execute_callbacks, &host->event_loop));
+    app->run();
     return JSValueMakeUndefined(ctx);
 }
 
@@ -83,8 +83,9 @@ JSObjectRef desktop_app_call_as_constructor(JSContextRef ctx,
                                             size_t argumentCount,
                                             const JSValueRef arguments[],
                                             JSValueRef* exception) {
-    auto app = std::make_shared<aardvark::DesktopApp>();
-    return BindingsHost::get(ctx)->desktop_app_index->create_js_object(app);
+    auto host = BindingsHost::get(ctx);
+    auto app = std::make_shared<aardvark::DesktopApp>(host->event_loop);
+    return host->desktop_app_index->create_js_object(app);
 }
 
 // DesktopAppWindowsList

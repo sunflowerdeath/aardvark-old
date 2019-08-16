@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <iostream>
+
 #include "../base_types.hpp"
 #include "../platforms/desktop/desktop_app.hpp"
 #include "../elements/elements.hpp"
+#include "../utils/event_loop.hpp"
 
 struct AppState {
     std::shared_ptr<aardvark::elements::Align> align;
@@ -58,7 +60,8 @@ void after(aardvark::PointerEvent event) {
 }
 
 int main() {
-    auto app = aardvark::DesktopApp();
+    auto event_loop = std::make_shared<aardvark::EventLoop>();
+    auto app = aardvark::DesktopApp(event_loop);
     auto window = app.create_window(aardvark::Size{500, 500});
     auto document = app.get_document(window);
 
@@ -81,4 +84,6 @@ int main() {
     // app.user_pointer = (void*)(&state);
     // app.event_handler = &handle_events;
     app.run();
+    // auto work = asio::make_work_guard(event_loop->io);
+    event_loop->run();
 };

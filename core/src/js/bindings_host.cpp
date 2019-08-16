@@ -42,16 +42,16 @@ JSValueRef log(
 JSValueRef set_timeout(JSContextRef ctx, JSObjectRef function,
                        JSObjectRef this_object, size_t argument_count,
                        const JSValueRef arguments[], JSValueRef* exception) {
-    auto id = BindingsHost::get(ctx)->event_loop.set_timeout(
+    auto id = BindingsHost::get(ctx)->event_loop->set_timeout(
         FunctionWrapper<void>(ctx, arguments[0]),
-        JSValueToNumber(ctx, arguments[1], nullptr));
+        JSValueToNumber(ctx, arguments[1], nullptr) * 10);
     return JSValueMakeNumber(ctx, id);
 }
 
 JSValueRef clear_timeout(JSContextRef ctx, JSObjectRef function,
                          JSObjectRef this_object, size_t argument_count,
                          const JSValueRef arguments[], JSValueRef* exception) {
-    BindingsHost::get(ctx)->event_loop.clear_timeout(
+    BindingsHost::get(ctx)->event_loop->clear_timeout(
         JSValueToNumber(ctx, arguments[0], nullptr));
     return JSValueMakeUndefined(ctx);
 }
@@ -121,6 +121,23 @@ BindingsHost::BindingsHost() {
 
     register_elem_class("Text", typeid(elements::Text), text_elem_create_class,
                         text_elem_call_as_constructor);
+}
+
+JSValueRef BindingsHost::eval_script(const std::string& src,
+                                     JSValueRef exception) {
+    auto js_src = JSStringCreateWithUTF8CString(src.c_str());
+    auto work = asio::make_work_guard(event_loop->io);
+    event_loop->run();
+    auto result = JSEvaluateScript(ctx,        // ctx,
+                                   js_src,     // script
+                                   nullptr,    // thisObject,
+                                   nullptr,    // sourceURL,
+                                   1,          // startingLineNumber,
+                                   &exception  // exception
+    );
+    work.reset();
+    JSStringRelease(js_src);
+    return result;
 }
 
 void BindingsHost::register_elem_class(

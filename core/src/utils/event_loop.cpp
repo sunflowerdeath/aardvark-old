@@ -10,7 +10,7 @@ int EventLoop::set_timeout(Callback cb, int timeout) {
     // and a bool
     auto it = timers.emplace(id, asio::steady_timer(io)).first;
     auto& timer = it->second;
-    timer.expires_after(std::chrono::milliseconds(timeout));
+    timer.expires_after(std::chrono::microseconds(timeout));
     timer.async_wait([this, id = id, cb](const asio::error_code& e) {
         bool is_cancelled = false;
         {
@@ -58,7 +58,5 @@ void EventLoop::cancel_callback(int id) {
     auto it = callbacks.find(id);
     if (it != callbacks.end()) callbacks.erase(it);
 }
-
-void EventLoop::execute_callbacks() { io.poll(); }
 
 } // namespace aardvark
