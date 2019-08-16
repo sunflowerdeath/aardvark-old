@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include <functional>
 #include "JavaScriptCore/JavaScript.h"
@@ -12,8 +14,12 @@ class FunctionWrapper {
     using RetValFromJsType =
         std::function<RetValType(JSContextRef, JSValueRef)>;
 
-    FunctionWrapper(JSContextRef ctx, JSValueRef function,
-                    ArgsToJsType args_to_js, RetValFromJsType ret_val_from_js)
+    FunctionWrapper(
+        JSContextRef ctx, JSValueRef function,
+        ArgsToJsType args_to_js =
+            [](JSContextRef ctx) { return std::vector<JSValueRef>(); },
+        RetValFromJsType ret_val_from_js = [](JSContextRef ctx,
+                                              JSValueRef value) {})
         : function(function),
           args_to_js(args_to_js),
           ret_val_from_js(ret_val_from_js) {

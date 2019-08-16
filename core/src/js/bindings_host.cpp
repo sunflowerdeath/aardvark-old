@@ -10,6 +10,7 @@
 #include "document_bindings.hpp"
 #include "elements_bindings.hpp"
 #include "signal_connection_bindings.hpp"
+#include "function_wrapper.hpp"
 
 namespace aardvark::js {
 
@@ -41,15 +42,16 @@ JSValueRef log(
 JSValueRef set_timeout(JSContextRef ctx, JSObjectRef function,
                        JSObjectRef this_object, size_t argument_count,
                        const JSValueRef arguments[], JSValueRef* exception) {
-    auto id = BindingsHost::get(ctx)->timers_host.set_timeout(
-        arguments[0], JSValueToNumber(ctx, arguments[1], nullptr));
+    auto id = BindingsHost::get(ctx)->event_loop.set_timeout(
+        FunctionWrapper<void>(ctx, arguments[0]),
+        JSValueToNumber(ctx, arguments[1], nullptr));
     return JSValueMakeNumber(ctx, id);
 }
 
 JSValueRef clear_timeout(JSContextRef ctx, JSObjectRef function,
                          JSObjectRef this_object, size_t argument_count,
                          const JSValueRef arguments[], JSValueRef* exception) {
-    BindingsHost::get(ctx)->timers_host.clear_timeout(
+    BindingsHost::get(ctx)->event_loop.clear_timeout(
         JSValueToNumber(ctx, arguments[0], nullptr));
     return JSValueMakeUndefined(ctx);
 }
@@ -61,7 +63,6 @@ BindingsHost::BindingsHost() {
     // storage for private data
     auto global_class = JSClassCreate(&kJSClassDefinitionEmpty);
     ctx = JSGlobalContextCreate(global_class);
-    timers_host.ctx = ctx;
     
     // Store pointer to the host in private data of the global object
     auto global_object = JSContextGetGlobalObject(ctx);

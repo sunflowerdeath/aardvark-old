@@ -14,16 +14,12 @@ std::vector<JSValueRef> pointer_event_handler_args_to_js(JSContextRef ctx,
     return std::vector<JSValueRef>{pointer_event_to_js(ctx, event)};
 }
 
-void pointer_event_handler_ret_val_from_js(JSContextRef ctx,
-                                           JSValueRef value){};
-
 FunctionWrapper<void, PointerEvent> pointer_event_handler_wrap(
     JSContextRef ctx, JSValueRef function) {
     return FunctionWrapper<void, PointerEvent>(
-        JSContextGetGlobalContext(ctx),        // ctx
-        function,                              // function
-        pointer_event_handler_args_to_js,      // args_to_js
-        pointer_event_handler_ret_val_from_js  // ret_val_from_js
+        JSContextGetGlobalContext(ctx),   // ctx
+        function,                         // function
+        pointer_event_handler_args_to_js  // args_to_js
     );
 };
 
