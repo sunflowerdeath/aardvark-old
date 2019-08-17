@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <iostream>
 
 #include "../base_types.hpp"
@@ -84,6 +83,5 @@ int main() {
     // app.user_pointer = (void*)(&state);
     // app.event_handler = &handle_events;
     app.run();
-    // auto work = asio::make_work_guard(event_loop->io);
     event_loop->run();
 };

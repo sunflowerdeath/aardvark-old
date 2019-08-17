@@ -1,12 +1,11 @@
 #include "event_loop.hpp"
-#include <iostream>
 
 namespace aardvark {
 
 int EventLoop::set_timeout(Callback cb, int timeout) {
     auto guard = std::lock_guard<std::mutex>(timers_mutex);
     id++;
-    // map emplace returns a pair of an iterator to the inserted element 
+    // map.emplace() returns a pair of an iterator to the inserted element 
     // and a bool
     auto it = timers.emplace(id, asio::steady_timer(io)).first;
     auto& timer = it->second;

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <functional>
+
 #include "JavaScriptCore/JavaScript.h"
 
 namespace aardvark::js {

@@ -9,6 +9,8 @@ JSValueRef desktop_app_run(JSContextRef ctx, JSObjectRef function,
                            const JSValueRef arguments[],
                            JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
+    // Caller should ensure that app lives as long as app runs
+    JSValueProtect(ctx, object);
     auto app = host->desktop_app_index->get_native_object(object);
     app->run();
     return JSValueMakeUndefined(ctx);
@@ -31,6 +33,7 @@ JSValueRef desktop_app_stop(JSContextRef ctx, JSObjectRef function,
                             const JSValueRef arguments[],
                             JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
+    JSValueUnprotect(ctx, object);
     auto app = host->desktop_app_index->get_native_object(object);
     app->stop();
     return JSValueMakeUndefined(ctx);

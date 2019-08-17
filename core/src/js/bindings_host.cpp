@@ -42,9 +42,9 @@ JSValueRef log(
 JSValueRef set_timeout(JSContextRef ctx, JSObjectRef function,
                        JSObjectRef this_object, size_t argument_count,
                        const JSValueRef arguments[], JSValueRef* exception) {
+    auto timeout = JSValueToNumber(ctx, arguments[1], nullptr) * 1000;
     auto id = BindingsHost::get(ctx)->event_loop->set_timeout(
-        FunctionWrapper<void>(ctx, arguments[0]),
-        JSValueToNumber(ctx, arguments[1], nullptr) * 10);
+        FunctionWrapper<void>(ctx, arguments[0]), timeout);
     return JSValueMakeNumber(ctx, id);
 }
 
@@ -107,6 +107,10 @@ BindingsHost::BindingsHost() {
                         background_elem_create_class,
                         background_elem_call_as_constructor);
 
+    register_elem_class("Center", typeid(elements::Center),
+                        center_elem_create_class,
+                        center_elem_call_as_constructor);
+
     register_elem_class("Responder", typeid(elements::ResponderElement),
                         responder_elem_create_class,
                         responder_elem_call_as_constructor);
@@ -124,18 +128,15 @@ BindingsHost::BindingsHost() {
 }
 
 JSValueRef BindingsHost::eval_script(const std::string& src,
-                                     JSValueRef exception) {
+                                     JSValueRef* exception) {
     auto js_src = JSStringCreateWithUTF8CString(src.c_str());
-    auto work = asio::make_work_guard(event_loop->io);
-    event_loop->run();
-    auto result = JSEvaluateScript(ctx,        // ctx,
-                                   js_src,     // script
-                                   nullptr,    // thisObject,
-                                   nullptr,    // sourceURL,
-                                   1,          // startingLineNumber,
-                                   &exception  // exception
+    auto result = JSEvaluateScript(ctx,       // ctx,
+                                   js_src,    // script
+                                   nullptr,   // thisObject,
+                                   nullptr,   // sourceURL,
+                                   1,         // startingLineNumber,
+                                   exception  // exception
     );
-    work.reset();
     JSStringRelease(js_src);
     return result;
 }

@@ -1,5 +1,16 @@
 const Reconciler = require('react-reconciler')
 
+const elements = {
+	align: Align,
+    center: Center,
+	background: Background,
+	responder: Responder,
+	sized: Sized,
+	stack: Stack,
+    text: Text
+	// placeholder: Placeholder
+}
+
 const getRootHostContext = rootContainerInstance => {
 	// log('getRootHostContext')
 	return {}
@@ -27,15 +38,6 @@ const resetAfterCommit = containerInfo => {
 	// Noop
 }
 
-const elements = {
-    align: Align,
-    background: Background,
-    responder: Responder,
-    sized: Sized,
-    stack: Stack,
-    // placeholder: Placeholder
-}
-
 const createInstance = (
 	type,
 	props,
@@ -43,23 +45,21 @@ const createInstance = (
 	hostContext,
 	internalInstanceHandle
 ) => {
-    // log('createInstance ' + type)
-    const elem = new elements[type]
-    for (const prop in props) {
-        log(prop)
-        if (prop === 'children') continue
-        if (type === 'responder' && prop === 'handler') {
-            log('set handler')
-            elem.setHandler(props[prop])
-        } else {
-            elem[prop] = props[prop]
-        }
-    }
-    return elem
+	// log('createInstance ' + type)
+	const elem = new elements[type]()
+	for (const prop in props) {
+		if (prop === 'children') continue
+		if (type === 'responder' && prop === 'handler') {
+			elem.setHandler(props[prop])
+		} else {
+			elem[prop] = props[prop]
+		}
+	}
+	return elem
 }
 
 const appendInitialChild = (parentInstance, child) => {
-    // log('appendInitialChild')
+	// log('appendInitialChild')
 	parentInstance.appendChild(child)
 }
 
@@ -70,8 +70,8 @@ const finalizeInitialChildren = (
 	rootContainerInstance,
 	hostContext
 ) => {
-    // log('finalizeInitialChildren')
-    return false
+	// log('finalizeInitialChildren')
+	return false
 }
 
 const prepareUpdate = (
@@ -122,12 +122,12 @@ const warnsIfNotActing = true
 const supportsMutation = true
 
 const appendChild = (parentInstance, child) => {
-    // log('appendChild')
+	// log('appendChild')
 	parentInstance.appendChild(child)
 }
 
 const appendChildToContainer = (parentInstance, child) => {
-    // log('appendChildToContainer')
+	// log('appendChildToContainer')
 	parentInstance.root = child
 }
 
@@ -148,38 +148,41 @@ const commitUpdate = (
 	newProps,
 	internalInstanceHandle
 ) => {
-    // log('commitUpdate')
-    for (const key in oldProps) {
-        if (!(key in newProps)) {} // delete prop
-    }
-    for (const key in newProps) {
-        if (!(key in oldProps) || oldProps[key] !== newProps[key]) {
-            if (type === 'responder' && key === 'handler') {
-                instance.setHandler(newProps[key])
-            } else {
-                instance[key] = newProps[key]
-            }
-        }
-    }
+	// log('commitUpdate')
+	for (const key in oldProps) {
+		if (!(key in newProps)) {
+		} // delete prop
+	}
+	for (const key in newProps) {
+		if (!(key in oldProps) || oldProps[key] !== newProps[key]) {
+			if (key === 'children') continue
+			if (type === 'responder' && key === 'handler') {
+				// instance.setHandler(newProps[key])
+			} else {
+				instance[key] = newProps[key]
+			}
+		}
+	}
 }
 
 const insertBefore = (parentInstance, child, beforeChild) => {
 	// TODO Move existing child or add new child?
-    // log('insertBeforeChild')
+	// log('insertBeforeChild')
 	parentInstance.insertBeforeChild(child, beforeChild)
 }
 const insertInContainerBefore = (parentInstance, child, beforeChild) => {
-    // log('Container does not support insertBefore operation')
+	// log('Container does not support insertBefore operation')
 }
 
 const removeChild = (parentInstance, child) => {
-    // log('removeChild')
+	// log('removeChild')
 	parentInstance.removeChild(child)
 }
 
 const removeChildFromContainer = (parentInstance, child) => {
-    log('removeChildFromContainer')
-    parentInstance.root = new Stack()
+	// log('removeChildFromContainer')
+	// TODO placeholder
+	parentInstance.root = new Stack()
 }
 
 const resetTextContent = instance => {
@@ -206,36 +209,39 @@ const HostConfig = {
 	isPrimaryRenderer,
 	warnsIfNotActing,
 	supportsMutation,
-    appendChild,
-    appendChildToContainer,
-    commitTextUpdate,
-    commitMount,
-    commitUpdate,
-    insertBefore,
-    insertInContainerBefore,
-    removeChild,
-    removeChildFromContainer,
-    resetTextContent
+	appendChild,
+	appendChildToContainer,
+	commitTextUpdate,
+	commitMount,
+	commitUpdate,
+	insertBefore,
+	insertInContainerBefore,
+	removeChild,
+	removeChildFromContainer,
+	resetTextContent
 }
 
-const MyRenderer = Reconciler(HostConfig)
+const Renderer = Reconciler(HostConfig)
 
-const RendererPublicAPI = {
+const RendererAPI = {
 	render(element, container, callback) {
-        log('RENDER')
-        // Create a root Container if it doesnt exist
-        if (!container._rootContainer) {
-            container._rootContainer = 
-                MyRenderer.createContainer(container, false);
-        }
+		// log('render')
+		// Create a root Container if it doesnt exist
+		if (!container._rootContainer) {
+			container._rootContainer = Renderer.createContainer(
+				container,
+				false
+			)
+		}
 
-        // update the root Container
-        return MyRenderer.updateContainer(element, container._rootContainer,
-                                          null, callback);
-
-        // Call MyRenderer.updateContainer() to schedule changes on the roots.
-        // See ReactDOM, React Native, or React ART for practical examples.
+		// update the root Container
+		return Renderer.updateContainer(
+			element,
+			container._rootContainer,
+			null,
+			callback
+		)
 	}
 }
 
-module.exports = RendererPublicAPI
+module.exports = RendererAPI

@@ -193,7 +193,6 @@ JSValueRef background_element_get_color(JSContextRef ctx, JSObjectRef object,
 bool background_element_set_color(JSContextRef ctx, JSObjectRef object,
                                   JSStringRef property_name, JSValueRef value,
                                   JSValueRef* exception) {
-    std::cout << "set color" << std::endl;
     auto elem = get_elem<elements::Background>(ctx, object);
     elem->color = color_from_js(ctx, value);
     return true;
@@ -218,6 +217,28 @@ JSObjectRef background_elem_call_as_constructor(JSContextRef ctx,
                                                 JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
     auto elem = std::make_shared<elements::Background>(SK_ColorRED);
+    return host->element_index->create_js_object(elem);
+}
+
+//------------------------------------------------------------------------------
+// Center
+//------------------------------------------------------------------------------
+
+JSClassRef center_elem_create_class(JSClassRef element_class) {
+    auto definition = kJSClassDefinitionEmpty;
+    definition.className = "CenterElement";
+    definition.parentClass = element_class;
+    return JSClassCreate(&definition);
+}
+
+JSObjectRef center_elem_call_as_constructor(JSContextRef ctx,
+                                            JSObjectRef constructor,
+                                            size_t argument_count,
+                                            const JSValueRef arguments[],
+                                            JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto elem = std::make_shared<elements::Center>(
+        std::make_shared<elements::Placeholder>());
     return host->element_index->create_js_object(elem);
 }
 
@@ -343,12 +364,13 @@ JSObjectRef text_elem_call_as_constructor(JSContextRef ctx,
     auto host = BindingsHost::get(ctx);
 
     SkPaint paint;
-    paint.setColor(SK_ColorRED);
+    paint.setColor(SK_ColorWHITE);
     paint.setTextSize(32);
     paint.setAntiAlias(true);
     paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
 
-    auto text = js_value_to_icu_str(ctx, arguments[0]);
+    auto text = UnicodeString((UChar*)u"");
+    // auto text = js_value_to_icu_str(ctx, arguments[0]);
     auto elem = std::make_shared<elements::Text>(text, paint);
 
     return host->element_index->create_js_object(elem);

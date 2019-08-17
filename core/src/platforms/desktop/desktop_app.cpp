@@ -123,15 +123,15 @@ void DesktopApp::render(std::function<void(void)> update_callback) {
     if (painted) {
         std::cout << "frame time: " << (time / 1000.0) << "ms" << std::endl;
     }
+    auto timeout = (time < FRAME_TIME) ? (FRAME_TIME - time) : 0;
     event_loop->set_timeout(
-        std::bind(&DesktopApp::render, this, update_callback),
-        (time < FRAME_TIME) ? (16000 - time) : 0);
+        std::bind(&DesktopApp::render, this, update_callback), timeout);
 }
 
 void DesktopApp::handle_event(GLFWwindow* window, Event event) {
     if (event_handler) event_handler(this, event);
     if (auto pointer_event = std::get_if<PointerEvent>(&event)) {
-        auto win = windows[0]; // TODO: support multiple windows
+        auto win = windows[0];  // TODO: support multiple windows
         auto doc = get_document(win);
         if (!doc->is_initial_paint) {
             doc->pointer_event_manager->handle_event(*pointer_event);

@@ -32,7 +32,7 @@ class BindingsHost {
     ~BindingsHost();
 
     JSValueRef eval_script(const std::string& src,
-                           JSValueRef exception = nullptr);
+                           JSValueRef* exception = nullptr);
 
     JSGlobalContextRef ctx;
     std::shared_ptr<EventLoop> event_loop = std::make_shared<EventLoop>();

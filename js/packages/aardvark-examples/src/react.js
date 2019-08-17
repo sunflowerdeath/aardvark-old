@@ -67,14 +67,14 @@ const press = (event, ctx) => {
 		),
 		pressedPointer: event.pointerId
 	}
-	if (event.device === PointerEventTool.TOUCH) {
+	if (event.tool === PointerEventTool.TOUCH) {
 		ref.current.gestureResolverEntry = gestureResolver.addEntry(
 			event.pointerId,
 			isAccepted => onGestureResolve(isAccepted, ctx)
 		)
 	}
 	setState({ isPressed: true })
-	props.onChangeTapState && props.onChangeState({ isPressed: true })
+	props.onChangeState && props.onChangeState({ isPressed: true })
 }
 
 const unpress = (event, ctx) => {
@@ -83,8 +83,8 @@ const unpress = (event, ctx) => {
 	ref.current.stopTrackingPointer()
 	ref.current = undefined
 	setState(INITIAL_STATE)
-	props.onChangeTapState &&
-		props.onChangeState({ isPressed: false, isHovered: false })
+	props.onChangeState &&
+		props.onChangeState({ isPressed: false })
 }
 
 const onGestureResolve = (isAccepted, ctx) => {
@@ -129,25 +129,27 @@ const App = () => {
 			}}
 		>
 			<Button onClick={() => log('click')}>
-				{state => {
-					log(JSON.stringify(state))
-					return (
-						<sized
-							sizeConstraints={{
-								minWidth: { type: 'abs', value: 200 },
-								maxWidth: { type: 'abs', value: 200 },
-								minHeight: { type: 'abs', value: 50 },
-								maxHeight: { type: 'abs', value: 50 }
-							}}
-						>
-							<background
-								color={
-									state.isPressed ? COLOR_RED : COLOR_GREEN
-								}
-							/>
-						</sized>
-					)
-				}}
+				{state => (
+					<sized
+						sizeConstraints={{
+							minWidth: { type: 'abs', value: 200 },
+							maxWidth: { type: 'abs', value: 200 },
+							minHeight: { type: 'abs', value: 50 },
+							maxHeight: { type: 'abs', value: 50 }
+						}}
+					>
+                        <stack>
+                            <background
+                                color={
+                                    state.isPressed ? COLOR_RED : COLOR_GREEN
+                                }
+                            />
+                            <center>
+                                <text text="Test" />
+                            </center>
+                        </stack>
+					</sized>
+				)}
 			</Button>
 		</align>
 	)
