@@ -39,6 +39,8 @@ JSValueRef log(
     return JSValueMakeUndefined(ctx);
 }
 
+// timeout
+
 JSValueRef set_timeout(JSContextRef ctx, JSObjectRef function,
                        JSObjectRef this_object, size_t argument_count,
                        const JSValueRef arguments[], JSValueRef* exception) {
@@ -53,6 +55,15 @@ JSValueRef clear_timeout(JSContextRef ctx, JSObjectRef function,
                          const JSValueRef arguments[], JSValueRef* exception) {
     BindingsHost::get(ctx)->event_loop->clear_timeout(
         JSValueToNumber(ctx, arguments[0], nullptr));
+    return JSValueMakeUndefined(ctx);
+}
+
+// gc
+
+JSValueRef gc(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
+              size_t argument_count, const JSValueRef arguments[],
+              JSValueRef* exception) {
+    JSGarbageCollect(ctx);
     return JSValueMakeUndefined(ctx);
 }
 
@@ -71,6 +82,7 @@ BindingsHost::BindingsHost() {
     add_function("log", &log);
     add_function("setTimeout", &set_timeout);
     add_function("clearTimeout", &clear_timeout);
+    add_function("gc", &gc);
 
     auto desktop_app_class = desktop_app_create_class();
     desktop_app_index = ObjectsIndex<DesktopApp>(ctx, desktop_app_class);

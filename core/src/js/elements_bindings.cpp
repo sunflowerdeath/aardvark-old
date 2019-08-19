@@ -173,9 +173,7 @@ JSObjectRef align_elem_call_as_constructor(JSContextRef ctx,
                                            const JSValueRef arguments[],
                                            JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
-    auto insets = elements::EdgeInsets{};
-    auto elem = std::make_shared<elements::Align>(
-        std::make_shared<elements::Placeholder>(), insets);
+    auto elem = std::make_shared<elements::Align>();
     return host->element_index->create_js_object(elem);
 }
 
@@ -216,7 +214,7 @@ JSObjectRef background_elem_call_as_constructor(JSContextRef ctx,
                                                 const JSValueRef arguments[],
                                                 JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
-    auto elem = std::make_shared<elements::Background>(SK_ColorRED);
+    auto elem = std::make_shared<elements::Background>();
     return host->element_index->create_js_object(elem);
 }
 
@@ -237,8 +235,7 @@ JSObjectRef center_elem_call_as_constructor(JSContextRef ctx,
                                             const JSValueRef arguments[],
                                             JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
-    auto elem = std::make_shared<elements::Center>(
-        std::make_shared<elements::Placeholder>());
+    auto elem = std::make_shared<elements::Center>(nullptr);
     return host->element_index->create_js_object(elem);
 }
 
@@ -260,6 +257,7 @@ JSValueRef responder_elem_set_handler(JSContextRef ctx, JSObjectRef function,
                                       JSObjectRef object, size_t argument_count,
                                       const JSValueRef arguments[],
                                       JSValueRef* exception) {
+    // TODO optimize if same function
     auto responder = get_elem<elements::ResponderElement>(ctx, object);
     responder->handler =
         FunctionWrapper<void, PointerEvent, ResponderEventType>(
@@ -289,8 +287,7 @@ JSObjectRef responder_elem_call_as_constructor(JSContextRef ctx,
                                                JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
     auto elem = std::make_shared<elements::ResponderElement>(
-        std::make_shared<elements::Placeholder>(), HitTestMode::PassToParent,
-        nullptr);
+        nullptr, HitTestMode::PassToParent, nullptr);
     return host->element_index->create_js_object(elem);
 }
 

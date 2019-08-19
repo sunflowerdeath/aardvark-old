@@ -4,12 +4,14 @@ namespace aardvark::js {
 
 template <typename T>
 void set_num_prop(JSContextRef ctx, JSObjectRef object, char* name, T value) {
+    auto str = JSStringCreateWithUTF8CString(name);
     JSObjectSetProperty(ctx, object,
-                        JSStringCreateWithUTF8CString(name),  // propertyName
-                        JSValueMakeNumber(ctx, value),        // value,
-                        kJSPropertyAttributeNone,             // attributes
-                        nullptr                               // exception
+                        str,                            // propertyName
+                        JSValueMakeNumber(ctx, value),  // value,
+                        kJSPropertyAttributeNone,       // attributes
+                        nullptr                         // exception
     );
+    JSStringRelease(str);
 }
 
 JSValueRef pointer_event_to_js(JSContextRef ctx, const PointerEvent& event) {

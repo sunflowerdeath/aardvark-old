@@ -46,7 +46,7 @@ SingleChildElement::SingleChildElement(std::shared_ptr<Element> child,
                                        bool is_repaint_boundary,
                                        bool size_depends_on_parent)
     : child(child), Element(is_repaint_boundary, size_depends_on_parent) {
-    child->parent = this;
+    if (child) child->parent = this;
 };
 
 void SingleChildElement::remove_child(std::shared_ptr<Element> child) {

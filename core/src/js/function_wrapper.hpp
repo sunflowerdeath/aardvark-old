@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <functional>
+#include <vector>
 
 #include "JavaScriptCore/JavaScript.h"
 
@@ -16,34 +16,32 @@ class FunctionWrapper {
         std::function<RetValType(JSContextRef, JSValueRef)>;
 
     FunctionWrapper(
-        JSContextRef ctx, JSValueRef function,
+        JSContextRef ctx, JSValueRef value,
         ArgsToJsType args_to_js =
             [](JSContextRef ctx) { return std::vector<JSValueRef>(); },
         RetValFromJsType ret_val_from_js = [](JSContextRef ctx,
                                               JSValueRef value) {})
-        : function(function),
+        : value(value),
           args_to_js(args_to_js),
           ret_val_from_js(ret_val_from_js) {
         this->ctx = JSContextGetGlobalContext(ctx);
-        JSValueProtect(ctx, function);
+        JSValueProtect(ctx, value);
     }
 
     // Copy
     FunctionWrapper(const FunctionWrapper& wrapper) {
         ctx = wrapper.ctx;
-        function = wrapper.function;
+        value = wrapper.value;
         args_to_js = wrapper.args_to_js;
         ret_val_from_js = wrapper.ret_val_from_js;
-        JSValueProtect(ctx, function);
+        JSValueProtect(ctx, value);
     }
 
-    ~FunctionWrapper() {
-        JSValueUnprotect(ctx, function);
-    }
+    ~FunctionWrapper() { JSValueUnprotect(ctx, value); }
 
     RetValType operator()(ArgsTypes... args) {
+        auto object = JSValueToObject(ctx, value, nullptr);
         auto js_args = args_to_js(ctx, args...);
-        auto object = JSValueToObject(ctx, function, nullptr);
         // Pin because during the call wrapper may be destroyed
         auto pin_ret_val_from_js = ret_val_from_js;
         auto pin_ctx = ctx;
@@ -60,9 +58,9 @@ class FunctionWrapper {
 
   private:
     JSContextRef ctx;
-    JSValueRef function;
+    JSValueRef value;
     ArgsToJsType args_to_js;
     RetValFromJsType ret_val_from_js;
 };
 
-}
+}  // namespace aardvark::js
