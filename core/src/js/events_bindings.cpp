@@ -1,33 +1,24 @@
 #include "events_bindings.hpp"
 
-namespace aardvark::js {
+#include "helpers.hpp"
 
-template <typename T>
-void set_num_prop(JSContextRef ctx, JSObjectRef object, char* name, T value) {
-    auto str = JSStringCreateWithUTF8CString(name);
-    JSObjectSetProperty(ctx, object,
-                        str,                            // propertyName
-                        JSValueMakeNumber(ctx, value),  // value,
-                        kJSPropertyAttributeNone,       // attributes
-                        nullptr                         // exception
-    );
-    JSStringRelease(str);
-}
+namespace aardvark::js {
 
 JSValueRef pointer_event_to_js(JSContextRef ctx, const PointerEvent& event) {
     auto object = JSObjectMake(ctx, /* jsClass */ nullptr, /* data */ nullptr);
 
-    set_num_prop(ctx, object, "pointerId", event.pointer_id);
+    map_prop_to_js<int, int_to_js>(ctx, object, "pointerId",
+                                     event.pointer_id);
 
     auto tool = static_cast<std::underlying_type_t<PointerTool>>(event.tool);
-    set_num_prop(ctx, object, "tool", tool);
+    map_prop_to_js<int, int_to_js>(ctx, object, "tool", tool);
 
     auto action =
         static_cast<std::underlying_type_t<PointerAction>>(event.action);
-    set_num_prop(ctx, object, "action", action);
+    map_prop_to_js<int, int_to_js>(ctx, object, "action", action);
 
-    set_num_prop(ctx, object, "left", event.left);
-    set_num_prop(ctx, object, "top", event.top);
+    map_prop_to_js<int, int_to_js>(ctx, object, "left", event.left);
+    map_prop_to_js<int, int_to_js>(ctx, object, "top", event.top);
 
     return object;
 }

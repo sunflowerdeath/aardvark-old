@@ -1,34 +1,8 @@
 #include "base_types_bindings.hpp"
 
+#include "helpers.hpp"
+
 namespace aardvark::js {
-
-// Helpers
-
-template <class T, T (*from_js)(JSContextRef, JSValueRef)>
-void map_prop_from_js(JSContextRef ctx, JSObjectRef object,
-                      const char* prop_name, T* out) {
-    auto prop_name_str = JSStringCreateWithUTF8CString(prop_name);
-    if (JSObjectHasProperty(ctx, object, prop_name_str)) {
-        auto prop_value =
-            JSObjectGetProperty(ctx, object, prop_name_str, nullptr);
-        *out = from_js(ctx, prop_value);
-    }
-}
-
-template <class T, JSValueRef (*to_js)(JSContextRef, const T&)>
-void map_prop_to_js(JSContextRef ctx, JSObjectRef object, const char* prop_name,
-                    const T& value) {
-    JSObjectSetProperty(ctx, object, JSStringCreateWithUTF8CString(prop_name),
-                        to_js(ctx, value), kJSPropertyAttributeNone, nullptr);
-}
-
-int js_value_to_int(JSContextRef ctx, JSValueRef value) {
-    return static_cast<int>(JSValueToNumber(ctx, value, nullptr));
-}
-
-JSValueRef js_value_from_int(JSContextRef ctx, const int& value) {
-    return JSValueMakeNumber(ctx, static_cast<int>(value));
-}
 
 // Color
 
@@ -38,23 +12,19 @@ SkColor color_from_js(JSContextRef ctx, JSValueRef js_value) {
     int red = 0;
     int green = 0;
     int blue = 0;
-    map_prop_from_js<int, js_value_to_int>(ctx, object, "alpha", &alpha);
-    map_prop_from_js<int, js_value_to_int>(ctx, object, "red", &red);
-    map_prop_from_js<int, js_value_to_int>(ctx, object, "green", &green);
-    map_prop_from_js<int, js_value_to_int>(ctx, object, "blue", &blue);
+    map_prop_from_js<int, int_from_js>(ctx, object, "alpha", &alpha);
+    map_prop_from_js<int, int_from_js>(ctx, object, "red", &red);
+    map_prop_from_js<int, int_from_js>(ctx, object, "green", &green);
+    map_prop_from_js<int, int_from_js>(ctx, object, "blue", &blue);
     return SkColorSetARGB(alpha, red, green, blue);
 }
 
 JSValueRef color_to_js(JSContextRef ctx, SkColor color) {
     auto object = JSObjectMake(ctx, nullptr, nullptr);
-    map_prop_to_js<int, js_value_from_int>(ctx, object, "alpha",
-                                           SkColorGetA(color));
-    map_prop_to_js<int, js_value_from_int>(ctx, object, "red",
-                                           SkColorGetR(color));
-    map_prop_to_js<int, js_value_from_int>(ctx, object, "green",
-                                           SkColorGetG(color));
-    map_prop_to_js<int, js_value_from_int>(ctx, object, "blue",
-                                           SkColorGetB(color));
+    map_prop_to_js<int, int_to_js>(ctx, object, "alpha", SkColorGetA(color));
+    map_prop_to_js<int, int_to_js>(ctx, object, "red", SkColorGetR(color));
+    map_prop_to_js<int, int_to_js>(ctx, object, "green", SkColorGetG(color));
+    map_prop_to_js<int, int_to_js>(ctx, object, "blue", SkColorGetB(color));
     return object;
 }
 
