@@ -5,7 +5,7 @@
 # This script must be run from core directory
 ROOT=$PWD
 
-# mkdir -p $ROOT/externals
+mkdir -p $ROOT/externals
 
 echo "fmt: copy source"
 cp -r $ROOT/downloads/fmt $ROOT/externals/fmt
@@ -16,7 +16,7 @@ tar -xf $ROOT/downloads/webkitgtk-2.23.2.tar.xz -C $ROOT/externals
 mv $ROOT/externals/webkitgtk-2.23.2 $WEBKIT_DIR
 # Patch for webkit allows to use custom version of ICU library and disables ICU
 # collation
-echo "WebKit: patch files"
+echo "WebKit: patch source"
 patch -d $WEBKIT_DIR -p3 < $ROOT/scripts/WebKit.patch
 echo "WebKit: copy include headers"
 mkdir -p $WEBKIT_DIR/include/JavaScriptCore
@@ -26,7 +26,7 @@ SKIA_DIR=$ROOT/externals/skia
 echo "Skia: copy source"
 cp $ROOT/downloads/skia $SKIA_DIR -r
 # Patch disables unneeded third-party deps to reduce download size
-echo "Skia: patch deps"
+echo "Skia: patch source"
 patch -d $SKIA_DIR -p3 < $ROOT/scripts/skia.patch
 echo "Skia: download third party deps"
 $SKIA_DIR/tools/git-sync-deps
@@ -37,6 +37,12 @@ tar -xf $ROOT/downloads/icu4c-58_2-src.tgz -C $ROOT/externals
 echo "ICU: extract data"
 # unzip flag "-q" is quiet, "-o" is overwrite
 unzip  -o -q $ROOT/downloads/icu4c-58_2-data.zip -d $ICU_DIR/source
+echo "ICU: patch source"
+patch -d $ICU_DIR -p2 < $ROOT/scripts/icu.patch
+rm -f $ICU_DIR/source/data/in/icudt58l.dat
+rm -f $ICU_DIR/source/data/mappings/ucmcore.mk
+rm -f $ICU_DIR/source/data/mappings/ucmebcdic.mk
+rm -f $ICU_DIR/source/data/mappings/ucmfiles.mk
 echo "ICU: copy include headers"
 mkdir -p $ICU_DIR/include
 cp -r $ICU_DIR/source/common/unicode $ICU_DIR/include
