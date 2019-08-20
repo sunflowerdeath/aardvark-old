@@ -1,28 +1,34 @@
 #pragma once
 
+#include <unordered_map>
 #include "JavaScriptCore/JavaScript.h"
 
 namespace aardvark::js {
 
+class JsStringCache {
+  public:
+    static JSStringRef get(const std::string& str);
+  private:
+    JSStringRef get_string(const std::string& str);
+    std::unordered_map<std::string, JSStringRef> strings;
+};
+
 template <class T, T (*from_js)(JSContextRef, JSValueRef)>
 void map_prop_from_js(JSContextRef ctx, JSObjectRef object,
-                      const char* prop_name, T* out) {
-    auto prop_name_str = JSStringCreateWithUTF8CString(prop_name);
+                       const char* prop_name, T* out) {
+    auto prop_name_str = JsStringCache::get(prop_name);
     if (JSObjectHasProperty(ctx, object, prop_name_str)) {
         auto prop_value =
             JSObjectGetProperty(ctx, object, prop_name_str, nullptr);
         *out = from_js(ctx, prop_value);
     }
-    JSStringRelease(prop_name_str);
 }
 
 template <class T, JSValueRef (*to_js)(JSContextRef, const T&)>
 void map_prop_to_js(JSContextRef ctx, JSObjectRef object, const char* prop_name,
                     const T& value) {
-    auto prop_name_str = JSStringCreateWithUTF8CString(prop_name);
-    JSObjectSetProperty(ctx, object, prop_name_str, to_js(ctx, value),
-                        kJSPropertyAttributeNone, nullptr);
-    JSStringRelease(prop_name_str);
+    JSObjectSetProperty(ctx, object, JsStringCache::get(prop_name),
+                        to_js(ctx, value), kJSPropertyAttributeNone, nullptr);
 }
 
 int int_from_js(JSContextRef ctx, JSValueRef value);

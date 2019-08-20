@@ -32,8 +32,9 @@ JSValueRef color_to_js(JSContextRef ctx, SkColor color) {
 
 Value value_from_js(JSContextRef ctx, JSValueRef js_value) {
     auto object = JSValueToObject(ctx, js_value, nullptr);
+
     auto type_prop = JSObjectGetProperty(
-        ctx, object, JSStringCreateWithUTF8CString("type"), nullptr);
+        ctx, object, JsStringCache::get("type"), nullptr);
     auto type_str = JSValueToStringCopy(ctx, type_prop, nullptr);
     Value::ValueType type;
     if (JSStringIsEqualToUTF8CString(type_str, "abs")) {
@@ -43,17 +44,21 @@ Value value_from_js(JSContextRef ctx, JSValueRef js_value) {
     } else {
         type = Value::ValueType::none;
     }
+    JSStringRelease(type_str);
+
     float value = 0;
     if (type != Value::ValueType::none) {
         auto value_prop = JSObjectGetProperty(
-            ctx, object, JSStringCreateWithUTF8CString("value"), nullptr);
+            ctx, object, JsStringCache::get("value"), nullptr);
         value = JSValueToNumber(ctx, value_prop, nullptr);
     }
+
     return Value(type, value);
 }
 
 JSValueRef value_to_js(JSContextRef ctx, const Value& value) {
     auto object = JSObjectMake(ctx, nullptr, nullptr);
+
     JSStringRef type;
     if (value.type == Value::ValueType::abs) {
         type = JSStringCreateWithUTF8CString("abs");
@@ -62,10 +67,12 @@ JSValueRef value_to_js(JSContextRef ctx, const Value& value) {
     } else {
         type = JSStringCreateWithUTF8CString("none");
     }
-    JSObjectSetProperty(ctx, object, JSStringCreateWithUTF8CString("type"),
+    JSObjectSetProperty(ctx, object, JsStringCache::get("type"),
                         JSValueMakeString(ctx, type), kJSPropertyAttributeNone,
                         nullptr);
-    JSObjectSetProperty(ctx, object, JSStringCreateWithUTF8CString("value"),
+    JSStringRelease(type);
+
+    JSObjectSetProperty(ctx, object, JsStringCache::get("value"),
                         JSValueMakeNumber(ctx, value.value),
                         kJSPropertyAttributeNone, nullptr);
     return object;
