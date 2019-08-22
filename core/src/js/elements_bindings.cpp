@@ -253,30 +253,41 @@ std::vector<JSValueRef> responder_handler_args_to_js(
 
 void responder_handler_ret_val_from_js(JSContextRef ctx, JSValueRef value){};
 
-JSValueRef responder_elem_set_handler(JSContextRef ctx, JSObjectRef function,
-                                      JSObjectRef object, size_t argument_count,
-                                      const JSValueRef arguments[],
+JSValueRef responder_elem_get_handler(JSContextRef ctx, JSObjectRef object,
+                                      JSStringRef property_name,
                                       JSValueRef* exception) {
-    // TODO optimize if same function
+    return JSValueMakeUndefined(ctx);
+}
+
+bool responder_elem_set_handler(JSContextRef ctx, JSObjectRef object,
+                                JSStringRef property_name, JSValueRef value,
+                                JSValueRef* exception) {
+    // JSValueRef responder_elem_set_handler(JSContextRef ctx, JSObjectRef
+    // function, JSObjectRef object, size_t argument_count, const JSValueRef
+    // arguments[], JSValueRef* exception) {
     auto responder = get_elem<elements::ResponderElement>(ctx, object);
     responder->handler =
         FunctionWrapper<void, PointerEvent, ResponderEventType>(
             JSContextGetGlobalContext(ctx),    // ctx
-            arguments[0],                      // function
+            value,                             // function
             responder_handler_args_to_js,      // args_to_js
             responder_handler_ret_val_from_js  // ret_val_from_js
         );
-    return JSValueMakeUndefined(ctx);
+    return true;
 }
 
 JSClassRef responder_elem_create_class(JSClassRef element_class) {
     auto definition = kJSClassDefinitionEmpty;
-    JSStaticFunction static_functions[] = {
-        {"setHandler", responder_elem_set_handler, PROP_ATTR_STATIC},
-        {0, 0, 0}};
+    // JSStaticFunction static_functions[] = {
+        // {"setHandler", responder_elem_set_handler, PROP_ATTR_STATIC},
+        // {0, 0, 0}};
+    JSStaticValue static_values[] = {
+        {"handler", responder_elem_get_handler, responder_elem_set_handler,
+         kJSPropertyAttributeNone},
+        {0, 0, 0, 0}};
     definition.className = "ResponderElement";
     definition.parentClass = element_class;
-    definition.staticFunctions = static_functions;
+    definition.staticValues = static_values;
     return JSClassCreate(&definition);
 }
 

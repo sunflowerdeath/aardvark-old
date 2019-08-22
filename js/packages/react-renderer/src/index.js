@@ -1,15 +1,6 @@
-const Reconciler = require('react-reconciler')
+import Reconciler from 'react-reconciler'
 
-const elements = {
-	align: Align,
-    center: Center,
-	background: Background,
-	responder: Responder,
-	sized: Sized,
-	stack: Stack,
-    text: Text
-	// placeholder: Placeholder
-}
+import { createElement, updateElement } from './elements.js'
 
 const getRootHostContext = rootContainerInstance => {
 	// log('getRootHostContext')
@@ -46,16 +37,7 @@ const createInstance = (
 	internalInstanceHandle
 ) => {
 	// log('createInstance ' + type)
-	const elem = new elements[type]()
-	for (const prop in props) {
-		if (prop === 'children') continue
-		if (type === 'responder' && prop === 'handler') {
-			elem.setHandler(props[prop])
-		} else {
-			elem[prop] = props[prop]
-		}
-	}
-	return elem
+    return createElement(type, props)
 }
 
 const appendInitialChild = (parentInstance, child) => {
@@ -149,20 +131,7 @@ const commitUpdate = (
 	internalInstanceHandle
 ) => {
 	// log('commitUpdate')
-	for (const key in oldProps) {
-		if (!(key in newProps)) {
-		} // delete prop
-	}
-	for (const key in newProps) {
-		if (!(key in oldProps) || oldProps[key] !== newProps[key]) {
-			if (key === 'children') continue
-			if (type === 'responder' && key === 'handler') {
-				// instance.setHandler(newProps[key])
-			} else {
-				instance[key] = newProps[key]
-			}
-		}
-	}
+    updateElement(instance, type, oldProps, newProps)
 }
 
 const insertBefore = (parentInstance, child, beforeChild) => {
@@ -181,7 +150,7 @@ const removeChild = (parentInstance, child) => {
 
 const removeChildFromContainer = (parentInstance, child) => {
 	// log('removeChildFromContainer')
-	// TODO placeholder
+	// TODO undefined
 	parentInstance.root = new Stack()
 }
 
@@ -244,4 +213,4 @@ const RendererAPI = {
 	}
 }
 
-module.exports = RendererAPI
+export default RendererAPI

@@ -1,7 +1,7 @@
 {
-  "name": "aardvark-std",
+  "name": "@advk/common",
   "version": "0.0.1",
-  "description": "",
+  "description": "Aardvark standard library",
   "main": "src/index.js",
   "scripts": {
   },

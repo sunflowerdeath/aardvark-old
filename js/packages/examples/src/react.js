@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react'
-import ReactDOMServer from 'react-dom/server'
-import ReactAardvark from 'aardvark-react'
 
+import ReactAardvark from '@advk/react-renderer'
 import {
 	GestureResolver,
 	PointerEventAction,
 	PointerEventTool
-} from 'aardvark-std'
+} from '@advk/common'
 
 let app = new DesktopApp()
 let window = app.createWindow(640, 480)
@@ -32,7 +31,16 @@ const isTouchUp = event =>
 	event.device === PointerEventTool.TOUCH &&
 	event.action === PointerEventAction.POINTER_UP
 
+let i = 0
+
 const onResponderEvent = (event, ctx) => {
+	/*
+    i++;
+    if (i % 1000 === 0) {
+        //gc()
+        log("gc")
+    }
+    */
 	const { state, setState, props, ref } = ctx
 
 	if (state.isPressed && event.pointerId === ref.current.pressedPointer) {
@@ -83,8 +91,7 @@ const unpress = (event, ctx) => {
 	ref.current.stopTrackingPointer()
 	ref.current = undefined
 	setState(INITIAL_STATE)
-	props.onChangeState &&
-		props.onChangeState({ isPressed: false })
+	props.onChangeState && props.onChangeState({ isPressed: false })
 }
 
 const onGestureResolve = (isAccepted, ctx) => {
@@ -138,16 +145,16 @@ const App = () => {
 							maxHeight: { type: 'abs', value: 50 }
 						}}
 					>
-                        <stack>
-                            <background
-                                color={
-                                    state.isPressed ? COLOR_RED : COLOR_GREEN
-                                }
-                            />
-                            <center>
-                                <text text="Test" />
-                            </center>
-                        </stack>
+						<stack>
+							<background
+								color={
+									state.isPressed ? COLOR_RED : COLOR_GREEN
+								}
+							/>
+							<center>
+								<text text="Test" />
+							</center>
+						</stack>
 					</sized>
 				)}
 			</Button>

@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "name": "@advk/examples",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "build": "../../node_modules/.bin/webpack",
+    "start": "../../../core/build/bin/jsc_example build/main.js",
+    "debug": "gdb ../../../core/build/bin/jsc_example build/main.js"
+  },
+  "dependencies": {
+    "@advk/common": "*",
+    "@advk/react-renderer": "*"
+  },
+  "author": "sunflowerdeath",
+  "license": "Unlicense"
+}

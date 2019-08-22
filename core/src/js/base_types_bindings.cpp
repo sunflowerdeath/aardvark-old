@@ -59,18 +59,18 @@ Value value_from_js(JSContextRef ctx, JSValueRef js_value) {
 JSValueRef value_to_js(JSContextRef ctx, const Value& value) {
     auto object = JSObjectMake(ctx, nullptr, nullptr);
 
-    JSStringRef type;
+    JSStringRef type_str;
     if (value.type == Value::ValueType::abs) {
-        type = JSStringCreateWithUTF8CString("abs");
+        type_str = JSStringCreateWithUTF8CString("abs");
     } else if (value.type == Value::ValueType::rel) {
-        type = JSStringCreateWithUTF8CString("rel");
+        type_str = JSStringCreateWithUTF8CString("rel");
     } else {
-        type = JSStringCreateWithUTF8CString("none");
+        type_str = JSStringCreateWithUTF8CString("none");
     }
     JSObjectSetProperty(ctx, object, JsStringCache::get("type"),
-                        JSValueMakeString(ctx, type), kJSPropertyAttributeNone,
-                        nullptr);
-    JSStringRelease(type);
+                        JSValueMakeString(ctx, type_str),
+                        kJSPropertyAttributeNone, nullptr);
+    JSStringRelease(type_str);
 
     JSObjectSetProperty(ctx, object, JsStringCache::get("value"),
                         JSValueMakeNumber(ctx, value.value),

@@ -1,0 +1,16 @@
+{
+  "name": "@advk/check-types",
+  "version": "0.0.1",
+  "description": "Simple library for checking types",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha test.js",
+    "demo": "node ./demo.js"
+  },
+  "author": "sunflowerdeath",
+  "license": "Unlicense",
+  "devDependencies": {
+    "mocha": "^6.2.0",
+    "chalk": "^2.4.2"
+  }
+}

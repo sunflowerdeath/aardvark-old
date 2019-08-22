@@ -1,18 +1,19 @@
 {
-  "name": "aardvark-react",
+  "name": "@advk/react-renderer",
   "version": "0.0.1",
-  "description": "",
-  "main": "index.js",
+  "description": "React renderer for aardvark",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "aardvark"
+    "aardvark", "react"
   ],
   "author": "sunflowerdeath",
   "license": "Unlicense",
   "dependencies": {
-    "react-reconciler": "^0.21.0"
+    "react-reconciler": "^0.21.0",
+    "@advk/check-types": "*"
   },
   "peerDependencies": {
     "react": "^16.9.0"
