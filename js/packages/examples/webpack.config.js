@@ -1,7 +1,7 @@
 const path = require('path')
 
 module.exports = {
-	entry: './src/react.js',
+	entry: './src/ws.js',
 	output: {
 		path: path.resolve(__dirname, 'build'),
 		filename: 'main.js'

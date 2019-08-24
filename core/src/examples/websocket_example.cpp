@@ -5,8 +5,6 @@
 #include "../utils/websocket.hpp"
 
 int main() {
-    namespace beast = boost::beast;
-
     auto event_loop = aardvark::EventLoop();
 
     auto ws = std::make_shared<aardvark::Websocket>(event_loop.io,
@@ -21,8 +19,8 @@ int main() {
     ws->message_signal.connect([](std::string message){
         std::cout << "message: " << message << std::endl;
     });
-    ws->error_signal.connect([](beast::error_code error){
-        std::cout << "error: " << error.message() << std::endl;
+    ws->error_signal.connect([](std::string error){
+        std::cout << "error: " << error << std::endl;
     });
     ws->start();
     event_loop.post_callback([ws](){

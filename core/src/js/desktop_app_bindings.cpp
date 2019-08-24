@@ -1,6 +1,8 @@
 #include "desktop_app_bindings.hpp"
+
 #include "../platforms/desktop/desktop_app.hpp"
 #include "bindings_host.hpp"
+#include "helpers.hpp"
 
 namespace aardvark::js {
 
@@ -9,7 +11,7 @@ JSValueRef desktop_app_run(JSContextRef ctx, JSObjectRef function,
                            const JSValueRef arguments[],
                            JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
-    // Caller should ensure that app lives as long as app runs
+    // Caller should ensure that app object lives as long as app runs
     JSValueProtect(ctx, object);
     auto app = host->desktop_app_index->get_native_object(object);
     app->run();
@@ -97,25 +99,24 @@ bool is_number(const std::string& str) {
     return std::all_of(str.begin(), str.end(), ::isdigit);
 }
 
-bool js_string_is_index(JSStringRef js_string, int max_index) {
-    auto string = jsstring_to_std(js_string);
-    return is_number(string) && std::stoi(string) < max_index;
+bool is_valid_index(const std::string& str, const int max_index) {
+    return is_number(str) && std::stoi(str) < max_index;
 }
 
 bool desktop_app_window_list_has_property(JSContextRef ctx, JSObjectRef object,
-                                          JSStringRef property_name) {
+                                          JSStringRef prop_name) {
     auto host = BindingsHost::get(ctx);
     auto app = host->desktop_app_window_list_index->get_native_object(object);
-    return js_string_is_index(property_name, app->windows.size());
+    return is_valid_index(str_from_js(prop_name), app->windows.size());
 }
 
 JSValueRef desktop_app_window_list_get_property(JSContextRef ctx,
                                                 JSObjectRef object,
-                                                JSStringRef property_name,
+                                                JSStringRef prop_name,
                                                 JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
     auto app = host->desktop_app_window_list_index->get_native_object(object);
-    auto index = std::stoi(jsstring_to_std(property_name));
+    auto index = std::stoi(str_from_js(prop_name));
     return host->desktop_window_index->get_or_create_js_object(
         app->windows[index]);
 }

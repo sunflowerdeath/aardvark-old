@@ -3,6 +3,7 @@
 #include <chrono>
 
 #include "../js/bindings_host.hpp"
+#include "../js/helpers.hpp"
 #include "../utils/files_utils.hpp"
 
 namespace fs = std::experimental::filesystem;
@@ -23,7 +24,7 @@ int main(int argc, char *argv[]) {
     auto result = host.eval_script(src, &exception);
     if (exception != nullptr) {
         auto exception_str = JSValueToStringCopy(host.ctx, exception, nullptr);
-        std::cout << aardvark::js::jsstring_to_std(exception_str) << std::endl;
+        std::cout << aardvark::js::str_from_js(exception_str) << std::endl;
 
         auto obj = JSValueToObject(host.ctx, exception, nullptr);
         auto js_src = JSStringCreateWithUTF8CString(

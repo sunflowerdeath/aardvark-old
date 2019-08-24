@@ -283,6 +283,7 @@ if(ADV_ENABLE_JS)
         src/js/events_bindings.cpp
         src/js/helpers.cpp
         src/js/signal_connection_bindings.cpp
+        src/js/websocket_bindings.cpp
     )
     if (ADV_PLATFORM STREQUAL "linux")
         target_sources(aardvark PRIVATE

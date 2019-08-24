@@ -1,9 +1,15 @@
 #pragma once
 
 #include <unordered_map>
+#include <string>
 #include "JavaScriptCore/JavaScript.h"
 
 namespace aardvark::js {
+
+int int_from_js(JSContextRef ctx, JSValueRef value);
+JSValueRef int_to_js(JSContextRef ctx, const int& value);
+
+std::string str_from_js(JSStringRef jsstring);
 
 class JsStringCache {
   public:
@@ -30,8 +36,5 @@ void map_prop_to_js(JSContextRef ctx, JSObjectRef object, const char* prop_name,
     JSObjectSetProperty(ctx, object, JsStringCache::get(prop_name),
                         to_js(ctx, value), kJSPropertyAttributeNone, nullptr);
 }
-
-int int_from_js(JSContextRef ctx, JSValueRef value);
-JSValueRef int_to_js(JSContextRef ctx, const int& value);
 
 }

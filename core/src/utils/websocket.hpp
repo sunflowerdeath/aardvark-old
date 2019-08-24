@@ -25,7 +25,7 @@ class Websocket : public std::enable_shared_from_this<Websocket> {
     WebsocketState state;
 
     nod::signal<void()> start_signal;
-    nod::signal<void(beast::error_code)> error_signal;
+    nod::signal<void(std::string)> error_signal;
     nod::signal<void(std::string)> message_signal;
     nod::signal<void()> close_signal;
 

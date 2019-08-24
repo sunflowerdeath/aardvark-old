@@ -10,6 +10,15 @@ JSValueRef int_to_js(JSContextRef ctx, const int& value) {
     return JSValueMakeNumber(ctx, static_cast<int>(value));
 }
 
+std::string str_from_js(JSStringRef jsstring) {
+    auto size = JSStringGetMaximumUTF8CStringSize(jsstring);
+    auto buffer = new char[size];
+    JSStringGetUTF8CString(jsstring, buffer, size);
+    auto stdstring = std::string(buffer);
+    delete[] buffer;
+    return stdstring;
+}
+
 JSStringRef JsStringCache::get_string(const std::string& str) {
     auto it = strings.find(str);
     if (it != strings.end()) {

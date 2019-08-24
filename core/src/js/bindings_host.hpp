@@ -14,6 +14,7 @@
 #include "../platforms/desktop/desktop_app.hpp"
 #include "../platforms/desktop/desktop_window.hpp"
 #include "../utils/event_loop.hpp"
+#include "../utils/websocket.hpp"
 #include "objects_index.hpp"
 
 namespace aardvark::js {
@@ -44,6 +45,7 @@ class BindingsHost {
     std::optional<ObjectsIndex<Document>> document_index;
     std::optional<ObjectsIndex<Element>> element_index;
     std::optional<ObjectsIndex<nod::connection>> signal_connection_index;
+    std::optional<ObjectsIndex<Websocket>> websocket_index;
     JSClassRef element_class;
 
     // `type_info` can't be used as map key, it should be wrapped into

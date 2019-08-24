@@ -5,25 +5,18 @@
 #include <functional>
 
 #include "../elements/elements.hpp"
+#include "helpers.hpp"
+#include "function_wrapper.hpp"
 #include "desktop_app_bindings.hpp"
 #include "desktop_window_bindings.hpp"
 #include "document_bindings.hpp"
 #include "elements_bindings.hpp"
 #include "signal_connection_bindings.hpp"
-#include "function_wrapper.hpp"
+#include "websocket_bindings.hpp"
 
 namespace aardvark::js {
 
 // log
-
-std::string jsstring_to_std(JSStringRef jsstring) {
-    auto size = JSStringGetMaximumUTF8CStringSize(jsstring);
-    auto buffer = new char[size];
-    JSStringGetUTF8CString(jsstring, buffer, size);
-    auto stdstring = std::string(buffer);
-    delete[] buffer;
-    return stdstring;
-}
 
 JSValueRef log(
     JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
@@ -32,7 +25,7 @@ JSValueRef log(
     for (auto i = 0; i < argument_count; i++) {
         if (i != 0) std::cout <<  " ";
         auto str = JSValueToStringCopy(ctx, arguments[i], nullptr);
-        std::cout << jsstring_to_std(str);
+        std::cout << str_from_js(str);
         JSStringRelease(str);
     }
     std::cout << std::endl;
@@ -105,6 +98,11 @@ BindingsHost::BindingsHost() {
     auto signal_connection_class = signal_connection_create_class();
     signal_connection_index =
         ObjectsIndex<nod::connection>(ctx, signal_connection_class);
+
+    auto websocket_class = signal_connection_create_class();
+    websocket_index = ObjectsIndex<Websocket>(ctx, websocket_class);
+    add_constructor("WebSocket", websocket_class,
+                    websocket_call_as_constructor);
 
     element_class = element_create_class();
     element_index = ObjectsIndex<Element>(ctx, [this](Element* elem) {
