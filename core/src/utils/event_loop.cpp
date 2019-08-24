@@ -7,10 +7,10 @@ int EventLoop::set_timeout(Callback cb, int timeout) {
     id++;
     // map.emplace() returns a pair of an iterator to the inserted element 
     // and a bool
-    auto it = timers.emplace(id, asio::steady_timer(io)).first;
+    auto it = timers.emplace(id, boost::asio::steady_timer(io)).first;
     auto& timer = it->second;
     timer.expires_after(std::chrono::microseconds(timeout));
-    timer.async_wait([this, id = id, cb](const asio::error_code& e) {
+    timer.async_wait([this, id = id, cb](const boost::system::error_code& e) {
         bool is_cancelled = false;
         {
             auto guard = std::lock_guard<std::mutex>(timers_mutex);

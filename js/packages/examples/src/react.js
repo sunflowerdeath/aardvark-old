@@ -34,13 +34,6 @@ const isTouchUp = event =>
 let i = 0
 
 const onResponderEvent = (event, ctx) => {
-	/*
-    i++;
-    if (i % 1000 === 0) {
-        //gc()
-        log("gc")
-    }
-    */
 	const { state, setState, props, ref } = ctx
 
 	if (state.isPressed && event.pointerId === ref.current.pressedPointer) {

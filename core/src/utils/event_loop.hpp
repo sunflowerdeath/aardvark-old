@@ -6,7 +6,7 @@
 #include <iostream>
 #include <chrono>
 
-#include "asio.hpp"
+#include "boost/asio.hpp"
 
 namespace aardvark {
 
@@ -22,10 +22,10 @@ class EventLoop {
     void run() { io.run(); };
     void stop() { io.stop(); };
 
-    asio::io_context io = asio::io_context();
+    boost::asio::io_context io = boost::asio::io_context();
 
   private:
-    std::unordered_map<int, asio::steady_timer> timers;
+    std::unordered_map<int, boost::asio::steady_timer> timers;
     std::mutex timers_mutex;
     int id = 0;
     std::unordered_map<int, Callback> callbacks;

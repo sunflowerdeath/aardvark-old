@@ -1,11 +1,18 @@
 #include <iostream>
 #include <experimental/filesystem>
+#include <chrono>
+
 #include "../js/bindings_host.hpp"
 #include "../utils/files_utils.hpp"
 
 namespace fs = std::experimental::filesystem;
 
 int main(int argc, char *argv[]) {
+    auto start = std::chrono::high_resolution_clock::now();
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                  start.time_since_epoch())
+                  .count();
+    std::cout << ms << std::endl;
     auto host = aardvark::js::BindingsHost();
 
     auto src_path = fs::current_path().append(argv[1]);
@@ -20,7 +27,7 @@ int main(int argc, char *argv[]) {
 
         auto obj = JSValueToObject(host.ctx, exception, nullptr);
         auto js_src = JSStringCreateWithUTF8CString(
-            "log(this.stack)");
+            "if (this.line !== undefined) log('Error at line ' + this.line + ', column ' + this.column)");
         auto result = JSEvaluateScript(host.ctx,  // ctx,
                                        js_src,    // script
                                        obj,       // thisObject,

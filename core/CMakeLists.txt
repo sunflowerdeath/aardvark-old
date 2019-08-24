@@ -65,25 +65,32 @@ endif()
 # fmt
 # add_subdirectory("${CMAKE_SOURCE_DIR}/externals/fmt")
 
-#json
+# json
 add_library(nlohmann_json INTERFACE)
 set_target_properties(nlohmann_json PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/externals/nlohmann_json/include)
     
-#nod
+# nod
 add_library(nod INTERFACE)
 set_target_properties(nod PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/externals/nod/include)
 
-#asio
-add_library(asio INTERFACE)
-set_target_properties(asio PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES
-    ${CMAKE_CURRENT_SOURCE_DIR}/externals/asio/include
-    INTERFACE_COMPILE_DEFINITIONS "ASIO_STANDALONE=1"
-)
+# asio
+# add_library(asio INTERFACE)
+# set_target_properties(asio PROPERTIES
+    # INTERFACE_INCLUDE_DIRECTORIES
+    # ${CMAKE_CURRENT_SOURCE_DIR}/externals/asio/include
+    # INTERFACE_COMPILE_DEFINITIONS "ASIO_STANDALONE=1"
+# )
+
+# boost
+set(BOOST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/externals/boost")
+find_package(Boost 1.71.0 REQUIRED)
+add_library(boost INTERFACE)
+set_target_properties(boost PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
 
 # skia
 set(SKIA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/externals/skia")
@@ -168,12 +175,14 @@ set_target_properties(ICU PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES ${ICU_DIR}/source/common
     IMPORTED_LOCATION "${ICU_LIB_LOCATION}/libicuuc.a"
     INTERFACE_COMPILE_DEFINITIONS
-    "UCONFIG_NO_COLLATION=1 UCONFIG_NO_FORMATTING=1 U_STATIC_IMPLEMENTATION=1")
+    "UCONFIG_NO_COLLATION=1 UCONFIG_NO_FORMATTING=1 U_STATIC_IMPLEMENTATION=1"
+)
 
 add_library(ICU_DATA STATIC IMPORTED)
 set_target_properties(ICU_DATA PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES ${ICU_DIR}/source/common
-    IMPORTED_LOCATION "${ICU_LIB_LOCATION}/libicudata.a")
+    IMPORTED_LOCATION "${ICU_LIB_LOCATION}/libicudata.a"
+)
 
 if(ADV_ENABLE_JS)
     # JavaScriptCore
@@ -257,12 +266,13 @@ add_library(aardvark ${ADV_LIB_TYPE}
     src/pointer_events/pointer_event_manager.cpp
     src/pointer_events/responder_reconciler.cpp
     src/utils/event_loop.cpp
+    src/utils/websocket.cpp
 )
 
 # TODO include dir
 target_include_directories(aardvark INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(aardvark skia ICU ICU_DATA nlohmann_json nod asio)
+target_link_libraries(aardvark skia ICU ICU_DATA nlohmann_json nod boost)
 
 if(ADV_ENABLE_JS)
     target_sources(aardvark PRIVATE
@@ -318,22 +328,21 @@ if(ADV_BUILD_EXAMPLES)
     # add_executable(app_example src/examples/app_example.cpp)
     # target_link_libraries(app_example aardvark)
 
-    add_executable(responder_example src/examples/responder_example.cpp)
-    target_link_libraries(responder_example aardvark)
+    # add_executable(responder_example src/examples/responder_example.cpp)
+    # target_link_libraries(responder_example aardvark)
 
     # add_executable(layer_example src/examples/layer_example.cpp)
     # target_link_libraries(layer_example aardvark)
 
     # add_executable(paragraph_example src/examples/paragraph_example.cpp)
-#target_link_libraries(paragraph_example aardvark)
+    # target_link_libraries(paragraph_example aardvark)
+
+    add_executable(websocket_example src/examples/websocket_example.cpp)
+    target_link_libraries(websocket_example aardvark)
 
     if(ADV_ENABLE_JS)
-        add_executable(jsc_example src/examples/jsc_example2.cpp)
+        add_executable(jsc_example src/examples/jsc_example.cpp)
         target_link_libraries(jsc_example aardvark)
-        configure_file(
-            "${CMAKE_CURRENT_SOURCE_DIR}/src/examples/src.js" 
-            "${CMAKE_CURRENT_BINARY_DIR}/bin/src.js"
-            COPYONLY)
     endif()
 endif()
 
