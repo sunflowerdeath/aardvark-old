@@ -19,6 +19,13 @@ std::string str_from_js(JSStringRef jsstring) {
     return stdstring;
 }
 
+JSValueRef str_to_js(JSContextRef ctx, const std::string& str) {
+    auto js_str = JSStringCreateWithUTF8CString(str.c_str());
+    auto value = JSValueMakeString(ctx, js_str);
+    JSStringRelease(js_str);
+    return value;
+};
+
 JSStringRef JsStringCache::get_string(const std::string& str) {
     auto it = strings.find(str);
     if (it != strings.end()) {

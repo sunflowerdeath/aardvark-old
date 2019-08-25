@@ -8,8 +8,6 @@
 
 namespace aardvark::js {
 
-// Methods
-
 JSValueRef websocket_send(JSContextRef ctx, JSObjectRef function,
                           JSObjectRef object, size_t argument_count,
                           const JSValueRef arguments[], JSValueRef* exception) {
@@ -30,28 +28,18 @@ JSValueRef websocket_close(JSContextRef ctx, JSObjectRef function,
     return JSValueMakeUndefined(ctx);
 }
 
-// Handlers
-
-std::vector<JSValueRef> websocket_error_handler_args_to_js(JSContextRef ctx,
-                                                           std::string err) {
-    auto obj = JSObjectMake(ctx, nullptr, nullptr);
-    auto str = JSStringCreateWithUTF8CString("error_text");
-    auto val = JSValueMakeString(ctx, str);
-    JSStringRelease(str);
-    JSObjectSetProperty(ctx, obj, JsStringCache::get("message"), val,
-                        kJSPropertyAttributeNone, nullptr);
-    return std::vector<JSValueRef>{obj};
+std::vector<JSValueRef> websocket_error_handler_args_to_js(
+    JSContextRef ctx, const std::string& error) {
+    auto object = JSObjectMake(ctx, nullptr, nullptr);
+    map_prop_to_js<std::string, str_to_js>(ctx, object, "message", error);
+    return std::vector<JSValueRef>{object};
 }
 
-std::vector<JSValueRef> websocket_message_handler_args_to_js(JSContextRef ctx,
-                                                             std::string msg) {
-    auto obj = JSObjectMake(ctx, nullptr, nullptr);
-    auto str = JSStringCreateWithUTF8CString("message_text");
-    auto val = JSValueMakeString(ctx, str);
-    JSStringRelease(str);
-    JSObjectSetProperty(ctx, obj, JsStringCache::get("data"), val,
-                        kJSPropertyAttributeNone, nullptr);
-    return std::vector<JSValueRef>{obj};
+std::vector<JSValueRef> websocket_message_handler_args_to_js(
+    JSContextRef ctx, const std::string& message) {
+    auto object = JSObjectMake(ctx, nullptr, nullptr);
+    map_prop_to_js<std::string, str_to_js>(ctx, object, "data", message);
+    return std::vector<JSValueRef>{object};
 }
 
 JSValueRef websocket_add_start_handler(JSContextRef ctx, JSObjectRef function,
