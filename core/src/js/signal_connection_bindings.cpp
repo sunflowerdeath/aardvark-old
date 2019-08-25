@@ -1,7 +1,5 @@
 #include "signal_connection_bindings.hpp"
 
-#include <nod/nod.hpp>
-
 #include "bindings_host.hpp"
 #include "objects_index.hpp"
 
@@ -27,6 +25,13 @@ JSClassRef signal_connection_create_class() {
     definition.className = "SignalConnection";
     definition.finalize = signal_connection_finalize;
     return JSClassCreate(&definition);
+}
+
+JSValueRef signal_connection_to_js(JSContextRef ctx,
+                                   nod::connection connection) {
+    auto host = BindingsHost::get(ctx);
+    auto sptr = std::make_shared<nod::connection>(std::move(connection));
+    return host->signal_connection_index->get_or_create_js_object(sptr);
 }
 
 }  // namespace aardvark::js

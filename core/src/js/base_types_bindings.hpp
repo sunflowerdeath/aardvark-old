@@ -1,6 +1,7 @@
 #pragma once
 
 #include "JavaScriptCore/JavaScript.h"
+
 #include "../base_types.hpp"
 #include "../elements/align.hpp"
 #include "../elements/sized.hpp"

@@ -99,7 +99,7 @@ BindingsHost::BindingsHost() {
     signal_connection_index =
         ObjectsIndex<nod::connection>(ctx, signal_connection_class);
 
-    auto websocket_class = signal_connection_create_class();
+    auto websocket_class = websocket_create_class();
     websocket_index = ObjectsIndex<Websocket>(ctx, websocket_class);
     add_constructor("WebSocket", websocket_class,
                     websocket_call_as_constructor);

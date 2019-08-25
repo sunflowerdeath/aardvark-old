@@ -1,7 +1,8 @@
 #include "document_bindings.hpp"
-#include <nod/nod.hpp>
+
 #include "../document.hpp"
 #include "bindings_host.hpp"
+#include "signal_connection_bindings.hpp"
 #include "function_wrapper.hpp"
 #include "events_bindings.hpp"
 
@@ -14,7 +15,7 @@ std::vector<JSValueRef> pointer_event_handler_args_to_js(JSContextRef ctx,
     return std::vector<JSValueRef>{pointer_event_to_js(ctx, event)};
 }
 
-FunctionWrapper<void, PointerEvent> pointer_event_handler_wrap(
+FunctionWrapper<void, PointerEvent> pointer_event_handler_from_js(
     JSContextRef ctx, JSValueRef function) {
     return FunctionWrapper<void, PointerEvent>(
         JSContextGetGlobalContext(ctx),   // ctx
@@ -22,13 +23,6 @@ FunctionWrapper<void, PointerEvent> pointer_event_handler_wrap(
         pointer_event_handler_args_to_js  // args_to_js
     );
 };
-
-JSValueRef signal_connection_to_js(JSContextRef ctx,
-                                   nod::connection connection) {
-    auto host = BindingsHost::get(ctx);
-    auto sptr = std::make_shared<nod::connection>(std::move(connection));
-    return host->signal_connection_index->get_or_create_js_object(sptr);
-}
 
 // Document bindings
 
@@ -60,7 +54,7 @@ JSValueRef document_add_handler(JSContextRef ctx, JSObjectRef function,
                                 JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
     auto document = host->document_index->get_native_object(object);
-    auto handler = pointer_event_handler_wrap(ctx, arguments[0]);
+    auto handler = pointer_event_handler_from_js(ctx, arguments[0]);
     auto after =
         argument_count > 1 ? JSValueToBoolean(ctx, arguments[1]) : false;
     auto connection =
@@ -77,7 +71,7 @@ JSValueRef document_start_tracking_pointer(JSContextRef ctx,
     auto host = BindingsHost::get(ctx);
     auto document = host->document_index->get_native_object(object);
     auto pointer_id = JSValueToNumber(ctx, arguments[0], nullptr);
-    auto handler = pointer_event_handler_wrap(ctx, arguments[1]);
+    auto handler = pointer_event_handler_from_js(ctx, arguments[1]);
     auto connection = document->pointer_event_manager->start_tracking_pointer(
         pointer_id, handler);
     return signal_connection_to_js(ctx, std::move(connection));

@@ -1,5 +1,8 @@
-
-let ws = new WebSocket();
-ws.onstart = () => log('START')
-ws.onclose = () => log('CLOSE')
-ws.onerror = () => log('ERROR')
+let ws = new WebSocket()
+ws.addStartHandler(() => {
+	log('start')
+	ws.send('Hello, server')
+})
+ws.addCloseHandler(() => log('close'))
+ws.addErrorHandler(() => log('error'))
+ws.addMessageHandler(event => log('message: ' + event.data))

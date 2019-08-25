@@ -2,9 +2,13 @@
 
 #include "../utils/websocket.hpp"
 #include "bindings_host.hpp"
+#include "function_wrapper.hpp"
 #include "helpers.hpp"
+#include "signal_connection_bindings.hpp"
 
 namespace aardvark::js {
+
+// Methods
 
 JSValueRef websocket_send(JSContextRef ctx, JSObjectRef function,
                           JSObjectRef object, size_t argument_count,
@@ -26,13 +30,86 @@ JSValueRef websocket_close(JSContextRef ctx, JSObjectRef function,
     return JSValueMakeUndefined(ctx);
 }
 
+// Handlers
+
+std::vector<JSValueRef> websocket_error_handler_args_to_js(JSContextRef ctx,
+                                                           std::string err) {
+    auto obj = JSObjectMake(ctx, nullptr, nullptr);
+    auto str = JSStringCreateWithUTF8CString("error_text");
+    auto val = JSValueMakeString(ctx, str);
+    JSStringRelease(str);
+    JSObjectSetProperty(ctx, obj, JsStringCache::get("message"), val,
+                        kJSPropertyAttributeNone, nullptr);
+    return std::vector<JSValueRef>{obj};
+}
+
+std::vector<JSValueRef> websocket_message_handler_args_to_js(JSContextRef ctx,
+                                                             std::string msg) {
+    auto obj = JSObjectMake(ctx, nullptr, nullptr);
+    auto str = JSStringCreateWithUTF8CString("message_text");
+    auto val = JSValueMakeString(ctx, str);
+    JSStringRelease(str);
+    JSObjectSetProperty(ctx, obj, JsStringCache::get("data"), val,
+                        kJSPropertyAttributeNone, nullptr);
+    return std::vector<JSValueRef>{obj};
+}
+
+JSValueRef websocket_add_start_handler(JSContextRef ctx, JSObjectRef function,
+                                       JSObjectRef object,
+                                       size_t argument_count,
+                                       const JSValueRef arguments[],
+                                       JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto ws = host->websocket_index->get_native_object(object);
+    auto connection =
+        ws->start_signal.connect(FunctionWrapper<void>(ctx, arguments[0]));
+    return signal_connection_to_js(ctx, std::move(connection));
+}
+
+JSValueRef websocket_add_message_handler(JSContextRef ctx, JSObjectRef function,
+                                         JSObjectRef object,
+                                         size_t argument_count,
+                                         const JSValueRef arguments[],
+                                         JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto ws = host->websocket_index->get_native_object(object);
+    auto connection =
+        ws->message_signal.connect(FunctionWrapper<void, std::string>(
+            ctx, arguments[0], websocket_message_handler_args_to_js));
+    return signal_connection_to_js(ctx, std::move(connection));
+}
+
+JSValueRef websocket_add_error_handler(JSContextRef ctx, JSObjectRef function,
+                                       JSObjectRef object,
+                                       size_t argument_count,
+                                       const JSValueRef arguments[],
+                                       JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto ws = host->websocket_index->get_native_object(object);
+    auto connection =
+        ws->error_signal.connect(FunctionWrapper<void, std::string>(
+            ctx, arguments[0], websocket_error_handler_args_to_js));
+    return signal_connection_to_js(ctx, std::move(connection));
+}
+
+JSValueRef websocket_add_close_handler(JSContextRef ctx, JSObjectRef function,
+                                       JSObjectRef object,
+                                       size_t argument_count,
+                                       const JSValueRef arguments[],
+                                       JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto ws = host->websocket_index->get_native_object(object);
+    auto connection =
+        ws->close_signal.connect(FunctionWrapper<void>(ctx, arguments[0]));
+    return signal_connection_to_js(ctx, std::move(connection));
+}
+
 JSValueRef websocket_get_state(JSContextRef ctx, JSObjectRef object,
                                JSStringRef property_name,
                                JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
     auto ws = host->websocket_index->get_native_object(object);
-    auto state =
-        static_cast<std::underlying_type_t<WebsocketState>>(ws->state);
+    auto state = static_cast<std::underlying_type_t<WebsocketState>>(ws->state);
     return JSValueMakeNumber(ctx, state);
 }
 
@@ -45,6 +122,10 @@ JSClassRef websocket_create_class() {
     JSStaticFunction static_functions[] = {
         {"send", websocket_send, PROP_ATTR_STATIC},
         {"close", websocket_close, PROP_ATTR_STATIC},
+        {"addStartHandler", websocket_add_start_handler, PROP_ATTR_STATIC},
+        {"addMessageHandler", websocket_add_message_handler, PROP_ATTR_STATIC},
+        {"addErrorHandler", websocket_add_error_handler, PROP_ATTR_STATIC},
+        {"addCloseHandler", websocket_add_close_handler, PROP_ATTR_STATIC},
         {0, 0, 0}};
     JSStaticValue static_values[] = {
         {"state", websocket_get_state, nullptr, PROP_ATTR_STATIC},
@@ -56,24 +137,6 @@ JSClassRef websocket_create_class() {
     return JSClassCreate(&definition);
 };
 
-JSObjectRef get_prop(JSContextRef ctx, JSObjectRef object,
-                     JSStringRef prop_name) {
-    if (!JSObjectHasProperty(ctx, object, prop_name)) return nullptr;
-    auto value = JSObjectGetProperty(ctx, object, prop_name, nullptr);
-    if (JSValueIsObject(ctx, value)) {
-        return JSValueToObject(ctx, value, nullptr);
-    } else {
-        return nullptr;
-    }
-}
-
-// void websocket_init_signal(
-    // JSContextRef ctx,
-    // JSObjectRef ws,
-    // nod::signal<void()> signal,
-    // prop_name) {
-// }
-
 JSObjectRef websocket_call_as_constructor(JSContextRef ctx,
                                           JSObjectRef constructor,
                                           size_t argumentCount,
@@ -82,58 +145,8 @@ JSObjectRef websocket_call_as_constructor(JSContextRef ctx,
     auto host = BindingsHost::get(ctx);
     auto ws = std::make_shared<aardvark::Websocket>(host->event_loop->io,
                                                     "echo.websocket.org", "80");
-    auto object = host->websocket_index->create_js_object(ws);
-    auto global_ctx = JSContextGetGlobalContext(ctx);
-
-    ws->start_signal.connect([ws = ws.get(), global_ctx, object]() {
-        auto func = get_prop(global_ctx, object, JsStringCache::get("onstart"));
-        if (func == nullptr) return;
-        JSObjectCallAsFunction(global_ctx,  // ctx
-                               func,        // object
-                               nullptr,     // thisObject
-                               0,           // argumentCount
-                               nullptr,     // arguments[],
-                               nullptr      // exception
-        );
-        // TODO handle exception
-    });
-
-    ws->close_signal.connect([ws = ws.get(), global_ctx, object]() {
-        auto func = get_prop(global_ctx, object, JsStringCache::get("onclose"));
-        if (func == nullptr) return;
-        JSObjectCallAsFunction(global_ctx,  // ctx
-                               func,        // object
-                               nullptr,     // thisObject
-                               0,           // argumentCount
-                               nullptr,     // arguments[],
-                               nullptr      // exception
-        );
-        // TODO handle exception
-    });
-
-    ws->error_signal.connect([ws = ws.get(), global_ctx,
-                              object](std::string error) {
-        auto func = get_prop(global_ctx, object, JsStringCache::get("onerror"));
-        if (func == nullptr) return;
-        JSObjectCallAsFunction(global_ctx,  // ctx
-                               func,        // object
-                               nullptr,     // thisObject
-                               0,           // argumentCount
-                               nullptr,     // arguments[],
-                               nullptr      // exception
-        );
-        // TODO handle exception
-    });
-    /*
-    ws.error_signal.connect([ws](){
-    })
-    ws.message_signal.connect([ws](){
-    })
-    ws.close_signal.connect([ws](){
-    })
-    */
     ws->start();
-    return object;
+    return host->websocket_index->create_js_object(ws);
 };
 
 }  // namespace aardvark::js
