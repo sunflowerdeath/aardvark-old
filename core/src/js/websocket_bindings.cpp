@@ -13,8 +13,7 @@ JSValueRef websocket_send(JSContextRef ctx, JSObjectRef function,
                           const JSValueRef arguments[], JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
     auto ws = host->websocket_index->get_native_object(object);
-    auto js_str = JSValueToStringCopy(ctx, arguments[0], nullptr);
-    ws->send(str_from_js(js_str));
+    ws->send(str_from_js(ctx, arguments[0]));
     return JSValueMakeUndefined(ctx);
 }
 

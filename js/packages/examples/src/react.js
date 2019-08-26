@@ -6,10 +6,17 @@ import {
 	PointerEventAction,
 	PointerEventTool
 } from '@advk/common'
+import { connectToDevTools } from "react-devtools-core";
+
+import WebApiWebSocket from '@advk/common/src/WebApiWebSocket'
+const ws = new WebApiWebSocket('ws://localhost:8097')
+ws.onopen = () => log('open')
+ws.onerror = event => log('error:' + event.message)
+connectToDevTools({ websocket: ws })
 
 let app = new DesktopApp()
-let window = app.createWindow(640, 480)
-let document = app.getDocument(window)
+let win = app.createWindow(640, 480)
+let document = app.getDocument(win)
 
 const INITIAL_STATE = { isPressed: false, isAccepted: false }
 
@@ -156,5 +163,5 @@ const App = () => {
 }
 
 ReactAardvark.render(<App />, document)
-
 app.run()
+global.app = app

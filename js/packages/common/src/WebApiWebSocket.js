@@ -24,7 +24,7 @@ class WebApiWebSocket {
 			throw new Error("WebSocket URL must have 'ws' protocol.")
 		}
 
-		const host = parsedUrl.host
+		const host = parsedUrl.hostname
 		const port = parsedUrl.port === null ? '80' : parsedUrl.port
 
 		this.eventEmitter = new EventEmitter(WEBSOCKET_EVENTS)
@@ -52,14 +52,15 @@ class WebApiWebSocket {
 		this.nativeWebSocket.close()
 	}
 
-	get state() {
+	get readyState() {
 		return this.nativeWebSocket.state
 	}
 
-	get onstart() {
+	get onopen() {
 		this.eventEmitter.getEventProperty('start')
 	}
-	set onstart(value) {
+	set onopen(value) {
+        log('set')
 		this.eventEmitter.setEventProperty('start', value)
 	}
 

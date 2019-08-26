@@ -77,6 +77,16 @@ BindingsHost::BindingsHost() {
     add_function("clearTimeout", &clear_timeout);
     add_function("gc", &gc);
 
+    auto window_str = JSStringCreateWithUTF8CString("window");
+    JSObjectSetProperty(ctx,                            // ctx
+                        JSContextGetGlobalObject(ctx),  // object
+                        window_str,                     // propertyName
+                        JSContextGetGlobalObject(ctx),  // value
+                        PROP_ATTR_STATIC,               // attributes
+                        nullptr                         // exception
+    );
+    JSStringRelease(window_str);
+
     auto desktop_app_class = desktop_app_create_class();
     desktop_app_index = ObjectsIndex<DesktopApp>(ctx, desktop_app_class);
     add_constructor("DesktopApp", desktop_app_class,
@@ -189,6 +199,7 @@ void BindingsHost::add_function(const char* name,
                         attributes,                     // attributes
                         nullptr                         // exception
     );
+    JSStringRelease(js_name);
 }
 
 void BindingsHost::add_object(const char* name, JSObjectRef object,

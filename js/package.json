@@ -10,16 +10,16 @@
   "author": "sunflowerdeath",
   "license": "Unlicense",
   "dependencies": {
+    "react": "^16.9.0"
+  },
+  "devDependencies": {
+    "mocha": "^6.2.0",
     "@babel/core": "^7.5.5",
     "@babel/preset-react": "^7.0.0",
     "babel-loader": "^8.0.6",
     "lerna": "^3.16.4",
     "prettier": "^1.18.2",
-    "react": "^16.9.0",
     "webpack": "^4.39.1",
     "webpack-cli": "^3.3.6"
-  },
-  "devDependencies": {
-    "mocha": "^6.2.0"
   }
 }

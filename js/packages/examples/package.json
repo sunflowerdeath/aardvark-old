@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "@advk/common": "*",
-    "@advk/react-renderer": "*"
+    "@advk/react-renderer": "*",
+    "react-devtools-core": "^3.6.3"
   },
   "author": "sunflowerdeath",
   "license": "Unlicense"
