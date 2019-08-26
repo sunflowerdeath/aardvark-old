@@ -49,14 +49,17 @@ class FunctionWrapper {
         // Pin because during the call wrapper may be destroyed
         auto pin_ret_val_from_js = ret_val_from_js;
         auto pin_ctx = ctx;
+        auto exception = JSValueRef();
         auto js_ret_val =
             JSObjectCallAsFunction(ctx,             // ctx
                                    object,          // object
                                    nullptr,         // thisObject
                                    js_args.size(),  // argumentCount
                                    js_args.data(),  // arguments[],
-                                   nullptr          // exception
+                                   &exception        // exception
             );
+        if (exception != nullptr)
+            std::cout << "Exception in callback" << std::endl;
         // TODO check exception and stop event loop or call callback?
         return pin_ret_val_from_js(pin_ctx, js_ret_val);
     }

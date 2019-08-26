@@ -13,7 +13,9 @@
   "license": "Unlicense",
   "dependencies": {
     "react-reconciler": "^0.21.0",
-    "@advk/check-types": "*"
+    "@advk/check-types": "*",
+    "@advk/common": "*",
+    "react-devtools-core": "^3.6.3"
   },
   "peerDependencies": {
     "react": "^16.9.0"

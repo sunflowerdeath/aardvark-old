@@ -1,5 +1,8 @@
 import Reconciler from 'react-reconciler'
 
+import WebApiWebSocket from '@advk/common/src/WebApiWebSocket'
+import { connectToDevTools } from "react-devtools-core";
+
 import { createElement, updateElement } from './elements.js'
 
 const getRootHostContext = rootContainerInstance => {
@@ -192,9 +195,20 @@ const HostConfig = {
 
 const Renderer = Reconciler(HostConfig)
 
+const websocket = new WebApiWebSocket('ws://localhost:8097')
+// ws.onopen = () => log('open')
+// ws.onerror = event => log('error:' + event.message)
+connectToDevTools({ websocket })
+
+Renderer.injectIntoDevTools({
+    findFiberByHostInstance: Renderer.findHostInstance,
+    bundleType: 1,
+    version: '0.0.1',
+    rendererPackageName: 'react-aardvark',
+})
+
 const RendererAPI = {
 	render(element, container, callback) {
-		// log('render')
 		// Create a root Container if it doesnt exist
 		if (!container._rootContainer) {
 			container._rootContainer = Renderer.createContainer(
@@ -204,13 +218,15 @@ const RendererAPI = {
 		}
 
 		// update the root Container
-		return Renderer.updateContainer(
+		Renderer.updateContainer(
 			element,
 			container._rootContainer,
 			null,
 			callback
 		)
+
 	}
 }
+
 
 export default RendererAPI
