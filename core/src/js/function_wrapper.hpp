@@ -1,4 +1,3 @@
-#pragma once
 
 #include <functional>
 #include <vector>
@@ -25,6 +24,7 @@ class FunctionWrapper {
           args_to_js(args_to_js),
           ret_val_from_js(ret_val_from_js) {
         this->ctx = JSContextGetGlobalContext(ctx);
+        JSGlobalContextRetain(this->ctx);
         JSValueProtect(ctx, value);
     }
 
@@ -34,10 +34,14 @@ class FunctionWrapper {
         value = wrapper.value;
         args_to_js = wrapper.args_to_js;
         ret_val_from_js = wrapper.ret_val_from_js;
+        JSGlobalContextRetain(ctx);
         JSValueProtect(ctx, value);
     }
 
-    ~FunctionWrapper() { JSValueUnprotect(ctx, value); }
+    ~FunctionWrapper() { 
+        JSValueUnprotect(ctx, value);
+        JSGlobalContextRelease(ctx);
+    }
 
     RetValType operator()(ArgsTypes... args) {
         auto object = JSValueToObject(ctx, value, nullptr);
@@ -53,11 +57,12 @@ class FunctionWrapper {
                                    js_args.data(),  // arguments[],
                                    nullptr          // exception
             );
+        // TODO check exception and stop event loop or call callback?
         return pin_ret_val_from_js(pin_ctx, js_ret_val);
     }
 
   private:
-    JSContextRef ctx;
+    JSGlobalContextRef ctx;
     JSValueRef value;
     ArgsToJsType args_to_js;
     RetValFromJsType ret_val_from_js;

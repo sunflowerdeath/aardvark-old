@@ -7,7 +7,7 @@ namespace aardvark {
 void Websocket::start() {
     state = WebsocketState::connecting;
     resolver.async_resolve(
-        host, port,
+        host.c_str(), port.c_str(),
         beast::bind_front_handler(&Websocket::on_resolve, shared_from_this()));
 }
 
@@ -62,6 +62,7 @@ void Websocket::on_read(beast::error_code error,
                         std::size_t bytes_transferred) {
     if (error) return error_signal(error.message());
     message_signal(beast::buffers_to_string(buffer.data()));
+    buffer.clear();
     ws.async_read(buffer, beast::bind_front_handler(&Websocket::on_read,
                                                     shared_from_this()));
 }

@@ -131,8 +131,11 @@ JSObjectRef websocket_call_as_constructor(JSContextRef ctx,
                                           const JSValueRef arguments[],
                                           JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
-    auto ws = std::make_shared<aardvark::Websocket>(host->event_loop->io,
-                                                    "echo.websocket.org", "80");
+    auto ws = std::make_shared<aardvark::Websocket>(
+        host->event_loop->io,            // io
+        str_from_js(ctx, arguments[0]),  // host
+        str_from_js(ctx, arguments[1])   // port
+    );
     ws->start();
     return host->websocket_index->create_js_object(ws);
 };

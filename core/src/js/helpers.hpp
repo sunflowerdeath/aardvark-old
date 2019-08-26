@@ -10,6 +10,8 @@ int int_from_js(JSContextRef ctx, JSValueRef value);
 JSValueRef int_to_js(JSContextRef ctx, const int& value);
 
 std::string str_from_js(JSStringRef jsstring);
+
+std::string str_from_js(JSContextRef ctx, JSValueRef value);
 JSValueRef str_to_js(JSContextRef ctx, const std::string& str);
 
 class JsStringCache {

@@ -11,7 +11,7 @@ const WebSocketState = {
 
 const WEBSOCKET_EVENTS = ['start', 'error', 'close', 'message']
 
-class WebWebSocket {
+class WebApiWebSocket {
 	constructor(urlString) {
 		let parsedUrl
 		try {
@@ -29,18 +29,18 @@ class WebWebSocket {
 
 		this.eventEmitter = new EventEmitter(WEBSOCKET_EVENTS)
 		this.webSocket = new WebSocket(host, port)
-		this.webSocket.addStartHandler(() => {
-			this.eventEmitter.dispatchEvent('start')
-		})
-		this.webSocket.addMessageHandler(event =>
-			this.eventEmitter.dispatchEvent('message', event)
-		)
-		this.webSocket.addErrorHandler(event =>
-			this.eventEmitter.dispatchEvent('error', event)
-		)
-		this.webSocket.addCloseHandler(() =>
-			this.eventEmitter.dispatchEvent('close')
-		)
+        this.webSocket.addStartHandler(() => {
+            this.eventEmitter.dispatchEvent('start')
+        })
+        this.webSocket.addMessageHandler(event =>
+            this.eventEmitter.dispatchEvent('message', event)
+        )
+        this.webSocket.addErrorHandler(event =>
+            this.eventEmitter.dispatchEvent('error', event)
+        )
+        this.webSocket.addCloseHandler(() =>
+            this.eventEmitter.dispatchEvent('close')
+        )
 		Object.assign(this, WebSocketState)
 	}
 
@@ -93,6 +93,6 @@ class WebWebSocket {
 	}
 }
 
-Object.assign(WebWebSocket, WebSocketState)
+Object.assign(WebApiWebSocket, WebSocketState)
 
-export default WebWebSocket
+export default WebApiWebSocket

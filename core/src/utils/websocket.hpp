@@ -15,7 +15,7 @@ enum class WebsocketState { connecting, open, closing, closed };
 
 class Websocket : public std::enable_shared_from_this<Websocket> {
   public:
-    Websocket(asio::io_context& io, const char* host, const char* port)
+    Websocket(asio::io_context& io, std::string host, std::string port)
         : resolver(io), ws(io), host(host), port(port){};
 
     void start();
@@ -31,8 +31,8 @@ class Websocket : public std::enable_shared_from_this<Websocket> {
 
   private:
     // asio::io_context io;
-    const char* host;
-    const char* port;
+    std::string host;
+    std::string port;
     asio::ip::tcp::resolver resolver;
     beast::websocket::stream<beast::tcp_stream> ws;
     beast::flat_buffer buffer;

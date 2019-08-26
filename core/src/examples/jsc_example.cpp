@@ -29,11 +29,11 @@ int main(int argc, char *argv[]) {
         auto obj = JSValueToObject(host.ctx, exception, nullptr);
         auto js_src = JSStringCreateWithUTF8CString(
             "if (this.line !== undefined) log('Error at line ' + this.line + ', column ' + this.column)");
-        auto result = JSEvaluateScript(host.ctx,  // ctx,
-                                       js_src,    // script
-                                       obj,       // thisObject,
-                                       nullptr,   // sourceURL,
-                                       1,         // startingLineNumber,
+        auto result = JSEvaluateScript(host.ctx,   // ctx,
+                                       js_src,     // script
+                                       obj,        // thisObject,
+                                       nullptr,    // sourceURL,
+                                       1,          // startingLineNumber,
                                        &exception  // exception
         );
         JSStringRelease(js_src);

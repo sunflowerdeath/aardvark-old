@@ -7,12 +7,16 @@
 // ws.addErrorHandler(() => log('error'))
 // ws.addMessageHandler(event => log('message: ' + event.data))
 
-import WebWebSocket from '@advk/common/src/WebWebSocket'
-const ws = new WebWebSocket('ws://192.168.1.1:1234')
+import WebApiWebSocket from '@advk/common/src/WebApiWebSocket'
+// const ws = new WebApiWebSocket('ws://echo.websocket.org')
+const ws = new WebApiWebSocket('ws://wrong')
 ws.onstart = () => {
     log('start')
-    ws.send('Hello')
+    ws.send('Hello!')
 }
-ws.onmessage = event => log('message: ' + event.data)
-ws.onerror = event => log('error')
+ws.onmessage = event => {
+    log('message: ' + event.data)
+    setTimeout(() => ws.send('Hello again!'), 3000)
+}
+ws.onerror = event => log('error: ' + event.message)
 ws.onclose = () => log('close')
