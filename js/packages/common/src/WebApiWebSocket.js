@@ -9,7 +9,7 @@ const WebSocketState = {
 	CLOSED: 3
 }
 
-const WEBSOCKET_EVENTS = ['start', 'error', 'close', 'message']
+const WEBSOCKET_EVENTS = ['open', 'error', 'close', 'message']
 
 class WebApiWebSocket {
 	constructor(urlString) {
@@ -29,9 +29,9 @@ class WebApiWebSocket {
 
 		this.eventEmitter = new EventEmitter(WEBSOCKET_EVENTS)
 		this.webSocket = new WebSocket(host, port)
-        this.webSocket.addStartHandler(() => {
-            this.eventEmitter.dispatchEvent('start')
-        })
+        this.webSocket.addOpenHandler(() =>
+            this.eventEmitter.dispatchEvent('open')
+        )
         this.webSocket.addMessageHandler(event =>
             this.eventEmitter.dispatchEvent('message', event)
         )
@@ -57,11 +57,10 @@ class WebApiWebSocket {
 	}
 
 	get onopen() {
-		this.eventEmitter.getEventProperty('start')
+		this.eventEmitter.getEventProperty('open')
 	}
 	set onopen(value) {
-        log('set')
-		this.eventEmitter.setEventProperty('start', value)
+		this.eventEmitter.setEventProperty('open', value)
 	}
 
 	get onmessage() {

@@ -6,11 +6,10 @@
 
 int main() {
     auto event_loop = aardvark::EventLoop();
-
     auto ws = std::make_shared<aardvark::Websocket>(event_loop.io,
                                                     "echo.websocket.org", "80");
-    ws->start_signal.connect([ws](){
-        std::cout << "start" << std::endl;
+    ws->open_signal.connect([ws](){
+        std::cout << "open" << std::endl;
         ws->send("Hello");
     });
     ws->close_signal.connect([](){
@@ -22,10 +21,6 @@ int main() {
     ws->error_signal.connect([](std::string error){
         std::cout << "error: " << error << std::endl;
     });
-    ws->start();
-    event_loop.post_callback([ws](){
-        std::cout << "will close" << std::endl;
-        ws->close();
-    });
+    ws->open();
     event_loop.run();
 }

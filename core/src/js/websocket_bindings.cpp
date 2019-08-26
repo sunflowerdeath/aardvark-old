@@ -41,7 +41,7 @@ std::vector<JSValueRef> websocket_message_handler_args_to_js(
     return std::vector<JSValueRef>{object};
 }
 
-JSValueRef websocket_add_start_handler(JSContextRef ctx, JSObjectRef function,
+JSValueRef websocket_add_open_handler(JSContextRef ctx, JSObjectRef function,
                                        JSObjectRef object,
                                        size_t argument_count,
                                        const JSValueRef arguments[],
@@ -49,7 +49,7 @@ JSValueRef websocket_add_start_handler(JSContextRef ctx, JSObjectRef function,
     auto host = BindingsHost::get(ctx);
     auto ws = host->websocket_index->get_native_object(object);
     auto connection =
-        ws->start_signal.connect(FunctionWrapper<void>(ctx, arguments[0]));
+        ws->open_signal.connect(FunctionWrapper<void>(ctx, arguments[0]));
     return signal_connection_to_js(ctx, std::move(connection));
 }
 
@@ -109,7 +109,7 @@ JSClassRef websocket_create_class() {
     JSStaticFunction static_functions[] = {
         {"send", websocket_send, PROP_ATTR_STATIC},
         {"close", websocket_close, PROP_ATTR_STATIC},
-        {"addStartHandler", websocket_add_start_handler, PROP_ATTR_STATIC},
+        {"addOpenHandler", websocket_add_open_handler, PROP_ATTR_STATIC},
         {"addMessageHandler", websocket_add_message_handler, PROP_ATTR_STATIC},
         {"addErrorHandler", websocket_add_error_handler, PROP_ATTR_STATIC},
         {"addCloseHandler", websocket_add_close_handler, PROP_ATTR_STATIC},
@@ -135,7 +135,7 @@ JSObjectRef websocket_call_as_constructor(JSContextRef ctx,
         str_from_js(ctx, arguments[0]),  // host
         str_from_js(ctx, arguments[1])   // port
     );
-    ws->start();
+    ws->open();
     return host->websocket_index->create_js_object(ws);
 };
 

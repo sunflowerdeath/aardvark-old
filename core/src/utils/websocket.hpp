@@ -18,19 +18,18 @@ class Websocket : public std::enable_shared_from_this<Websocket> {
     Websocket(asio::io_context& io, std::string host, std::string port)
         : resolver(io), ws(io), host(host), port(port){};
 
-    void start();
+    void open();
     void close();
     void send(std::string message);
 
     WebsocketState state;
 
-    nod::signal<void()> start_signal;
+    nod::signal<void()> open_signal;
     nod::signal<void(std::string)> error_signal;
     nod::signal<void(std::string)> message_signal;
     nod::signal<void()> close_signal;
 
   private:
-    // asio::io_context io;
     std::string host;
     std::string port;
     asio::ip::tcp::resolver resolver;

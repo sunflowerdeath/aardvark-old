@@ -4,7 +4,7 @@
 
 namespace aardvark {
 
-void Websocket::start() {
+void Websocket::open() {
     state = WebsocketState::connecting;
     resolver.async_resolve(
         host.c_str(), port.c_str(),
@@ -53,7 +53,7 @@ void Websocket::on_connect(
 void Websocket::on_handshake(beast::error_code error) {
     if (error) return error_signal("Handshake error. " + error.message());
     state = WebsocketState::open;
-    start_signal();
+    open_signal();
     ws.async_read(buffer, beast::bind_front_handler(&Websocket::on_read,
                                                     shared_from_this()));
 }
