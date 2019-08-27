@@ -34,6 +34,8 @@ class Align : public SingleChildElement {
     
     void paint(bool is_changed) override;
 
+    bool hit_test(double left, double top) override;
+
     // Whether to reduce size of the child by the size of insets, or make it 
     // equal to the size of the container. This is useful when you need to set 
     // relative size and position at the same time.

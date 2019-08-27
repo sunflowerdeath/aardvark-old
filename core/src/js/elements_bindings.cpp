@@ -1,6 +1,7 @@
 #include "elements_bindings.hpp"
 
 #include "../elements/elements.hpp"
+#include "helpers.hpp"
 #include "base_types_bindings.hpp"
 #include "bindings_host.hpp"
 #include "events_bindings.hpp"
@@ -9,15 +10,6 @@
 namespace aardvark::js {
 
 // helpers
-
-UnicodeString js_value_to_icu_str(JSContextRef ctx, JSValueRef value) {
-    auto js_str =
-        JSValueToStringCopy(ctx, value, /* exception */ nullptr);
-    auto icu_str = UnicodeString(JSStringGetCharactersPtr(js_str),
-                                 JSStringGetLength(js_str));
-    JSStringRelease(js_str);
-    return icu_str;
-}
 
 std::shared_ptr<Element> get_elem(JSContextRef ctx, JSObjectRef object) {
     return BindingsHost::get(ctx)->element_index->get_native_object(object);
@@ -327,18 +319,13 @@ JSObjectRef stack_elem_call_as_constructor(JSContextRef ctx,
 // Text
 //------------------------------------------------------------------------------
 
-JSValueRef icu_str_to_js_value(JSContextRef ctx, const UnicodeString& str) {
-    auto js_str = JSStringCreateWithCharacters(str.getBuffer(), str.length());
-    return JSValueMakeString(ctx, js_str);
-}
-
 JSValueRef text_element_get_text(JSContextRef ctx, JSObjectRef object,
                                  JSStringRef property_name,
                                  JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
     auto elem = host->element_index->get_native_object(object);
     auto text_elem = dynamic_cast<elements::Text*>(elem.get());
-    return icu_str_to_js_value(ctx, text_elem->text);
+    return icu_str_to_js(ctx, text_elem->text);
 }
 
 bool text_element_set_text(JSContextRef ctx, JSObjectRef object,
@@ -347,7 +334,7 @@ bool text_element_set_text(JSContextRef ctx, JSObjectRef object,
     auto host = BindingsHost::get(ctx);
     auto elem = host->element_index->get_native_object(object);
     auto text_elem = dynamic_cast<elements::Text*>(elem.get());
-    text_elem->text = js_value_to_icu_str(ctx, value);
+    text_elem->text = icu_str_from_js(ctx, value);
     text_elem->change();
     return true;
 }

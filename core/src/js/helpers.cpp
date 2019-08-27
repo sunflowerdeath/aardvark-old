@@ -2,6 +2,8 @@
 
 namespace aardvark::js {
 
+// Numbers
+//
 int int_from_js(JSContextRef ctx, JSValueRef value) {
     return static_cast<int>(JSValueToNumber(ctx, value, nullptr));
 }
@@ -9,6 +11,8 @@ int int_from_js(JSContextRef ctx, JSValueRef value) {
 JSValueRef int_to_js(JSContextRef ctx, const int& value) {
     return JSValueMakeNumber(ctx, static_cast<int>(value));
 }
+
+// Strings
 
 std::string str_from_js(JSStringRef jsstring) {
     auto size = JSStringGetMaximumUTF8CStringSize(jsstring);
@@ -32,6 +36,23 @@ JSValueRef str_to_js(JSContextRef ctx, const std::string& str) {
     JSStringRelease(js_str);
     return value;
 };
+
+UnicodeString icu_str_from_js(JSContextRef ctx, JSValueRef value) {
+    auto js_str =
+        JSValueToStringCopy(ctx, value, /* exception */ nullptr);
+    auto icu_str = UnicodeString(JSStringGetCharactersPtr(js_str),
+                                 JSStringGetLength(js_str));
+    JSStringRelease(js_str);
+    return icu_str;
+};
+
+JSValueRef icu_str_to_js(JSContextRef ctx, const UnicodeString& str) {
+    auto js_str = JSStringCreateWithCharacters(str.getBuffer(), str.length());
+    auto value = JSValueMakeString(ctx, js_str);
+    JSStringRelease(js_str);
+    return value;
+}
+
 
 JSStringRef JsStringCache::get_string(const std::string& str) {
     auto it = strings.find(str);

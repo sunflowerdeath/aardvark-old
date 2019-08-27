@@ -143,11 +143,9 @@ BindingsHost::BindingsHost() {
     auto desktop_window_class = desktop_window_create_class();
     desktop_window_index =
         ObjectsIndex<DesktopWindow>(ctx, desktop_window_class);
-    add_constructor("DesktopWindow", desktop_window_class, nullptr);
 
     auto document_class = document_create_class();
     document_index = ObjectsIndex<Document>(ctx, document_class);
-    add_constructor("Document", document_class, nullptr);
 
     auto signal_connection_class = signal_connection_create_class();
     signal_connection_index =
