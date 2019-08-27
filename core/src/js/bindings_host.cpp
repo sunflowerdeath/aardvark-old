@@ -60,6 +60,42 @@ JSValueRef gc(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
     return JSValueMakeUndefined(ctx);
 }
 
+/*
+// Logs information about exception
+void log_exception(JSContextRef ctx, JSValueRef ex) {
+    std::cout << std::endl;
+
+    auto ex_str = JSValueToStringCopy(ctx, ex, nullptr);
+    std::cout << aardvark::js::str_from_js(ex_str) << std::endl;
+    JSStringRelease(ex_str);
+
+    auto ex_obj = JSValueToObject(ctx, ex, nullptr);
+    auto src = JSStringCreateWithUTF8CString(
+        "if (this.line !== undefined)"
+        "log('Error at line ' + this.line + ', column ' + this.column)");
+    auto result = JSEvaluateScript(ctx,     // ctx,
+                                   src,     // script
+                                   obj,     // thisObject,
+                                   nullptr, // sourceURL,
+                                   1,       // startingLineNumber,
+                                   nullptr  // exception
+    );
+    JSStringRelease(src);
+
+    std::cout << std::endl;
+}
+
+void BindingsHost::handle_exception(JSValueRef ex) {
+    if (ex == nullptr) return;
+    if (exception_handler) {
+        exception_handler(ex);
+    } else {
+        log_exception(ex);
+        app.stop();
+    }
+}
+*/
+
 // BindingsHost
 
 BindingsHost::BindingsHost() {
@@ -72,11 +108,6 @@ BindingsHost::BindingsHost() {
     auto global_object = JSContextGetGlobalObject(ctx);
     JSObjectSetPrivate(global_object, static_cast<void*>(this));
 
-    add_function("log", &log);
-    add_function("setTimeout", &set_timeout);
-    add_function("clearTimeout", &clear_timeout);
-    add_function("gc", &gc);
-
     auto window_str = JSStringCreateWithUTF8CString("window");
     JSObjectSetProperty(ctx,                            // ctx
                         JSContextGetGlobalObject(ctx),  // object
@@ -87,10 +118,23 @@ BindingsHost::BindingsHost() {
     );
     JSStringRelease(window_str);
 
+    app = std::make_shared<DesktopApp>(event_loop);
     auto desktop_app_class = desktop_app_create_class();
-    desktop_app_index = ObjectsIndex<DesktopApp>(ctx, desktop_app_class);
-    add_constructor("DesktopApp", desktop_app_class,
-                    desktop_app_call_as_constructor);
+    auto app_str = JSStringCreateWithUTF8CString("application");
+    auto app_object = JSObjectMake(ctx, desktop_app_class, nullptr);
+    JSObjectSetProperty(ctx,                            // ctx
+                        JSContextGetGlobalObject(ctx),  // object
+                        app_str,                        // propertyName
+                        app_object,                     // value
+                        PROP_ATTR_STATIC,               // attributes
+                        nullptr                         // exception
+    );
+    JSStringRelease(app_str);
+
+    add_function("log", &log);
+    add_function("setTimeout", &set_timeout);
+    add_function("clearTimeout", &clear_timeout);
+    add_function("gc", &gc);
 
     auto desktop_app_window_list_class = desktop_app_window_list_create_class();
     desktop_app_window_list_index =

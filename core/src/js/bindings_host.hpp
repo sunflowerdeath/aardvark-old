@@ -37,9 +37,9 @@ class BindingsHost {
 
     JSGlobalContextRef ctx;
     std::shared_ptr<EventLoop> event_loop = std::make_shared<EventLoop>();
+    std::shared_ptr<DesktopApp> app;
 
     // Use optional to defer initialization
-    std::optional<ObjectsIndex<DesktopApp>> desktop_app_index;
     std::optional<ObjectsIndex<DesktopApp>> desktop_app_window_list_index;
     std::optional<ObjectsIndex<DesktopWindow>> desktop_window_index;
     std::optional<ObjectsIndex<Document>> document_index;

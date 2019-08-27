@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react'
-
 import ReactAardvark from '@advk/react-renderer'
 import {
 	GestureResolver,
@@ -7,9 +6,8 @@ import {
 	PointerEventTool
 } from '@advk/common'
 
-let app = new DesktopApp()
-let win = app.createWindow(640, 480)
-let document = app.getDocument(win)
+const win = application.createWindow(640, 480)
+const document = application.getDocument(win)
 
 const INITIAL_STATE = { isPressed: false, isAccepted: false }
 
@@ -156,5 +154,5 @@ const App = () => {
 }
 
 ReactAardvark.render(<App />, document)
-app.run()
-global.app = app
+// app.run()
+// global.app = app
