@@ -108,28 +108,12 @@ BindingsHost::BindingsHost() {
     auto global_object = JSContextGetGlobalObject(ctx);
     JSObjectSetPrivate(global_object, static_cast<void*>(this));
 
-    auto window_str = JSStringCreateWithUTF8CString("window");
-    JSObjectSetProperty(ctx,                            // ctx
-                        JSContextGetGlobalObject(ctx),  // object
-                        window_str,                     // propertyName
-                        JSContextGetGlobalObject(ctx),  // value
-                        PROP_ATTR_STATIC,               // attributes
-                        nullptr                         // exception
-    );
-    JSStringRelease(window_str);
+    add_object("window", JSContextGetGlobalObject(ctx), PROP_ATTR_STATIC);
 
     app = std::make_shared<DesktopApp>(event_loop);
     auto desktop_app_class = desktop_app_create_class();
-    auto app_str = JSStringCreateWithUTF8CString("application");
     auto app_object = JSObjectMake(ctx, desktop_app_class, nullptr);
-    JSObjectSetProperty(ctx,                            // ctx
-                        JSContextGetGlobalObject(ctx),  // object
-                        app_str,                        // propertyName
-                        app_object,                     // value
-                        PROP_ATTR_STATIC,               // attributes
-                        nullptr                         // exception
-    );
-    JSStringRelease(app_str);
+    add_object("application", app_object, PROP_ATTR_STATIC);
 
     add_function("log", &log);
     add_function("setTimeout", &set_timeout);
@@ -161,32 +145,22 @@ BindingsHost::BindingsHost() {
         return this->get_element_js_class(elem);
     });
 
-    register_elem_class("Align", typeid(elements::Align),
-                        align_elem_create_class,
-                        align_elem_call_as_constructor);
-
-    register_elem_class("Background", typeid(elements::Background),
-                        background_elem_create_class,
-                        background_elem_call_as_constructor);
-
-    register_elem_class("Center", typeid(elements::Center),
-                        center_elem_create_class,
-                        center_elem_call_as_constructor);
-
-    register_elem_class("Responder", typeid(elements::ResponderElement),
-                        responder_elem_create_class,
-                        responder_elem_call_as_constructor);
-
-    register_elem_class("Stack", typeid(elements::Stack),
-                        stack_elem_create_class,
-                        stack_elem_call_as_constructor);
-
-    register_elem_class("Sized", typeid(elements::Sized),
-                        sized_elem_create_class,
-                        sized_elem_call_as_constructor);
-
-    register_elem_class("Text", typeid(elements::Text), text_elem_create_class,
-                        text_elem_call_as_constructor);
+    add_elem_class("Align", typeid(elements::Align), align_elem_create_class,
+                   align_elem_call_as_constructor);
+    add_elem_class("Background", typeid(elements::Background),
+                   background_elem_create_class,
+                   background_elem_call_as_constructor);
+    add_elem_class("Center", typeid(elements::Center), center_elem_create_class,
+                   center_elem_call_as_constructor);
+    add_elem_class("Responder", typeid(elements::ResponderElement),
+                   responder_elem_create_class,
+                   responder_elem_call_as_constructor);
+    add_elem_class("Stack", typeid(elements::Stack), stack_elem_create_class,
+                   stack_elem_call_as_constructor);
+    add_elem_class("Sized", typeid(elements::Sized), sized_elem_create_class,
+                   sized_elem_call_as_constructor);
+    add_elem_class("Text", typeid(elements::Text), text_elem_create_class,
+                   text_elem_call_as_constructor);
 }
 
 JSValueRef BindingsHost::eval_script(const std::string& src,
@@ -200,20 +174,8 @@ JSValueRef BindingsHost::eval_script(const std::string& src,
                                    exception  // exception
     );
     JSStringRelease(js_src);
+    // if (ex != nullptr) handle_exception(exception);
     return result;
-}
-
-void BindingsHost::register_elem_class(
-    const char* name, const std::type_info& elem_type,
-    JSCreateClassCallback create_class,
-    JSObjectCallAsConstructorCallback call_as_constructor) {
-    auto js_class = create_class(element_class);
-    elements_classes[std::type_index(elem_type)] = js_class;
-    add_constructor(name, js_class, call_as_constructor);
-}
-
-JSClassRef BindingsHost::get_element_js_class(Element* elem) {
-    return elements_classes[std::type_index(typeid(*elem))];
 }
 
 BindingsHost::~BindingsHost() {
@@ -244,15 +206,17 @@ void BindingsHost::add_function(const char* name,
     JSStringRelease(js_name);
 }
 
-void BindingsHost::add_object(const char* name, JSObjectRef object,
+void BindingsHost::add_object(const char* prop_name, JSObjectRef object,
                                 JSPropertyAttributes attributes) {
-    JSObjectSetProperty(ctx,                                  // ctx
-                        JSContextGetGlobalObject(ctx),        // object
-                        JSStringCreateWithUTF8CString(name),  // propertyName
-                        object,                               // value
-                        attributes,                           // attributes
-                        nullptr                               // exception
+    auto js_prop_name = JSStringCreateWithUTF8CString(prop_name);
+    JSObjectSetProperty(ctx,                            // ctx
+                        JSContextGetGlobalObject(ctx),  // object
+                        js_prop_name,                   // propertyName
+                        object,                         // value
+                        attributes,                     // attributes
+                        nullptr                         // exception
     );
+    JSStringRelease(js_prop_name);
 }
 
 void BindingsHost::add_constructor(
@@ -261,6 +225,19 @@ void BindingsHost::add_constructor(
     auto constructor =
         JSObjectMakeConstructor(ctx, jsclass, call_as_constructor);
     add_object(name, constructor);
+}
+
+void BindingsHost::add_elem_class(
+    const char* name, const std::type_info& elem_type,
+    JSCreateClassCallback create_class,
+    JSObjectCallAsConstructorCallback call_as_constructor) {
+    auto js_class = create_class(element_class);
+    elements_classes[std::type_index(elem_type)] = js_class;
+    add_constructor(name, js_class, call_as_constructor);
+}
+
+JSClassRef BindingsHost::get_element_js_class(Element* elem) {
+    return elements_classes[std::type_index(typeid(*elem))];
 }
 
 }  // namespace aardvark::js

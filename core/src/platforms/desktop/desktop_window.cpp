@@ -1,5 +1,7 @@
 #include "desktop_window.hpp"
 
+#include <iostream>
+
 namespace aardvark {
 
 const int STENCIL_BITS = 8;

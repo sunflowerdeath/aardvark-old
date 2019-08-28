@@ -7,8 +7,12 @@ mkdir -p $ROOT/downloads
 cd $ROOT/downloads
 
 # fmt@5.2.1
-echo "clone fmt@5.2.1"
-git clone https://github.com/fmtlib/fmt -b 5.2.1 --depth 1
+# echo "clone fmt@5.2.1"
+# git clone https://github.com/fmtlib/fmt -b 5.2.1 --depth 1
+
+# boost@1.71.0
+echo "download boost@1.71.0"
+curl "https://dl.bintray.com/boostorg/release/1.71.0/source/boost_1_71_0.tar.gz" -L -# > boost_1_71_0_rc2.tar.gz
 
 # skia@m71
 echo "clone skia@m71"

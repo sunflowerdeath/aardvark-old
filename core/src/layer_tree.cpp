@@ -1,5 +1,4 @@
 #include "layer_tree.hpp"
-#include <iostream>
 
 namespace aardvark {
 

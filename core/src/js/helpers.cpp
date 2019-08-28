@@ -3,7 +3,7 @@
 namespace aardvark::js {
 
 // Numbers
-//
+
 int int_from_js(JSContextRef ctx, JSValueRef value) {
     return static_cast<int>(JSValueToNumber(ctx, value, nullptr));
 }

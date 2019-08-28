@@ -77,14 +77,6 @@ set_target_properties(nod PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/externals/nod/include)
 
-# asio
-# add_library(asio INTERFACE)
-# set_target_properties(asio PROPERTIES
-    # INTERFACE_INCLUDE_DIRECTORIES
-    # ${CMAKE_CURRENT_SOURCE_DIR}/externals/asio/include
-    # INTERFACE_COMPILE_DEFINITIONS "ASIO_STANDALONE=1"
-# )
-
 # boost
 set(BOOST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/externals/boost")
 find_package(Boost 1.71.0 REQUIRED)
@@ -309,7 +301,7 @@ if(ADV_PLATFORM STREQUAL "android")
         src/platforms/android/android_app.cpp
         src/platforms/android/android_jni.cpp
         src/platforms/android/android_binary_channel.cpp)
-    # src/platforms/android/android_texture_layer.cpp
+        # src/platforms/android/android_texture_layer.cpp)
     target_link_libraries(aardvark android EGL GLESv2 log)
 endif()
 

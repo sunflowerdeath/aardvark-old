@@ -23,7 +23,7 @@ class Sized : public SingleChildElement {
     Sized(std::shared_ptr<Element> child, SizeConstraints size,
           bool is_repaint_boundary = false);
     SizeConstraints size_constraints;
-    std::string get_debug_name() override { return "Size"; };
+    std::string get_debug_name() override { return "Sized"; };
     Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
 };

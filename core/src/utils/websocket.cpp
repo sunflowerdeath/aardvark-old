@@ -1,7 +1,5 @@
 #include "websocket.hpp"
 
-#include <iostream>
-
 namespace aardvark {
 
 void Websocket::open() {

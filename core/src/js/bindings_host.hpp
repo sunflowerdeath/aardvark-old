@@ -55,8 +55,6 @@ class BindingsHost {
     static BindingsHost* get(JSContextRef ctx);
 
   private:
-    JSClassRef get_element_js_class(Element* elem);
-
     void add_function(
         const char* name, JSObjectCallAsFunctionCallback function,
         JSPropertyAttributes attributes = property_attributes_immutable);
@@ -68,12 +66,12 @@ class BindingsHost {
     void add_constructor(const char* name, JSClassRef jsclass,
                          JSObjectCallAsConstructorCallback call_as_constructor);
 
-    void register_elem_class(
+    JSClassRef get_element_js_class(Element* elem);
+
+    void add_elem_class(
         const char* name, const std::type_info& elem_type,
         JSCreateClassCallback create_class,
         JSObjectCallAsConstructorCallback call_as_constructor);
 };
-
-std::string jsstring_to_std(JSStringRef jsstring);
 
 }  // namespace aardvark::js

@@ -1,5 +1,4 @@
 #include "paint_cache.hpp"
-#include <iostream>
 
 namespace aardvark {
 

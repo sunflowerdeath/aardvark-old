@@ -1,4 +1,5 @@
 #include "desktop_app.hpp"
+
 #include <chrono>
 #include <iostream>
 #include <thread>
@@ -130,6 +131,7 @@ void DesktopApp::render(std::function<void(void)> update_callback) {
 
 void DesktopApp::handle_event(GLFWwindow* window, Event event) {
     if (event_handler) event_handler(this, event);
+    // dispatch window events (close/minimize/maximize)
     if (auto pointer_event = std::get_if<PointerEvent>(&event)) {
         auto win = windows[0];  // TODO: support multiple windows
         auto doc = get_document(win);

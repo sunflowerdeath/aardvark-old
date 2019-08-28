@@ -1,3 +1,4 @@
+#pragma once
 
 #include <functional>
 #include <vector>
@@ -56,7 +57,7 @@ class FunctionWrapper {
                                    nullptr,         // thisObject
                                    js_args.size(),  // argumentCount
                                    js_args.data(),  // arguments[],
-                                   &exception        // exception
+                                   &exception       // exception
             );
         if (exception != nullptr)
             std::cout << "Exception in callback" << std::endl;
