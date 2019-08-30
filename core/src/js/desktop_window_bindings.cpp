@@ -26,11 +26,10 @@ void desktop_window_finalize(JSObjectRef object) {
 
 JSClassRef desktop_window_create_class() {
     auto definition = kJSClassDefinitionEmpty;
-    JSStaticValue static_values[] = {{"width", desktop_window_get_width,
-                                      nullptr, property_attributes_immutable},
-                                     {"height", desktop_window_get_height,
-                                      nullptr, property_attributes_immutable},
-                                     {0, 0, 0, 0}};
+    JSStaticValue static_values[] = {
+        {"width", desktop_window_get_width, nullptr, PROP_ATTR_STATIC},
+        {"height", desktop_window_get_height, nullptr, PROP_ATTR_STATIC},
+        {0, 0, 0, 0}};
     definition.className = "DesktopWindow";
     definition.finalize = desktop_window_finalize;
     definition.staticValues = static_values;

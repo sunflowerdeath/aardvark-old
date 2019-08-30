@@ -22,9 +22,6 @@ namespace aardvark::js {
 constexpr auto PROP_ATTR_STATIC =
     kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete;
 
-const auto property_attributes_immutable =
-    kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete;
-
 typedef JSClassRef (*JSCreateClassCallback)(JSClassRef base_class);
 
 class JSGlobalContextWrapper {
@@ -39,6 +36,8 @@ class BindingsHost {
     BindingsHost();
     ~BindingsHost();
 
+    void run();
+    void stop();
     JSValueRef eval_script(const std::string& src);
     void handle_exception(JSValueRef ex);
 
@@ -50,6 +49,7 @@ class BindingsHost {
     // `type_info` can't be used as map key, it should be wrapped into
     // `type_index`
     std::unordered_map<std::type_index, JSClassRef> elements_classes;
+
     // Use optional to defer initialization
     std::optional<ObjectsIndex<DesktopApp>> desktop_app_window_list_index;
     std::optional<ObjectsIndex<DesktopWindow>> desktop_window_index;
@@ -61,13 +61,13 @@ class BindingsHost {
     static BindingsHost* get(JSContextRef ctx);
 
   private:
-    void add_function(
-        const char* name, JSObjectCallAsFunctionCallback function,
-        JSPropertyAttributes attributes = property_attributes_immutable);
+    bool is_running = false;
 
-    void add_object(
-        const char* name, JSObjectRef object,
-        JSPropertyAttributes attributes = property_attributes_immutable);
+    void add_function(const char* name, JSObjectCallAsFunctionCallback function,
+                      JSPropertyAttributes attributes = PROP_ATTR_STATIC);
+
+    void add_object(const char* name, JSObjectRef object,
+                    JSPropertyAttributes attributes = PROP_ATTR_STATIC);
 
     void add_constructor(const char* name, JSClassRef jsclass,
                          JSObjectCallAsConstructorCallback call_as_constructor);

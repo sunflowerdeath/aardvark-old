@@ -112,11 +112,11 @@ BindingsHost::BindingsHost() {
     websocket_index.emplace(ctx->ctx, websocket_class);
     add_constructor("WebSocket", websocket_class,
                     websocket_call_as_constructor);
+
     element_class = element_create_class();
     element_index.emplace(ctx->ctx, [this](Element* elem) {
         return this->get_element_js_class(elem);
     });
-
     add_elem_class("Align", typeid(elements::Align), align_elem_create_class,
                    align_elem_call_as_constructor);
     add_elem_class("Background", typeid(elements::Background),
@@ -136,7 +136,7 @@ BindingsHost::BindingsHost() {
 }
 
 BindingsHost::~BindingsHost() {
-    std::cout << "destroy host" << std::endl;
+    // JSC context is always destroyed first
     ctx.reset();
 }
 
@@ -145,10 +145,23 @@ BindingsHost* BindingsHost::get(JSContextRef ctx) {
     return static_cast<BindingsHost*>(JSObjectGetPrivate(global_object));
 }
 
+void BindingsHost::run() {
+    if (is_running) return;
+    is_running = true;
+    app->run();
+    event_loop->run();
+}
+
+void BindingsHost::stop() {
+    if (!is_running) return;
+    is_running = false;
+    app->stop();
+    event_loop->stop();
+}
+
 JSValueRef BindingsHost::eval_script(const std::string& src) {
     auto js_src = JSStringCreateWithUTF8CString(src.c_str());
     auto ex = JSValueRef();
-    std::cout << "eval" << std::endl;
     auto result = JSEvaluateScript(ctx->ctx,  // ctx,
                                    js_src,    // script
                                    nullptr,   // thisObject,
@@ -156,7 +169,6 @@ JSValueRef BindingsHost::eval_script(const std::string& src) {
                                    1,         // startingLineNumber,
                                    &ex        // exception
     );
-    std::cout << "after eval" << std::endl;
     JSStringRelease(js_src);
     if (ex != nullptr) handle_exception(ex);
     return result;
@@ -168,7 +180,7 @@ void BindingsHost::handle_exception(JSValueRef ex) {
         exception_handler(ex);
     } else {
         log_exception(ctx->ctx, ex);
-        event_loop->stop();
+        stop();
     }
 }
 

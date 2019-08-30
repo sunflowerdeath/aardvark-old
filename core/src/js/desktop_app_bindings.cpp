@@ -98,15 +98,14 @@ JSValueRef desktop_app_window_list_get_size(JSContextRef ctx,
 }
 
 void desktop_app_window_list_finalize(JSObjectRef object) {
-    // TODO
-    // ObjectsIndex<DesktopApp>::remove(object);
+    ObjectsIndex<DesktopApp>::remove(object);
 }
 
 JSClassRef desktop_app_window_list_create_class() {
     auto definition = kJSClassDefinitionEmpty;
-    JSStaticValue static_values[] = {{"size", desktop_app_window_list_get_size,
-                                      nullptr, property_attributes_immutable},
-                                     {0, 0, 0, 0}};
+    JSStaticValue static_values[] = {
+        {"size", desktop_app_window_list_get_size, nullptr, PROP_ATTR_STATIC},
+        {0, 0, 0, 0}};
     definition.className = "DesktopAppWindowsList";
     definition.staticValues = static_values;
     definition.finalize = desktop_app_window_list_finalize;
