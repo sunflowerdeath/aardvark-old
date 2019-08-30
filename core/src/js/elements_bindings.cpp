@@ -254,17 +254,17 @@ JSValueRef responder_elem_get_handler(JSContextRef ctx, JSObjectRef object,
 bool responder_elem_set_handler(JSContextRef ctx, JSObjectRef object,
                                 JSStringRef property_name, JSValueRef value,
                                 JSValueRef* exception) {
-    // JSValueRef responder_elem_set_handler(JSContextRef ctx, JSObjectRef
-    // function, JSObjectRef object, size_t argument_count, const JSValueRef
-    // arguments[], JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
     auto responder = get_elem<elements::ResponderElement>(ctx, object);
     responder->handler =
         FunctionWrapper<void, PointerEvent, ResponderEventType>(
-            JSContextGetGlobalContext(ctx),    // ctx
-            value,                             // function
-            responder_handler_args_to_js,      // args_to_js
-            responder_handler_ret_val_from_js  // ret_val_from_js
-        );
+            host->ctx,                          // ctx
+            value,                              // function
+            responder_handler_args_to_js,       // args_to_js
+            responder_handler_ret_val_from_js,  // ret_val_from_js
+            [host](JSContextRef ctx, JSValueRef ex) {
+                host->handle_exception(ex);
+            });
     return true;
 }
 

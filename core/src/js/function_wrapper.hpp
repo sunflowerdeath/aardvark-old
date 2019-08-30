@@ -12,21 +12,21 @@ class FunctionWrapper {
   public:
     using ArgsToJsType =
         std::function<std::vector<JSValueRef>(JSContextRef, ArgsTypes...)>;
+    // returned JSValue might be nullptr when exception happened
     using RetValFromJsType =
         std::function<RetValType(JSContextRef, JSValueRef)>;
+    using ExceptionHandler = std::function<void(JSContextRef, JSValueRef)>;
 
-    FunctionWrapper(
-        JSContextRef ctx, JSValueRef value,
-        ArgsToJsType args_to_js =
-            [](JSContextRef ctx) { return std::vector<JSValueRef>(); },
-        RetValFromJsType ret_val_from_js = [](JSContextRef ctx,
-                                              JSValueRef value) {})
-        : value(value),
+    FunctionWrapper(std::weak_ptr<JSGlobalContextWrapper> ctx, JSValueRef value,
+                    ArgsToJsType args_to_js = nullptr,
+                    RetValFromJsType ret_val_from_js = nullptr,
+                    ExceptionHandler exception_handler = nullptr)
+        : ctx(ctx),
+          value(value),
           args_to_js(args_to_js),
-          ret_val_from_js(ret_val_from_js) {
-        this->ctx = JSContextGetGlobalContext(ctx);
-        JSGlobalContextRetain(this->ctx);
-        JSValueProtect(ctx, value);
+          ret_val_from_js(ret_val_from_js),
+          exception_handler(exception_handler) {
+        if (auto ctx_lock = ctx.lock()) JSValueProtect(ctx_lock->ctx, value);
     }
 
     // Copy
@@ -35,41 +35,46 @@ class FunctionWrapper {
         value = wrapper.value;
         args_to_js = wrapper.args_to_js;
         ret_val_from_js = wrapper.ret_val_from_js;
-        JSGlobalContextRetain(ctx);
-        JSValueProtect(ctx, value);
+        exception_handler = wrapper.exception_handler;
+        if (auto ctx_lock = ctx.lock()) JSValueProtect(ctx_lock->ctx, value);
     }
 
     ~FunctionWrapper() { 
-        JSValueUnprotect(ctx, value);
-        JSGlobalContextRelease(ctx);
+        if (auto ctx_lock = ctx.lock()) JSValueUnprotect(ctx_lock->ctx, value);
     }
 
     RetValType operator()(ArgsTypes... args) {
-        auto object = JSValueToObject(ctx, value, nullptr);
-        auto js_args = args_to_js(ctx, args...);
+        auto ctx_lock = ctx.lock();
+        if (!ctx_lock) return ret_val_from_js(nullptr, nullptr);
+        auto object = JSValueToObject(ctx_lock->ctx, value, nullptr);
+        auto js_args = args_to_js ? args_to_js(ctx_lock->ctx, args...)
+                                  : std::vector<JSValueRef>();
         // Pin because during the call wrapper may be destroyed
         auto pin_ret_val_from_js = ret_val_from_js;
-        auto pin_ctx = ctx;
         auto exception = JSValueRef();
         auto js_ret_val =
-            JSObjectCallAsFunction(ctx,             // ctx
+            JSObjectCallAsFunction(ctx_lock->ctx,   // ctx
                                    object,          // object
                                    nullptr,         // thisObject
                                    js_args.size(),  // argumentCount
                                    js_args.data(),  // arguments[],
                                    &exception       // exception
             );
-        if (exception != nullptr)
-            std::cout << "Exception in callback" << std::endl;
-        // TODO check exception and stop event loop or call callback?
-        return pin_ret_val_from_js(pin_ctx, js_ret_val);
+        if (exception != nullptr && exception_handler) {
+            exception_handler(ctx_lock->ctx, exception);
+        }
+        if (pin_ret_val_from_js) {
+            return pin_ret_val_from_js(
+                ctx_lock->ctx, exception == nullptr ? js_ret_val : nullptr);
+        }  // else return type should be void
     }
 
   private:
-    JSGlobalContextRef ctx;
+    std::weak_ptr<JSGlobalContextWrapper> ctx;
     JSValueRef value;
     ArgsToJsType args_to_js;
     RetValFromJsType ret_val_from_js;
+    ExceptionHandler exception_handler;
 };
 
 }  // namespace aardvark::js

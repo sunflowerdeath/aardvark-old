@@ -42,14 +42,13 @@ std::vector<JSValueRef> websocket_message_handler_args_to_js(
 }
 
 JSValueRef websocket_add_open_handler(JSContextRef ctx, JSObjectRef function,
-                                       JSObjectRef object,
-                                       size_t argument_count,
-                                       const JSValueRef arguments[],
-                                       JSValueRef* exception) {
+                                      JSObjectRef object, size_t argument_count,
+                                      const JSValueRef arguments[],
+                                      JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
     auto ws = host->websocket_index->get_native_object(object);
     auto connection =
-        ws->open_signal.connect(FunctionWrapper<void>(ctx, arguments[0]));
+        ws->open_signal.connect(FunctionWrapper<void>(host->ctx, arguments[0]));
     return signal_connection_to_js(ctx, std::move(connection));
 }
 
@@ -62,7 +61,7 @@ JSValueRef websocket_add_message_handler(JSContextRef ctx, JSObjectRef function,
     auto ws = host->websocket_index->get_native_object(object);
     auto connection =
         ws->message_signal.connect(FunctionWrapper<void, std::string>(
-            ctx, arguments[0], websocket_message_handler_args_to_js));
+            host->ctx, arguments[0], websocket_message_handler_args_to_js));
     return signal_connection_to_js(ctx, std::move(connection));
 }
 
@@ -75,7 +74,7 @@ JSValueRef websocket_add_error_handler(JSContextRef ctx, JSObjectRef function,
     auto ws = host->websocket_index->get_native_object(object);
     auto connection =
         ws->error_signal.connect(FunctionWrapper<void, std::string>(
-            ctx, arguments[0], websocket_error_handler_args_to_js));
+            host->ctx, arguments[0], websocket_error_handler_args_to_js));
     return signal_connection_to_js(ctx, std::move(connection));
 }
 
@@ -86,8 +85,8 @@ JSValueRef websocket_add_close_handler(JSContextRef ctx, JSObjectRef function,
                                        JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
     auto ws = host->websocket_index->get_native_object(object);
-    auto connection =
-        ws->close_signal.connect(FunctionWrapper<void>(ctx, arguments[0]));
+    auto connection = ws->close_signal.connect(
+        FunctionWrapper<void>(host->ctx, arguments[0]));
     return signal_connection_to_js(ctx, std::move(connection));
 }
 

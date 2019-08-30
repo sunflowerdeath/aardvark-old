@@ -3,7 +3,6 @@
 #include <functional>
 #include <unordered_map>
 #include <mutex>
-#include <iostream>
 #include <chrono>
 
 #include "boost/asio.hpp"

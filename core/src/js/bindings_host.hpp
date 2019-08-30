@@ -27,18 +27,29 @@ const auto property_attributes_immutable =
 
 typedef JSClassRef (*JSCreateClassCallback)(JSClassRef base_class);
 
+class JSGlobalContextWrapper {
+  public:
+    JSGlobalContextWrapper(JSGlobalContextRef ctx) : ctx(ctx){};
+    ~JSGlobalContextWrapper() { JSGlobalContextRelease(ctx); };
+    JSGlobalContextRef ctx;
+};
+
 class BindingsHost {
   public:
     BindingsHost();
     ~BindingsHost();
 
-    JSValueRef eval_script(const std::string& src,
-                           JSValueRef* exception = nullptr);
+    JSValueRef eval_script(const std::string& src);
+    void handle_exception(JSValueRef ex);
 
-    JSGlobalContextRef ctx;
+    std::shared_ptr<JSGlobalContextWrapper> ctx;
+    std::function<void(JSValueRef)> exception_handler;
     std::shared_ptr<EventLoop> event_loop = std::make_shared<EventLoop>();
     std::shared_ptr<DesktopApp> app;
-
+    JSClassRef element_class;
+    // `type_info` can't be used as map key, it should be wrapped into
+    // `type_index`
+    std::unordered_map<std::type_index, JSClassRef> elements_classes;
     // Use optional to defer initialization
     std::optional<ObjectsIndex<DesktopApp>> desktop_app_window_list_index;
     std::optional<ObjectsIndex<DesktopWindow>> desktop_window_index;
@@ -46,11 +57,6 @@ class BindingsHost {
     std::optional<ObjectsIndex<Element>> element_index;
     std::optional<ObjectsIndex<nod::connection>> signal_connection_index;
     std::optional<ObjectsIndex<Websocket>> websocket_index;
-    JSClassRef element_class;
-
-    // `type_info` can't be used as map key, it should be wrapped into
-    // `type_index`
-    std::unordered_map<std::type_index, JSClassRef> elements_classes;
 
     static BindingsHost* get(JSContextRef ctx);
 
