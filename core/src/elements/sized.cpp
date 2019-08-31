@@ -20,7 +20,6 @@ Size Sized::layout(BoxConstraints constraints) {
     auto child_size = document->layout_element(child.get(), child_constraints);
     child->size = child_size;
     child->rel_position = Position{0 /* left */, 0 /* top */};
-    // auto self_size = constraints.sheet(child_size);
     return child_size;
 };
 

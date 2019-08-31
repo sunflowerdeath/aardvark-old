@@ -5,7 +5,7 @@ export default {
 	name: 'Design',
 	stories: {
 	    'rendering-engine-architecture': {
-            name: 'Rendering Engine rchitecture',
+            name: 'Rendering Engine Architecture',
             markdown: RenderingEngineArchitecture
         },
 	    'inline-rendering': {

@@ -6,10 +6,12 @@ import 'minibook/lib/styles.css'
 
 import DesignSection from './design'
 import CppApiSection from './cpp-api'
+import JsApiSection from './js-api'
 
 const sections = {
 	'design': DesignSection,
-	'cpp-api': CppApiSection
+	'cpp-api': CppApiSection,
+	'js-api': JsApiSection
 }
 
 ReactDOM.render(

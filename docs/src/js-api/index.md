@@ -1,46 +1,32 @@
-# C++ API / Index
+# JS API / Index
 
-## `namespace aardvark`
+## Global objects and functions
 
-- [`class BoxConstraints`]()
-- [`class DesktopWindow`]()
-- [`class DesktopApp`]()
-- [`class Document`]()
-- [`class Element`]()
-- [`class MultipleChildrenElement`]()
-- [`class SingleChildElement`]()
-- [`struct Scale`]()
-- [`struct Size`]()
-- [`struct Position`]()
-- [`enum class ResponderMode`]()
-- [`class Responder`]()
-- [`class Value`]()
+- [`application`]()
+- [`log()`]()
+- [`gc()`]()
+- [`setTimeout()`]()
+- [`clearTimeout()`]()
 
-## `namespace aardvark::elements`
+## Types
 
-- [`struct Alignment`]()
-- [`class AlignElement`]()
-- [`class BackgroundElement`]()
-- [`class BorderElement`]()
-- [`class CenterElement`]()
-- [`class ClipElement`]()
-- [`class SizeElement`]()
-- [`class ResponderElement`]()
-- [`class LayerElement`]()
-- [`class ParagraphElement`]()
-- [`class StackElement`]()
-- [`class TextElement`]()
+- [`Color`]()
+- [`SizeConstraints`]()
+- [`Alignment`]()
+- [`Value`]()
+- [`PointerEvent`]()
 
-## `namespace aardvark::inline_layout`
+## Elements
 
-- [`struct Decoration`]()
-- [`class DecorationSpan`]()
-- [`struct InlineConstraints`]()
-- [`struct InlineLayoutResult`]()
-- [`enum class LineBreak`]()
-- [`class LineMetrics`]()
-- [`struct SpanSelectionEdge`]()
-- [`struct SpanSelectionRange`]()
-- [`struct SpanBase`]()
-- [`class Span`]()
-- [`class TextSpan`]()
+- [`Align`]()
+- [`Background`]()
+- [`Center`]()
+- [`Responder`]()
+- [`Sized`]()
+- [`Stack`]()
+- [`Text`]()
+
+## APIs
+
+- [`WebSocket`]()
+- [`http`]()

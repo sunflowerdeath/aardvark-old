@@ -1,17 +1,17 @@
 import Index from './index.md'
-import Element from './element.md'
-import SingleChildElement from './single-child-element.md'
-import InlineLayoutLineBreak from './inline-layout-line-break.md'
+import React from './react.md'
+
+import Align from './elements/align.md'
+import Sized from './elements/sized.md'
+import Elements from './elements/elements.md'
 
 export default {
-	name: 'C++ API',
+	name: 'JS API',
 	stories: {
 	    'index': { name: 'Index', markdown: Index },
-		'element': { name: 'class Element', markdown: Element },
-		'single-child-element': { name: 'class SingleChildElement', markdown: SingleChildElement },
-		'inline-layout-line-break': {
-            name: 'enum class inline_layout::LineBreak',
-            markdown: InlineLayoutLineBreak
-        }
+	    'react-renderer': { name: 'React renderer', markdown: React },
+        'align': { name: 'Align', markdown: Align },
+        'sized': { name: 'Sized', markdown: Sized },
+        'elements': { name: 'Elements', markdown: Elements }
 	}
 }
