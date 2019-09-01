@@ -23,9 +23,7 @@ JSValueRef log(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
                JSValueRef* exception) {
     for (auto i = 0; i < argument_count; i++) {
         if (i != 0) std::cout << " ";
-        auto str = JSValueToStringCopy(ctx, arguments[i], nullptr);
-        std::cout << str_from_js(str);
-        JSStringRelease(str);
+        std::cout << str_from_js(ctx, arguments[i]);
     }
     std::cout << std::endl;
     return JSValueMakeUndefined(ctx);
@@ -64,9 +62,16 @@ void log_exception(JSContextRef ctx, JSValueRef ex) {
     std::cout << std::endl;
     std::cout << aardvark::js::str_from_js(ctx, ex) << std::endl;
     auto obj = JSValueToObject(ctx, ex, nullptr);
+
+    std::string source_url;
+    map_prop_from_js<std::string, str_from_js>(ctx, obj, "sourceURL",
+                                               &source_url);
+    std::cout << "File: " << source_url << std::endl;
+
     auto src = JSStringCreateWithUTF8CString(
-        "if (this.line !== undefined)"
-        "log('Error at line ' + this.line + ', column ' + this.column)");
+        "if (this.line !== undefined) {"
+        "    log('Error at line ' + this.line + ', column ' + this.column)"
+        "}");
     auto result = JSEvaluateScript(ctx,      // ctx,
                                    src,      // script
                                    obj,      // thisObject,
@@ -75,6 +80,7 @@ void log_exception(JSContextRef ctx, JSValueRef ex) {
                                    nullptr   // exception
     );
     JSStringRelease(src);
+
     std::cout << std::endl;
 }
 
@@ -159,17 +165,22 @@ void BindingsHost::stop() {
     event_loop->stop();
 }
 
-JSValueRef BindingsHost::eval_script(const std::string& src) {
+JSValueRef BindingsHost::eval_script(const std::string& src,
+                                     const std::string& source_url) {
     auto js_src = JSStringCreateWithUTF8CString(src.c_str());
+    auto js_source_url =
+        source_url.empty() ? nullptr
+                           : JSStringCreateWithUTF8CString(source_url.c_str());
     auto ex = JSValueRef();
-    auto result = JSEvaluateScript(ctx->ctx,  // ctx,
-                                   js_src,    // script
-                                   nullptr,   // thisObject,
-                                   nullptr,   // sourceURL,
-                                   1,         // startingLineNumber,
-                                   &ex        // exception
+    auto result = JSEvaluateScript(ctx->ctx,       // ctx,
+                                   js_src,         // script
+                                   nullptr,        // thisObject,
+                                   js_source_url,  // sourceURL,
+                                   1,              // startingLineNumber,
+                                   &ex             // exception
     );
     JSStringRelease(js_src);
+    if (js_source_url != nullptr) JSStringRelease(js_source_url);
     if (ex != nullptr) handle_exception(ex);
     return result;
 }

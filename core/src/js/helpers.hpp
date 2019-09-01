@@ -12,7 +12,8 @@ JSValueRef int_to_js(JSContextRef ctx, const int& value);
 
 //Strings
 
-std::string str_from_js(JSStringRef jsstring);
+std::string str_from_js_str(JSStringRef js_str);
+
 std::string str_from_js(JSContextRef ctx, JSValueRef value);
 JSValueRef str_to_js(JSContextRef ctx, const std::string& str);
 

@@ -75,7 +75,7 @@ bool is_valid_index(const std::string& str, const int max_index) {
 bool desktop_app_window_list_has_property(JSContextRef ctx, JSObjectRef object,
                                           JSStringRef prop_name) {
     auto host = BindingsHost::get(ctx);
-    return is_valid_index(str_from_js(prop_name), host->app->windows.size());
+    return is_valid_index(str_from_js_str(prop_name), host->app->windows.size());
 }
 
 JSValueRef desktop_app_window_list_get_property(JSContextRef ctx,
@@ -83,7 +83,7 @@ JSValueRef desktop_app_window_list_get_property(JSContextRef ctx,
                                                 JSStringRef prop_name,
                                                 JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
-    auto index = std::stoi(str_from_js(prop_name));
+    auto index = std::stoi(str_from_js_str(prop_name));
     return host->desktop_window_index->get_or_create_js_object(
         host->app->windows[index]);
 }

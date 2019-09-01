@@ -14,18 +14,18 @@ JSValueRef int_to_js(JSContextRef ctx, const int& value) {
 
 // Strings
 
-std::string str_from_js(JSStringRef jsstring) {
-    auto size = JSStringGetMaximumUTF8CStringSize(jsstring);
+std::string str_from_js_str(JSStringRef js_str) {
+    auto size = JSStringGetMaximumUTF8CStringSize(js_str);
     auto buffer = new char[size];
-    JSStringGetUTF8CString(jsstring, buffer, size);
-    auto stdstring = std::string(buffer);
+    JSStringGetUTF8CString(js_str, buffer, size);
+    auto str = std::string(buffer);
     delete[] buffer;
-    return stdstring;
+    return str;
 }
 
 std::string str_from_js(JSContextRef ctx, JSValueRef value) {
     auto js_str = JSValueToStringCopy(ctx, value, nullptr);
-    auto str = str_from_js(js_str);
+    auto str = str_from_js_str(js_str);
     JSStringRelease(js_str);
     return str;
 }

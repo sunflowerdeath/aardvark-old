@@ -37,8 +37,12 @@ class BindingsHost {
     ~BindingsHost();
 
     void run();
+
     void stop();
-    JSValueRef eval_script(const std::string& src);
+
+    JSValueRef eval_script(const std::string& src,
+                           const std::string& source_url = "");
+
     void handle_exception(JSValueRef ex);
 
     std::shared_ptr<JSGlobalContextWrapper> ctx;

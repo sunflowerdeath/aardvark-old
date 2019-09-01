@@ -11,7 +11,7 @@ namespace fs = std::experimental::filesystem;
 void run(const fs::path& filepath) {
     auto host = aardvark::js::BindingsHost();
     auto src = aardvark::utils::read_text_file(filepath);
-    host.eval_script(src);
+    host.eval_script(src, filepath.u8string());
     host.run();
 }
 

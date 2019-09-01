@@ -16,6 +16,7 @@ curl "https://dl.bintray.com/boostorg/release/1.71.0/source/boost_1_71_0.tar.gz"
 
 # skia@m71
 echo "clone skia@m71"
+# git clone https://github.com/google/skia.git -b chrome/m71 --depth 1
 git clone https://skia.googlesource.com/skia.git -b chrome/m71 --depth 1
 
 # webkitgtk@2.23.2

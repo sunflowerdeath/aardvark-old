@@ -7,15 +7,16 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "aardvark", "react"
+    "aardvark",
+    "react"
   ],
   "author": "sunflowerdeath",
   "license": "Unlicense",
   "dependencies": {
-    "react-reconciler": "^0.21.0",
     "@advk/check-types": "*",
     "@advk/common": "*",
-    "react-devtools-core": "^3.6.3"
+    "react-devtools-core": "^3.6.3",
+    "react-reconciler": "^0.21.0"
   },
   "peerDependencies": {
     "react": "^16.9.0"

@@ -1,9 +1,9 @@
 #!/bin/bash -e
 
 SKIA_DIR=$PWD/externals/skia
-LIB_DIR=$SKIA_DIR/lib/android-arm64
+BUILD_DIR=$SKIA_DIR/lib/android-arm64
 
-$SKIA_DIR/bin/gn gen $LIB_DIR --root=$SKIA_DIR --args="
+$SKIA_DIR/bin/gn gen $BUILD_DIR --root=$SKIA_DIR --args="\
 is_official_build=true \
 skia_enable_tools=false \
 target_os=\"android\" \
@@ -20,4 +20,4 @@ skia_use_system_zlib=false \
 ndk=\"${ANDROID_HOME}/ndk-bundle\" \
 ndk_api=21"
 
-ninja -C $LIB_DIR -j7
+ninja -C $BUILD_DIR -j7
