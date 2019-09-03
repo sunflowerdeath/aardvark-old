@@ -274,6 +274,7 @@ if(ADV_ENABLE_JS)
         src/js/elements_bindings.cpp
         src/js/events_bindings.cpp
         src/js/helpers.cpp
+        src/js/module_loader.cpp
         src/js/signal_connection_bindings.cpp
         src/js/websocket_bindings.cpp
     )
