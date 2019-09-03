@@ -16,8 +16,6 @@
 
 namespace aardvark::js {
 
-// log
-
 JSValueRef log(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
                size_t argument_count, const JSValueRef arguments[],
                JSValueRef* exception) {
@@ -28,8 +26,6 @@ JSValueRef log(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
     std::cout << std::endl;
     return JSValueMakeUndefined(ctx);
 }
-
-// timeout
 
 JSValueRef set_timeout(JSContextRef ctx, JSObjectRef function,
                        JSObjectRef this_object, size_t argument_count,
@@ -49,8 +45,6 @@ JSValueRef clear_timeout(JSContextRef ctx, JSObjectRef function,
     return JSValueMakeUndefined(ctx);
 }
 
-// gc
-
 JSValueRef gc(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
               size_t argument_count, const JSValueRef arguments[],
               JSValueRef* exception) {
@@ -58,29 +52,16 @@ JSValueRef gc(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
     return JSValueMakeUndefined(ctx);
 }
 
-void log_exception(JSContextRef ctx, JSValueRef ex) {
+void log_error(JsError error) {
     std::cout << std::endl;
-    std::cout << aardvark::js::str_from_js(ctx, ex) << std::endl;
-    auto obj = JSValueToObject(ctx, ex, nullptr);
-
-    std::string source_url;
-    map_prop_from_js<std::string, str_from_js>(ctx, obj, "sourceURL",
-                                               &source_url);
-    std::cout << "File: " << source_url << std::endl;
-
-    auto src = JSStringCreateWithUTF8CString(
-        "if (this.line !== undefined) {"
-        "    log('Error at line ' + this.line + ', column ' + this.column)"
-        "}");
-    auto result = JSEvaluateScript(ctx,      // ctx,
-                                   src,      // script
-                                   obj,      // thisObject,
-                                   nullptr,  // sourceURL,
-                                   1,        // startingLineNumber,
-                                   nullptr   // exception
-    );
-    JSStringRelease(src);
-
+    auto& loc = error.location;
+    if (!loc.source_url.empty()) {
+        std::cout << "File: " << loc.source_url << std::endl;
+    }
+    if (loc.line != -1) {
+        std::cout << "Line: " << loc.line << ", column:" << loc.column
+                  << std::endl;
+    }
     std::cout << std::endl;
 }
 
@@ -92,6 +73,13 @@ BindingsHost::BindingsHost() {
     auto global_class = JSClassCreate(&kJSClassDefinitionEmpty);
     ctx = std::make_shared<JSGlobalContextWrapper>(
         JSGlobalContextCreate(global_class));
+
+    module_loader =
+        std::make_unique<ModuleLoader>(event_loop.get(), ctx->ctx, true);
+    module_loader->exception_handler = [this](JsError error) {
+        log_error(error);
+        stop();
+    };
 
     // Store pointer to the host in private data of the global object
     auto global_object = JSContextGetGlobalObject(ctx->ctx);
@@ -142,6 +130,7 @@ BindingsHost::BindingsHost() {
 }
 
 BindingsHost::~BindingsHost() {
+    stop();
     // JSC context is always destroyed first
     ctx.reset();
 }
@@ -163,36 +152,6 @@ void BindingsHost::stop() {
     is_running = false;
     app->stop();
     event_loop->stop();
-}
-
-JSValueRef BindingsHost::eval_script(const std::string& src,
-                                     const std::string& source_url) {
-    auto js_src = JSStringCreateWithUTF8CString(src.c_str());
-    auto js_source_url =
-        source_url.empty() ? nullptr
-                           : JSStringCreateWithUTF8CString(source_url.c_str());
-    auto ex = JSValueRef();
-    auto result = JSEvaluateScript(ctx->ctx,       // ctx,
-                                   js_src,         // script
-                                   nullptr,        // thisObject,
-                                   js_source_url,  // sourceURL,
-                                   1,              // startingLineNumber,
-                                   &ex             // exception
-    );
-    JSStringRelease(js_src);
-    if (js_source_url != nullptr) JSStringRelease(js_source_url);
-    if (ex != nullptr) handle_exception(ex);
-    return result;
-}
-
-void BindingsHost::handle_exception(JSValueRef ex) {
-    if (ex == nullptr) return;
-    if (exception_handler) {
-        exception_handler(ex);
-    } else {
-        log_exception(ctx->ctx, ex);
-        stop();
-    }
 }
 
 void BindingsHost::add_function(const char* name,

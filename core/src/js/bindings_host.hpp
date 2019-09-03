@@ -15,6 +15,7 @@
 #include "../platforms/desktop/desktop_window.hpp"
 #include "../utils/event_loop.hpp"
 #include "../utils/websocket.hpp"
+#include "module_loader.hpp"
 #include "objects_index.hpp"
 
 namespace aardvark::js {
@@ -31,23 +32,30 @@ class JSGlobalContextWrapper {
     JSGlobalContextRef ctx;
 };
 
+struct Location {
+    std::string file;
+    int line;
+    int column;
+};
+
+struct JSException {
+    JSValueRef value;
+    std::string message;
+    Location location;
+    Location original_location;
+};
+
 class BindingsHost {
   public:
     BindingsHost();
     ~BindingsHost();
-
     void run();
-
     void stop();
 
-    JSValueRef eval_script(const std::string& src,
-                           const std::string& source_url = "");
-
-    void handle_exception(JSValueRef ex);
-
     std::shared_ptr<JSGlobalContextWrapper> ctx;
-    std::function<void(JSValueRef)> exception_handler;
+    // std::function<void(JSValueRef)> exception_handler;
     std::shared_ptr<EventLoop> event_loop = std::make_shared<EventLoop>();
+    std::unique_ptr<ModuleLoader> module_loader;
     std::shared_ptr<DesktopApp> app;
     JSClassRef element_class;
     // `type_info` can't be used as map key, it should be wrapped into

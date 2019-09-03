@@ -263,7 +263,7 @@ bool responder_elem_set_handler(JSContextRef ctx, JSObjectRef object,
             responder_handler_args_to_js,       // args_to_js
             responder_handler_ret_val_from_js,  // ret_val_from_js
             [host](JSContextRef ctx, JSValueRef ex) {
-                host->handle_exception(ex);
+                host->module_loader->handle_exception(ex);
             });
     return true;
 }
