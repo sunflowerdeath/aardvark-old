@@ -77,6 +77,9 @@ set_target_properties(nod PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/externals/nod/include)
 
+# spdlog
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/externals/spdlog)
+
 # boost
 set(BOOST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/externals/boost")
 find_package(Boost 1.71.0 REQUIRED)
@@ -264,7 +267,8 @@ add_library(aardvark ${ADV_LIB_TYPE}
 # TODO include dir
 target_include_directories(aardvark INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(aardvark skia ICU ICU_DATA nlohmann_json nod boost)
+target_link_libraries(aardvark
+    skia ICU ICU_DATA spdlog::spdlog nlohmann_json nod boost)
 
 if(ADV_ENABLE_JS)
     target_sources(aardvark PRIVATE

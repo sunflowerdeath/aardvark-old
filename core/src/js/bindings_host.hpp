@@ -32,19 +32,6 @@ class JSGlobalContextWrapper {
     JSGlobalContextRef ctx;
 };
 
-struct Location {
-    std::string file;
-    int line;
-    int column;
-};
-
-struct JSException {
-    JSValueRef value;
-    std::string message;
-    Location location;
-    Location original_location;
-};
-
 class BindingsHost {
   public:
     BindingsHost();

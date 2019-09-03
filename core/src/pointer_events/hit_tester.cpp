@@ -39,4 +39,5 @@ void HitTester::test_element(std::shared_ptr<Element> elem, float left,
                                        std::placeholders::_1, left, top));
     }
 };
-}
+
+}  // namespace aardvark
