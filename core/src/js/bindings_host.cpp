@@ -3,7 +3,7 @@
 #include <functional>
 #include <iostream>
 #include <typeinfo>
-
+#include "../utils/log.hpp"
 #include "../elements/elements.hpp"
 #include "desktop_app_bindings.hpp"
 #include "desktop_window_bindings.hpp"
@@ -53,16 +53,15 @@ JSValueRef gc(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
 }
 
 void log_error(JsError error) {
-    std::cout << std::endl;
+    Log::error("[JS] Uncaught exception");
+    Log::error(error.text);
     auto& loc = error.location;
     if (!loc.source_url.empty()) {
-        std::cout << "File: " << loc.source_url << std::endl;
+        Log::error("File: {}", loc.source_url);
     }
     if (loc.line != -1) {
-        std::cout << "Line: " << loc.line << ", column:" << loc.column
-                  << std::endl;
+        Log::error("Line: {}, column: {}", loc.line, loc.column);
     }
-    std::cout << std::endl;
 }
 
 // BindingsHost

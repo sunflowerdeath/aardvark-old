@@ -2,7 +2,7 @@
 
 #include <experimental/filesystem>
 #include <regex>
-#include "spdlog/spdlog.h"
+#include "../utils/log.hpp"
 #include "../utils/files_utils.hpp"
 #include "helpers.hpp"
 
@@ -13,9 +13,7 @@ namespace fs = std::experimental::filesystem;
 std::string get_source_map_url(const std::string& source) {
     static auto re = std::regex("\n//# sourceMappingURL=(.+)$");
     std::smatch match;
-    if (std::regex_search(source, match, re)) {
-        return match[0];
-    }
+    if (std::regex_search(source, match, re)) return match[1];
     return "";
 }
 
@@ -46,14 +44,15 @@ JSValueRef ModuleLoader::load_from_source(const std::string& source,
 JSValueRef ModuleLoader::load_from_file(const std::string& filepath) {
     // TODO check relative/absolute path
     auto full_filepath = fs::current_path().append(filepath);
-    // TODO check if exists, std::regex::multiline
-    spdlog::info("[ModuleLoader] open file: {}", filepath);
+    Log::info("[ModuleLoader] open file: {}", filepath);
     auto source = aardvark::utils::read_text_file(full_filepath);
     // TODO extract source map
     auto source_map_url = get_source_map_url(source);
-    spdlog::info("[ModuleLoader] {}", source_map_url.empty()
-                                       ? "source map not detected"
-                                       : "source map detected");
+    if (source_map_url.empty()) {
+        Log::info("[ModuleLoader] source map not detected");
+    } else {
+        Log::info("[ModuleLoader] source map detected: {}", source_map_url);
+    }
     return ModuleLoader::load_from_source(source, full_filepath);
 }
 

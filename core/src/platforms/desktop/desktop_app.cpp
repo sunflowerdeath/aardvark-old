@@ -3,6 +3,7 @@
 #include <chrono>
 #include <iostream>
 #include <thread>
+#include "../../utils/log.hpp"
 
 namespace aardvark {
 
@@ -29,8 +30,8 @@ void cursor_pos_callback(GLFWwindow* window, double left, double top) {
         PointerTool::mouse,           // tool
         0,                            // pointer_id
         PointerAction::pointer_move,  // action
-        left,                         // left
-        top                           // top
+        static_cast<float>(left),     // left
+        static_cast<float>(top)       // top
     };
     DesktopApp::dispatch_event(window, event);
 };
@@ -44,8 +45,8 @@ void mouse_button_callback(GLFWwindow* window, int button, int action,
         0,                   // pointer_id
         action == GLFW_PRESS ? PointerAction::button_press
                              : PointerAction::button_release,  // action
-        left,                                                  // left
-        top,                                                   // top
+        static_cast<float>(left),                              // left
+        static_cast<float>(top),                               // top
         button                                                 // button_id
     };
     DesktopApp::dispatch_event(window, event);
@@ -122,7 +123,7 @@ void DesktopApp::render(std::function<void(void)> update_callback) {
         std::chrono::duration_cast<std::chrono::microseconds>(end - start)
             .count();
     if (painted) {
-        std::cout << "frame time: " << (time / 1000.0) << "ms" << std::endl;
+        Log::debug("[DesktopApp] frame time {}ms", time / 1000.0);
     }
     auto timeout = (time < FRAME_TIME) ? (FRAME_TIME - time) : 0;
     event_loop->set_timeout(
