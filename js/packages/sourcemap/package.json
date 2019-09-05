@@ -1,0 +1,10 @@
+{
+  "name": "@advk/sourcemap",
+  "version": "0.0.1",
+  "description": "Source maps helpers for aardvark",
+  "scripts": {
+    "build": "../../node_modules/.bin/webpack"
+  },
+  "author": "sunflowerdeath",
+  "license": "Unlicense"
+}

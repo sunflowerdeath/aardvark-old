@@ -37,9 +37,35 @@ TEST_CASE("ModuleLoader", "[module_loader]" ) {
         REQUIRE(error->location.column != -1);
     }
 
+    /*
     SECTION("inline source map in file") {
+        auto loader = ModuleLoader(&event_loop, ctx, true);
+        std::optional<JsError> error = std::nullopt;
+        loader.exception_handler = [&error](JsError error_arg) {
+            error = error_arg;
+        };
+
+        auto result = loader.load_from_file("fixtures/inline-source-map.js");
+
+        REQUIRE(JSValueIsNull(ctx, result));
+        std::cout << "ERROR" << error->location.source_url << std::endl;
     }
+    */
 
     SECTION("external source map in file") {
+        auto loader = ModuleLoader(&event_loop, ctx, true);
+        std::optional<JsError> error = std::nullopt;
+        loader.exception_handler = [&error](JsError error_arg) {
+            error = error_arg;
+        };
+
+        auto result = loader.load_from_file("fixtures/external-source-map.js");
+
+        REQUIRE(JSValueIsNull(ctx, result));
+        REQUIRE(error != std::nullopt);
+        REQUIRE(error->original_location.source_url ==
+                "webpack:///./src/index.js");
+        REQUIRE(error->original_location.line == 1);
+        REQUIRE(error->original_location.column == 0);
     }
 }

@@ -400,4 +400,4 @@ class SourceMap {
 	}
 }
 
-export default SourceMap
+module.exports = SourceMap

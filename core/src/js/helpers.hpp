@@ -20,6 +20,23 @@ JSValueRef str_to_js(JSContextRef ctx, const std::string& str);
 UnicodeString icu_str_from_js(JSContextRef ctx, JSValueRef value);
 JSValueRef icu_str_to_js(JSContextRef ctx, const UnicodeString& str);
 
+class JsStringWrapper {
+  public:
+    JsStringWrapper(std::string str) {
+        this->str = JSStringCreateWithUTF8CString(str.c_str());
+    }
+
+    JsStringWrapper(char* str) {
+        this->str = JSStringCreateWithUTF8CString(str);
+    }
+
+    ~JsStringWrapper() {
+        JSStringRelease(str);
+    }
+
+    JSStringRef str;
+};
+
 class JsStringCache {
   public:
     static JSStringRef get(const std::string& str);
@@ -33,10 +50,10 @@ class JsStringCache {
 template <class T, T (*from_js)(JSContextRef, JSValueRef)>
 void map_prop_from_js(JSContextRef ctx, JSObjectRef object,
                        const char* prop_name, T* out) {
-    auto prop_name_str = JsStringCache::get(prop_name);
-    if (JSObjectHasProperty(ctx, object, prop_name_str)) {
+    auto js_prop_name = JsStringCache::get(prop_name);
+    if (JSObjectHasProperty(ctx, object, js_prop_name)) {
         auto prop_value =
-            JSObjectGetProperty(ctx, object, prop_name_str, nullptr);
+            JSObjectGetProperty(ctx, object, js_prop_name, nullptr);
         *out = from_js(ctx, prop_value);
     }
 }

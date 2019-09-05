@@ -29,6 +29,11 @@ class Log {
     }
 
     template <class... ArgsTypes>
+    static void warn(ArgsTypes... args) {
+        get_logger()->warn(args...);
+    }
+
+    template <class... ArgsTypes>
     static void error(ArgsTypes... args) {
         get_logger()->error(args...);
     }

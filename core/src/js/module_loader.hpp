@@ -25,10 +25,7 @@ struct JsError {
 class ModuleLoader {
   public:
     ModuleLoader(EventLoop* event_loop, JSGlobalContextRef ctx,
-                 bool enable_source_maps)
-        : event_loop(event_loop),
-          ctx(ctx),
-          enable_source_maps(enable_source_maps){};
+                 bool enable_source_maps);
 
     JSValueRef load_from_source(const std::string& source,
                                 const std::string& source_url = "",
@@ -47,8 +44,9 @@ class ModuleLoader {
     EventLoop* event_loop;
     JSGlobalContextRef ctx;
     bool enable_source_maps;
-    std::unordered_map<std::string, std::string> source_maps;
-    // JSErrorLocation get_original_location(JSErrorLocation location);
+    std::unordered_map<std::string, JSValueRef> source_maps;
+    JSObjectRef js_get_original_location;
+    JsErrorLocation get_original_location(const JsErrorLocation& location);
 };
 
 }  // namespace aardvark::js
