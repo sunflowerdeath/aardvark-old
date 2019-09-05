@@ -1,9 +1,8 @@
 # Aardvark
 
-<center>
+<p align="center">
   <img width="327" height="344" src="logo.png">
-</center>
-<br>
+</p>
 
 Aardvark is library for creating cross platform applications.
 
