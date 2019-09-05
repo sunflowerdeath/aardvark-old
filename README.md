@@ -1,5 +1,10 @@
 # Aardvark
 
+<center>
+  <img width="327" height="344" src="logo.png">
+</center>
+<br>
+
 Aardvark is library for creating cross platform applications.
 
 Aardvark does not wrap native controls or use web view, everything is rendered
