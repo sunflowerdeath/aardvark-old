@@ -1,0 +1,45 @@
+#include "Catch2/catch.hpp"
+#include <memory>
+#include <optional>
+#include "JavaScriptCore/JavaScript.h"
+#include "../utils/event_loop.hpp"
+#include "../js/module_loader.hpp"
+
+using namespace aardvark;
+using namespace aardvark::js;
+
+TEST_CASE("ModuleLoader", "[module_loader]" ) {
+    auto event_loop = EventLoop();
+    auto ctx = JSGlobalContextCreate(nullptr);
+
+    SECTION("load module and get result") {
+        auto loader = ModuleLoader(&event_loop, ctx, false);
+        auto source = "2 + 2";
+        auto result = loader.load_from_source(source);
+        REQUIRE(JSValueToNumber(ctx, result, nullptr) == 4);
+    }
+
+    SECTION("load module and handle exception") {
+        auto loader = ModuleLoader(&event_loop, ctx, false);
+        std::optional<JsError> error = std::nullopt;
+        loader.exception_handler = [&error](JsError error_arg) {
+            error = error_arg;
+        };
+
+        auto source = "2 + a";
+        auto source_url = "SOURCE_URL";
+        auto result = loader.load_from_source(source, source_url);
+
+        REQUIRE(JSValueIsNull(ctx, result));
+        REQUIRE(error != std::nullopt);
+        REQUIRE(error->location.source_url == source_url);
+        REQUIRE(error->location.line != -1);
+        REQUIRE(error->location.column != -1);
+    }
+
+    SECTION("inline source map in file") {
+    }
+
+    SECTION("external source map in file") {
+    }
+}

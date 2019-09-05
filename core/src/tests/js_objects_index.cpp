@@ -2,6 +2,7 @@
 #include "../js/objects_index.hpp"
 
 using namespace aardvark;
+using namespace aardvark::js;
 
 TEST_CASE("ObjectIndex", "[objects_index]" ) {
     class TestClass {

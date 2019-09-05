@@ -60,6 +60,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
         "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -Wl,-s")
 endif()
 
+# set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+
 #-------------------------------------------------------------------------------
 # DEPENDENCIES
 #-------------------------------------------------------------------------------
@@ -350,6 +352,7 @@ if(ADV_BUILD_TESTS)
         src/tests/index.cpp
         src/tests/base_types_test.cpp
         src/tests/box_constraints_test.cpp
+        src/tests/js_module_loader.cpp
         src/tests/js_objects_index.cpp
         # src/tests/responder_test.cpp
         # src/tests/align_test.cpp

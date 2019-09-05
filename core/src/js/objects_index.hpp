@@ -5,9 +5,6 @@
 #include <unordered_map>
 #include <variant>
 #include "JavaScriptCore/JavaScript.h"
-#include "bindings_host.hpp"
-
-#include <iostream>
 
 namespace aardvark::js {
 
