@@ -22,39 +22,17 @@ class FunctionWrapper {
                     RetValFromJsType ret_val_from_js = nullptr,
                     ExceptionHandler exception_handler = nullptr)
         : ctx_wptr(ctx_wptr),
-          value(value),
+          value(JsValueWrapper(ctx_wptr, value)),
           args_to_js(args_to_js),
           ret_val_from_js(ret_val_from_js),
-          exception_handler(exception_handler) {
-        if (auto ctx_sptr = ctx_wptr.lock()) {
-            JSValueProtect(ctx_sptr->get(), value);
-        }
-    }
-
-    // Copy
-    FunctionWrapper(const FunctionWrapper& wrapper) {
-        ctx_wptr = wrapper.ctx_wptr;
-        value = wrapper.value;
-        args_to_js = wrapper.args_to_js;
-        ret_val_from_js = wrapper.ret_val_from_js;
-        exception_handler = wrapper.exception_handler;
-        if (auto ctx_sptr = ctx_wptr.lock()) {
-            JSValueProtect(ctx_sptr->get(), value);
-        }
-    }
-
-    ~FunctionWrapper() {
-        if (auto ctx_sptr = ctx_wptr.lock()) {
-            JSValueUnprotect(ctx_sptr->get(), value);
-        }
-    }
+          exception_handler(exception_handler) {}
 
     RetValType operator()(ArgsTypes... args) {
         auto ctx_sptr = ctx_wptr.lock();
         if (!ctx_sptr) return ret_val_from_js(nullptr, nullptr);
         auto ctx = ctx_sptr->get();
 
-        auto object = JSValueToObject(ctx, value, nullptr);
+        auto object = JSValueToObject(ctx, value.get(), nullptr);
         auto js_args =
             args_to_js ? args_to_js(ctx, args...) : std::vector<JSValueRef>();
         // Pin because during the call wrapper may be destroyed
@@ -79,7 +57,7 @@ class FunctionWrapper {
 
   private:
     std::weak_ptr<JSGlobalContextWrapper> ctx_wptr;
-    JSValueRef value;
+    JsValueWrapper value;
     ArgsToJsType args_to_js;
     RetValFromJsType ret_val_from_js;
     ExceptionHandler exception_handler;
