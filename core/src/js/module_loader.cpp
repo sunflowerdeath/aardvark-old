@@ -19,7 +19,8 @@ JsErrorLocation js_error_location_from_js(JSContextRef ctx, JSValueRef value) {
     return loc;
 }
 
-JSValueRef js_error_location_to_js(JSContextRef ctx, JsErrorLocation location) {
+JSValueRef js_error_location_to_js(JSContextRef ctx,
+                                   const JsErrorLocation& location) {
     auto object = JSObjectMake(ctx, nullptr, nullptr);
     map_prop_to_js<std::string, str_to_js>(ctx, object, "sourceURL",
                                            location.source_url);
@@ -64,13 +65,12 @@ ModuleLoader::ModuleLoader(EventLoop* event_loop,
 JSValueRef ModuleLoader::load_from_source(const std::string& source,
                                           const std::string& source_url,
                                           const std::string& source_map) {
-    auto ctx_sptr = ctx_wptr.lock();
-    if (!ctx_sptr) return nullptr;
-    auto ctx = ctx_sptr->get();
+    if (ctx_wptr.expired()) return nullptr;
+    auto ctx = ctx_wptr.lock()->get();
 
     if (enable_source_maps && !source_url.empty() && !source_map.empty()) {
-        source_maps[source_url] =
-            JsValueWrapper(ctx_wptr, str_to_js(ctx, source_map));
+        source_maps.try_emplace(source_url,  // key
+                                ctx_wptr, str_to_js(ctx, source_map));
     }
     auto js_src = JsStringWrapper(source);
     auto js_source_url =
@@ -103,11 +103,9 @@ JSValueRef ModuleLoader::load_from_file(const std::string& filepath) {
                 source_map_path = full_filepath.parent_path() / source_map_path;
             }
             source_map = utils::read_text_file(source_map_path);
-            Log::info("[ModuleLoader] Load external source map");
+            Log::info("[ModuleLoader] Load external source map from {}",
+                      source_map_path.u8string());
         }
-        // Log::info(source_map_url.empty()
-                      // ? "[ModuleLoader] source map not detected"
-                      // : "[ModuleLoader] source map detected");
     }
     return ModuleLoader::load_from_source(source, full_filepath, source_map);
 }
@@ -115,9 +113,8 @@ JSValueRef ModuleLoader::load_from_file(const std::string& filepath) {
 void ModuleLoader::handle_exception(JSValueRef exception) {
     if (!exception_handler) return;
 
-    auto ctx_sptr = ctx_wptr.lock();
-    if (!ctx_sptr) return;
-    auto ctx = ctx_sptr->get();
+    if (ctx_wptr.expired()) return;
+    auto ctx = ctx_wptr.lock()->get();
 
     auto location = js_error_location_from_js(ctx, exception);
     auto error = JsError{
@@ -129,33 +126,28 @@ void ModuleLoader::handle_exception(JSValueRef exception) {
     exception_handler(error);
 }
 
-JsErrorLocation ModuleLoader::get_original_location(
+std::optional<JsErrorLocation> ModuleLoader::get_original_location(
     const JsErrorLocation& location) {
-    auto ctx_sptr = ctx_wptr.lock();
-    if (!ctx_sptr) return JsErrorLocation();
-    auto ctx = ctx_sptr->get();
+    if (ctx_wptr.expired()) return std::nullopt;
+    auto ctx = ctx_wptr.lock()->get();
 
-    if (!enable_source_maps || location.source_url.empty()) {
-        return JsErrorLocation();
-    }
+    if (!enable_source_maps || location.source_url.empty()) return std::nullopt;
     auto it = source_maps.find(location.source_url);
-    if (it == source_maps.end()) return JsErrorLocation();
+    if (it == source_maps.end()) return std::nullopt;
+    auto object = JSValueToObject(ctx, js_get_original_location.get(), nullptr);
     JSValueRef args[] = {js_error_location_to_js(ctx, location),
                          it->second.get()};
-    auto object = JSValueToObject(ctx, js_get_original_location.get(), nullptr);
     auto exception = JSValueRef();
     auto result = JSObjectCallAsFunction(ctx,        // ctx
                                          object,     // object
                                          nullptr,    // thisObject
-                                         0,          // argumentCount
-                                         nullptr,    // arguments[],
+                                         2,          // argumentCount
+                                         args,       // arguments[],
                                          &exception  // exception
     );
-    Log::debug("call");
     if (exception != nullptr) {
-        Log::debug("Could not get original location from source map {}",
-                   str_from_js(ctx, exception));
-        return JsErrorLocation();
+        Log::warn("Could not get original location from source map");
+        return std::nullopt;
     }
     return js_error_location_from_js(ctx, result);
 }

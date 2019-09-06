@@ -5,6 +5,7 @@
 #include <memory>
 #include "JavaScriptCore/JavaScript.h"
 #include <unicode/unistr.h>
+#include "../utils/log.hpp"
 
 namespace aardvark::js {
 
@@ -26,7 +27,22 @@ JSValueRef icu_str_to_js(JSContextRef ctx, const UnicodeString& str);
 class JSGlobalContextWrapper {
   public:
     JSGlobalContextWrapper(JSGlobalContextRef ctx) : ctx(ctx) {}
+
     ~JSGlobalContextWrapper() { JSGlobalContextRelease(ctx); }
+
+    // copy
+    JSGlobalContextWrapper(const JSGlobalContextWrapper& other) {
+        ctx = other.ctx;
+        JSGlobalContextRetain(ctx);
+    }
+
+    // assign
+    JSGlobalContextWrapper& operator=(const JSGlobalContextWrapper& rhs) {
+        ctx = rhs.ctx;
+        JSGlobalContextRetain(ctx);
+        return *this;
+    }
+
     JSGlobalContextRef get() { return ctx; }
 
   private:
@@ -49,6 +65,25 @@ class JsValueWrapper {
         if (ctx_sptr) JSValueUnprotect(ctx_sptr->get(), value);
     }
 
+    // copy
+    JsValueWrapper(const JsValueWrapper& other) {
+        ctx_wptr = other.ctx_wptr;
+        value = other.value;
+        if (auto ctx_sptr = ctx_wptr.lock()) {
+            JSValueProtect(ctx_sptr->get(), value);
+        }
+    }
+
+    // assign
+    JsValueWrapper& operator=(const JsValueWrapper& rhs) {
+        ctx_wptr = rhs.ctx_wptr;
+        value = rhs.value;
+        if (auto ctx_sptr = ctx_wptr.lock()) {
+            JSValueProtect(ctx_sptr->get(), value);
+        }
+        return *this;
+    }
+
     JSValueRef get() { return value; }
 
   private:
@@ -64,6 +99,19 @@ class JsStringWrapper {
 
     JsStringWrapper(const char* str) {
         this->str = JSStringCreateWithUTF8CString(str);
+    }
+
+    // copy
+    JsStringWrapper(const JsStringWrapper& other) {
+        str = other.str;
+        JSStringRetain(str);
+    }
+
+    // assign
+    JsStringWrapper& operator=(const JsStringWrapper& rhs) {
+        str = rhs.str;
+        JSStringRetain(str);
+        return *this;
     }
 
     ~JsStringWrapper() { JSStringRelease(str); }

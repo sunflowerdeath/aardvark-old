@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include <functional>
+#include <optional>
 #include "JavaScriptCore/JavaScript.h"
 #include "../utils/event_loop.hpp"
 #include "helpers.hpp"
@@ -18,9 +19,8 @@ struct JsErrorLocation {
 struct JsError {
     JSValueRef value;
     std::string text;
-    // TODO when no location
     JsErrorLocation location;
-    JsErrorLocation original_location;
+    std::optional<JsErrorLocation> original_location;
 };
 
 class ModuleLoader {
@@ -48,7 +48,8 @@ class ModuleLoader {
     bool enable_source_maps;
     std::unordered_map<std::string, JsValueWrapper> source_maps;
     JsValueWrapper js_get_original_location;
-    JsErrorLocation get_original_location(const JsErrorLocation& location);
+    std::optional<JsErrorLocation> get_original_location(
+        const JsErrorLocation& location);
 };
 
 }  // namespace aardvark::js

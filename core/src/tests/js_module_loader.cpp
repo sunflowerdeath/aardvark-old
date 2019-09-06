@@ -64,9 +64,10 @@ TEST_CASE("ModuleLoader", "[module_loader]" ) {
 
         REQUIRE(JSValueIsNull(ctx, result));
         REQUIRE(error != std::nullopt);
-        REQUIRE(error->original_location.source_url ==
-                "webpack:///./src/index.js");
-        REQUIRE(error->original_location.line == 1);
-        REQUIRE(error->original_location.column == 0);
+        REQUIRE(error->original_location.has_value());
+        auto original_location = error->original_location.value();
+        REQUIRE(original_location.source_url == "webpack:///./src/index.js");
+        REQUIRE(original_location.line == 1);
+        REQUIRE(original_location.column == 0);
     }
 }

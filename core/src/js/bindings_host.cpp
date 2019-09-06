@@ -54,7 +54,8 @@ JSValueRef gc(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
 void log_error(JsError error) {
     Log::error("[JS] Uncaught exception");
     Log::error(error.text);
-    auto& loc = error.location;
+    auto loc = error.original_location ? error.original_location.value()
+                                       : error.location;
     if (!loc.source_url.empty()) {
         Log::error("File: {}", loc.source_url);
     }
@@ -130,7 +131,7 @@ BindingsHost::BindingsHost() {
 
 BindingsHost::~BindingsHost() {
     stop();
-    // JSC context is always destroyed first
+    // Destroy JSC context first
     ctx.reset();
 }
 
