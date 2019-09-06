@@ -11,16 +11,17 @@ using namespace aardvark::js;
 TEST_CASE("ModuleLoader", "[module_loader]" ) {
     auto event_loop = EventLoop();
     auto ctx = JSGlobalContextCreate(nullptr);
+    auto ctx_sptr = std::make_shared<JSGlobalContextWrapper>(ctx);
 
     SECTION("load module and get result") {
-        auto loader = ModuleLoader(&event_loop, ctx, false);
+        auto loader = ModuleLoader(&event_loop, ctx_sptr, false);
         auto source = "2 + 2";
         auto result = loader.load_from_source(source);
         REQUIRE(JSValueToNumber(ctx, result, nullptr) == 4);
     }
 
     SECTION("load module and handle exception") {
-        auto loader = ModuleLoader(&event_loop, ctx, false);
+        auto loader = ModuleLoader(&event_loop, ctx_sptr, false);
         std::optional<JsError> error = std::nullopt;
         loader.exception_handler = [&error](JsError error_arg) {
             error = error_arg;
@@ -53,7 +54,7 @@ TEST_CASE("ModuleLoader", "[module_loader]" ) {
     */
 
     SECTION("external source map in file") {
-        auto loader = ModuleLoader(&event_loop, ctx, true);
+        auto loader = ModuleLoader(&event_loop, ctx_sptr, true);
         std::optional<JsError> error = std::nullopt;
         loader.exception_handler = [&error](JsError error_arg) {
             error = error_arg;

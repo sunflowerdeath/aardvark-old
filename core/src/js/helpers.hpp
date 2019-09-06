@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <string>
+#include <memory>
 #include "JavaScriptCore/JavaScript.h"
 #include <unicode/unistr.h>
 
@@ -20,20 +21,56 @@ JSValueRef str_to_js(JSContextRef ctx, const std::string& str);
 UnicodeString icu_str_from_js(JSContextRef ctx, JSValueRef value);
 JSValueRef icu_str_to_js(JSContextRef ctx, const UnicodeString& str);
 
+// wrappers
+
+class JSGlobalContextWrapper {
+  public:
+    JSGlobalContextWrapper(JSGlobalContextRef ctx) : ctx(ctx) {}
+    ~JSGlobalContextWrapper() { JSGlobalContextRelease(ctx); }
+    JSGlobalContextRef get() { return ctx; }
+
+  private:
+    JSGlobalContextRef ctx;
+};
+
+class JsValueWrapper {
+  public:
+    JsValueWrapper() {}
+
+    JsValueWrapper(std::weak_ptr<JSGlobalContextWrapper> ctx_wptr,
+                   JSValueRef value)
+        : ctx_wptr(ctx_wptr), value(value) {
+        auto ctx_sptr = ctx_wptr.lock();
+        JSValueProtect(ctx_sptr->get(), value);
+    }
+
+    ~JsValueWrapper() {
+        auto ctx_sptr = ctx_wptr.lock();
+        if (ctx_sptr) JSValueUnprotect(ctx_sptr->get(), value);
+    }
+
+    JSValueRef get() { return value; }
+
+  private:
+    std::weak_ptr<JSGlobalContextWrapper> ctx_wptr;
+    JSValueRef value;
+};
+
 class JsStringWrapper {
   public:
-    JsStringWrapper(std::string str) {
+    explicit JsStringWrapper(const std::string& str) {
         this->str = JSStringCreateWithUTF8CString(str.c_str());
     }
 
-    JsStringWrapper(char* str) {
+    JsStringWrapper(const char* str) {
         this->str = JSStringCreateWithUTF8CString(str);
     }
 
-    ~JsStringWrapper() {
-        JSStringRelease(str);
-    }
+    ~JsStringWrapper() { JSStringRelease(str); }
 
+    JSStringRef get() { return str; }
+
+  private:
     JSStringRef str;
 };
 

@@ -5,6 +5,7 @@
 #include <functional>
 #include "JavaScriptCore/JavaScript.h"
 #include "../utils/event_loop.hpp"
+#include "helpers.hpp"
 
 namespace aardvark::js {
 
@@ -24,7 +25,8 @@ struct JsError {
 
 class ModuleLoader {
   public:
-    ModuleLoader(EventLoop* event_loop, JSGlobalContextRef ctx,
+    ModuleLoader(EventLoop* event_loop,
+                 std::weak_ptr<JSGlobalContextWrapper> ctx_wptr,
                  bool enable_source_maps);
 
     JSValueRef load_from_source(const std::string& source,
@@ -42,10 +44,10 @@ class ModuleLoader {
 
   private:
     EventLoop* event_loop;
-    JSGlobalContextRef ctx;
+    std::weak_ptr<JSGlobalContextWrapper> ctx_wptr;
     bool enable_source_maps;
-    std::unordered_map<std::string, JSValueRef> source_maps;
-    JSObjectRef js_get_original_location;
+    std::unordered_map<std::string, JsValueWrapper> source_maps;
+    JsValueWrapper js_get_original_location;
     JsErrorLocation get_original_location(const JsErrorLocation& location);
 };
 

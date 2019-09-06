@@ -15,6 +15,7 @@
 #include "../platforms/desktop/desktop_window.hpp"
 #include "../utils/event_loop.hpp"
 #include "../utils/websocket.hpp"
+#include "helpers.hpp"
 #include "module_loader.hpp"
 #include "objects_index.hpp"
 
@@ -24,13 +25,6 @@ constexpr auto PROP_ATTR_STATIC =
     kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete;
 
 typedef JSClassRef (*JSCreateClassCallback)(JSClassRef base_class);
-
-class JSGlobalContextWrapper {
-  public:
-    JSGlobalContextWrapper(JSGlobalContextRef ctx) : ctx(ctx){};
-    ~JSGlobalContextWrapper() { JSGlobalContextRelease(ctx); };
-    JSGlobalContextRef ctx;
-};
 
 class BindingsHost {
   public:

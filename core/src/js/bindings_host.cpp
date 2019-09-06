@@ -10,7 +10,6 @@
 #include "document_bindings.hpp"
 #include "elements_bindings.hpp"
 #include "function_wrapper.hpp"
-#include "helpers.hpp"
 #include "signal_connection_bindings.hpp"
 #include "websocket_bindings.hpp"
 
@@ -74,21 +73,21 @@ BindingsHost::BindingsHost() {
         JSGlobalContextCreate(global_class));
 
     module_loader =
-        std::make_unique<ModuleLoader>(event_loop.get(), ctx->ctx, true);
+        std::make_unique<ModuleLoader>(event_loop.get(), ctx, true);
     module_loader->exception_handler = [this](JsError error) {
         log_error(error);
         stop();
     };
 
     // Store pointer to the host in private data of the global object
-    auto global_object = JSContextGetGlobalObject(ctx->ctx);
+    auto global_object = JSContextGetGlobalObject(ctx->get());
     JSObjectSetPrivate(global_object, static_cast<void*>(this));
 
     add_object("window", global_object, PROP_ATTR_STATIC);
 
     app = std::make_shared<DesktopApp>(event_loop);
     auto desktop_app_class = desktop_app_create_class();
-    auto app_object = JSObjectMake(ctx->ctx, desktop_app_class, nullptr);
+    auto app_object = JSObjectMake(ctx->get(), desktop_app_class, nullptr);
     add_object("application", app_object, PROP_ATTR_STATIC);
 
     add_function("log", &log);
@@ -97,17 +96,18 @@ BindingsHost::BindingsHost() {
     add_function("gc", &gc);
 
     desktop_app_window_list_index.emplace(
-        ctx->ctx, desktop_app_window_list_create_class());
-    desktop_window_index.emplace(ctx->ctx, desktop_window_create_class());
-    document_index.emplace(ctx->ctx, document_create_class());
-    signal_connection_index.emplace(ctx->ctx, signal_connection_create_class());
+        ctx->get(), desktop_app_window_list_create_class());
+    desktop_window_index.emplace(ctx->get(), desktop_window_create_class());
+    document_index.emplace(ctx->get(), document_create_class());
+    signal_connection_index.emplace(ctx->get(),
+                                    signal_connection_create_class());
     auto websocket_class = websocket_create_class();
-    websocket_index.emplace(ctx->ctx, websocket_class);
+    websocket_index.emplace(ctx->get(), websocket_class);
     add_constructor("WebSocket", websocket_class,
                     websocket_call_as_constructor);
 
     element_class = element_create_class();
-    element_index.emplace(ctx->ctx, [this](Element* elem) {
+    element_index.emplace(ctx->get(), [this](Element* elem) {
         return this->get_element_js_class(elem);
     });
     add_elem_class("Align", typeid(elements::Align), align_elem_create_class,
@@ -158,16 +158,16 @@ void BindingsHost::add_function(const char* name,
                                 JSPropertyAttributes attributes) {
     auto js_name = JSStringCreateWithUTF8CString(name);
     auto js_function =
-        JSObjectMakeFunctionWithCallback(ctx->ctx,  // ctx
-                                         js_name,   // name
-                                         function   // callAsFunction
+        JSObjectMakeFunctionWithCallback(ctx->get(),  // ctx
+                                         js_name,     // name
+                                         function     // callAsFunction
         );
-    JSObjectSetProperty(ctx->ctx,                            // ctx
-                        JSContextGetGlobalObject(ctx->ctx),  // object
-                        js_name,                             // propertyName
-                        js_function,                         // value
-                        attributes,                          // attributes
-                        nullptr                              // exception
+    JSObjectSetProperty(ctx->get(),                            // ctx
+                        JSContextGetGlobalObject(ctx->get()),  // object
+                        js_name,                               // propertyName
+                        js_function,                           // value
+                        attributes,                            // attributes
+                        nullptr                                // exception
     );
     JSStringRelease(js_name);
 }
@@ -175,12 +175,12 @@ void BindingsHost::add_function(const char* name,
 void BindingsHost::add_object(const char* prop_name, JSObjectRef object,
                               JSPropertyAttributes attributes) {
     auto js_prop_name = JSStringCreateWithUTF8CString(prop_name);
-    JSObjectSetProperty(ctx->ctx,                            // ctx
-                        JSContextGetGlobalObject(ctx->ctx),  // object
-                        js_prop_name,                        // propertyName
-                        object,                              // value
-                        attributes,                          // attributes
-                        nullptr                              // exception
+    JSObjectSetProperty(ctx->get(),                            // ctx
+                        JSContextGetGlobalObject(ctx->get()),  // object
+                        js_prop_name,                          // propertyName
+                        object,                                // value
+                        attributes,                            // attributes
+                        nullptr                                // exception
     );
     JSStringRelease(js_prop_name);
 }
@@ -189,7 +189,7 @@ void BindingsHost::add_constructor(
     const char* name, JSClassRef jsclass,
     JSObjectCallAsConstructorCallback call_as_constructor) {
     auto constructor =
-        JSObjectMakeConstructor(ctx->ctx, jsclass, call_as_constructor);
+        JSObjectMakeConstructor(ctx->get(), jsclass, call_as_constructor);
     add_object(name, constructor);
 }
 
