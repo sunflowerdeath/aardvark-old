@@ -12,7 +12,7 @@ namespace aardvark::js {
 int int_from_js(JSContextRef ctx, JSValueRef value);
 JSValueRef int_to_js(JSContextRef ctx, const int& value);
 
-// Strings
+// strings
 
 std::string str_from_js_str(JSStringRef js_str);
 

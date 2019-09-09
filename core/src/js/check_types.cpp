@@ -1,7 +1,6 @@
 #include "check_types.hpp"
 
 #include "fmt/format.h"
-#include <iostream>
 
 namespace aardvark::js::check_types {
 
@@ -51,6 +50,17 @@ Checker object = make_primitive("object");
 Checker array = make_primitive("array");
 Checker string = make_primitive("string");
 Checker symbol = make_primitive("symbol");
+
+Checker optional(Checker checker) {
+    return
+        [checker](JSContextRef ctx, JSValueRef value, const std::string& name,
+                  const std::string& location) -> CheckResult {
+            if (JSValueIsNull(ctx, value) || JSValueIsUndefined(ctx, value)) {
+                return std::nullopt;
+            }
+            return checker(ctx, value, name, location);
+        };
+}
 
 Checker array_of(Checker checker) {
     return
@@ -121,24 +131,21 @@ Checker instance_of(JSClassRef cls) {
         };
 }
 
-Checker make_union(std::initializer_list<Checker> checkers) {
+Checker make_union(std::vector<Checker> checkers) {
     return [checkers](JSContextRef ctx, JSValueRef value,
                       const std::string& name,
                       const std::string& location) -> CheckResult {
         for (auto& checker : checkers) {
             auto error = checker(ctx, value, name, location);
-            if (error.has_value()) {
-                auto value_str = str_from_js(ctx, value);
-                return fmt::format(
-                    "Invalid property `{}` of value `{}` supplied to {}.", name,
-                    value_str, location);
-            }
+            if (!error.has_value()) return std::nullopt;
         }
-        return std::nullopt;
+        return fmt::format(
+            "Invalid property `{}` of value `{}` supplied to {}.", name,
+            str_from_js(ctx, value), location);
     };
 }
 
-Checker make_enum(std::initializer_list<JsValueWrapper> values) {
+Checker make_enum(std::vector<JsValueWrapper> values) {
     return [values](JSContextRef ctx, JSValueRef value, const std::string& name,
                     const std::string& location) -> CheckResult {
         for (auto& expected_value : values) {
@@ -146,12 +153,12 @@ Checker make_enum(std::initializer_list<JsValueWrapper> values) {
                 return std::nullopt;
             }
         }
-        auto value_str = str_from_js(ctx, value);
         return fmt::format(
             "Invalid property `{}` of value `{}` supplied to {}.", name,
-            value_str, location);
-        // TODO expected one of {} : values
+            str_from_js(ctx, value), location);
     };
 }
+
+// TODO shape loose_shape
 
 }  // namespace aardvark::js::check_types

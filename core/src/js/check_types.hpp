@@ -23,7 +23,10 @@ extern Checker array;
 extern Checker string;
 extern Checker symbol;
 
+Checker optional(Checker checker);
 Checker array_of(Checker checker);
 Checker object_of(Checker checker);
+Checker make_union(std::vector<Checker> checkers);
+Checker make_enum(std::vector<JsValueWrapper> values);
 
 }  // namespace aardvark::js::check_types

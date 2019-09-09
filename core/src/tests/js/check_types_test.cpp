@@ -1,4 +1,5 @@
 #include "Catch2/catch.hpp"
+#include <memory>
 #include "JavaScriptCore/JavaScript.h"
 #include "../../js/helpers.hpp"
 #include "../../js/check_types.hpp"
@@ -23,6 +24,14 @@ TEST_CASE("check_types", "[check_types]" ) {
     SECTION("primitive types") {
         require_valid(check_types::number, ctx, JSValueMakeNumber(ctx, 21));
         require_error(check_types::number, ctx, JSValueMakeBoolean(ctx, true));
+    }
+
+    SECTION("optional") {
+        auto checker = check_types::optional(check_types::number);
+        require_valid(checker, ctx, JSValueMakeNumber(ctx, 42));
+        require_valid(checker, ctx, JSValueMakeNull(ctx));
+        require_valid(checker, ctx, JSValueMakeUndefined(ctx));
+        require_error(checker, ctx, JSValueMakeBoolean(ctx, true));
     }
 
     SECTION("array_of") {
@@ -51,6 +60,34 @@ TEST_CASE("check_types", "[check_types]" ) {
         JSObjectSetProperty(ctx, invalid, prop_name.get(),
                             JSValueMakeBoolean(ctx, true),
                             kJSPropertyAttributeNone, nullptr);
+        require_error(checker, ctx, invalid);
+    }
+
+    SECTION("union") {
+        auto checker = check_types::make_union(
+            {check_types::number, check_types::boolean});
+
+        auto valid1 = JSValueMakeNumber(ctx, 42);
+        auto valid2 = JSValueMakeNumber(ctx, true);
+        require_valid(checker, ctx, valid1);
+        require_valid(checker, ctx, valid2);
+
+        auto invalid = JSObjectMake(ctx, nullptr, nullptr);
+        require_error(checker, ctx, invalid);
+    }
+
+    SECTION("enum") {
+        auto ctx_sptr = std::make_shared<JSGlobalContextWrapper>(ctx);
+        auto valid1 = JSValueMakeNumber(ctx, 42);
+        auto valid2 = JSValueMakeNumber(ctx, true);
+        auto checker =
+            check_types::make_enum({JsValueWrapper(ctx_sptr, valid1),
+                                    JsValueWrapper(ctx_sptr, valid2)});
+
+        require_valid(checker, ctx, valid1);
+        require_valid(checker, ctx, valid2);
+
+        auto invalid = JSValueMakeNumber(ctx, 23);
         require_error(checker, ctx, invalid);
     }
 }
