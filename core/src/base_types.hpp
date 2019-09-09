@@ -64,5 +64,5 @@ inline Position operator+(const Position& lhs, const Position& rhs) {
     );
 };
 
-};  // namespace aardvark
+}  // namespace aardvark
 

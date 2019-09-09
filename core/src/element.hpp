@@ -165,4 +165,4 @@ class MultipleChildrenElement : public Element {
     };
 };
 
-};  // namespace aardvark
+}  // namespace aardvark

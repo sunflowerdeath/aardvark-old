@@ -260,11 +260,4 @@ void Document::paint_layer_tree(LayerTree* tree) {
     screen->canvas->restore();
 }
 
-/*
-void Document::handle_event(PointerEvent event) {
-    hit_tester->test(root, event.left, event.top);
-    reconciler->reconcile(event, hit_tester->hit_elements, root.get());
-};
-*/
-
-};  // namespace aardvark
+}  // namespace aardvark

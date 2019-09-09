@@ -47,4 +47,4 @@ class Layer {
     sk_sp<SkImage> snapshot;
 };
 
-};  // namespace aardvark
+}  // namespace aardvark

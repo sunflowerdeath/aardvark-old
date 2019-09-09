@@ -61,4 +61,4 @@ using Event =
                  WindowCloseEvent, WindowMinimizeEvent, WindowRestoreEvent,
                  MouseEnterEvent, MouseLeaveEvent, PointerEvent, KeyEvent>;
 
-};  // namespace aardvark
+}  // namespace aardvark

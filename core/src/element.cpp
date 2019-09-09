@@ -93,4 +93,4 @@ void MultipleChildrenElement::insert_before_child(
     change();
 };
 
-};  // namespace aardvark
+}  // namespace aardvark

@@ -1,5 +1,7 @@
 #include "event_loop.hpp"
 
+#include <chrono>
+
 namespace aardvark {
 
 int EventLoop::set_timeout(Callback cb, int timeout) {

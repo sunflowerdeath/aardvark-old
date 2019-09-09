@@ -1,4 +1,5 @@
 #include "files_utils.hpp"
+
 #include <fstream>
 #include <unistd.h>
 #include <limits.h>
@@ -23,4 +24,4 @@ std::string read_text_file(fs::path path) {
     return result;
 }
 
-}
+}  // namespace aardvark::utils

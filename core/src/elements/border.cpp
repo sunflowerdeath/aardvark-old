@@ -1,4 +1,5 @@
 #include "border.hpp"
+
 #include <optional>
 
 namespace aardvark::elements {
@@ -214,4 +215,4 @@ void Border::clip_side(BorderSide& prev_side, BorderSide& side,
     rotation += 90;
 };
 
-};  // namespace aardvark::elements
+}  // namespace aardvark::elements

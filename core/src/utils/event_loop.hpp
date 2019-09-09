@@ -3,8 +3,6 @@
 #include <functional>
 #include <unordered_map>
 #include <mutex>
-#include <chrono>
-
 #include "boost/asio.hpp"
 
 namespace aardvark {

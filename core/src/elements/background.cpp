@@ -1,5 +1,4 @@
 #include "background.hpp"
-#include <iostream>
 
 namespace aardvark::elements {
 
