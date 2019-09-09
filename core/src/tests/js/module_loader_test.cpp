@@ -2,8 +2,8 @@
 #include <memory>
 #include <optional>
 #include "JavaScriptCore/JavaScript.h"
-#include "../utils/event_loop.hpp"
-#include "../js/module_loader.hpp"
+#include "../../utils/event_loop.hpp"
+#include "../../js/module_loader.hpp"
 
 using namespace aardvark;
 using namespace aardvark::js;

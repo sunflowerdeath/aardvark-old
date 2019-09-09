@@ -40,7 +40,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #-------------------------------------------------------------------------------
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fno-omit-frame-pointer")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Os -g -fno-omit-frame-pointer")
@@ -66,7 +65,7 @@ endif()
 # DEPENDENCIES
 #-------------------------------------------------------------------------------
 # fmt
-# add_subdirectory("${CMAKE_SOURCE_DIR}/externals/fmt")
+add_subdirectory("${CMAKE_SOURCE_DIR}/externals/fmt")
 
 # json
 add_library(nlohmann_json INTERFACE)
@@ -81,6 +80,7 @@ set_target_properties(nod PROPERTIES
     ${CMAKE_CURRENT_SOURCE_DIR}/externals/nod/include)
 
 # spdlog
+set(SPDLOG_FMT_EXTERNAL ON CACHE BOOL "")
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/externals/spdlog)
 
 # boost
@@ -271,12 +271,13 @@ add_library(aardvark ${ADV_LIB_TYPE}
 target_include_directories(aardvark INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 target_link_libraries(aardvark
-    skia ICU ICU_DATA spdlog::spdlog nlohmann_json nod boost)
+    skia ICU ICU_DATA fmt spdlog::spdlog nlohmann_json nod boost)
 
 if(ADV_ENABLE_JS)
     target_sources(aardvark PRIVATE
         src/js/bindings_host.cpp
         src/js/base_types_bindings.cpp
+        src/js/check_types.cpp
         src/js/document_bindings.cpp
         src/js/elements_bindings.cpp
         src/js/events_bindings.cpp
@@ -352,12 +353,21 @@ if(ADV_BUILD_TESTS)
         src/tests/index.cpp
         src/tests/base_types_test.cpp
         src/tests/box_constraints_test.cpp
-        src/tests/js_module_loader.cpp
-        src/tests/js_objects_index.cpp
         # src/tests/responder_test.cpp
         # src/tests/align_test.cpp
         src/tests/text_span_test.cpp
         src/tests/event_loop_test.cpp
     )
+    if (ADV_ENABLE_JS)
+        target_sources(tests PUBLIC
+            src/tests/js/objects_index_test.cpp
+            src/tests/js/module_loader_test.cpp
+            src/tests/js/check_types_test.cpp
+        )
+    endif()
     target_link_libraries(tests Catch2 aardvark)
+    add_custom_command(TARGET tests POST_BUILD
+       COMMAND ${CMAKE_COMMAND} -E copy_directory
+       "${CMAKE_CURRENT_SOURCE_DIR}/fixtures/build"
+       "${CMAKE_CURRENT_BINARY_DIR}/bin/fixtures")
 endif()

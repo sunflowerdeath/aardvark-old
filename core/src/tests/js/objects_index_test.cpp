@@ -1,5 +1,5 @@
 #include "Catch2/catch.hpp"
-#include "../js/objects_index.hpp"
+#include "../../js/objects_index.hpp"
 
 using namespace aardvark;
 using namespace aardvark::js;
