@@ -90,4 +90,45 @@ TEST_CASE("check_types", "[check_types]" ) {
         auto invalid = JSValueMakeNumber(ctx, 23);
         require_error(checker, ctx, invalid);
     }
+
+    SECTION("shape") {
+        auto checker = check_types::make_shape(
+            {{"num", check_types::number}, {"bool", check_types::boolean}});
+
+        auto valid = JSObjectMake(ctx, nullptr, nullptr);
+        JSObjectSetProperty(ctx, valid, JsStringWrapper("num").get(),
+                            JSValueMakeNumber(ctx, 1), kJSPropertyAttributeNone,
+                            nullptr);
+        JSObjectSetProperty(ctx, valid, JsStringWrapper("bool").get(),
+                            JSValueMakeBoolean(ctx, true),
+                            kJSPropertyAttributeNone, nullptr);
+        require_valid(checker, ctx, valid);
+
+        auto invalid = JSObjectMake(ctx, nullptr, nullptr);
+        JSObjectSetProperty(ctx, invalid, JsStringWrapper("num").get(),
+                            JSValueMakeBoolean(ctx, true),
+                            kJSPropertyAttributeNone, nullptr);
+        JSObjectSetProperty(ctx, invalid, JsStringWrapper("bool").get(),
+                            JSValueMakeNumber(ctx, 42),
+                            kJSPropertyAttributeNone, nullptr);
+        require_error(checker, ctx, invalid);
+    }
+
+    SECTION("loose shape") {
+        auto strict_checker =
+            check_types::make_shape({{"a", check_types::number}}, false);
+        auto loose_checker =
+            check_types::make_shape({{"b", check_types::number}}, true);
+
+        auto object = JSObjectMake(ctx, nullptr, nullptr);
+        JSObjectSetProperty(ctx, object, JsStringWrapper("a").get(),
+                            JSValueMakeNumber(ctx, 1), kJSPropertyAttributeNone,
+                            nullptr);
+        JSObjectSetProperty(ctx, object, JsStringWrapper("b").get(),
+                            JSValueMakeNumber(ctx, 2), kJSPropertyAttributeNone,
+                            nullptr);
+
+        require_error(strict_checker, ctx, object);
+        require_valid(loose_checker, ctx, object);
+    }
 }

@@ -93,23 +93,21 @@ Checker object_of(Checker checker) {
             if (object_error.has_value()) return object_error;
 
             auto object = JSValueToObject(ctx, value, nullptr);
-            auto props_names = JSObjectCopyPropertyNames(ctx, object);
-            auto props_count = JSPropertyNameArrayGetCount(props_names);
+            auto keys = JSObjectCopyPropertyNames(ctx, object);
+            auto keys_count = JSPropertyNameArrayGetCount(keys);
             CheckResult result = std::nullopt;
-            for (auto i = 0; i < props_count; i++) {
-                auto prop_name =
-                    JSPropertyNameArrayGetNameAtIndex(props_names, i);
-                auto prop_value =
-                    JSObjectGetProperty(ctx, object, prop_name, nullptr);
-                auto prop_result =
-                    checker(ctx, prop_value,
-                            name + "." + str_from_js_str(prop_name), location);
-                if (prop_result.has_value()) {
-                    result = prop_result;
+            for (auto i = 0; i < keys_count; i++) {
+                auto key = JSPropertyNameArrayGetNameAtIndex(keys, i);
+                auto key_value = JSObjectGetProperty(ctx, object, key, nullptr);
+                auto key_result =
+                    checker(ctx, key_value, name + "." + str_from_js_str(key),
+                            location);
+                if (key_result.has_value()) {
+                    result = key_result;
                     break;
                 }
             }
-            JSPropertyNameArrayRelease(props_names);
+            JSPropertyNameArrayRelease(keys);
             return result;
         };
 }
@@ -159,6 +157,60 @@ Checker make_enum(std::vector<JsValueWrapper> values) {
     };
 }
 
-// TODO shape loose_shape
+std::string stringify_keys(JSPropertyNameArrayRef keys, int keys_count) {
+    auto result = std::string();
+    for (auto i = 0; i < keys_count; i++) {
+        result +=
+            str_from_js_str(JSPropertyNameArrayGetNameAtIndex(keys, i));
+        if (i != keys_count) result += ", ";
+    }
+    return result;
+}
+
+Checker make_shape(std::unordered_map<std::string, Checker> shape, bool loose) {
+    return [shape, loose](JSContextRef ctx, JSValueRef value,
+                          const std::string& name,
+                          const std::string& location) -> CheckResult {
+        auto object = JSValueToObject(ctx, value, nullptr);
+        for (auto& it : shape) {
+            auto key = JsStringWrapper(it.first);
+            auto value = JSValueRef();
+            if (JSObjectHasProperty(ctx, object, key.get())) {
+                value = JSObjectGetProperty(ctx, object, key.get(), nullptr);
+            } else {
+                value = JSValueMakeUndefined(ctx);
+            }
+            auto error = it.second(ctx, value, name + "." + it.first, location);
+            if (error.has_value()) return error;
+        }
+
+        if (!loose) {
+            auto keys = JSObjectCopyPropertyNames(ctx, object);
+            auto keys_count = JSPropertyNameArrayGetCount(keys);
+            for (auto i = 0; i < keys_count; i++) {
+                auto key =
+                    str_from_js_str(JSPropertyNameArrayGetNameAtIndex(keys, i));
+                if (shape.find(key) == shape.end()) {
+                    auto string_keys = stringify_keys(keys, keys_count);
+                    JSPropertyNameArrayRelease(keys);
+                    if (name.empty()) {
+                        return fmt::format(
+                            "Invalid property `{}` supplied to {}. "
+                            "Valid properties are: {}.",
+                            key, location, string_keys);
+                    } else {
+                        return fmt::format(
+                            "Invalid key `{}` supplied to property `{}` of  {}."
+                            "Valid keys are: {}.",
+                            key, name, location, string_keys);
+                    }
+                }
+            }
+            JSPropertyNameArrayRelease(keys);
+        }
+
+        return std::nullopt;
+    };
+}
 
 }  // namespace aardvark::js::check_types

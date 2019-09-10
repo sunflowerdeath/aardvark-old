@@ -28,5 +28,7 @@ Checker array_of(Checker checker);
 Checker object_of(Checker checker);
 Checker make_union(std::vector<Checker> checkers);
 Checker make_enum(std::vector<JsValueWrapper> values);
+Checker make_shape(std::unordered_map<std::string, Checker> shape,
+                   bool loose = false);
 
 }  // namespace aardvark::js::check_types
