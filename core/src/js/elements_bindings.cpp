@@ -198,10 +198,11 @@ bool background_element_set_color(JSContextRef ctx, JSObjectRef object,
                                   JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
 
+    static auto kind = std::string("property");
     static auto name = std::string("color");
-    static auto location = std::string("BackgroundElement");
-    if (check_types::to_exception(host->typedefs->color, ctx, value, name,
-                                  location, exception)) {
+    static auto target = std::string("BackgroundElement");
+    if (check_types::to_exception(host->typedefs->color, ctx, value, kind, name,
+                                  target, exception)) {
         return false;
     }
 

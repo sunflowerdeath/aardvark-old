@@ -7,7 +7,6 @@
 
 void run(const std::string& filepath) {
     auto host = aardvark::js::BindingsHost();
-    // auto src = aardvark::utils::read_text_file(filepath);
     host.module_loader->load_from_file(filepath);
     host.run();
 }

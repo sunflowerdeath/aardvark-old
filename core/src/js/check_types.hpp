@@ -9,12 +9,13 @@ namespace aardvark::js::check_types {
 
 using CheckResult = std::optional<std::string>;
 
-using Checker = std::function<CheckResult(
-    JSContextRef, JSValueRef, const std::string&, const std::string&)>;
+using Checker =
+    std::function<CheckResult(JSContextRef, JSValueRef, const std::string&,
+                              const std::string&, const std::string&)>;
 
 bool to_exception(const Checker& checker, JSContextRef ctx, JSValueRef value,
-                  const std::string& name, const std::string& location,
-                  JSValueRef* exception);
+                  const std::string& kind, const std::string& name,
+                  const std::string& target, JSValueRef* exception);
 
 extern Checker number;
 extern Checker boolean;

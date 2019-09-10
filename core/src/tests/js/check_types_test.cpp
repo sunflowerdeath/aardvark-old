@@ -8,13 +8,13 @@ using namespace aardvark::js;
 
 void require_error(const check_types::Checker& checker, JSContextRef ctx,
                    JSValueRef value) {
-    auto result = checker(ctx, value, "name", "location");
+    auto result = checker(ctx, value, "kind", "name", "target");
     REQUIRE(result.has_value());
 }
 
 void require_valid(const check_types::Checker& checker, JSContextRef ctx,
                    JSValueRef value) {
-    auto result = checker(ctx, value, "name", "location");
+    auto result = checker(ctx, value, "kind", "name", "target");
     REQUIRE(!result.has_value());
 }
 
