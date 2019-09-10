@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include "spdlog/spdlog.h"
+#include "../utils/log.hpp"
 #include "../js/bindings_host.hpp"
 #include "../js/helpers.hpp"
 
@@ -16,6 +17,12 @@ int main(int argc, char *argv[]) {
     // auto filepath = fs::current_path().append();
     while (true) {
         run(argv[1]);
-        std::cout << "\n--- Restart ---\n" << std:: endl;
+        aardvark::Log::info("Press 'R' to restart...");
+        char ch;
+        do {
+            std::cin >> ch;
+            if (ch == 'r' || ch == 'R') break;
+        } while (ch != EOF);
+        aardvark::Log::info("Restart");
     }
 }

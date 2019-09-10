@@ -284,6 +284,7 @@ if(ADV_ENABLE_JS)
         src/js/helpers.cpp
         src/js/module_loader.cpp
         src/js/signal_connection_bindings.cpp
+        src/js/typedefs.cpp
         src/js/websocket_bindings.cpp
     )
     if (ADV_PLATFORM STREQUAL "linux")

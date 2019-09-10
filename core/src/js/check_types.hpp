@@ -26,8 +26,11 @@ extern Checker symbol;
 Checker optional(Checker checker);
 Checker array_of(Checker checker);
 Checker object_of(Checker checker);
+Checker instance_of(JSClassRef cls);
 Checker make_union(std::vector<Checker> checkers);
 Checker make_enum(std::vector<JsValueWrapper> values);
+Checker make_enum_with_ctx(std::weak_ptr<JSGlobalContextWrapper> ctx,
+                           std::vector<JSValueRef> values);
 Checker make_shape(std::unordered_map<std::string, Checker> shape,
                    bool loose = false);
 

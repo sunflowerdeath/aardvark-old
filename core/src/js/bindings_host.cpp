@@ -80,6 +80,8 @@ BindingsHost::BindingsHost() {
         stop();
     };
 
+    typedefs = std::make_unique<Typedefs>(this);
+
     // Store pointer to the host in private data of the global object
     auto global_object = JSContextGetGlobalObject(ctx->get());
     JSObjectSetPrivate(global_object, static_cast<void*>(this));

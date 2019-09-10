@@ -9,11 +9,11 @@ bool to_exception(const Checker& checker, JSContextRef ctx, JSValueRef value,
                   JSValueRef* exception) {
     auto error = checker(ctx, value, name, location);
     if (error.has_value()) {
-        auto obj = JSObjectMake(ctx, nullptr, nullptr);
-        map_prop_to_js<std::string, str_to_js>(ctx, obj, "message",
-                                               error.value());
-        *exception = obj;
+        auto message = str_to_js(ctx, error.value());
+        *exception = JSObjectMakeError(ctx, 1, &message, nullptr);
+        return true;
     }
+    return false;
 }
 
 std::string get_type(JSContextRef ctx, JSValueRef value) {
@@ -155,6 +155,13 @@ Checker make_enum(std::vector<JsValueWrapper> values) {
             "Invalid property `{}` of value `{}` supplied to {}.", name,
             str_from_js(ctx, value), location);
     };
+}
+
+Checker make_enum_with_ctx(std::weak_ptr<JSGlobalContextWrapper> ctx,
+                           std::vector<JSValueRef> values) {
+    auto protected_values = std::vector<JsValueWrapper>(values.size());
+    for (auto value : values) protected_values.emplace_back(ctx, value);
+    return make_enum(protected_values);
 }
 
 std::string stringify_keys(JSPropertyNameArrayRef keys, int keys_count) {

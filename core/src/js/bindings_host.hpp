@@ -16,10 +16,13 @@
 #include "../utils/event_loop.hpp"
 #include "../utils/websocket.hpp"
 #include "helpers.hpp"
+#include "typedefs.hpp"
 #include "module_loader.hpp"
 #include "objects_index.hpp"
 
 namespace aardvark::js {
+
+class Typedefs;
 
 constexpr auto PROP_ATTR_STATIC =
     kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete;
@@ -36,6 +39,7 @@ class BindingsHost {
     std::shared_ptr<JSGlobalContextWrapper> ctx;
     // std::function<void(JSValueRef)> exception_handler;
     std::shared_ptr<EventLoop> event_loop = std::make_shared<EventLoop>();
+    std::unique_ptr<Typedefs> typedefs;
     std::unique_ptr<ModuleLoader> module_loader;
     std::shared_ptr<DesktopApp> app;
     JSClassRef element_class;

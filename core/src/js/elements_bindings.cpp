@@ -68,6 +68,9 @@ JSValueRef element_append_child(JSContextRef ctx, JSObjectRef function,
                                 const JSValueRef arguments[],
                                 JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
+
+    // TODO check types
+
     auto elem = host->element_index->get_native_object(object);
     auto child = host->element_index->get_native_object(
         JSValueToObject(ctx, arguments[0], exception));
@@ -80,6 +83,9 @@ JSValueRef element_remove_child(JSContextRef ctx, JSObjectRef function,
                                 const JSValueRef arguments[],
                                 JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
+
+    // TODO check types
+  
     auto elem = host->element_index->get_native_object(object);
     auto child = host->element_index->get_native_object(
         JSValueToObject(ctx, arguments[0], exception));
@@ -93,6 +99,9 @@ JSValueRef element_insert_before_child(JSContextRef ctx, JSObjectRef function,
                                        const JSValueRef arguments[],
                                        JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
+
+    // TODO check types
+
     auto elem = host->element_index->get_native_object(object);
     auto child = get_elem(ctx, JSValueToObject(ctx, arguments[0], exception));
     auto before_child =
@@ -133,6 +142,10 @@ JSClassRef element_create_class() {
 bool align_element_set_align(JSContextRef ctx, JSObjectRef object,
                              JSStringRef property_name, JSValueRef value,
                              JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+
+    // TODO check types
+
     auto elem = get_elem<elements::Align>(ctx, object);
     auto insets = alignment_from_js(ctx, JSValueToObject(ctx, value, nullptr));
     elem->insets = insets;
@@ -183,6 +196,15 @@ JSValueRef background_element_get_color(JSContextRef ctx, JSObjectRef object,
 bool background_element_set_color(JSContextRef ctx, JSObjectRef object,
                                   JSStringRef property_name, JSValueRef value,
                                   JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+
+    static auto name = std::string("color");
+    static auto location = std::string("BackgroundElement");
+    if (check_types::to_exception(host->typedefs->color, ctx, value, name,
+                                  location, exception)) {
+        return false;
+    }
+
     auto elem = get_elem<elements::Background>(ctx, object);
     elem->color = color_from_js(ctx, value);
     return true;
