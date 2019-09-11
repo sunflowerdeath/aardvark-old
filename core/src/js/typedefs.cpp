@@ -17,17 +17,16 @@ Typedefs::Typedefs(BindingsHost* host) : host(host) {
         {{"left", value}, {"right", value}, {"top", value}, {"bottom", value}});
 
     color_component =
-        [](JSContextRef ctx, JSValueRef value, const std::string& kind,
-           const std::string& name,
-           const std::string& target) -> check_types::CheckResult {
-        auto error = check_types::number(ctx, value, kind, name, target);
+        [](JSContextRef ctx, JSValueRef value,
+           const check_types::ErrorParams& params) -> check_types::CheckResult {
+        auto error = check_types::number(ctx, value, params);
         if (error.has_value()) return error;
         auto number = int_from_js(ctx, value);
         if (number >= 0 && number <= 255) return std::nullopt;
         return fmt::format(
             "Invalid {} `{}` of value {} supplied to {}, "
             "expected number between 0 and 255.",
-            kind, name, number, target);
+            params.kind, params.name, number, params.target);
     };
 
     color = check_types::make_shape({{"alpha", color_component},

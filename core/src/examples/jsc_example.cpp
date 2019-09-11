@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
     // auto filepath = fs::current_path().append();
     while (true) {
         run(argv[1]);
-        aardvark::Log::info("Press 'R' to restart...");
+        aardvark::Log::info("Enter 'r' to restart application");
         char ch;
         do {
             std::cin >> ch;

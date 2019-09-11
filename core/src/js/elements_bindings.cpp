@@ -100,7 +100,15 @@ JSValueRef element_insert_before_child(JSContextRef ctx, JSObjectRef function,
                                        JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
 
-    // TODO check types
+    /*
+    auto checker =
+        check_types::make_arguments({{"child", host->typedefs->element},
+                                     {"beforeChild", host->typedefs->element}});
+    if (check_types::to_exception(checker, ctx, argument_count, arguments,
+                                  "Element.insertBeforeChild()", exception)) {
+        return JSValueMakeUndefined(ctx);
+    }
+    */
 
     auto elem = host->element_index->get_native_object(object);
     auto child = get_elem(ctx, JSValueToObject(ctx, arguments[0], exception));
@@ -145,6 +153,13 @@ bool align_element_set_align(JSContextRef ctx, JSObjectRef object,
     auto host = BindingsHost::get(ctx);
 
     // TODO check types
+    /*
+    auto params = check_types::params{"property", "alignment", "AlignElement"};
+    if (check_types::to_exception(host->typedefs->alignment, ctx, value, params,
+                                  exception)) {
+        return false;
+    }
+    */
 
     auto elem = get_elem<elements::Align>(ctx, object);
     auto insets = alignment_from_js(ctx, JSValueToObject(ctx, value, nullptr));
@@ -198,13 +213,10 @@ bool background_element_set_color(JSContextRef ctx, JSObjectRef object,
                                   JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
 
-    static auto kind = std::string("property");
-    static auto name = std::string("color");
-    static auto target = std::string("BackgroundElement");
-    if (check_types::to_exception(host->typedefs->color, ctx, value, kind, name,
-                                  target, exception)) {
-        return false;
-    }
+    static auto params =
+        check_types::ErrorParams{"property", "color", "BackgroundElement"};
+    auto error = host->typedefs->color(ctx, value, params);
+    if (check_types::to_exception(error, ctx, exception)) return false;
 
     auto elem = get_elem<elements::Background>(ctx, object);
     elem->color = color_from_js(ctx, value);

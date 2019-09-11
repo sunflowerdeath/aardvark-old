@@ -7,15 +7,22 @@
 
 namespace aardvark::js::check_types {
 
+struct ErrorParams {
+    std::string kind;
+    std::string name;
+    std::string target;
+};
+
 using CheckResult = std::optional<std::string>;
 
 using Checker =
-    std::function<CheckResult(JSContextRef, JSValueRef, const std::string&,
-                              const std::string&, const std::string&)>;
+    std::function<CheckResult(JSContextRef, JSValueRef, const ErrorParams&)>;
 
-bool to_exception(const Checker& checker, JSContextRef ctx, JSValueRef value,
-                  const std::string& kind, const std::string& name,
-                  const std::string& target, JSValueRef* exception);
+using ArgumentsChecker = std::function<CheckResult(
+    JSContextRef, int, JSValueRef*, const std::string&)>;
+
+bool to_exception(const CheckResult& result, JSContextRef ctx,
+                  JSValueRef* exception);
 
 extern Checker number;
 extern Checker boolean;
@@ -34,5 +41,7 @@ Checker make_enum_with_ctx(std::weak_ptr<JSGlobalContextWrapper> ctx,
                            std::vector<JSValueRef> values);
 Checker make_shape(std::unordered_map<std::string, Checker> shape,
                    bool loose = false);
+
+ArgumentsChecker make_arguments(std::unordered_map<std::string, Checker> args);
 
 }  // namespace aardvark::js::check_types
