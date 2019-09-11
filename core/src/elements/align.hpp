@@ -29,11 +29,10 @@ class Align : public SingleChildElement {
           bool adjust_child = true, bool is_repaint_boundary = false);
 
     std::string get_debug_name() override { return "Align"; };
-
+    float get_intrinsic_height() override;
+    float get_intrinsic_width() override;
     Size layout(BoxConstraints constraints) override;
-    
     void paint(bool is_changed) override;
-
     bool hit_test(double left, double top) override;
 
     // Whether to reduce size of the child by the size of insets, or make it 

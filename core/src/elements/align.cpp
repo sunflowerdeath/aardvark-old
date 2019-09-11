@@ -9,6 +9,18 @@ Align::Align(std::shared_ptr<Element> child, EdgeInsets insets,
       adjust_child(adjust_child),
       insets(insets){};
 
+float Align::get_intrinsic_height() {
+    auto top = insets.top.calc(0);
+    auto bottom = insets.bottom.calc(0);
+    return top + bottom + child->get_intrinsic_height();
+}
+
+float Align::get_intrinsic_width() {
+    auto left = insets.left.calc(0);
+    auto right = insets.right.calc(0);
+    return left + right + child->get_intrinsic_width();
+}
+
 Size Align::layout(BoxConstraints constraints) {
     auto left = insets.left.calc(constraints.max_width);
     auto right = insets.right.calc(constraints.max_width);

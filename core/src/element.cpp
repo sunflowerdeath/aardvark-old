@@ -67,7 +67,25 @@ MultipleChildrenElement::MultipleChildrenElement(
     bool size_depends_on_parent)
     : children(children), Element(is_repaint_boundary, size_depends_on_parent) {
     for (auto child : children) child->parent = this;
-};
+}
+
+float MultipleChildrenElement::get_intrinsic_height() {
+    auto max_height = 0;
+    for (auto& child : children) {
+        auto height = child->get_intrinsic_height();
+        if (height > max_height) max_height = height;
+    }
+    return max_height;
+}
+
+float MultipleChildrenElement::get_intrinsic_width() {
+    auto max_width = 0;
+    for (auto& child : children) {
+        auto width = child->get_intrinsic_width();
+        if (width > max_width) max_width = width;
+    }
+    return max_width;
+}
 
 void MultipleChildrenElement::remove_child(std::shared_ptr<Element> child) {
     auto it = std::find(children.begin(), children.end(), child);

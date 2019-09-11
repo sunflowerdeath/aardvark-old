@@ -120,6 +120,9 @@ BindingsHost::BindingsHost() {
                    background_elem_call_as_constructor);
     add_elem_class("Center", typeid(elements::Center), center_elem_create_class,
                    center_elem_call_as_constructor);
+    add_elem_class("IntrinsicHeight", typeid(elements::IntrinsicHeight),
+                   intrinsic_height_elem_create_class,
+                   intrinsic_height_elem_call_as_constructor);
     add_elem_class("Responder", typeid(elements::ResponderElement),
                    responder_elem_create_class,
                    responder_elem_call_as_constructor);

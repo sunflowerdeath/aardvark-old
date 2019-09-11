@@ -284,6 +284,25 @@ JSObjectRef center_elem_call_as_constructor(JSContextRef ctx,
 }
 
 //------------------------------------------------------------------------------
+// IntrinsicHeight
+//------------------------------------------------------------------------------
+
+JSClassRef intrinsic_height_elem_create_class(JSClassRef element_class) {
+    auto definition = kJSClassDefinitionEmpty;
+    definition.className = "IntrinsicHeight";
+    definition.parentClass = element_class;
+    return JSClassCreate(&definition);
+}
+
+JSObjectRef intrinsic_height_elem_call_as_constructor(
+    JSContextRef ctx, JSObjectRef constructor, size_t argument_count,
+    const JSValueRef arguments[], JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto elem = std::make_shared<elements::IntrinsicHeight>(nullptr);
+    return host->element_index->create_js_object(elem);
+}
+
+//------------------------------------------------------------------------------
 // Responder
 //------------------------------------------------------------------------------
 

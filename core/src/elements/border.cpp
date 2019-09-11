@@ -11,6 +11,16 @@ Border::Border(std::shared_ptr<Element> child, BoxBorders borders,
       borders(borders),
       radiuses(radiuses){};
 
+float Border::get_intrinsic_height() {
+    return borders.top.width + borders.bottom.width +
+           child->get_intrinsic_height();
+}
+
+float Border::get_intrinsic_width() {
+    return borders.left.width + borders.right.width +
+           child->get_intrinsic_width();
+}
+
 Size Border::layout(BoxConstraints constraints) {
     auto vert_width = borders.left.width + borders.right.width;
     auto horiz_width = borders.top.width + borders.bottom.width;

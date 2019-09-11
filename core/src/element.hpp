@@ -68,6 +68,12 @@ class Element {
         return constraints.max_size();
     };
 
+    // Returns minimum height that element could fit into.
+    virtual float get_intrinsic_height() { return 0; }
+
+    // Returns minimum width that element could fit into.
+    virtual float get_intrinsic_width() { return 0; }
+
     // Paints element and its children.
     // `is_changed` is `true` when the element itself or some of its parents is
     // changed. When it is `false`, element is allowed to reuse result of
@@ -143,6 +149,14 @@ class SingleChildElement : public Element {
     SingleChildElement(std::shared_ptr<Element> child, bool is_repaint_boundary,
                        bool size_depends_on_parent);
 
+    float get_intrinsic_height() override {
+        return child->get_intrinsic_height();
+    }
+
+    float get_intrinsic_width() override {
+        return child->get_intrinsic_width();
+    }
+
     std::shared_ptr<Element> child;
     void append_child(std::shared_ptr<Element> child) override;
     void remove_child(std::shared_ptr<Element> child) override;
@@ -155,6 +169,8 @@ class MultipleChildrenElement : public Element {
                             bool is_repaint_boundary,
                             bool size_depends_on_parent);
 
+    float get_intrinsic_height() override;
+    float get_intrinsic_width() override;
     std::vector<std::shared_ptr<Element>> children;
     void remove_child(std::shared_ptr<Element> child) override;
     void append_child(std::shared_ptr<Element> child) override;

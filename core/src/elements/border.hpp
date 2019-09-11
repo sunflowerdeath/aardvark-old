@@ -69,6 +69,8 @@ class Border : public SingleChildElement {
     BoxBorders borders;
     BoxRadiuses radiuses;
     std::string get_debug_name() override { return "Border"; };
+    float get_intrinsic_height() override;
+    float get_intrinsic_width() override;
     Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
 

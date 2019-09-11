@@ -4,6 +4,7 @@
 #include "center.hpp"
 #include "clip.hpp"
 #include "fixed_size.hpp"
+#include "intrinsic_height.hpp"
 #include "layer.hpp"
 #include "paragraph.hpp"
 #include "placeholder.hpp"

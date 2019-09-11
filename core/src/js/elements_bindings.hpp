@@ -20,6 +20,7 @@ JSObjectRef element_call_as_constructor(JSContextRef ctx,
 ADV_ELEM_JS_CLASS(align)
 ADV_ELEM_JS_CLASS(background)
 ADV_ELEM_JS_CLASS(center)
+ADV_ELEM_JS_CLASS(intrinsic_height)
 ADV_ELEM_JS_CLASS(responder)
 ADV_ELEM_JS_CLASS(sized)
 ADV_ELEM_JS_CLASS(stack)

@@ -40,7 +40,7 @@ const onResponderEvent = (event, ctx) => {
 			unpress(event, ctx)
 		} else if (isLeftMouseButtonUp(event)) {
 			if (props.onClick) props.onClick(event)
-			unpress(event, ctx)
+			// unpress(event, ctx)
 		}
 		return
 	}
@@ -120,36 +120,87 @@ const COLOR_GREEN = { alpha: 255, red: 255, green: 0, blue: 0 }
 const App = () => {
 	log('render app')
 	return (
-		<align
-			align={{
-				left: { type: 'abs', value: 50 },
-				top: { type: 'abs', value: 100 }
-			}}
-		>
-			<Button onClick={() => log('click')}>
-				{state => (
-					<sized
-						sizeConstraints={{
-							minWidth: { type: 'abs', value: 200 },
-							maxWidth: { type: 'abs', value: 200 },
-							minHeight: { type: 'abs', value: 50 },
-							maxHeight: { type: 'abs', value: 50 }
-						}}
-					>
-						<stack>
-							<background
-								color={
-									state.isPressed ? COLOR_RED : COLOR_GREEN
-								}
-							/>
-							<center>
-								<text text="Test" />
-							</center>
-						</stack>
-					</sized>
-				)}
-			</Button>
-		</align>
+		<stack>
+			<align
+				align={{
+					left: { type: 'abs', value: 50 },
+					top: { type: 'abs', value: 100 }
+				}}
+			>
+				<Button onClick={() => log('click')}>
+					{state => (
+						<sized
+							sizeConstraints={{
+								minWidth: { type: 'abs', value: 200 },
+								maxWidth: { type: 'abs', value: 200 },
+								minHeight: { type: 'abs', value: 50 },
+								maxHeight: { type: 'abs', value: 50 }
+							}}
+						>
+							<stack>
+								<background
+									color={
+										state.isPressed
+											? COLOR_RED
+											: COLOR_GREEN
+									}
+								/>
+								<center>
+									<text text="Test" />
+								</center>
+							</stack>
+						</sized>
+					)}
+				</Button>
+			</align>
+			<align
+				align={{
+					left: { type: 'abs', value: 50 },
+					top: { type: 'abs', value: 200 }
+				}}
+			>
+				<Button onClick={() => {
+                    log('exception')
+                    const bg = new Background()
+                    bg.color = { alpha: 255, red: 'red', green: 255, blue: 255 } 
+                }}>
+					{state => (
+						<sized
+							sizeConstraints={{
+								minWidth: { type: 'abs', value: 200 },
+								maxWidth: { type: 'abs', value: 200 },
+								minHeight: { type: 'abs', value: 50 },
+								maxHeight: { type: 'abs', value: 50 }
+							}}
+						>
+						    <stack>
+                                <background
+								    color={
+									    state.isPressed ? COLOR_RED : COLOR_GREEN
+								    }
+							    />
+								<center>
+									<text text="GC" />
+								</center>
+							</stack>
+						</sized>
+					)}
+				</Button>
+			</align>
+			<align
+				align={{
+					left: { type: 'abs', value: 50 },
+					top: { type: 'abs', value: 300 }
+				}}
+			>
+			    <intrinsicHeight>
+			        <stack>
+			            <background color={COLOR_RED} />
+			            <text text="INTRINSIC HEIGHT" />
+			        </stack>
+			    </intrinsicHeight>   
+			</align>
+		</stack>
 	)
 }
 

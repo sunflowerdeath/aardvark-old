@@ -71,6 +71,11 @@ const elements = {
 		props: {},
 		children: childrenTypes.single
 	},
+	intrinsicHeight: {
+		element: IntrinsicHeight,
+		props: {},
+		children: childrenTypes.single
+	},
 	responder: {
 		element: Responder,
 		props: {

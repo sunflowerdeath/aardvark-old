@@ -24,6 +24,8 @@ class Sized : public SingleChildElement {
           bool is_repaint_boundary = false);
     SizeConstraints size_constraints;
     std::string get_debug_name() override { return "Sized"; };
+    float get_intrinsic_height() override;
+    float get_intrinsic_width() override;
     Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
 };

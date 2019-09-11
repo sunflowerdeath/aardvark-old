@@ -8,6 +8,14 @@ Sized::Sized(std::shared_ptr<Element> child, SizeConstraints size_constraints,
                          /* size_depends_on_parent */ false),
       size_constraints(size_constraints){};
 
+float Sized::get_intrinsic_height() {
+    return size_constraints.min_height.calc(0);
+}
+
+float Sized::get_intrinsic_width() {
+    return size_constraints.min_width.calc(0);
+}
+
 Size Sized::layout(BoxConstraints constraints) {
     auto child_constraints = BoxConstraints{
         size_constraints.min_width.calc(constraints.max_width, 0),  // min_width
