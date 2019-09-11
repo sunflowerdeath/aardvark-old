@@ -105,12 +105,14 @@ Checker object_of(Checker checker) {
     };
 }
 
-Checker instance_of(JSClassRef cls) {
-    return [cls](JSContextRef ctx, JSValueRef value,
-                 const ErrorParams& params) -> CheckResult {
+Checker instance_of(JSObjectRef constructor) {
+    return [constructor](JSContextRef ctx, JSValueRef value,
+                         const ErrorParams& params) -> CheckResult {
         auto object_error = object(ctx, value, params);
         if (object_error.has_value()) return object_error;
-        if (JSValueIsObjectOfClass(ctx, value, cls)) return std::nullopt;
+        if (JSValueIsInstanceOfConstructor(ctx, value, constructor, nullptr)) {
+            return std::nullopt;
+        }
         // TODO cls names
         auto actual_class_name = "ACTUAL_CLASS_NAME";
         auto expected_class_name = "EXPECTED_CLASS_NAME";
@@ -217,12 +219,13 @@ Checker make_shape(std::unordered_map<std::string, Checker> shape, bool loose) {
 
 ArgumentsChecker make_arguments(
     std::vector<std::pair<std::string, Checker>> args_checkers) {
-    return [args_checkers](JSContextRef ctx, int args_count, JSValueRef* args,
+    return [args_checkers](JSContextRef ctx, int args_count,
+                           const JSValueRef args[],
                            const std::string& target) -> CheckResult {
         if (args_checkers.size() != args_count) {
             return fmt::format(
                 "Invalid number of arguments supplied to {}. "
-                "Expected {} arguments, gor {}.",
+                "Expected {} arguments, got {}.",
                 target, args_checkers.size(), args_count);
         }
         for (auto i = 0; i < args_count; i++) {

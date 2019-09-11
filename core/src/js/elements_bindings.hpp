@@ -11,6 +11,11 @@
 namespace aardvark::js {
 
 JSClassRef element_create_class();
+JSObjectRef element_call_as_constructor(JSContextRef ctx,
+                                        JSObjectRef constructor,
+                                        size_t argument_count,
+                                        const JSValueRef arguments[],
+                                        JSValueRef* exception);
 
 ADV_ELEM_JS_CLASS(align)
 ADV_ELEM_JS_CLASS(background)

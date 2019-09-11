@@ -2,6 +2,9 @@
 
 #include <optional>
 #include <functional>
+#include <unordered_map>
+#include <vector>
+#include <utility>
 #include "JavaScriptCore/JavaScript.h"
 #include "helpers.hpp"
 
@@ -19,7 +22,7 @@ using Checker =
     std::function<CheckResult(JSContextRef, JSValueRef, const ErrorParams&)>;
 
 using ArgumentsChecker = std::function<CheckResult(
-    JSContextRef, int, JSValueRef*, const std::string&)>;
+    JSContextRef, int, const JSValueRef[], const std::string&)>;
 
 bool to_exception(const CheckResult& result, JSContextRef ctx,
                   JSValueRef* exception);
@@ -34,7 +37,7 @@ extern Checker symbol;
 Checker optional(Checker checker);
 Checker array_of(Checker checker);
 Checker object_of(Checker checker);
-Checker instance_of(JSClassRef cls);
+Checker instance_of(JSObjectRef constructor);
 Checker make_union(std::vector<Checker> checkers);
 Checker make_enum(std::vector<JsValueWrapper> values);
 Checker make_enum_with_ctx(std::weak_ptr<JSGlobalContextWrapper> ctx,
@@ -42,6 +45,7 @@ Checker make_enum_with_ctx(std::weak_ptr<JSGlobalContextWrapper> ctx,
 Checker make_shape(std::unordered_map<std::string, Checker> shape,
                    bool loose = false);
 
-ArgumentsChecker make_arguments(std::unordered_map<std::string, Checker> args);
+ArgumentsChecker make_arguments(
+    std::vector<std::pair<std::string, Checker>> args);
 
 }  // namespace aardvark::js::check_types

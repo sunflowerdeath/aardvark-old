@@ -43,6 +43,7 @@ class BindingsHost {
     std::unique_ptr<ModuleLoader> module_loader;
     std::shared_ptr<DesktopApp> app;
     JSClassRef element_class;
+    JSObjectRef element_constructor;
     // `type_info` can't be used as map key, it should be wrapped into
     // `type_index`
     std::unordered_map<std::type_index, JSClassRef> elements_classes;
@@ -66,8 +67,9 @@ class BindingsHost {
     void add_object(const char* name, JSObjectRef object,
                     JSPropertyAttributes attributes = PROP_ATTR_STATIC);
 
-    void add_constructor(const char* name, JSClassRef jsclass,
-                         JSObjectCallAsConstructorCallback call_as_constructor);
+    JSObjectRef add_constructor(
+        const char* name, JSClassRef jsclass,
+        JSObjectCallAsConstructorCallback call_as_constructor);
 
     JSClassRef get_element_js_class(Element* elem);
 

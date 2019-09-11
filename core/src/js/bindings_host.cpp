@@ -80,8 +80,6 @@ BindingsHost::BindingsHost() {
         stop();
     };
 
-    typedefs = std::make_unique<Typedefs>(this);
-
     // Store pointer to the host in private data of the global object
     auto global_object = JSContextGetGlobalObject(ctx->get());
     JSObjectSetPrivate(global_object, static_cast<void*>(this));
@@ -110,6 +108,8 @@ BindingsHost::BindingsHost() {
                     websocket_call_as_constructor);
 
     element_class = element_create_class();
+    element_constructor =
+        add_constructor("Element", element_class, element_call_as_constructor);
     element_index.emplace(ctx->get(), [this](Element* elem) {
         return this->get_element_js_class(elem);
     });
@@ -129,6 +129,8 @@ BindingsHost::BindingsHost() {
                    sized_elem_call_as_constructor);
     add_elem_class("Text", typeid(elements::Text), text_elem_create_class,
                    text_elem_call_as_constructor);
+
+    typedefs = std::make_unique<Typedefs>(this);
 }
 
 BindingsHost::~BindingsHost() {
@@ -188,12 +190,13 @@ void BindingsHost::add_object(const char* prop_name, JSObjectRef object,
     JSStringRelease(js_prop_name);
 }
 
-void BindingsHost::add_constructor(
+JSObjectRef BindingsHost::add_constructor(
     const char* name, JSClassRef jsclass,
     JSObjectCallAsConstructorCallback call_as_constructor) {
     auto constructor =
         JSObjectMakeConstructor(ctx->get(), jsclass, call_as_constructor);
     add_object(name, constructor);
+    return constructor;
 }
 
 void BindingsHost::add_elem_class(

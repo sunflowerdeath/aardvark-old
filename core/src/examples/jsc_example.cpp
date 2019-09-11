@@ -19,9 +19,9 @@ int main(int argc, char *argv[]) {
         aardvark::Log::info("Enter 'r' to restart application");
         char ch;
         do {
-            std::cin >> ch;
+            ch = std::cin.get();
             if (ch == 'r' || ch == 'R') break;
-        } while (ch != EOF);
+        } while (true);
         aardvark::Log::info("Restart");
     }
 }

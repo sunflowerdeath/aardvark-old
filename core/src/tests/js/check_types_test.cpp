@@ -131,4 +131,25 @@ TEST_CASE("check_types", "[check_types]" ) {
         require_error(strict_checker, ctx, object);
         require_valid(loose_checker, ctx, object);
     }
+
+    SECTION("arguments") {
+        auto checker = check_types::make_arguments({
+            {"a", check_types::number},
+            {"b", check_types::number}});
+        
+        auto num_val = JSValueMakeNumber(ctx, 1);
+        auto bool_val = JSValueMakeBoolean(ctx, true);
+
+        JSValueRef invalid1[] = {num_val};
+        REQUIRE(checker(ctx, 1, invalid1, "target").has_value());
+
+        JSValueRef invalid2[] = {num_val, num_val, num_val};
+        REQUIRE(checker(ctx, 3, invalid2, "target").has_value());
+
+        JSValueRef invalid3[] = {num_val, bool_val};
+        REQUIRE(checker(ctx, 2, invalid3, "target").has_value());
+
+        JSValueRef valid[] = {num_val, num_val};
+        REQUIRE(!checker(ctx, 2, valid, "target").has_value());
+    }
 }

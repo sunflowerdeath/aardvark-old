@@ -69,7 +69,13 @@ JSValueRef element_append_child(JSContextRef ctx, JSObjectRef function,
                                 JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
 
-    // TODO check types
+    static auto target = std::string("Element.appendChild()");
+    auto checker =
+        check_types::make_arguments({{"child", host->typedefs->element}});
+    auto result = checker(ctx, argument_count, arguments, target);
+    if (check_types::to_exception(result, ctx, exception)) {
+        return JSValueMakeUndefined(ctx);
+    }
 
     auto elem = host->element_index->get_native_object(object);
     auto child = host->element_index->get_native_object(
@@ -141,6 +147,17 @@ JSClassRef element_create_class() {
     definition.staticFunctions = static_functions;
     definition.staticValues = static_values;
     return JSClassCreate(&definition);
+}
+
+JSObjectRef element_call_as_constructor(JSContextRef ctx,
+                                        JSObjectRef constructor,
+                                        size_t argument_count,
+                                        const JSValueRef arguments[],
+                                        JSValueRef* exception) {
+    auto message =
+        str_to_js(ctx, "Element's constructor can't be called directly.");
+    *exception = JSObjectMakeError(ctx, 1, &message, nullptr);
+    return nullptr;
 }
 
 //------------------------------------------------------------------------------

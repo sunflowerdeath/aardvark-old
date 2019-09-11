@@ -34,7 +34,7 @@ Typedefs::Typedefs(BindingsHost* host) : host(host) {
                                      {"green", color_component},
                                      {"blue", color_component}});
 
-    element = check_types::instance_of(host->element_class);
+    element = check_types::instance_of(host->element_constructor);
 }
 
 }
