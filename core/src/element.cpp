@@ -59,6 +59,7 @@ void SingleChildElement::remove_child(std::shared_ptr<Element> child) {
 
 void SingleChildElement::append_child(std::shared_ptr<Element> child) {
     this->child = child;
+    child->parent = this;
     change();
 };
 
@@ -104,9 +105,9 @@ void MultipleChildrenElement::append_child(std::shared_ptr<Element> child) {
 
 void MultipleChildrenElement::insert_before_child(
     std::shared_ptr<Element> child, std::shared_ptr<Element> before_child) {
-    child->parent = this;
     auto it = std::find(children.begin(), children.end(), before_child);
     if (it == children.end()) return;
+    child->parent = this;
     children.insert(it, child);
     change();
 };

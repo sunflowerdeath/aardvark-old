@@ -23,6 +23,7 @@ class Element;
 class LayerTree;
 class PointerEventManager;
 
+// TODO maybe weak ptr
 using ElementsSet = std::unordered_set<Element*>;
 
 class Document {

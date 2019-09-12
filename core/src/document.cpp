@@ -1,5 +1,4 @@
 #include "document.hpp"
-#include <iostream>
 #include "SkPathOps.h"
 #include "elements/placeholder.hpp"
 
@@ -7,14 +6,16 @@ namespace aardvark {
 
 // Add element to set ensuring that no element will be the children of another
 void add_only_parent(ElementsSet& set, Element* added) {
+    auto children_of_added = std::vector<Element*>();
     for (auto elem : set) {
-        if (elem->is_parent_of(added)) {
-            return;  // Parent is already in the set
+        if (elem->is_parent_of(added)) {  // Parent is already in the set
+            return;
         }
-        if (added->is_parent_of(elem)) {
-            set.erase(elem);  // Child is in the set
+        if (added->is_parent_of(elem)) { // Child is already in the set
+            children_of_added.push_back(elem);
         }
     }
+    for (auto elem : children_of_added) set.erase(elem);  
     set.insert(added);
 };
 
@@ -100,7 +101,6 @@ SkPath offset_path(SkPath* path, Position offset) {
 
 void Document::paint_element(Element* elem, bool is_repaint_root) {
     // std::cout << "paint element: " << elem->get_debug_name() << std::endl;
-    if (!is_repaint_root) elem->parent = current_element;
     current_element = elem;
 
     /* 

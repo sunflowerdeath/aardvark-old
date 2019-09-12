@@ -1,3 +1,4 @@
+#include "spdlog/spdlog.h"
 #include "../base_types.hpp"
 #include "../elements/elements.hpp"
 #include "../platforms/desktop/desktop_app.hpp"
@@ -23,13 +24,13 @@ void handle_events(aardvark::DesktopApp* app, aardvark::Event event) {
         if (key->action == aardvark::KeyAction::Press ||
             key->action == aardvark::KeyAction::Repeat) {
             if (key->key == GLFW_KEY_LEFT) {
-                state->transform.translate.left -= 2;
+                state->transform.translate.left -= 10;
             } else if (key->key == GLFW_KEY_RIGHT) {
-                state->transform.translate.left += 2;
+                state->transform.translate.left += 10;
             } else if (key->key == GLFW_KEY_UP) {
-                state->transform.translate.top -= 2;
+                state->transform.translate.top -= 10;
             } else if (key->key == GLFW_KEY_DOWN) {
-                state->transform.translate.top += 2;
+                state->transform.translate.top += 10;
             } else if (key->key == GLFW_KEY_Q) {
                 state->transform.rotation -= 2;
             } else if (key->key == GLFW_KEY_W) {
@@ -101,7 +102,7 @@ int main() {
         matrix);
     auto layer_align = std::make_shared<aardvark::elements::Center>(
         std::make_shared<aardvark::elements::FixedSize>(
-            layer, aardvark::Size{100 /* width */, 100 /* height */}));
+            layer, aardvark::Size{200 /* width */, 200 /* height */}));
 
     auto responder = std::make_shared<aardvark::elements::ResponderElement>(
         background,                           // child
@@ -109,7 +110,7 @@ int main() {
         handler);
     auto align = std::make_shared<aardvark::elements::Align>(
         std::make_shared<aardvark::elements::FixedSize>(
-            responder, aardvark::Size{100 /* width */, 100 /* height */}),
+            responder, aardvark::Size{200 /* width */, 200 /* height */}),
         aardvark::elements::EdgeInsets{aardvark::Value::abs(20),
                                        aardvark::Value::abs(20)});
 
@@ -121,6 +122,7 @@ int main() {
     state.layer = layer;
     state.transform = transform;
 
+    spdlog::set_level(spdlog::level::debug);
     app.user_pointer = (void*)(&state);
     app.event_handler = &handle_events;
     app.run();
