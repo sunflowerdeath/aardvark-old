@@ -131,10 +131,8 @@ const App = () => {
 					{state => (
 						<sized
 							sizeConstraints={{
-								minWidth: { type: 'abs', value: 200 },
-								maxWidth: { type: 'abs', value: 200 },
-								minHeight: { type: 'abs', value: 50 },
-								maxHeight: { type: 'abs', value: 50 }
+								width: { type: 'abs', value: 200 },
+								height: { type: 'abs', value: 50 }
 							}}
 						>
 							<stack>
@@ -167,10 +165,8 @@ const App = () => {
 					{state => (
 						<sized
 							sizeConstraints={{
-								minWidth: { type: 'abs', value: 200 },
-								maxWidth: { type: 'abs', value: 200 },
-								minHeight: { type: 'abs', value: 50 },
-								maxHeight: { type: 'abs', value: 50 }
+								width: { type: 'abs', value: 200 },
+								height: { type: 'abs', value: 50 }
 							}}
 						>
 						    <stack>

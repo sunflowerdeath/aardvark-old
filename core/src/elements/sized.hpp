@@ -8,6 +8,8 @@
 namespace aardvark::elements {
 
 struct SizeConstraints {
+    Value width = Value::none();
+    Value height = Value::none();
     Value min_width = Value::none();
     Value max_width = Value::none();
     Value min_height = Value::none();

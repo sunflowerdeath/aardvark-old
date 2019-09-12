@@ -107,14 +107,17 @@ JSObjectRef alignment_to_js(JSContextRef ctx,
 elements::SizeConstraints size_constraints_from_js(JSContextRef ctx,
                                                    JSObjectRef object) {
     elements::SizeConstraints size;
-    map_prop_from_js<Value, value_from_js>(ctx, object, "maxWidth",
-                                           &size.max_width);
-    map_prop_from_js<Value, value_from_js>(ctx, object, "maxHeight",
-                                           &size.max_height);
+    map_prop_from_js<Value, value_from_js>(ctx, object, "width", &size.width);
+    map_prop_from_js<Value, value_from_js>(ctx, object, "height",
+                                           &size.height);
     map_prop_from_js<Value, value_from_js>(ctx, object, "minWidth",
                                            &size.min_width);
+    map_prop_from_js<Value, value_from_js>(ctx, object, "maxWidth",
+                                           &size.max_width);
     map_prop_from_js<Value, value_from_js>(ctx, object, "minHeight",
                                            &size.min_height);
+    map_prop_from_js<Value, value_from_js>(ctx, object, "maxHeight",
+                                           &size.max_height);
     return size;
 }
 
