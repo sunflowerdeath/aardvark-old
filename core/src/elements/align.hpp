@@ -33,7 +33,7 @@ class Align : public SingleChildElement {
     float get_intrinsic_width() override;
     Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
-    bool hit_test(double left, double top) override;
+    HitTestMode get_hit_test_mode() override { return HitTestMode::Disabled; };
 
     // Whether to reduce size of the child by the size of insets, or make it 
     // equal to the size of the container. This is useful when you need to set 

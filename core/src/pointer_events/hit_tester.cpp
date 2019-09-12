@@ -11,6 +11,7 @@ void HitTester::test(float left, float top) {
 void HitTester::test_element(std::shared_ptr<Element> elem, float left,
                              float top) {
     if (elem->is_repaint_boundary) {
+        prev_transform = transform;
         SkMatrix adjusted;
         adjusted.setTranslate(-elem->abs_position.left,
                               -elem->abs_position.top);
@@ -32,12 +33,15 @@ void HitTester::test_element(std::shared_ptr<Element> elem, float left,
     }
 
     if (!clipped) {
-        if (elem->hit_test(transformed.x(), transformed.y())) {
+        if (elem->get_hit_test_mode() != HitTestMode::Disabled &&
+            elem->hit_test(transformed.x(), transformed.y())) {
             hit_elements.push_back(elem);
         }
         elem->visit_children(std::bind(&HitTester::test_element, this,
                                        std::placeholders::_1, left, top));
     }
+    
+    if (elem->is_repaint_boundary) transform = prev_transform;
 };
 
 }  // namespace aardvark

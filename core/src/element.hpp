@@ -28,7 +28,10 @@ enum class HitTestMode {
     PassToParent,
 
     // Does not pass event after handling.
-    Absorb
+    Absorb,
+
+    // Disabled
+    Disabled
 };
 
 using ChildrenVisitor = std::function<void(std::shared_ptr<Element>)>;
@@ -176,9 +179,7 @@ class MultipleChildrenElement : public Element {
     void append_child(std::shared_ptr<Element> child) override;
     void insert_before_child(std::shared_ptr<Element> child,
                              std::shared_ptr<Element> before_child) override;
-    void visit_children(ChildrenVisitor visitor) override {
-        for (auto child : children) visitor(child);
-    };
+    void visit_children(ChildrenVisitor visitor) override;
 };
 
 }  // namespace aardvark

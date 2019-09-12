@@ -20,6 +20,7 @@ class HitTester {
     Document* document;
     void test_element(std::shared_ptr<Element> elem, float left, float top);
     SkMatrix transform;
+    SkMatrix prev_transform;
 };
 
 }

@@ -13,6 +13,7 @@ class Center : public SingleChildElement {
     std::string get_debug_name() override { return "Center"; };
     Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
+    HitTestMode get_hit_test_mode() override { return HitTestMode::Disabled; };
 };
 
 }  // namespace aardvark::elements

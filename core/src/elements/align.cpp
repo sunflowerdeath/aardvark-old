@@ -50,9 +50,4 @@ Size Align::layout(BoxConstraints constraints) {
 
 void Align::paint(bool is_changed) { document->paint_element(child.get()); };
 
-bool Align::hit_test(double left, double top) {
-    return child->hit_test(left + child->rel_position.left,
-                           top + child->rel_position.top);
-};
-
 }  // namespace aardvark::elements

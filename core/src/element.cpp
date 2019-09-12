@@ -111,4 +111,8 @@ void MultipleChildrenElement::insert_before_child(
     change();
 };
 
+void MultipleChildrenElement::visit_children(ChildrenVisitor visitor) {
+    for (auto child : children) visitor(child);
+};
+
 }  // namespace aardvark
