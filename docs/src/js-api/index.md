@@ -18,13 +18,29 @@
 
 ## Elements
 
+### Layout
+
 - [`Align`]()
-- [`Background`]()
 - [`Center`]()
-- [`Responder`]()
+- [`Flex`]()
+- [`IntrinsicHeight`]()
+- [`IntrinsicWidth`]()
+- [`Layer`]()
 - [`Sized`]()
 - [`Stack`]()
+
+### Painting
+
+- [`Background`]()
+- [`Border`]()
+- [`Clip`]()
+- [`Image`]() TODO
+- [`Paragraph`]()
 - [`Text`]()
+
+### Other
+
+- [`Responder`]()
 
 ## APIs
 
