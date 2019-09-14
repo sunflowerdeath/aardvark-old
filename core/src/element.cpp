@@ -42,12 +42,17 @@ Element* Element::find_closest_repaint_boundary() {
     return current;
 };
 
+
 SingleChildElement::SingleChildElement(std::shared_ptr<Element> child,
                                        bool is_repaint_boundary,
                                        bool size_depends_on_parent)
     : child(child), Element(is_repaint_boundary, size_depends_on_parent) {
     if (child) child->parent = this;
 };
+
+void SingleChildElement::paint(bool is_changed) {
+    document->paint_element(child.get());
+}
 
 void SingleChildElement::remove_child(std::shared_ptr<Element> child) {
     if (this->child == child) {
@@ -86,6 +91,12 @@ float MultipleChildrenElement::get_intrinsic_width() {
         if (width > max_width) max_width = width;
     }
     return max_width;
+}
+
+void MultipleChildrenElement::paint(bool is_changed) {
+    for (auto child : children) {
+        document->paint_element(child.get());
+    }
 }
 
 void MultipleChildrenElement::remove_child(std::shared_ptr<Element> child) {

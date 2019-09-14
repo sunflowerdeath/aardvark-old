@@ -254,6 +254,7 @@ add_library(aardvark ${ADV_LIB_TYPE}
     src/elements/center.cpp
     src/elements/clip.cpp
     src/elements/fixed_size.cpp
+    src/elements/flex.cpp
     src/elements/layer.cpp
     src/elements/paragraph.cpp
     src/elements/responder.cpp
@@ -319,29 +320,32 @@ if(ADV_BUILD_EXAMPLES)
     # add_executable(align_example src/examples/align_example.cpp)
     # target_link_libraries(align_example aardvark)
 
+    # add_executable(app_example src/examples/app_example.cpp)
+    # target_link_libraries(app_example aardvark)
+
     # add_executable(border_example src/examples/border_example.cpp)
     # target_link_libraries(border_example aardvark)
 
     # add_executable(clip_example src/examples/clip_example.cpp)
     # target_link_libraries(clip_example aardvark)
 
+    add_executable(flex_example src/examples/flex_example.cpp)
+    target_link_libraries(flex_example aardvark)
+
+    # add_executable(layer_example src/examples/layer_example.cpp)
+    # target_link_libraries(layer_example aardvark)
+
     # add_executable(paint_cache_example src/examples/paint_cache.cpp)
     # target_link_libraries(paint_cache_example aardvark)
-
-    # add_executable(app_example src/examples/app_example.cpp)
-    # target_link_libraries(app_example aardvark)
 
     # add_executable(responder_example src/examples/responder_example.cpp)
     # target_link_libraries(responder_example aardvark)
 
-    add_executable(layer_example src/examples/layer_example.cpp)
-    target_link_libraries(layer_example aardvark)
-
     # add_executable(paragraph_example src/examples/paragraph_example.cpp)
     # target_link_libraries(paragraph_example aardvark)
 
-    add_executable(websocket_example src/examples/websocket_example.cpp)
-    target_link_libraries(websocket_example aardvark)
+    # add_executable(websocket_example src/examples/websocket_example.cpp)
+    # target_link_libraries(websocket_example aardvark)
 
     if(ADV_ENABLE_JS)
         add_executable(jsc_example src/examples/jsc_example.cpp)

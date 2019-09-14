@@ -155,15 +155,15 @@ class SingleChildElement : public Element {
     float get_intrinsic_height() override {
         return child->get_intrinsic_height();
     }
-
     float get_intrinsic_width() override {
         return child->get_intrinsic_width();
     }
-
-    std::shared_ptr<Element> child;
+    void paint(bool is_changed) override;
     void append_child(std::shared_ptr<Element> child) override;
     void remove_child(std::shared_ptr<Element> child) override;
     void visit_children(ChildrenVisitor visitor) override { visitor(child); };
+
+    std::shared_ptr<Element> child;
 };
 
 class MultipleChildrenElement : public Element {
@@ -174,12 +174,14 @@ class MultipleChildrenElement : public Element {
 
     float get_intrinsic_height() override;
     float get_intrinsic_width() override;
-    std::vector<std::shared_ptr<Element>> children;
+    void paint(bool is_changed) override;
     void remove_child(std::shared_ptr<Element> child) override;
     void append_child(std::shared_ptr<Element> child) override;
     void insert_before_child(std::shared_ptr<Element> child,
                              std::shared_ptr<Element> before_child) override;
     void visit_children(ChildrenVisitor visitor) override;
+
+    std::vector<std::shared_ptr<Element>> children;
 };
 
 }  // namespace aardvark

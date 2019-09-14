@@ -11,6 +11,15 @@ BoxConstraints BoxConstraints::make_loose() {
     };
 };
 
+BoxConstraints BoxConstraints::make_tight() {
+    return BoxConstraints{
+        max_width,   // min_width
+        max_width,   // max_width
+        max_height,  // min_height
+        max_height   // max_height
+    };
+};
+
 bool BoxConstraints::is_tight() {
     return min_width == max_width && min_height == max_height;
 };

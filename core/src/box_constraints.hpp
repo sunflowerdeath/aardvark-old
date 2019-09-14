@@ -13,6 +13,9 @@ struct BoxConstraints {
     // Makes constraints with same max size and zero min size
     BoxConstraints make_loose();
 
+    // Makes constraints with same min size as max size
+    BoxConstraints make_tight();
+
     // Checks whether min constraints is same as max constraints
     bool is_tight();
 

@@ -13,8 +13,8 @@ class Stack : public MultipleChildrenElement {
     Stack(std::vector<std::shared_ptr<Element>> children = {},
           bool is_repaint_boundary = false);
 
+    std::string get_debug_name() override { return "Stack"; };
     Size layout(BoxConstraints constraints) override;
-    void paint(bool is_changed) override;
 };
 
 }  // namespace aardvark::elements
