@@ -7,6 +7,14 @@
 #include "events_bindings.hpp"
 #include "function_wrapper.hpp"
 
+#define ADV_DEFINE_ELEM_CONSTRUCTOR(NAME, TYPE)                           \
+    JSObjectRef NAME##_elem_call_as_constructor(                          \
+        JSContextRef ctx, JSObjectRef constructor, size_t argument_count, \
+        const JSValueRef arguments[], JSValueRef* exception) {            \
+        return BindingsHost::get(ctx)->element_index->create_js_object(   \
+            std::make_shared<TYPE>());                                    \
+    }
+
 namespace aardvark::js {
 
 // helpers
@@ -18,6 +26,13 @@ std::shared_ptr<Element> get_elem(JSContextRef ctx, JSObjectRef object) {
 template <class E>
 E* get_elem(JSContextRef ctx, JSObjectRef object) {
     return dynamic_cast<E*>(get_elem(ctx, object).get());
+}
+
+JSClassDefinition create_elem_class_definition(const char* name,
+                                               JSClassRef parent_class) {
+    auto definition = kJSClassDefinitionEmpty;
+    definition.className = name;
+    definition.parentClass = parent_class;
 }
 
 // Element
@@ -192,27 +207,18 @@ JSValueRef align_element_get_align(JSContextRef ctx, JSObjectRef object,
     return alignment_to_js(ctx, elem->insets);
 }
 
-JSClassRef align_elem_create_class(JSClassRef base_class) {
-    auto definition = kJSClassDefinitionEmpty;
+JSClassRef align_elem_create_class(JSClassRef parent_class) {
+    auto definition =
+        create_elem_class_definition("AlignElement", parent_class);
     JSStaticValue static_values[] = {
         {"align", align_element_get_align, align_element_set_align,
          kJSPropertyAttributeNone},
         {0, 0, 0, 0}};
-    definition.className = "AlignElement";
-    definition.parentClass = base_class;
     definition.staticValues = static_values;
     return JSClassCreate(&definition);
 }
 
-JSObjectRef align_elem_call_as_constructor(JSContextRef ctx,
-                                           JSObjectRef constructor,
-                                           size_t argument_count,
-                                           const JSValueRef arguments[],
-                                           JSValueRef* exception) {
-    auto host = BindingsHost::get(ctx);
-    auto elem = std::make_shared<elements::Align>();
-    return host->element_index->create_js_object(elem);
-}
+ADV_DEFINE_ELEM_CONSTRUCTOR(align, elements::Align);
 
 //------------------------------------------------------------------------------
 // Background
@@ -240,67 +246,53 @@ bool background_element_set_color(JSContextRef ctx, JSObjectRef object,
     return true;
 }
 
-JSClassRef background_elem_create_class(JSClassRef element_class) {
-    auto definition = kJSClassDefinitionEmpty;
+JSClassRef background_elem_create_class(JSClassRef parent_class) {
+    auto definition =
+        create_elem_class_definition("BackgroundElement", parent_class);
     JSStaticValue static_values[] = {
         {"color", background_element_get_color, background_element_set_color,
          kJSPropertyAttributeNone},
         {0, 0, 0, 0}};
-    definition.className = "BackgroundElement";
-    definition.parentClass = element_class;
     definition.staticValues = static_values;
     return JSClassCreate(&definition);
 }
 
-JSObjectRef background_elem_call_as_constructor(JSContextRef ctx,
-                                                JSObjectRef constructor,
-                                                size_t argument_count,
-                                                const JSValueRef arguments[],
-                                                JSValueRef* exception) {
-    auto host = BindingsHost::get(ctx);
-    auto elem = std::make_shared<elements::Background>();
-    return host->element_index->create_js_object(elem);
-}
+ADV_DEFINE_ELEM_CONSTRUCTOR(background, elements::Background);
 
 //------------------------------------------------------------------------------
 // Center
 //------------------------------------------------------------------------------
 
-JSClassRef center_elem_create_class(JSClassRef element_class) {
-    auto definition = kJSClassDefinitionEmpty;
-    definition.className = "CenterElement";
-    definition.parentClass = element_class;
+JSClassRef center_elem_create_class(JSClassRef parent_class) {
+    auto definition =
+        create_elem_class_definition("CenterElement", parent_class);
     return JSClassCreate(&definition);
 }
 
-JSObjectRef center_elem_call_as_constructor(JSContextRef ctx,
-                                            JSObjectRef constructor,
-                                            size_t argument_count,
-                                            const JSValueRef arguments[],
-                                            JSValueRef* exception) {
-    auto host = BindingsHost::get(ctx);
-    auto elem = std::make_shared<elements::Center>(nullptr);
-    return host->element_index->create_js_object(elem);
-}
+ADV_DEFINE_ELEM_CONSTRUCTOR(center, elements::Center);
 
 //------------------------------------------------------------------------------
 // IntrinsicHeight
 //------------------------------------------------------------------------------
 
-JSClassRef intrinsic_height_elem_create_class(JSClassRef element_class) {
-    auto definition = kJSClassDefinitionEmpty;
-    definition.className = "IntrinsicHeight";
-    definition.parentClass = element_class;
+JSClassRef intrinsic_height_elem_create_class(JSClassRef parent_class) {
+    auto definition =
+        create_elem_class_definition("IntrinsicHeightElement", parent_class);
     return JSClassCreate(&definition);
 }
 
-JSObjectRef intrinsic_height_elem_call_as_constructor(
-    JSContextRef ctx, JSObjectRef constructor, size_t argument_count,
-    const JSValueRef arguments[], JSValueRef* exception) {
-    auto host = BindingsHost::get(ctx);
-    auto elem = std::make_shared<elements::IntrinsicHeight>(nullptr);
-    return host->element_index->create_js_object(elem);
+ADV_DEFINE_ELEM_CONSTRUCTOR(intrinsic_height, elements::IntrinsicHeight);
+
+//------------------------------------------------------------------------------
+// Flex
+//------------------------------------------------------------------------------
+
+JSClassRef flex_elem_create_class(JSClassRef parent_class) {
+    auto definition = create_elem_class_definition("FlexElement", parent_class);
+    return JSClassCreate(&definition);
 }
+
+ADV_DEFINE_ELEM_CONSTRUCTOR(flex, elements::Flex);
 
 //------------------------------------------------------------------------------
 // Responder
@@ -339,52 +331,30 @@ bool responder_elem_set_handler(JSContextRef ctx, JSObjectRef object,
     return true;
 }
 
-JSClassRef responder_elem_create_class(JSClassRef element_class) {
-    auto definition = kJSClassDefinitionEmpty;
-    // JSStaticFunction static_functions[] = {
-        // {"setHandler", responder_elem_set_handler, PROP_ATTR_STATIC},
-        // {0, 0, 0}};
+JSClassRef responder_elem_create_class(JSClassRef parent_class) {
+    auto definition =
+        create_elem_class_definition("ResponderElement", parent_class);
     JSStaticValue static_values[] = {
         {"handler", responder_elem_get_handler, responder_elem_set_handler,
          kJSPropertyAttributeNone},
         {0, 0, 0, 0}};
-    definition.className = "ResponderElement";
-    definition.parentClass = element_class;
     definition.staticValues = static_values;
     return JSClassCreate(&definition);
 }
 
-JSObjectRef responder_elem_call_as_constructor(JSContextRef ctx,
-                                               JSObjectRef constructor,
-                                               size_t argument_count,
-                                               const JSValueRef arguments[],
-                                               JSValueRef* exception) {
-    auto host = BindingsHost::get(ctx);
-    auto elem = std::make_shared<elements::ResponderElement>(
-        nullptr, HitTestMode::PassToParent, nullptr);
-    return host->element_index->create_js_object(elem);
-}
+ADV_DEFINE_ELEM_CONSTRUCTOR(responder, elements::ResponderElement);
 
 //------------------------------------------------------------------------------
 // Stack
 //------------------------------------------------------------------------------
 
-JSClassRef stack_elem_create_class(JSClassRef element_class) {
-    auto definition = kJSClassDefinitionEmpty;
-    definition.className = "Stack";
-    definition.parentClass = element_class;
+JSClassRef stack_elem_create_class(JSClassRef parent_class) {
+    auto definition =
+        create_elem_class_definition("StackElement", parent_class);
     return JSClassCreate(&definition);
 }
 
-JSObjectRef stack_elem_call_as_constructor(JSContextRef ctx,
-                                           JSObjectRef constructor,
-                                           size_t argument_count,
-                                           const JSValueRef arguments[],
-                                           JSValueRef* exception) {
-    auto host = BindingsHost::get(ctx);
-    auto elem = std::make_shared<elements::Stack>();
-    return host->element_index->create_js_object(elem);
-}
+ADV_DEFINE_ELEM_CONSTRUCTOR(stack, elements::Stack);
 
 //------------------------------------------------------------------------------
 // Text
@@ -410,14 +380,13 @@ bool text_element_set_text(JSContextRef ctx, JSObjectRef object,
     return true;
 }
 
-JSClassRef text_elem_create_class(JSClassRef element_class) {
-    auto definition = kJSClassDefinitionEmpty;
+JSClassRef text_elem_create_class(JSClassRef parent_class) {
+    auto definition =
+        create_elem_class_definition("TextElement", parent_class);
     JSStaticValue static_values[] = {
         {"text", text_element_get_text, text_element_set_text,
          kJSPropertyAttributeDontDelete},
         {0, 0, 0, 0}};
-    definition.className = "TextElement";
-    definition.parentClass = element_class;
     definition.staticValues = static_values;
     return JSClassCreate(&definition);
 }
@@ -442,7 +411,6 @@ JSObjectRef text_elem_call_as_constructor(JSContextRef ctx,
     return host->element_index->create_js_object(elem);
 }
 
-
 //------------------------------------------------------------------------------
 // Size
 //------------------------------------------------------------------------------
@@ -466,14 +434,13 @@ JSValueRef sized_elem_get_size_constraints(JSContextRef ctx,
     return size_constraints_to_js(ctx, elem->size_constraints);
 }
 
-JSClassRef sized_elem_create_class(JSClassRef base_class) {
-    auto definition = kJSClassDefinitionEmpty;
+JSClassRef sized_elem_create_class(JSClassRef parent_class) {
+    auto definition =
+        create_elem_class_definition("SizedElement", parent_class);
     JSStaticValue static_values[] = {
         {"sizeConstraints", sized_elem_get_size_constraints,
          sized_elem_set_size_constraints, kJSPropertyAttributeNone},
         {0, 0, 0, 0}};
-    definition.className = "Sized";
-    definition.parentClass = base_class;
     definition.staticValues = static_values;
     return JSClassCreate(&definition);
 }

@@ -2,10 +2,6 @@
 
 namespace aardvark::elements {
 
-Center::Center(std::shared_ptr<Element> child, bool is_repaint_boundary)
-    : SingleChildElement(child, is_repaint_boundary,
-                         /* size_depends_on_parent */ true){};
-
 Size Center::layout(BoxConstraints constraints) {
     auto child_size =
         document->layout_element(child.get(), constraints.make_loose());
@@ -16,7 +12,5 @@ Size Center::layout(BoxConstraints constraints) {
     };
     return constraints.max_size();
 };
-
-void Center::paint(bool is_changed) { document->paint_element(child.get()); };
 
 }  // namespace aardvark::elements

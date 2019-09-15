@@ -21,6 +21,13 @@ class ResponderElement : public SingleChildElement {
         };
     };
 
+    ResponderElement()
+        : SingleChildElement(nullptr,
+                             /* is_repaint_boundary */ is_repaint_boundary,
+                             /* size_by_parent */ true),
+
+          responder(InnerResponder(this)){};
+
     ResponderElement(
         std::shared_ptr<Element> child, HitTestMode mode,
         std::function<void(PointerEvent, ResponderEventType)> handler,
@@ -32,7 +39,7 @@ class ResponderElement : public SingleChildElement {
           handler(handler),
           responder(InnerResponder(this)){};
 
-    HitTestMode mode;
+    HitTestMode mode = HitTestMode::PassToParent;
     std::function<void(PointerEvent, ResponderEventType)> handler;
     InnerResponder responder;
 
