@@ -123,6 +123,11 @@ BindingsHost::BindingsHost() {
     add_elem_class("IntrinsicHeight", typeid(elements::IntrinsicHeight),
                    intrinsic_height_elem_create_class,
                    intrinsic_height_elem_call_as_constructor);
+    add_elem_class("Flex", typeid(elements::Flex), flex_elem_create_class,
+        elem_constructor<elements::Flex>);
+    add_elem_class("FlexChild", typeid(elements::FlexChild),
+                   flex_child_elem_create_class,
+                   elem_constructor<elements::FlexChild>);
     add_elem_class("Responder", typeid(elements::ResponderElement),
                    responder_elem_create_class,
                    responder_elem_call_as_constructor);

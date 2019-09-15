@@ -11,8 +11,8 @@ enum class FlexAlign { start, end, center, stretch };
 
 enum class FlexJustify {
     start,
-    end,
     center,
+    end,
     space_around,
     space_between,
     space_evenly

@@ -3,7 +3,6 @@
 #include "../elements/elements.hpp"
 #include "helpers.hpp"
 #include "base_types_bindings.hpp"
-#include "bindings_host.hpp"
 #include "events_bindings.hpp"
 #include "function_wrapper.hpp"
 
@@ -16,8 +15,6 @@
     }
 
 namespace aardvark::js {
-
-// helpers
 
 std::shared_ptr<Element> get_elem(JSContextRef ctx, JSObjectRef object) {
     return BindingsHost::get(ctx)->element_index->get_native_object(object);
@@ -33,6 +30,7 @@ JSClassDefinition create_elem_class_definition(const char* name,
     auto definition = kJSClassDefinitionEmpty;
     definition.className = name;
     definition.parentClass = parent_class;
+    return definition;
 }
 
 // Element
@@ -287,12 +285,70 @@ ADV_DEFINE_ELEM_CONSTRUCTOR(intrinsic_height, elements::IntrinsicHeight);
 // Flex
 //------------------------------------------------------------------------------
 
+JSValueRef flex_elem_get_direction(JSContextRef ctx, JSObjectRef object,
+                             JSStringRef property_name, JSValueRef* exception) {
+    auto elem = get_elem<elements::Flex>(ctx, object);
+    return int_to_js(ctx, static_cast<int>(elem->direction));
+}
+
+bool flex_elem_set_direction(JSContextRef ctx, JSObjectRef object,
+                             JSStringRef property_name, JSValueRef value,
+                             JSValueRef* exception) {
+    auto elem = get_elem<elements::Flex>(ctx, object);
+    elem->direction =
+        static_cast<elements::FlexDirection>(int_from_js(ctx, value));
+    return true;
+}
+
+JSValueRef flex_elem_get_align(JSContextRef ctx, JSObjectRef object,
+                               JSStringRef property_name,
+                               JSValueRef* exception) {
+    auto elem = get_elem<elements::Flex>(ctx, object);
+    return int_to_js(ctx, static_cast<int>(elem->align));
+}
+
+bool flex_elem_set_align(JSContextRef ctx, JSObjectRef object,
+                         JSStringRef property_name, JSValueRef value,
+                         JSValueRef* exception) {
+    auto elem = get_elem<elements::Flex>(ctx, object);
+    elem->align = static_cast<elements::FlexAlign>(int_from_js(ctx, value));
+    return true;
+}
+
+JSValueRef flex_elem_get_justify(JSContextRef ctx, JSObjectRef object,
+                                 JSStringRef property_name,
+                                 JSValueRef* exception) {
+    auto elem = get_elem<elements::Flex>(ctx, object);
+    return int_to_js(ctx, static_cast<int>(elem->justify));
+}
+
+bool flex_elem_set_justify(JSContextRef ctx, JSObjectRef object,
+                           JSStringRef property_name, JSValueRef value,
+                           JSValueRef* exception) {
+    auto elem = get_elem<elements::Flex>(ctx, object);
+    elem->justify = static_cast<elements::FlexJustify>(int_from_js(ctx, value));
+    return true;
+}
+
 JSClassRef flex_elem_create_class(JSClassRef parent_class) {
     auto definition = create_elem_class_definition("FlexElement", parent_class);
+    JSStaticValue static_values[] = {
+        {"direction", flex_elem_get_direction, flex_elem_set_direction,
+         kJSPropertyAttributeNone},
+        {"align", flex_elem_get_align, flex_elem_set_align,
+         kJSPropertyAttributeNone},
+        {"justify", flex_elem_get_justify, flex_elem_set_justify,
+         kJSPropertyAttributeNone},
+        {0, 0, 0, 0}};
+    definition.staticValues = static_values;
     return JSClassCreate(&definition);
 }
 
-ADV_DEFINE_ELEM_CONSTRUCTOR(flex, elements::Flex);
+JSClassRef flex_child_elem_create_class(JSClassRef parent_class) {
+    auto definition =
+        create_elem_class_definition("FlexChildElement", parent_class);
+    return JSClassCreate(&definition);
+}
 
 //------------------------------------------------------------------------------
 // Responder
