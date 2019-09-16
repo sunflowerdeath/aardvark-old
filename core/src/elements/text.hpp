@@ -12,14 +12,32 @@ namespace aardvark::elements {
 
 class Text : public Element {
   public:
-    Text(UnicodeString text, SkPaint paint, bool is_repaint_boundary = false);
+    Text()
+        : Element(/* is_repaint_boundary */ false,
+                  /* size_depends_on_parent */ true){};
+
+    Text(UnicodeString text, SkPaint paint, bool is_repaint_boundary = false)
+        : Element(is_repaint_boundary, /* size_depends_on_parent */ true),
+          text(text),
+          skpaint(paint){};
+
     std::string get_debug_name() override { return "Text"; };
     float get_intrinsic_height() override;
     float get_intrinsic_width() override;
     Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
-    UnicodeString text;
-    SkPaint skpaint;
+
+    UnicodeString text = UnicodeString((UChar*)u"");
+    SkPaint skpaint = Text::make_default_paint();
+  private:
+    static SkPaint make_default_paint() {
+        SkPaint paint;
+        paint.setColor(SK_ColorWHITE);
+        paint.setTextSize(16);
+        paint.setAntiAlias(true);
+        paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
+        return paint;
+    };
 };
 
 }  // namespace aardvark::elements

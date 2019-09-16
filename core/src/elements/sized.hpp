@@ -22,14 +22,23 @@ struct SizeConstraints {
 
 class Sized : public SingleChildElement {
   public:
-    Sized(std::shared_ptr<Element> child, SizeConstraints size,
-          bool is_repaint_boundary = false);
-    SizeConstraints size_constraints;
+    Sized()
+        : SingleChildElement(nullptr, /* is_repaint_boundary */ false,
+                             /* size_depends_on_parent */ false){};
+
+    Sized(std::shared_ptr<Element> child, SizeConstraints size_constraints,
+          bool is_repaint_boundary = false)
+        : SingleChildElement(child, is_repaint_boundary,
+                             /* size_depends_on_parent */ false),
+          size_constraints(size_constraints){};
+
     std::string get_debug_name() override { return "Sized"; };
     float get_intrinsic_height() override;
     float get_intrinsic_width() override;
     Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
+
+    SizeConstraints size_constraints = SizeConstraints();
 };
 
 }  // namespace aardvark::elements

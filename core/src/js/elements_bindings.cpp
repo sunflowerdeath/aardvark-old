@@ -6,14 +6,6 @@
 #include "events_bindings.hpp"
 #include "function_wrapper.hpp"
 
-#define ADV_DEFINE_ELEM_CONSTRUCTOR(NAME, TYPE)                           \
-    JSObjectRef NAME##_elem_call_as_constructor(                          \
-        JSContextRef ctx, JSObjectRef constructor, size_t argument_count, \
-        const JSValueRef arguments[], JSValueRef* exception) {            \
-        return BindingsHost::get(ctx)->element_index->create_js_object(   \
-            std::make_shared<TYPE>());                                    \
-    }
-
 namespace aardvark::js {
 
 std::shared_ptr<Element> get_elem(JSContextRef ctx, JSObjectRef object) {
@@ -216,8 +208,6 @@ JSClassRef align_elem_create_class(JSClassRef parent_class) {
     return JSClassCreate(&definition);
 }
 
-ADV_DEFINE_ELEM_CONSTRUCTOR(align, elements::Align);
-
 //------------------------------------------------------------------------------
 // Background
 //------------------------------------------------------------------------------
@@ -241,6 +231,7 @@ bool background_element_set_color(JSContextRef ctx, JSObjectRef object,
 
     auto elem = get_elem<elements::Background>(ctx, object);
     elem->color = color_from_js(ctx, value);
+    elem->change();
     return true;
 }
 
@@ -255,8 +246,6 @@ JSClassRef background_elem_create_class(JSClassRef parent_class) {
     return JSClassCreate(&definition);
 }
 
-ADV_DEFINE_ELEM_CONSTRUCTOR(background, elements::Background);
-
 //------------------------------------------------------------------------------
 // Center
 //------------------------------------------------------------------------------
@@ -267,8 +256,6 @@ JSClassRef center_elem_create_class(JSClassRef parent_class) {
     return JSClassCreate(&definition);
 }
 
-ADV_DEFINE_ELEM_CONSTRUCTOR(center, elements::Center);
-
 //------------------------------------------------------------------------------
 // IntrinsicHeight
 //------------------------------------------------------------------------------
@@ -278,8 +265,6 @@ JSClassRef intrinsic_height_elem_create_class(JSClassRef parent_class) {
         create_elem_class_definition("IntrinsicHeightElement", parent_class);
     return JSClassCreate(&definition);
 }
-
-ADV_DEFINE_ELEM_CONSTRUCTOR(intrinsic_height, elements::IntrinsicHeight);
 
 //------------------------------------------------------------------------------
 // Flex
@@ -297,6 +282,7 @@ bool flex_elem_set_direction(JSContextRef ctx, JSObjectRef object,
     auto elem = get_elem<elements::Flex>(ctx, object);
     elem->direction =
         static_cast<elements::FlexDirection>(int_from_js(ctx, value));
+    elem->change();
     return true;
 }
 
@@ -312,6 +298,7 @@ bool flex_elem_set_align(JSContextRef ctx, JSObjectRef object,
                          JSValueRef* exception) {
     auto elem = get_elem<elements::Flex>(ctx, object);
     elem->align = static_cast<elements::FlexAlign>(int_from_js(ctx, value));
+    elem->change();
     return true;
 }
 
@@ -327,6 +314,7 @@ bool flex_elem_set_justify(JSContextRef ctx, JSObjectRef object,
                            JSValueRef* exception) {
     auto elem = get_elem<elements::Flex>(ctx, object);
     elem->justify = static_cast<elements::FlexJustify>(int_from_js(ctx, value));
+    elem->change();
     return true;
 }
 
@@ -344,9 +332,75 @@ JSClassRef flex_elem_create_class(JSClassRef parent_class) {
     return JSClassCreate(&definition);
 }
 
+//------------------------------------------------------------------------------
+// FlexChild
+//------------------------------------------------------------------------------
+
+JSValueRef flex_child_elem_get_flex(JSContextRef ctx, JSObjectRef object,
+                                 JSStringRef property_name,
+                                 JSValueRef* exception) {
+    auto elem = get_elem<elements::FlexChild>(ctx, object);
+    return int_to_js(ctx, elem->flex);
+}
+
+bool flex_child_elem_set_flex(JSContextRef ctx, JSObjectRef object,
+                           JSStringRef property_name, JSValueRef value,
+                           JSValueRef* exception) {
+    auto elem = get_elem<elements::FlexChild>(ctx, object);
+    elem->flex = int_from_js(ctx, value);
+    elem->change();
+    return true;
+}
+
+JSValueRef flex_child_elem_get_align(JSContextRef ctx, JSObjectRef object,
+                                 JSStringRef property_name,
+                                 JSValueRef* exception) {
+    auto elem = get_elem<elements::FlexChild>(ctx, object);
+    if (elem->align == std::nullopt) return JSValueMakeUndefined(ctx);
+    return int_to_js(ctx, static_cast<int>(elem->align.value()));
+}
+
+bool flex_child_elem_set_align(JSContextRef ctx, JSObjectRef object,
+                           JSStringRef property_name, JSValueRef value,
+                           JSValueRef* exception) {
+    auto elem = get_elem<elements::FlexChild>(ctx, object);
+    if (JSValueIsUndefined(ctx, value) || JSValueIsNull(ctx, value)) {
+        elem->align = std::nullopt;
+    } else {
+        elem->align = static_cast<elements::FlexAlign>(int_from_js(ctx, value));
+    }
+    elem->change();
+    return true;
+}
+
+JSValueRef flex_child_elem_get_tight_fit(JSContextRef ctx, JSObjectRef object,
+                                 JSStringRef property_name,
+                                 JSValueRef* exception) {
+    auto elem = get_elem<elements::FlexChild>(ctx, object);
+    return JSValueMakeBoolean(ctx, elem->tight_fit);
+}
+
+bool flex_child_elem_set_tight_fit(JSContextRef ctx, JSObjectRef object,
+                           JSStringRef property_name, JSValueRef value,
+                           JSValueRef* exception) {
+    auto elem = get_elem<elements::FlexChild>(ctx, object);
+    elem->tight_fit = JSValueToBoolean(ctx, value);
+    elem->change();
+    return true;
+}
+
 JSClassRef flex_child_elem_create_class(JSClassRef parent_class) {
     auto definition =
         create_elem_class_definition("FlexChildElement", parent_class);
+    JSStaticValue static_values[] = {
+        {"flex", flex_child_elem_get_flex, flex_child_elem_set_flex,
+         kJSPropertyAttributeNone},
+        {"align", flex_child_elem_get_align, flex_child_elem_set_align,
+         kJSPropertyAttributeNone},
+        {"tightFit", flex_child_elem_get_tight_fit,
+         flex_child_elem_set_tight_fit, kJSPropertyAttributeNone},
+        {0, 0, 0, 0}};
+    definition.staticValues = static_values;
     return JSClassCreate(&definition);
 }
 
@@ -374,16 +428,16 @@ bool responder_elem_set_handler(JSContextRef ctx, JSObjectRef object,
                                 JSStringRef property_name, JSValueRef value,
                                 JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
-    auto responder = get_elem<elements::ResponderElement>(ctx, object);
-    responder->handler =
-        FunctionWrapper<void, PointerEvent, ResponderEventType>(
-            host->ctx,                          // ctx
-            value,                              // function
-            responder_handler_args_to_js,       // args_to_js
-            responder_handler_ret_val_from_js,  // ret_val_from_js
-            [host](JSContextRef ctx, JSValueRef ex) {
-                host->module_loader->handle_exception(ex);
-            });
+    auto elem = get_elem<elements::ResponderElement>(ctx, object);
+    elem->handler = FunctionWrapper<void, PointerEvent, ResponderEventType>(
+        host->ctx,                          // ctx
+        value,                              // function
+        responder_handler_args_to_js,       // args_to_js
+        responder_handler_ret_val_from_js,  // ret_val_from_js
+        [host](JSContextRef ctx, JSValueRef ex) {
+            host->module_loader->handle_exception(ex);
+        });
+    elem->change();
     return true;
 }
 
@@ -398,8 +452,6 @@ JSClassRef responder_elem_create_class(JSClassRef parent_class) {
     return JSClassCreate(&definition);
 }
 
-ADV_DEFINE_ELEM_CONSTRUCTOR(responder, elements::ResponderElement);
-
 //------------------------------------------------------------------------------
 // Stack
 //------------------------------------------------------------------------------
@@ -409,8 +461,6 @@ JSClassRef stack_elem_create_class(JSClassRef parent_class) {
         create_elem_class_definition("StackElement", parent_class);
     return JSClassCreate(&definition);
 }
-
-ADV_DEFINE_ELEM_CONSTRUCTOR(stack, elements::Stack);
 
 //------------------------------------------------------------------------------
 // Text
@@ -445,26 +495,6 @@ JSClassRef text_elem_create_class(JSClassRef parent_class) {
         {0, 0, 0, 0}};
     definition.staticValues = static_values;
     return JSClassCreate(&definition);
-}
-
-JSObjectRef text_elem_call_as_constructor(JSContextRef ctx,
-                                          JSObjectRef constructor,
-                                          size_t argument_count,
-                                          const JSValueRef arguments[],
-                                          JSValueRef* exception) {
-    auto host = BindingsHost::get(ctx);
-
-    SkPaint paint;
-    paint.setColor(SK_ColorWHITE);
-    paint.setTextSize(32);
-    paint.setAntiAlias(true);
-    paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
-
-    auto text = UnicodeString((UChar*)u"");
-    // auto text = js_value_to_icu_str(ctx, arguments[0]);
-    auto elem = std::make_shared<elements::Text>(text, paint);
-
-    return host->element_index->create_js_object(elem);
 }
 
 //------------------------------------------------------------------------------

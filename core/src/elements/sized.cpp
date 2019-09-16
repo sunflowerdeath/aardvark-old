@@ -2,12 +2,6 @@
 
 namespace aardvark::elements {
 
-Sized::Sized(std::shared_ptr<Element> child, SizeConstraints size_constraints,
-                         bool is_repaint_boundary)
-    : SingleChildElement(child, is_repaint_boundary,
-                         /* size_depends_on_parent */ false),
-      size_constraints(size_constraints){};
-
 float Sized::get_intrinsic_height() {
     return fmax(size_constraints.min_height.calc(0),
                 size_constraints.height.calc(0));

@@ -4,11 +4,6 @@
 
 namespace aardvark::elements {
 
-Text::Text(UnicodeString text, SkPaint paint, bool is_repaint_boundary)
-    : Element(is_repaint_boundary, /* size_depends_on_parent */ true),
-      text(text),
-      skpaint(paint){};
-
 float Text::get_intrinsic_height() {
     auto metrics = inline_layout::LineMetrics::from_paint(skpaint);
     return metrics.height;

@@ -114,29 +114,29 @@ BindingsHost::BindingsHost() {
         return this->get_element_js_class(elem);
     });
     add_elem_class("Align", typeid(elements::Align), align_elem_create_class,
-                   align_elem_call_as_constructor);
+                   elem_constructor<elements::Align>);
     add_elem_class("Background", typeid(elements::Background),
                    background_elem_create_class,
-                   background_elem_call_as_constructor);
+                   elem_constructor<elements::Background>);
     add_elem_class("Center", typeid(elements::Center), center_elem_create_class,
-                   center_elem_call_as_constructor);
+                   elem_constructor<elements::Center>);
     add_elem_class("IntrinsicHeight", typeid(elements::IntrinsicHeight),
                    intrinsic_height_elem_create_class,
-                   intrinsic_height_elem_call_as_constructor);
+                   elem_constructor<elements::IntrinsicHeight>);
     add_elem_class("Flex", typeid(elements::Flex), flex_elem_create_class,
-        elem_constructor<elements::Flex>);
+                   elem_constructor<elements::Flex>);
     add_elem_class("FlexChild", typeid(elements::FlexChild),
                    flex_child_elem_create_class,
                    elem_constructor<elements::FlexChild>);
     add_elem_class("Responder", typeid(elements::ResponderElement),
                    responder_elem_create_class,
-                   responder_elem_call_as_constructor);
+                   elem_constructor<elements::ResponderElement>);
     add_elem_class("Stack", typeid(elements::Stack), stack_elem_create_class,
-                   stack_elem_call_as_constructor);
+                   elem_constructor<elements::Stack>);
     add_elem_class("Sized", typeid(elements::Sized), sized_elem_create_class,
-                   sized_elem_call_as_constructor);
+                   elem_constructor<elements::Sized>);
     add_elem_class("Text", typeid(elements::Text), text_elem_create_class,
-                   text_elem_call_as_constructor);
+                   elem_constructor<elements::Text>);
 
     typedefs = std::make_unique<Typedefs>(this);
 }
