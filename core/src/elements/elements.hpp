@@ -7,6 +7,7 @@
 #include "flex.hpp"
 #include "intrinsic_height.hpp"
 #include "layer.hpp"
+#include "padding.hpp"
 #include "paragraph.hpp"
 #include "placeholder.hpp"
 #include "responder.hpp"

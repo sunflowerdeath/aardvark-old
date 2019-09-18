@@ -3,15 +3,27 @@
 namespace aardvark::elements {
 
 float Flex::get_intrinsic_height() {
-    // TODO
-    // main - sum of children intrinsic
-    // cross - max of children intrinsic
-    return 0;
+    auto result = 0.0;
+    for (auto& child : children) {
+        if (direction == FlexDirection::column) {
+            result += child->get_intrinsic_height();
+        } else {
+            result = fmax(result, child->get_intrinsic_height());
+        }
+    }
+    return result;
 }
 
 float Flex::get_intrinsic_width() {
-    // TODO
-    return 0;
+    auto result = 0.0;
+    for (auto& child : children) {
+        if (direction == FlexDirection::row) {
+            result += child->get_intrinsic_width();
+        } else {
+            result = fmax(result, child->get_intrinsic_width());
+        }
+    }
+    return result;
 }
 
 inline float get_main(Size size, FlexDirection direction) {

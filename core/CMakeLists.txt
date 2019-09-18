@@ -256,6 +256,7 @@ add_library(aardvark ${ADV_LIB_TYPE}
     src/elements/fixed_size.cpp
     src/elements/flex.cpp
     src/elements/layer.cpp
+    src/elements/padding.cpp
     src/elements/paragraph.cpp
     src/elements/responder.cpp
     src/elements/sized.cpp

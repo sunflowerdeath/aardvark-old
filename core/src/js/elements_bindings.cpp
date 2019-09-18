@@ -407,6 +407,37 @@ JSClassRef flex_child_elem_create_class(JSClassRef parent_class) {
 }
 
 //------------------------------------------------------------------------------
+// Padding
+//------------------------------------------------------------------------------
+
+JSValueRef padding_elem_get_padding(JSContextRef ctx, JSObjectRef object,
+                                      JSStringRef property_name,
+                                      JSValueRef* exception) {
+    auto elem = get_elem<PaddingElement>(ctx, object);
+    return padding_to_js(ctx, elem->padding);
+}
+
+bool padding_elem_set_padding(JSContextRef ctx, JSObjectRef object,
+                                JSStringRef property_name, JSValueRef value,
+                                JSValueRef* exception) {
+    auto elem = get_elem<PaddingElement>(ctx, object);
+    elem->padding = padding_from_js(ctx, value);
+    elem->change();
+    return true;
+}
+
+JSClassRef padding_elem_create_class(JSClassRef parent_class) {
+    auto definition =
+        create_elem_class_definition("PaddingElement", parent_class);
+    JSStaticValue static_values[] = {
+        {"padding", padding_elem_get_padding, padding_elem_set_padding,
+         kJSPropertyAttributeNone},
+        {0, 0, 0, 0}};
+    definition.staticValues = static_values;
+    return JSClassCreate(&definition);
+}
+
+//------------------------------------------------------------------------------
 // Responder
 //------------------------------------------------------------------------------
 

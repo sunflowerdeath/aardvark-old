@@ -5,6 +5,7 @@
 #include "../base_types.hpp"
 #include "../elements/align.hpp"
 #include "../elements/sized.hpp"
+#include "../elements/padding.hpp"
 
 namespace aardvark::js {
 
@@ -17,6 +18,9 @@ JSValueRef value_to_js(JSContextRef ctx, const Value& value);
 elements::EdgeInsets alignment_from_js(JSContextRef ctx, JSObjectRef object);
 JSObjectRef alignment_to_js(JSContextRef ctx,
                             const elements::EdgeInsets& alignment);
+
+Padding padding_from_js(JSContextRef ctx, JSValueRef object);
+JSValueRef padding_to_js(JSContextRef ctx, const Padding& padding);
 
 elements::SizeConstraints size_constraints_from_js(JSContextRef ctx,
                                                    JSObjectRef object);

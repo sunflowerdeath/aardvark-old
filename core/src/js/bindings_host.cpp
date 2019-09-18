@@ -128,6 +128,8 @@ BindingsHost::BindingsHost() {
     add_elem_class("FlexChild", typeid(elements::FlexChild),
                    flex_child_elem_create_class,
                    elem_constructor<elements::FlexChild>);
+    add_elem_class("Padding", typeid(PaddingElement), padding_elem_create_class,
+                   elem_constructor<PaddingElement>);
     add_elem_class("Responder", typeid(elements::ResponderElement),
                    responder_elem_create_class,
                    elem_constructor<elements::ResponderElement>);

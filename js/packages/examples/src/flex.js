@@ -9,9 +9,15 @@ import {
 const win = application.createWindow(640, 480)
 const document = application.getDocument(win)
 
-const COLOR_RED = { alpha: 255, red: 0, green: 255, blue: 0 }
-const COLOR_GREEN = { alpha: 255, red: 255, green: 0, blue: 0 }
-const COLOR_BLUE = { alpha: 255, red: 0, green: 0, blue: 255 }
+const Color = {
+	WHITE: { alpha: 255, red: 255, green: 255, blue: 255 },
+	LIGHTGRAY: { alpha: 255, red: 220, green: 220, blue: 220 },
+	RED: { alpha: 255, red: 0, green: 255, blue: 0 },
+	GREEN: { alpha: 255, red: 255, green: 0, blue: 0 },
+	BLUE: { alpha: 255, red: 0, green: 0, blue: 255 }
+}
+
+const COLOR_ACTIVE = { alpha: 255, red: 66, green: 165, blue: 244 }
 
 const Value = {
 	abs(value) {
@@ -22,9 +28,31 @@ const Value = {
 		return { type: 'rel', value }
 	},
 
-	none() {
-		return { type: 'none', value: 0 }
+	none: { type: 'none', value: 0 }
+}
+
+const Padding1 = {
+	all(value) {
+		return { left: value, top: value, right: value, bottom: value }
+	},
+
+	only(side, value) {
+		return {
+			left: side === 'left' ? value : Value.none,
+			top: side === 'top' ? value : Value.none,
+			right: side === 'right' ? value : Value.none,
+			bottom: side === 'bottom' ? value : Value.none
+		}
+	},
+
+	symmetrical(horiz, vert) {
+		return { left: horiz, top: vert, right: horiz, bottom: vert }
 	}
+}
+
+const FlexDirection = {
+	row: 0,
+	column: 1
 }
 
 const FlexJustify = {
@@ -42,36 +70,88 @@ const Box = ({ color }) => (
 	</sized>
 )
 
-const Container = ({ left, top, children }) => (
-	<align align={{ left: Value.abs(left), top: Value.abs(top) }}>
+const Label = ({ children }) => (
+	<sized sizeConstraints={{ width: Value.abs(100), height: Value.abs(30) }}>
+		<text text={children} />
+	</sized>
+)
+
+const Button = ({ children, isActive }) => (
+	<padding padding={Padding1.only('right', Value.abs(16))}>
 		<sized
-			sizeConstraints={{
-				width: Value.abs(300),
-				height: Value.abs(100)
-			}}
+			sizeConstraints={{ width: Value.abs(125), height: Value.abs(30) }}
 		>
-			{children}
+			<stack>
+				<background color={isActive ? COLOR_ACTIVE : Color.LIGHTGRAY} />
+				<center>
+					<text text={children} />
+				</center>
+			</stack>
 		</sized>
-	</align>
+	</padding>
+)
+
+const Row = ({ children }) => (
+	<padding padding={Padding1.only('bottom', Value.abs(24))}>
+		<flex>{children}</flex>
+	</padding>
 )
 
 const App = () => {
 	return (
 		<stack>
-			<Container left={20} top={20}>
-				<flex>
-					<Box color={COLOR_RED} />
-					<Box color={COLOR_GREEN} />
-					<Box color={COLOR_BLUE} />
+			<background color={Color.WHITE} />
+			<align align={{ left: Value.abs(20), top: Value.abs(20) }}>
+				<flex direction={FlexDirection.column}>
+					<sized
+						sizeConstraints={{
+							width: Value.abs(300),
+							height: Value.abs(100)
+						}}
+					>
+						<flex>
+							<Box color={Color.RED} />
+							<Box color={Color.GREEN} />
+							<Box color={Color.BLUE} />
+						</flex>
+					</sized>
+					<Row>
+						<Label>Direction</Label>
+						<Button isActive>row</Button>
+						<Button>column</Button>
+					</Row>
+					<Row>
+						<Label>Justify</Label>
+						<intrinsicHeight>
+							<flex direction={FlexDirection.column}>
+								<padding
+									padding={Padding1.only(
+										'bottom',
+										Value.abs(12)
+									)}
+								>
+									<flex>
+										<Button isActive>start</Button>
+										<Button>center</Button>
+										<Button>end</Button>
+									</flex>
+								</padding>
+								<flex>
+									<Button>spaceAround</Button>
+									<Button>spaceBetween</Button>
+									<Button>spaceEvenly</Button>
+								</flex>
+							</flex>
+						</intrinsicHeight>
+					</Row>
+					<Row>
+						<Label>Align</Label>
+						<Button isActive>start</Button>
+						<Button>center</Button>
+						<Button>end</Button>
+					</Row>
 				</flex>
-			</Container>
-			<Container left={20} top={140}>
-				<flex justify={FlexJustify.spaceEvenly}>
-					<Box color={COLOR_RED} />
-					<Box color={COLOR_GREEN} />
-					<Box color={COLOR_BLUE} />
-				</flex>
-			</Container>
+			</align>
 		</stack>
 	)
 }
