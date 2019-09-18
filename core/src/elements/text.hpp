@@ -32,7 +32,7 @@ class Text : public Element {
   private:
     static SkPaint make_default_paint() {
         SkPaint paint;
-        paint.setColor(SK_ColorWHITE);
+        paint.setColor(SK_ColorBLACK);
         paint.setTextSize(16);
         paint.setAntiAlias(true);
         paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);

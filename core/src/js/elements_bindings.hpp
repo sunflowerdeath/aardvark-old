@@ -31,5 +31,6 @@ JSClassRef responder_elem_create_class(JSClassRef parent_class);
 JSClassRef stack_elem_create_class(JSClassRef parent_class);
 JSClassRef sized_elem_create_class(JSClassRef parent_class);
 JSClassRef text_elem_create_class(JSClassRef parent_class);
+JSClassRef translate_elem_create_class(JSClassRef parent_class);
 
 }  // namespace aardvark::js

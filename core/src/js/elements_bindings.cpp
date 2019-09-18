@@ -25,7 +25,9 @@ JSClassDefinition create_elem_class_definition(const char* name,
     return definition;
 }
 
+//------------------------------------------------------------------------------
 // Element
+//------------------------------------------------------------------------------
 
 JSValueRef element_get_width(JSContextRef ctx, JSObjectRef object,
                              JSStringRef property_name, JSValueRef* exception) {
@@ -421,6 +423,7 @@ void responder_handler_ret_val_from_js(JSContextRef ctx, JSValueRef value){};
 JSValueRef responder_elem_get_handler(JSContextRef ctx, JSObjectRef object,
                                       JSStringRef property_name,
                                       JSValueRef* exception) {
+    // TODO return something meaningful
     return JSValueMakeUndefined(ctx);
 }
 
@@ -453,36 +456,22 @@ JSClassRef responder_elem_create_class(JSClassRef parent_class) {
 }
 
 //------------------------------------------------------------------------------
-// Stack
-//------------------------------------------------------------------------------
-
-JSClassRef stack_elem_create_class(JSClassRef parent_class) {
-    auto definition =
-        create_elem_class_definition("StackElement", parent_class);
-    return JSClassCreate(&definition);
-}
-
-//------------------------------------------------------------------------------
 // Text
 //------------------------------------------------------------------------------
 
 JSValueRef text_element_get_text(JSContextRef ctx, JSObjectRef object,
                                  JSStringRef property_name,
                                  JSValueRef* exception) {
-    auto host = BindingsHost::get(ctx);
-    auto elem = host->element_index->get_native_object(object);
-    auto text_elem = dynamic_cast<elements::Text*>(elem.get());
-    return icu_str_to_js(ctx, text_elem->text);
+    auto elem = get_elem<elements::Text>(ctx, object);
+    return icu_str_to_js(ctx, elem->text);
 }
 
 bool text_element_set_text(JSContextRef ctx, JSObjectRef object,
                            JSStringRef propertyName, JSValueRef value,
                            JSValueRef* exception) {
-    auto host = BindingsHost::get(ctx);
-    auto elem = host->element_index->get_native_object(object);
-    auto text_elem = dynamic_cast<elements::Text*>(elem.get());
-    text_elem->text = icu_str_from_js(ctx, value);
-    text_elem->change();
+    auto elem = get_elem<elements::Text>(ctx, object);
+    elem->text = icu_str_from_js(ctx, value);
+    elem->change();
     return true;
 }
 
@@ -541,6 +530,65 @@ JSObjectRef sized_elem_call_as_constructor(JSContextRef ctx,
     auto elem = std::make_shared<elements::Sized>(
         std::make_shared<elements::Placeholder>(), size_constrains);
     return host->element_index->create_js_object(elem);
+}
+
+//------------------------------------------------------------------------------
+// Stack
+//------------------------------------------------------------------------------
+
+JSClassRef stack_elem_create_class(JSClassRef parent_class) {
+    auto definition =
+        create_elem_class_definition("StackElement", parent_class);
+    return JSClassCreate(&definition);
+}
+
+//------------------------------------------------------------------------------
+// Translate
+//------------------------------------------------------------------------------
+
+bool translate_elem_set_left(JSContextRef ctx, JSObjectRef object,
+                             JSStringRef property_name, JSValueRef value,
+                             JSValueRef* exception) {
+    auto elem = get_elem<TranslateElement>(ctx, object);
+    elem->translation.left = value_from_js(ctx, value);
+    elem->change();
+    return true;
+}
+
+JSValueRef translate_elem_get_left(JSContextRef ctx, JSObjectRef object,
+                                   JSStringRef property_name,
+                                   JSValueRef* exception) {
+    auto elem = get_elem<TranslateElement>(ctx, object);
+    return value_to_js(ctx, elem->translation.left);
+}
+
+bool translate_elem_set_top(JSContextRef ctx, JSObjectRef object,
+                             JSStringRef property_name, JSValueRef value,
+                             JSValueRef* exception) {
+    auto elem = get_elem<TranslateElement>(ctx, object);
+    elem->translation.top = value_from_js(ctx, value);
+    elem->change();
+    return true;
+}
+
+JSValueRef translate_elem_get_top(JSContextRef ctx, JSObjectRef object,
+                                   JSStringRef property_name,
+                                   JSValueRef* exception) {
+    auto elem = get_elem<TranslateElement>(ctx, object);
+    return value_to_js(ctx, elem->translation.top);
+}
+
+JSClassRef translate_elem_create_class(JSClassRef parent_class) {
+    auto definition =
+        create_elem_class_definition("TranslateElement", parent_class);
+    JSStaticValue static_values[] = {
+        {"left", translate_elem_get_left, translate_elem_set_left,
+         kJSPropertyAttributeNone},
+        {"top", translate_elem_get_top, translate_elem_set_top,
+         kJSPropertyAttributeNone},
+        {0, 0, 0, 0}};
+    definition.staticValues = static_values;
+    return JSClassCreate(&definition);
 }
 
 }  // namespace aardvark::js

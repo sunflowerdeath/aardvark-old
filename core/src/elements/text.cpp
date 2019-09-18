@@ -14,7 +14,10 @@ float Text::get_intrinsic_width() {
 }
 
 Size Text::layout(BoxConstraints constraints) {
-    return constraints.max_size();
+    // TODO cache (lazy calculation)
+    auto metrics = inline_layout::LineMetrics::from_paint(skpaint);
+    return Size{inline_layout::measure_text_width(text, skpaint),
+                metrics.height};
 };
 
 void Text::paint(bool is_changed) {

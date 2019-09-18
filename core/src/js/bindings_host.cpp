@@ -137,6 +137,9 @@ BindingsHost::BindingsHost() {
                    elem_constructor<elements::Sized>);
     add_elem_class("Text", typeid(elements::Text), text_elem_create_class,
                    elem_constructor<elements::Text>);
+    add_elem_class("Translate", typeid(TranslateElement),
+                   translate_elem_create_class,
+                   elem_constructor<TranslateElement>);
 
     typedefs = std::make_unique<Typedefs>(this);
 }

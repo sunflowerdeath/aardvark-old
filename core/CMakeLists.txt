@@ -261,6 +261,7 @@ add_library(aardvark ${ADV_LIB_TYPE}
     src/elements/sized.cpp
     src/elements/stack.cpp
     src/elements/text.cpp
+    src/elements/translate.cpp
     src/pointer_events/hit_tester.cpp
     src/pointer_events/pointer_event_manager.cpp
     src/pointer_events/responder_reconciler.cpp

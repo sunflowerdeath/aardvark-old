@@ -13,3 +13,4 @@
 #include "stack.hpp"
 #include "sized.hpp"
 #include "text.hpp"
+#include "translate.hpp"
