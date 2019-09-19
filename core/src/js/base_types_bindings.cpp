@@ -107,21 +107,21 @@ JSObjectRef alignment_to_js(JSContextRef ctx,
 Padding padding_from_js(JSContextRef ctx, JSValueRef value) {
     auto object = JSValueToObject(ctx, value, nullptr);
     Padding padding;
-    map_prop_from_js<Value, value_from_js>(ctx, object, "left", &padding.left);
-    map_prop_from_js<Value, value_from_js>(ctx, object, "top", &padding.top);
-    map_prop_from_js<Value, value_from_js>(ctx, object, "right",
+    map_prop_from_js<float, float_from_js>(ctx, object, "left", &padding.left);
+    map_prop_from_js<float, float_from_js>(ctx, object, "top", &padding.top);
+    map_prop_from_js<float, float_from_js>(ctx, object, "right",
                                            &padding.right);
-    map_prop_from_js<Value, value_from_js>(ctx, object, "bottom",
+    map_prop_from_js<float, float_from_js>(ctx, object, "bottom",
                                            &padding.bottom);
     return padding;
 }
 
 JSValueRef padding_to_js(JSContextRef ctx, const Padding& padding) {
     auto object = JSObjectMake(ctx, nullptr, nullptr);
-    map_prop_to_js<Value, value_to_js>(ctx, object, "left", padding.left);
-    map_prop_to_js<Value, value_to_js>(ctx, object, "top", padding.top);
-    map_prop_to_js<Value, value_to_js>(ctx, object, "right", padding.right);
-    map_prop_to_js<Value, value_to_js>(ctx, object, "bottom", padding.bottom);
+    map_prop_to_js<float, float_to_js>(ctx, object, "left", padding.left);
+    map_prop_to_js<float, float_to_js>(ctx, object, "top", padding.top);
+    map_prop_to_js<float, float_to_js>(ctx, object, "right", padding.right);
+    map_prop_to_js<float, float_to_js>(ctx, object, "bottom", padding.bottom);
     return object;
 }
 

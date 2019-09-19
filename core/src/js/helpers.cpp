@@ -9,7 +9,15 @@ int int_from_js(JSContextRef ctx, JSValueRef value) {
 }
 
 JSValueRef int_to_js(JSContextRef ctx, const int& value) {
-    return JSValueMakeNumber(ctx, static_cast<int>(value));
+    return JSValueMakeNumber(ctx, value);
+}
+
+float float_from_js(JSContextRef ctx, JSValueRef value) {
+    return JSValueToNumber(ctx, value, nullptr);
+}
+
+JSValueRef float_to_js(JSContextRef ctx, const float& value) {
+    return JSValueMakeNumber(ctx, value);
 }
 
 // Strings

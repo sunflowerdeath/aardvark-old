@@ -9,8 +9,13 @@
 
 namespace aardvark::js {
 
+// numbers
+
 int int_from_js(JSContextRef ctx, JSValueRef value);
 JSValueRef int_to_js(JSContextRef ctx, const int& value);
+
+float float_from_js(JSContextRef ctx, JSValueRef value);
+JSValueRef float_to_js(JSContextRef ctx, const float& value);
 
 // strings
 

@@ -7,7 +7,7 @@ namespace aardvark::elements {
 
 enum class FlexDirection { row, column };
 
-enum class FlexAlign { start, end, center, stretch };
+enum class FlexAlign { start, center, end, stretch };
 
 enum class FlexJustify {
     start,

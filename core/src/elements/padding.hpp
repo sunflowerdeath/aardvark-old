@@ -8,10 +8,10 @@
 namespace aardvark {
 
 struct Padding {
-    Value left = Value::none();
-    Value top = Value::none();
-    Value right = Value::none();
-    Value bottom = Value::none();
+    float left = 0.0;
+    float top = 0.0;
+    float right = 0.0;
+    float bottom = 0.0;
 };
 
 class PaddingElement : public SingleChildElement {
