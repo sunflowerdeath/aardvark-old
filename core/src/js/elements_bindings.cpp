@@ -67,8 +67,17 @@ JSValueRef element_get_parent(JSContextRef ctx, JSObjectRef object,
     }
 }
 
-// TODO
-// JSValueRef element_get_children() {}
+JSValueRef element_get_children(JSContextRef ctx, JSObjectRef object,
+                              JSStringRef property_name,
+                              JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto elem = get_elem(ctx, object);
+    auto items = std::vector<JSValueRef>();
+    elem->visit_children([&host, &items](std::shared_ptr<Element> child) {
+        items.push_back(host->element_index->get_js_object(child.get()));
+    });
+    return JSObjectMakeArray(ctx, items.size(), items.data(), nullptr);
+}
 
 JSValueRef element_append_child(JSContextRef ctx, JSObjectRef function,
                                 JSObjectRef object, size_t argument_count,
@@ -148,6 +157,7 @@ JSClassRef element_create_class() {
         {"left", element_get_left, nullptr, PROP_ATTR_STATIC},
         {"top", element_get_top, nullptr, PROP_ATTR_STATIC},
         {"parent", element_get_parent, nullptr, PROP_ATTR_STATIC},
+        {"children", element_get_children, nullptr, PROP_ATTR_STATIC},
         {0, 0, 0, 0}};
     definition.className = "Element";
     definition.finalize = element_finalize;
@@ -512,6 +522,39 @@ JSClassRef text_elem_create_class(JSClassRef parent_class) {
     JSStaticValue static_values[] = {
         {"text", text_element_get_text, text_element_set_text,
          kJSPropertyAttributeDontDelete},
+        {0, 0, 0, 0}};
+    definition.staticValues = static_values;
+    return JSClassCreate(&definition);
+}
+
+//------------------------------------------------------------------------------
+// Scroll
+//------------------------------------------------------------------------------
+
+bool scroll_elem_set_scroll_top(JSContextRef ctx, JSObjectRef object,
+                                       JSStringRef property_name,
+                                       JSValueRef value,
+                                       JSValueRef* exception) {
+    auto elem = get_elem<ScrollElement>(ctx, object);
+    elem->scroll_top = int_from_js(ctx, value);
+    elem->update_transform();
+    return true;
+}
+
+JSValueRef scroll_elem_get_scroll_top(JSContextRef ctx,
+                                             JSObjectRef object,
+                                             JSStringRef property_name,
+                                             JSValueRef* exception) {
+    auto elem = get_elem<ScrollElement>(ctx, object);
+    return int_to_js(ctx, elem->scroll_top);
+}
+
+JSClassRef scroll_elem_create_class(JSClassRef parent_class) {
+    auto definition =
+        create_elem_class_definition("ScrollElement", parent_class);
+    JSStaticValue static_values[] = {
+        {"scrollTop", scroll_elem_get_scroll_top,
+         scroll_elem_set_scroll_top, kJSPropertyAttributeNone},
         {0, 0, 0, 0}};
     definition.staticValues = static_values;
     return JSClassCreate(&definition);

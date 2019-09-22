@@ -63,6 +63,8 @@ class Document {
 
     std::shared_ptr<Element> root;
 
+    void compose_layers();
+
   private:
     sk_sp<GrContext> gr_context;
     ElementsSet changed_elements;
@@ -80,7 +82,6 @@ class Document {
     bool inside_changed = false;
     void initial_paint();
     bool repaint();
-    void compose_layers();
     void paint_layer_tree(LayerTree* tree);
 };
 

@@ -245,7 +245,12 @@ void Document::paint_layer_tree(LayerTree* tree) {
     screen->canvas->translate(pos.left, pos.top);
     screen->canvas->concat(tree->transform);
     if (tree->clip != std::nullopt) {
-        screen->canvas->clipPath(tree->clip.value(), SkClipOp::kIntersect,
+        // TODO cache/lazy calculate if is expensive
+        SkMatrix inverted_transform;
+        tree->transform.invert(&inverted_transform);
+        SkPath transformed_clip;
+        tree->clip.value().transform(inverted_transform, &transformed_clip);
+        screen->canvas->clipPath(transformed_clip, SkClipOp::kIntersect,
                                  true);
     }
     for (auto item : tree->children) {

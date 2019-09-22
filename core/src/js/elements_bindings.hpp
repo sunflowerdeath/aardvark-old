@@ -29,8 +29,9 @@ JSClassRef flex_elem_create_class(JSClassRef parent_class);
 JSClassRef flex_child_elem_create_class(JSClassRef parent_class);
 JSClassRef padding_elem_create_class(JSClassRef parent_class);
 JSClassRef responder_elem_create_class(JSClassRef parent_class);
-JSClassRef stack_elem_create_class(JSClassRef parent_class);
+JSClassRef scroll_elem_create_class(JSClassRef parent_class);
 JSClassRef sized_elem_create_class(JSClassRef parent_class);
+JSClassRef stack_elem_create_class(JSClassRef parent_class);
 JSClassRef text_elem_create_class(JSClassRef parent_class);
 JSClassRef translate_elem_create_class(JSClassRef parent_class);
 

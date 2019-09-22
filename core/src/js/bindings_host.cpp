@@ -133,10 +133,12 @@ BindingsHost::BindingsHost() {
     add_elem_class("Responder", typeid(elements::ResponderElement),
                    responder_elem_create_class,
                    elem_constructor<elements::ResponderElement>);
-    add_elem_class("Stack", typeid(elements::Stack), stack_elem_create_class,
-                   elem_constructor<elements::Stack>);
+    add_elem_class("Scroll", typeid(ScrollElement), scroll_elem_create_class,
+                   elem_constructor<ScrollElement>);
     add_elem_class("Sized", typeid(elements::Sized), sized_elem_create_class,
                    elem_constructor<elements::Sized>);
+    add_elem_class("Stack", typeid(elements::Stack), stack_elem_create_class,
+                   elem_constructor<elements::Stack>);
     add_elem_class("Text", typeid(elements::Text), text_elem_create_class,
                    elem_constructor<elements::Text>);
     add_elem_class("Translate", typeid(TranslateElement),

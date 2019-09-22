@@ -3,10 +3,15 @@ const elements = {
 	background: Background,
 	center: Center,
 	intrinsicHeight: IntrinsicHeight,
+	flex: Flex,
+	flexChild: FlexChild,
+	padding: Padding,
 	responder: Responder,
+	scroll: Scroll,
 	sized: Sized,
 	stack: Stack,
-	text: Text
+	text: Text,
+	translate: Translate
 }
 
 const createElement = (type, props) => {
@@ -28,7 +33,10 @@ const updateElement = (elem, type, oldProps, newProps) => {
     }
     for (const key in newProps) {
         if (key === 'children') continue
-        if (newProps[key] !== oldProps[key]) elem[key] = newProps[key]
+        if (newProps[key] !== oldProps[key]) {
+            log('UPDATE ' + type + ': ' + key)
+            elem[key] = newProps[key]
+        }
     }
 }
 

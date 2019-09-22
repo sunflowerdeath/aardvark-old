@@ -11,6 +11,7 @@ const document = application.getDocument(win)
 
 const Color = {
 	WHITE: { alpha: 255, red: 255, green: 255, blue: 255 },
+    BLACK: { alpha: 255, red: 0, green: 0, blue: 0 },
 	LIGHTGRAY: { alpha: 255, red: 220, green: 220, blue: 220 },
 	RED: { alpha: 255, red: 0, green: 255, blue: 0 },
 	GREEN: { alpha: 255, red: 255, green: 0, blue: 0 },
@@ -38,10 +39,10 @@ const Padding1 = {
 
 	only(side, value) {
 		return {
-			left: side === 'left' ? value : Value.none,
-			top: side === 'top' ? value : Value.none,
-			right: side === 'right' ? value : Value.none,
-			bottom: side === 'bottom' ? value : Value.none
+			left: side === 'left' ? value : 0,
+			top: side === 'top' ? value : 0,
+			right: side === 'right' ? value : 0,
+			bottom: side === 'bottom' ? value : 0
 		}
 	},
 
@@ -53,6 +54,13 @@ const Padding1 = {
 const FlexDirection = {
 	row: 0,
 	column: 1
+}
+
+const FlexAlign = {
+	start: 0,
+	center: 1,
+	end: 2,
+    stretch: 3
 }
 
 const FlexJustify = {
@@ -71,13 +79,15 @@ const Box = ({ color }) => (
 )
 
 const Label = ({ children }) => (
-	<sized sizeConstraints={{ width: Value.abs(100), height: Value.abs(30) }}>
-		<text text={children} />
-	</sized>
+    <flexChild align={FlexAlign.center}>
+        <sized sizeConstraints={{ width: Value.abs(100) }}>
+            <text text={children} />
+        </sized>
+    </flexChild>
 )
 
 const Button = ({ children, isActive }) => (
-	<padding padding={Padding1.only('right', Value.abs(16))}>
+	<padding padding={Padding1.only('right', 16)}>
 		<sized
 			sizeConstraints={{ width: Value.abs(125), height: Value.abs(30) }}
 		>
@@ -92,7 +102,7 @@ const Button = ({ children, isActive }) => (
 )
 
 const Row = ({ children }) => (
-	<padding padding={Padding1.only('bottom', Value.abs(24))}>
+	<padding padding={Padding1.only('bottom', 24)}>
 		<flex>{children}</flex>
 	</padding>
 )
@@ -124,12 +134,7 @@ const App = () => {
 						<Label>Justify</Label>
 						<intrinsicHeight>
 							<flex direction={FlexDirection.column}>
-								<padding
-									padding={Padding1.only(
-										'bottom',
-										Value.abs(12)
-									)}
-								>
+								<padding padding={Padding1.only('bottom', 12)}>
 									<flex>
 										<Button isActive>start</Button>
 										<Button>center</Button>
