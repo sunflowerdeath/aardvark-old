@@ -3,8 +3,8 @@
 #include <functional>
 #include <iostream>
 #include <typeinfo>
-#include "../utils/log.hpp"
 #include "../elements/elements.hpp"
+#include "../utils/log.hpp"
 #include "desktop_app_bindings.hpp"
 #include "desktop_window_bindings.hpp"
 #include "document_bindings.hpp"
@@ -73,8 +73,7 @@ BindingsHost::BindingsHost() {
     ctx = std::make_shared<JSGlobalContextWrapper>(
         JSGlobalContextCreate(global_class));
 
-    module_loader =
-        std::make_unique<ModuleLoader>(event_loop.get(), ctx, true);
+    module_loader = std::make_unique<ModuleLoader>(event_loop.get(), ctx, true);
     module_loader->exception_handler = [this](JsError error) {
         log_error(error);
         stop();
@@ -113,38 +112,39 @@ BindingsHost::BindingsHost() {
     element_index.emplace(ctx->get(), [this](Element* elem) {
         return this->get_element_js_class(elem);
     });
-    add_elem_class("Align", typeid(elements::Align), align_elem_create_class,
-                   elem_constructor<elements::Align>);
-    add_elem_class("Background", typeid(elements::Background),
+    add_elem_class("AlignElement", typeid(elements::Align),
+                   align_elem_create_class, elem_constructor<elements::Align>);
+    add_elem_class("BackgroundElement", typeid(elements::Background),
                    background_elem_create_class,
                    elem_constructor<elements::Background>);
-    add_elem_class("Center", typeid(elements::Center), center_elem_create_class,
+    add_elem_class("CenterElement", typeid(elements::Center),
+                   center_elem_create_class,
                    elem_constructor<elements::Center>);
-    add_elem_class("IntrinsicHeight", typeid(elements::IntrinsicHeight),
+    add_elem_class("IntrinsicHeightElement", typeid(elements::IntrinsicHeight),
                    intrinsic_height_elem_create_class,
                    elem_constructor<elements::IntrinsicHeight>);
-    add_elem_class("IntrinsicWidth", typeid(elements::IntrinsicWidth),
+    add_elem_class("IntrinsicWidthElement", typeid(elements::IntrinsicWidth),
                    intrinsic_width_elem_create_class,
                    elem_constructor<elements::IntrinsicWidth>);
-    add_elem_class("Flex", typeid(elements::Flex), flex_elem_create_class,
-                   elem_constructor<elements::Flex>);
-    add_elem_class("FlexChild", typeid(elements::FlexChild),
+    add_elem_class("FlexElement", typeid(elements::Flex),
+                   flex_elem_create_class, elem_constructor<elements::Flex>);
+    add_elem_class("FlexChildElement", typeid(elements::FlexChild),
                    flex_child_elem_create_class,
                    elem_constructor<elements::FlexChild>);
-    add_elem_class("Padding", typeid(PaddingElement), padding_elem_create_class,
-                   elem_constructor<PaddingElement>);
-    add_elem_class("Responder", typeid(elements::ResponderElement),
+    add_elem_class("PaddingElement", typeid(PaddingElement),
+                   padding_elem_create_class, elem_constructor<PaddingElement>);
+    add_elem_class("ResponderElement", typeid(elements::ResponderElement),
                    responder_elem_create_class,
                    elem_constructor<elements::ResponderElement>);
-    add_elem_class("Scroll", typeid(ScrollElement), scroll_elem_create_class,
-                   elem_constructor<ScrollElement>);
-    add_elem_class("Sized", typeid(elements::Sized), sized_elem_create_class,
-                   elem_constructor<elements::Sized>);
-    add_elem_class("Stack", typeid(elements::Stack), stack_elem_create_class,
-                   elem_constructor<elements::Stack>);
-    add_elem_class("Text", typeid(elements::Text), text_elem_create_class,
-                   elem_constructor<elements::Text>);
-    add_elem_class("Translate", typeid(TranslateElement),
+    add_elem_class("ScrollElement", typeid(ScrollElement),
+                   scroll_elem_create_class, elem_constructor<ScrollElement>);
+    add_elem_class("SizedElement", typeid(elements::Sized),
+                   sized_elem_create_class, elem_constructor<elements::Sized>);
+    add_elem_class("StackElement", typeid(elements::Stack),
+                   stack_elem_create_class, elem_constructor<elements::Stack>);
+    add_elem_class("TextElement", typeid(elements::Text),
+                   text_elem_create_class, elem_constructor<elements::Text>);
+    add_elem_class("TranslateElement", typeid(TranslateElement),
                    translate_elem_create_class,
                    elem_constructor<TranslateElement>);
 

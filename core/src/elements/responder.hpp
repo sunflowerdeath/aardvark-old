@@ -23,8 +23,8 @@ class ResponderElement : public SingleChildElement {
 
     ResponderElement()
         : SingleChildElement(nullptr,
-                             /* is_repaint_boundary */ is_repaint_boundary,
-                             /* size_by_parent */ true),
+                             /* is_repaint_boundary */ false,
+                             /* size_by_parent */ false),
 
           responder(InnerResponder(this)){};
 
@@ -34,7 +34,7 @@ class ResponderElement : public SingleChildElement {
         bool is_repaint_boundary = false)
         : SingleChildElement(child,
                              /* is_repaint_boundary */ is_repaint_boundary,
-                             /* size_by_parent */ true),
+                             /* size_by_parent */ false),
           mode(mode),
           handler(handler),
           responder(InnerResponder(this)){};

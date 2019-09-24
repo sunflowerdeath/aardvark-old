@@ -1,7 +1,7 @@
 const path = require('path')
 
 module.exports = {
-	entry: './src/ws.js',
+	entry: './src/recognizer.js',
 	output: {
 		path: path.resolve(__dirname, 'build'),
 		filename: 'main.js'
@@ -21,5 +21,5 @@ module.exports = {
 			}
 		]
 	},
-    devtool: false
+    devtool: 'source-map'
 }

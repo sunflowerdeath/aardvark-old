@@ -29,6 +29,17 @@ JSClassDefinition create_elem_class_definition(const char* name,
 // Element
 //------------------------------------------------------------------------------
 
+JSValueRef element_get_document(JSContextRef ctx, JSObjectRef object,
+                              JSStringRef property_name,
+                              JSValueRef* exception) {
+    auto document = get_elem(ctx, object)->document;
+    if (document == nullptr) {
+        return JSValueMakeUndefined(ctx);
+    } else {
+        return BindingsHost::get(ctx)->document_index->get_js_object(document);
+    }
+}
+
 JSValueRef element_get_width(JSContextRef ctx, JSObjectRef object,
                              JSStringRef property_name, JSValueRef* exception) {
     auto elem = get_elem(ctx, object);
@@ -57,13 +68,11 @@ JSValueRef element_get_top(JSContextRef ctx, JSObjectRef object,
 JSValueRef element_get_parent(JSContextRef ctx, JSObjectRef object,
                               JSStringRef property_name,
                               JSValueRef* exception) {
-    auto host = BindingsHost::get(ctx);
-    auto elem = host->element_index->get_native_object(object);
-    auto parent = elem->parent;
+    auto parent = get_elem(ctx, object)->parent;
     if (parent == nullptr) {
         return JSValueMakeUndefined(ctx);
     } else {
-        return host->element_index->get_js_object(parent);
+        return BindingsHost::get(ctx)->element_index->get_js_object(parent);
     }
 }
 
@@ -152,6 +161,7 @@ JSClassRef element_create_class() {
         {"insertBeforeChild", element_insert_before_child, PROP_ATTR_STATIC},
         {0, 0, 0}};
     JSStaticValue static_values[] = {
+        {"document", element_get_document, nullptr, PROP_ATTR_STATIC},
         {"width", element_get_width, nullptr, PROP_ATTR_STATIC},
         {"height", element_get_height, nullptr, PROP_ATTR_STATIC},
         {"left", element_get_left, nullptr, PROP_ATTR_STATIC},

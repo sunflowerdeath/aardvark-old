@@ -1,14 +1,12 @@
 import {
     GestureResolver, PointerEventAction, PointerEventTool 
-} from 'aardvark-std'
+} from '@advk/common'
 
-let app = new DesktopApp()
-log('create app')
-let window = app.createWindow(640, 480)
+let window = application.createWindow(640, 480)
 log('create window')
-log('app.windows.size =', app.windows.size)
-log('app.windows[0].width =', app.windows[0].width)
-let doc = app.getDocument(window)
+log('app.windows.size =', application.windows.size)
+log('app.windows[0].width =', application.windows[0].width)
+let doc = application.getDocument(window)
 log('get doc')
 
 const gestureResolver = new GestureResolver(doc)
@@ -39,7 +37,7 @@ class Button {
     make() {
         let elem = new Responder()
         elem.appendChild(this.child)
-        elem.setHandler(this.onResponderEvent.bind(this))
+        elem.hander = this.onResponderEvent.bind(this)
         return elem
     }
 
@@ -101,11 +99,15 @@ text.text = "Hello, Text"
 stack.appendChild(text)
 
 let bg = new Background()
+bg.color = { alpha: 255, red: 0, green: 255, blue: 0 }
+
+/*
 let onClick = () => log('click')
 let onPress = () => log('press')
 let onUnpress = () => log('unpress')
 let button = new Button({ child: bg, onClick, onPress, onUnpress })
 let buttonElem = button.make()
+*/
 
 let sized = new Sized()
 sized.sizeConstraints = {
@@ -120,7 +122,7 @@ align.align = {
     top: {type: 'abs', value: 100}
 }
 
-sized.appendChild(buttonElem)
+sized.appendChild(bg)
 align.appendChild(sized)
 stack.appendChild(align)
 
@@ -141,5 +143,3 @@ let trackHandler = event => {
 }
 stopTracking = doc.startTrackingPointer(0, trackHandler)
 */
-
-app.run()

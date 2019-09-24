@@ -3,11 +3,13 @@
 namespace aardvark::elements {
 
 float Sized::get_intrinsic_height() {
+    // TODO child
     return fmax(size_constraints.min_height.calc(0),
                 size_constraints.height.calc(0));
 }
 
 float Sized::get_intrinsic_width() {
+    // TODO child
     return fmax(size_constraints.min_width.calc(0),
                 size_constraints.width.calc(0));
 }
@@ -49,7 +51,5 @@ Size Sized::layout(BoxConstraints constraints) {
         fmin(fmax(child_size.height, min_height), max_height)  // height
     };
 }
-
-void Sized::paint(bool is_changed) { document->paint_element(child.get()); };
 
 }  // namespace aardvark::elements

@@ -36,7 +36,6 @@ class Sized : public SingleChildElement {
     float get_intrinsic_height() override;
     float get_intrinsic_width() override;
     Size layout(BoxConstraints constraints) override;
-    void paint(bool is_changed) override;
 
     SizeConstraints size_constraints = SizeConstraints();
 };

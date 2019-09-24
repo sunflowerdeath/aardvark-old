@@ -13,7 +13,6 @@
   "author": "sunflowerdeath",
   "license": "Unlicense",
   "dependencies": {
-    "@advk/check-types": "*",
     "@advk/common": "*",
     "react-devtools-core": "^3.6.3",
     "react-reconciler": "^0.21.0"

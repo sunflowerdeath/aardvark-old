@@ -2,10 +2,9 @@
 
 namespace aardvark {
 
-Element::Element(bool is_repaint_boundary, bool size_depends_on_parent) {
-    this->is_repaint_boundary = is_repaint_boundary;
-    this->size_depends_on_parent = size_depends_on_parent;
-};
+Element::Element(bool is_repaint_boundary, bool size_depends_on_parent)
+    : is_repaint_boundary(is_repaint_boundary),
+      size_depends_on_parent(size_depends_on_parent){};
 
 void Element::change() {
     if (document != nullptr) document->change_element(this);

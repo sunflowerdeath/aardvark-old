@@ -153,35 +153,37 @@ const App = () => {
 			</align>
 			<align
 				align={{
-					left: { type: 'abs', value: 50 },
-					top: { type: 'abs', value: 200 }
+					left: { type: 'rel', value: 1 },
+					top: { type: 'rel', value: 0.5 }
 				}}
 			>
-				<Button onClick={() => {
-                    log('exception')
-                    const bg = new Background()
-                    bg.color = { alpha: 255, red: 'red', green: 255, blue: 255 } 
-                }}>
-					{state => (
-						<sized
-							sizeConstraints={{
-								width: { type: 'abs', value: 200 },
-								height: { type: 'abs', value: 50 }
-							}}
-						>
-						    <stack>
-                                <background
-								    color={
-									    state.isPressed ? COLOR_RED : COLOR_GREEN
-								    }
-							    />
-								<center>
-									<text text="GC" />
-								</center>
-							</stack>
-						</sized>
-					)}
-				</Button>
+			    <translate left={{ type: 'rel', value: -1}} top={{ type: 'rel', value: -0.5}}>
+				    <Button onClick={() => {
+                        log('exception')
+                        const bg = new Background()
+                        bg.color = { alpha: 255, red: 'red', green: 255, blue: 255 } 
+                    }}>
+					    {state => (
+						    <sized
+							    sizeConstraints={{
+								    width: { type: 'abs', value: 200 },
+								    height: { type: 'abs', value: 100 }
+							    }}
+						    >
+						        <stack>
+                                    <background
+								        color={
+									        state.isPressed ? COLOR_RED : COLOR_GREEN
+								        }
+							        />
+								    <center>
+									    <text text="GC" />
+								    </center>
+							    </stack>
+						    </sized>
+					    )}
+				    </Button>
+				</translate>
 			</align>
 			<align
 				align={{

@@ -1,4 +1,5 @@
-import { createElement, updateElement } from './elements.js'
+import Reconciler from 'react-reconciler'
+import { createElement, updateElement } from './helpers.js'
 
 const getRootHostContext = rootContainerInstance => {
 	// log('getRootHostContext')
@@ -102,7 +103,7 @@ const warnsIfNotActing = true
 const supportsMutation = true
 
 const appendChild = (parentInstance, child) => {
-	// log('appendChild')
+	log('appendChild')
 	parentInstance.appendChild(child)
 }
 
@@ -156,7 +157,7 @@ const resetTextContent = instance => {
 	// Noop
 }
 
-export default {
+const hostConfig = {
 	getPublicInstance,
 	getRootHostContext,
 	getChildHostContext,
@@ -187,3 +188,5 @@ export default {
 	removeChildFromContainer,
 	resetTextContent
 }
+
+export default Reconciler(hostConfig)
