@@ -60,10 +60,13 @@ void Document::initial_paint() {
 
 bool Document::repaint() {
     if (changed_elements.empty()) {
-        compose_layers();
-        return false;  // nothing to repaint
+        if (need_recompose) {
+            compose_layers();
+            return true;
+        } else {
+            return false;  // nothing to do
+        }
     }
-    // TODO check when compose is needed
     ElementsSet relayout_boundaries;
     for (auto elem : changed_elements) {
         add_only_parent(relayout_boundaries,
@@ -234,6 +237,7 @@ Layer* Document::create_layer(Size size) {
 }
 
 void Document::compose_layers() {
+    need_recompose = false;
     screen->clear();
     paint_layer_tree(root->layer_tree.get());
     screen->canvas->flush();

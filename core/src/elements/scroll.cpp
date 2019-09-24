@@ -48,8 +48,12 @@ void ScrollElement::update_transform() {
     auto transform = SkMatrix();
     transform.setTranslate(/* left */ 0, /* top */ -scroll_top);
     layer_tree->transform = transform;
-    // std::cout << "COMPOSE" << scroll_top << std::endl;
-    // document->compose_layers();
+}
+
+void ScrollElement::set_scroll_top(int scroll_top) {
+    this->scroll_top = scroll_top;
+    update_transform();
+    if (document != nullptr) document->need_recompose = true;
 }
 
 }  // namespace aardvark

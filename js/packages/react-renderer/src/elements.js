@@ -3,6 +3,7 @@ const elements = {
 	background: Background,
 	center: Center,
 	intrinsicHeight: IntrinsicHeight,
+	intrinsicWidth: IntrinsicWidth,
 	flex: Flex,
 	flexChild: FlexChild,
 	padding: Padding,

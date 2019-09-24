@@ -6,8 +6,9 @@ export const PointerEventAction = {
 }
 
 export const PointerEventTool = {
+    TOUCH: 0,
     MOUSE: 1,
-    TOUCH: 2
+    OTHER: 2
 }
 
 export { default as GestureResolver } from './GestureResolver.js'

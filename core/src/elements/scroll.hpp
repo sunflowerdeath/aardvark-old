@@ -21,10 +21,13 @@ class ScrollElement : public MultipleChildrenElement {
     float get_intrinsic_width() override;
     Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
-    void update_transform();
 
+    void set_scroll_top(int scroll_top);
     int scroll_top = 0;
     int scroll_left = 0;
+
+  private:
+    void update_transform();
 };
 
 }  // namespace aardvark

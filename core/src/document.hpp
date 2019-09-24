@@ -63,6 +63,8 @@ class Document {
 
     std::shared_ptr<Element> root;
 
+    bool need_recompose = false;
+
     void compose_layers();
 
   private:
