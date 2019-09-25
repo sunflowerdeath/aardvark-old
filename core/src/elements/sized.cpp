@@ -3,15 +3,29 @@
 namespace aardvark::elements {
 
 float Sized::get_intrinsic_height() {
-    // TODO child
-    return fmax(size_constraints.min_height.calc(0),
-                size_constraints.height.calc(0));
+    auto res = size_constraints.height.is_none()
+                   ? child->get_intrinsic_height()
+                   : size_constraints.height.calc(0);
+    if (!size_constraints.min_height.is_none()) {
+        res = fmax(res, size_constraints.min_height.calc(0));
+    }
+    if (!size_constraints.max_height.is_none()) {
+        res = fmin(res, size_constraints.max_height.calc(0));
+    }
+    return res;
 }
 
 float Sized::get_intrinsic_width() {
-    // TODO child
-    return fmax(size_constraints.min_width.calc(0),
-                size_constraints.width.calc(0));
+    auto res = size_constraints.width.is_none()
+                   ? child->get_intrinsic_width()
+                   : size_constraints.width.calc(0);
+    if (!size_constraints.min_width.is_none()) {
+        res = fmax(res, size_constraints.min_width.calc(0));
+    }
+    if (!size_constraints.max_width.is_none()) {
+        res = fmin(res, size_constraints.max_width.calc(0));
+    }
+    return res;
 }
 
 float calc_min(const std::array<Value, 2>& values, float parent_min,

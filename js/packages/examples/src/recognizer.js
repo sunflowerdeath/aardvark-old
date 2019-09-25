@@ -63,6 +63,7 @@ const Panel = ({ children }) => {
 			onHoverStart={useCallback(() => setIsHovered(true))}
 			onHoverEnd={useCallback(() => setIsHovered(false))}
 		>
+			<IntrinsicHeight>
 				<Sized sizeConstraints={{ width: Value.abs(200) }}>
 					<Stack>
 						<Background
@@ -75,6 +76,7 @@ const Panel = ({ children }) => {
 						</Padding>
 					</Stack>
 				</Sized>
+			</IntrinsicHeight>
 		</GestureResponder>
 	)
 }
