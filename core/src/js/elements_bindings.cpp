@@ -556,8 +556,6 @@ bool scroll_elem_set_scroll_top(JSContextRef ctx, JSObjectRef object,
                                        JSValueRef value,
                                        JSValueRef* exception) {
     auto elem = get_elem<ScrollElement>(ctx, object);
-    // elem->scroll_top = int_from_js(ctx, value);
-    // elem->update_transform();
     elem->set_scroll_top(int_from_js(ctx, value));
     return true;
 }

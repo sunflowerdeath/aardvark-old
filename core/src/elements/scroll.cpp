@@ -14,7 +14,7 @@ float ScrollElement::get_intrinsic_width() {
 }
 
 Size ScrollElement::layout(BoxConstraints constraints) {
-    auto current_height = 0;
+    auto current_height = 0.0f;
     for (auto& child : children) {
         auto child_constraints = BoxConstraints{
             0,                                      // min_width
@@ -30,13 +30,13 @@ Size ScrollElement::layout(BoxConstraints constraints) {
     }
     auto size = constraints.max_size();
     SkPath path;
-    path.addRect(0, scroll_top, size.width, scroll_top + size.height);
+    path.addRect(0, 0, size.width, size.height);
     clip = path;
     return size;
 }
 
 void ScrollElement::paint(bool is_changed) {
-    auto total_height = 0.0;
+    auto total_height = 0.0f;
     for (auto& child : children) total_height += child->size.height;
     document->create_layer({ size.width, total_height });
     for (auto& child : children) document->paint_element(child.get());
