@@ -19,9 +19,9 @@ void window_close_callback(GLFWwindow* window) {
 };
 
 // Mouse events
-void cursor_enter_callback(GLFWwindow* window, int entered) {
-    auto event = entered ? static_cast<Event>(MouseEnterEvent())
-                         : static_cast<Event>(MouseLeaveEvent());
+void window_cursor_enter_callback(GLFWwindow* window, int entered) {
+    auto event = entered ? static_cast<Event>(WindowCursorEnterEvent())
+                         : static_cast<Event>(WindowCursorLeaveEvent());
     DesktopApp::dispatch_event(window, event);
 };
 
@@ -31,7 +31,8 @@ void cursor_pos_callback(GLFWwindow* window, double left, double top) {
         0,                            // pointer_id
         PointerAction::pointer_move,  // action
         static_cast<float>(left),     // left
-        static_cast<float>(top)       // top
+        static_cast<float>(top),      // top
+        -1                            // button
     };
     DesktopApp::dispatch_event(window, event);
 };
@@ -40,14 +41,14 @@ void mouse_button_callback(GLFWwindow* window, int button, int action,
                            int mods) {
     double left, top;
     glfwGetCursorPos(window, &left, &top);
-    auto event = ButtonEvent{
+    auto event = PointerEvent{
         PointerTool::mouse,  // tool
         0,                   // pointer_id
         action == GLFW_PRESS ? PointerAction::button_press
                              : PointerAction::button_release,  // action
         static_cast<float>(left),                              // left
         static_cast<float>(top),                               // top
-        button                                                 // button_id
+        button                                                 // button
     };
     DesktopApp::dispatch_event(window, event);
 };
@@ -65,36 +66,35 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action,
 
 const auto FRAME_TIME = 16000;
 
-void DesktopApp::dispatch_event(GLFWwindow* window, Event event) {
-    // event.timestamp = now();
-    auto inst = (DesktopApp*)glfwGetWindowUserPointer(window);
-    inst->handle_event(window, event);
+void DesktopApp::dispatch_event(GLFWwindow* glfw_window, Event event) {
+    auto window = DesktopWindow::get(glfw_window);
+    window->app->handle_event(window, event);
 };
 
 std::shared_ptr<DesktopWindow> DesktopApp::create_window(Size size) {
-    auto window = std::make_shared<DesktopWindow>(size);
+    auto window = std::make_shared<DesktopWindow>(this, size);
     windows.push_back(window);
-    glfwSetWindowUserPointer(window->window, (void*)this);
+    auto glfw_window = window->window;
     // Window events
-    glfwSetWindowFocusCallback(window->window, window_focus_callback);
-    glfwSetWindowCloseCallback(window->window, window_close_callback);
+    glfwSetWindowFocusCallback(glfw_window, window_focus_callback);
+    glfwSetWindowCloseCallback(glfw_window, window_close_callback);
+    glfwSetCursorEnterCallback(glfw_window, window_cursor_enter_callback);
     // Mouse events
-    glfwSetCursorEnterCallback(window->window, cursor_enter_callback);
-    glfwSetCursorPosCallback(window->window, cursor_pos_callback);
-    glfwSetMouseButtonCallback(window->window, mouse_button_callback);
+    glfwSetCursorPosCallback(glfw_window, cursor_pos_callback);
+    glfwSetMouseButtonCallback(glfw_window, mouse_button_callback);
     // Keyboard events
-    glfwSetKeyCallback(window->window, key_callback);
-    documents[window] = std::make_shared<Document>();
+    glfwSetKeyCallback(glfw_window, key_callback);
+    documents[window.get()] = std::make_shared<Document>();
     return window;
 };
 
 std::shared_ptr<Document> DesktopApp::get_document(
     std::shared_ptr<DesktopWindow> window) {
-    return documents[window];
+    return documents[window.get()];
 };
 
 void DesktopApp::destroy_window(std::shared_ptr<DesktopWindow> window) {
-    documents.erase(documents.find(window));
+    documents.erase(documents.find(window.get()));
     windows.erase(std::find(windows.begin(), windows.end(), window));
 };
 
@@ -115,7 +115,7 @@ void DesktopApp::render(std::function<void(void)> update_callback) {
     bool painted = false;
     for (auto& window : windows) {
         window->make_current();
-        painted = painted || documents[window]->paint();
+        painted = painted || documents[window.get()]->paint();
         window->swap_now();
     }
     auto end = std::chrono::high_resolution_clock::now();
@@ -130,14 +130,16 @@ void DesktopApp::render(std::function<void(void)> update_callback) {
         std::bind(&DesktopApp::render, this, update_callback), timeout);
 }
 
-void DesktopApp::handle_event(GLFWwindow* window, Event event) {
+void DesktopApp::handle_event(DesktopWindow* window, Event event) {
     if (event_handler) event_handler(this, event);
-    // dispatch window events (close/minimize/maximize)
-    if (auto pointer_event = std::get_if<PointerEvent>(&event)) {
-        auto win = windows[0];  // TODO: support multiple windows
-        auto doc = get_document(win);
-        if (!doc->is_initial_paint) {
-            doc->pointer_event_manager->handle_event(*pointer_event);
+
+    // TODO dispatch keyboard events
+    if (auto window_event = std::get_if<WindowEvent>(&event)) {
+        // window->handle_event(window_event);
+    } else if (auto pointer_event = std::get_if<PointerEvent>(&event)) {
+        auto document = documents[window];
+        if (!document->is_initial_paint) {
+            document->pointer_event_manager->handle_event(*pointer_event);
         }
     }
 };

@@ -4,14 +4,19 @@
 
 namespace aardvark {
 
+// Window
+
 struct WindowFocusEvent {};
 
 struct WindowBlurEvent {};
 
+struct WindowCursorEnterEvent {};
+
+struct WindowCursorLeaveEvent {};
+
 struct WindowMoveEvent {
-    WindowMoveEvent(float left, float top) : left(left), top(top){};
-    double left;
-    double top;
+    float left;
+    float top;
 };
 
 struct WindowCloseEvent {};
@@ -19,6 +24,18 @@ struct WindowCloseEvent {};
 struct WindowMinimizeEvent {};
 
 struct WindowRestoreEvent {};
+
+struct WindowResizeEvent {
+    float width;
+    float height;
+};
+
+using WindowEvent =
+    std::variant<WindowFocusEvent, WindowBlurEvent, WindowCursorEnterEvent,
+                 WindowCursorLeaveEvent, WindowMoveEvent, WindowCloseEvent,
+                 WindowMinimizeEvent, WindowRestoreEvent, WindowResizeEvent>;
+
+// Pointer event
 
 enum class PointerTool { touch, mouse, other };
 
@@ -37,15 +54,10 @@ struct PointerEvent {
     PointerAction action;
     float left;
     float top;
+    int button;
 };
 
-struct ButtonEvent : public PointerEvent {
-    int button_id;
-};
-
-struct MouseEnterEvent {};
-
-struct MouseLeaveEvent {};
+// Keyboard
 
 enum class KeyAction { Press, Release, Repeat };
 
@@ -56,9 +68,6 @@ struct KeyEvent {
     int mods;
 };
 
-using Event =
-    std::variant<WindowFocusEvent, WindowBlurEvent, WindowMoveEvent,
-                 WindowCloseEvent, WindowMinimizeEvent, WindowRestoreEvent,
-                 MouseEnterEvent, MouseLeaveEvent, PointerEvent, KeyEvent>;
+using Event = std::variant<WindowEvent, PointerEvent, KeyEvent>;
 
 }  // namespace aardvark

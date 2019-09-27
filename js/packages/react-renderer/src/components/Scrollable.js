@@ -25,12 +25,10 @@ const Scrollable = ({ children }) => {
 				}),
 				drag: new DragRecognizer({
 					onDragStart: event => {
-						log('drag start')
 						initialScrollTop.current = getScrollTop()
 					},
 					onDragMove: event => {
-						log('drag move')
-						setScrollTop(initialScrollTop.current + event.deltaTop)
+						setScrollTop(initialScrollTop.current - event.deltaTop)
 					}
 				})
 			})

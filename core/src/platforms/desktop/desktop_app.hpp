@@ -15,6 +15,8 @@
 
 namespace aardvark {
 
+class DesktopWindow;
+
 class DesktopApp {
   public:
     DesktopApp(std::shared_ptr<EventLoop> event_loop)
@@ -50,10 +52,8 @@ class DesktopApp {
   private:
     std::shared_ptr<EventLoop> event_loop;
     bool should_stop;
-    std::unordered_map<std::shared_ptr<DesktopWindow>,
-                       std::shared_ptr<Document>>
-        documents;
-    void handle_event(GLFWwindow* window, Event event);
+    std::unordered_map<DesktopWindow*, std::shared_ptr<Document>> documents;
+    void handle_event(DesktopWindow* window, Event event);
 };
 
 }  // namespace aardvark
