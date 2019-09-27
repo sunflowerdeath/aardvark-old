@@ -16,6 +16,7 @@ const useStateWithGetter = initialState => {
 const Scrollable = ({ children }) => {
 	const [scrollTop, setScrollTop, getScrollTop] = useStateWithGetter(0)
 	const initialScrollTop = useRef(0)
+	const ref = useRef()
 	const [recognizer] = useState(
 		() =>
 			new MultiRecognizer({
@@ -24,6 +25,7 @@ const Scrollable = ({ children }) => {
 					onHoverEnd: () => log('hover end')
 				}),
 				drag: new DragRecognizer({
+					document: () => ref.current.document,
 					onDragStart: event => {
 						initialScrollTop.current = getScrollTop()
 					},
@@ -33,9 +35,11 @@ const Scrollable = ({ children }) => {
 				})
 			})
 	)
-    log(scrollTop)
 	return (
-		<Responder handler={useCallback(recognizer.handler.bind(recognizer))}>
+		<Responder
+			ref={ref}
+			handler={useCallback(recognizer.handler.bind(recognizer))}
+		>
 			<Scroll scrollTop={scrollTop}>{children}</Scroll>
 		</Responder>
 	)

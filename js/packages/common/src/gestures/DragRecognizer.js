@@ -36,6 +36,7 @@ const isTouchUp = event =>
 
 class DragRecognizer {
 	constructor(options) {
+		this.document = options.document
 		this.onDragStart = options.onDragStart
 		this.onDragEnd = options.onDragEnd
 		this.onDragMove = options.onDragMove
@@ -47,24 +48,16 @@ class DragRecognizer {
 	}
 
 	handler(event, eventType) {
-		if (this.isStarted) {
-			if (event.pointerId === this.startEvent.pointerId) {
-				if (isTouchUp(event) || isMouseButtonUp(event)) {
-                    this.end(event)
-                } else {
-                    this.update(event)
-                }
-            }
-		} else {
-			if (
-				((this.tool === DragTool.ANY || this.tool === DragTool.MOUSE) &&
-					isMouseButtonPress(event)) ||
-				((this.tool === DragTool.ANY || this.tool === DragTool.TOUCH) &&
-					isTouchDown(event))
-			) {
-				this.start(event)
-			}
-		}
+		if (this.isStarted) return
+
+        if (
+            ((this.tool === DragTool.ANY || this.tool === DragTool.MOUSE) &&
+                isMouseButtonPress(event)) ||
+            ((this.tool === DragTool.ANY || this.tool === DragTool.TOUCH) &&
+                isTouchDown(event))
+        ) {
+            this.start(event)
+        }
 	}
 
 	start(event) {
@@ -72,8 +65,20 @@ class DragRecognizer {
 		this.startEvent = event
 
 		this.isActive = true
+		this.stopTrackingPointer = this.document().startTrackingPointer(
+			event.pointerId,
+			this.onPointerEvent.bind(this)
+		)
 		if (this.onDragStart) this.onDragStart()
 	}
+
+    onPointerEvent(event) {
+        if (isTouchUp(event) || isMouseButtonUp(event)) {
+            this.end(event)
+        } else {
+            this.update(event)
+        }
+    }
 
 	update(event) {
 		if (this.isActive) {
@@ -88,6 +93,7 @@ class DragRecognizer {
 	}
 
 	end(event) {
+        this.stopTrackingPointer()
 		this.isStarted = false
 		this.isActive = false
 		if (this.onDragEnd) this.onDragEnd()

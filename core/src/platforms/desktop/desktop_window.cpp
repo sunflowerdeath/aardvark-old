@@ -26,8 +26,34 @@ DesktopWindow::DesktopWindow(DesktopApp* app, const Size& size)
 };
 
 DesktopWindow::~DesktopWindow() { glfwDestroyWindow(window); };
+
 void DesktopWindow::swap() { glfwSwapBuffers(window); };
+
 void DesktopWindow::swap_now() { glfwSwapBuffers(window); };
+
 void DesktopWindow::make_current() { glfwMakeContextCurrent(window); };
+
+void DesktopWindow::set_size(const Size& size) {
+    this->size = size;
+    glfwSetWindowSize(window, size.width, size.height);
+}
+
+void DesktopWindow::set_position(const Position& pos) {
+    glfwSetWindowPos(window, pos.left, pos.top);
+}
+
+void DesktopWindow::set_title(const char* title) {
+    glfwSetWindowTitle(window, title);
+}
+
+void DesktopWindow::minimize() { glfwIconifyWindow(window); }
+
+void DesktopWindow::restore() { glfwRestoreWindow(window); }
+
+void DesktopWindow::maximize() { glfwMaximizeWindow(window); }
+
+void DesktopWindow::hide() { glfwHideWindow(window); }
+
+void DesktopWindow::focus() { glfwFocusWindow(window); }
 
 }  // namespace aardvark

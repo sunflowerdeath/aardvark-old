@@ -16,10 +16,21 @@ class DesktopWindow {
     // Disable copy and assignment
     DesktopWindow(const DesktopWindow&) = delete;
     DesktopWindow& operator=(DesktopWindow const&) = delete;
-    Size size;
+
     void make_current();
     void swap_now();
     void swap();
+
+    void set_size(const Size& size);
+    void set_position(const Position& pos);
+    void set_title(const char* title);
+    void minimize();
+    void maximize();
+    void restore();
+    void hide();
+    void focus();
+
+    Size size;
     DesktopApp* app;
     GLFWwindow* window;
 
