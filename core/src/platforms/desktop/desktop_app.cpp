@@ -25,8 +25,15 @@ void window_cursor_enter_callback(GLFWwindow* window, int entered) {
     DesktopApp::dispatch_event(window, event);
 };
 
+int now() {
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch());
+    return ms.count();
+}
+
 void cursor_pos_callback(GLFWwindow* window, double left, double top) {
     auto event = PointerEvent{
+        now(),                        // timestamp
         PointerTool::mouse,           // tool
         0,                            // pointer_id
         PointerAction::pointer_move,  // action
@@ -42,6 +49,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action,
     double left, top;
     glfwGetCursorPos(window, &left, &top);
     auto event = PointerEvent{
+        now(),               // timestamp
         PointerTool::mouse,  // tool
         0,                   // pointer_id
         action == GLFW_PRESS ? PointerAction::button_press
@@ -108,6 +116,8 @@ void DesktopApp::run(std::function<void(void)> update_callback) {
 
 void DesktopApp::render(std::function<void(void)> update_callback) {
     if (should_stop) return;
+
+    update_callback();
 
     auto start = std::chrono::high_resolution_clock::now();
     glfwPollEvents();

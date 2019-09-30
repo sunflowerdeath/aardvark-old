@@ -7,6 +7,7 @@ namespace aardvark::js {
 JSValueRef pointer_event_to_js(JSContextRef ctx, const PointerEvent& event) {
     auto object = JSObjectMake(ctx, /* jsClass */ nullptr, /* data */ nullptr);
 
+    map_prop_to_js<int, int_to_js>(ctx, object, "timestamp", event.timestamp);
     map_prop_to_js<int, int_to_js>(ctx, object, "pointerId",
                                      event.pointer_id);
 

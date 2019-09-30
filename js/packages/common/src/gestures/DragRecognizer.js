@@ -3,6 +3,7 @@ import {
 	PointerEventType,
 	PointerEventAction
 } from '../pointerEvents.js'
+import VelocityTracker from './VelocityTracker.js'
 
 const DEFAULT_TRESHOLD = 12
 
@@ -36,6 +37,7 @@ const isTouchUp = event =>
 
 class DragRecognizer {
 	constructor(options) {
+		this.velocityTracker = new VelocityTracker()
 		this.document = options.document
 		this.onDragStart = options.onDragStart
 		this.onDragEnd = options.onDragEnd
@@ -47,17 +49,25 @@ class DragRecognizer {
 		// inside/outside
 	}
 
+	makeDragEvent(event) {
+		const deltaLeft = event.left - this.startEvent.left
+		const deltaTop = event.top - this.startEvent.top
+		this.velocityTracker.addPoint(event.timestamp, deltaTop)
+        const velocity = this.velocityTracker.getVelocity()
+		return { ...event, deltaLeft, deltaTop, velocity }
+	}
+
 	handler(event, eventType) {
 		if (this.isStarted) return
 
-        if (
-            ((this.tool === DragTool.ANY || this.tool === DragTool.MOUSE) &&
-                isMouseButtonPress(event)) ||
-            ((this.tool === DragTool.ANY || this.tool === DragTool.TOUCH) &&
-                isTouchDown(event))
-        ) {
-            this.start(event)
-        }
+		if (
+			((this.tool === DragTool.ANY || this.tool === DragTool.MOUSE) &&
+				isMouseButtonPress(event)) ||
+			((this.tool === DragTool.ANY || this.tool === DragTool.TOUCH) &&
+				isTouchDown(event))
+		) {
+			this.start(event)
+		}
 	}
 
 	start(event) {
@@ -69,34 +79,28 @@ class DragRecognizer {
 			event.pointerId,
 			this.onPointerEvent.bind(this)
 		)
-		if (this.onDragStart) this.onDragStart()
+		if (this.onDragStart) this.onDragStart(this.makeDragEvent(event))
 	}
 
-    onPointerEvent(event) {
-        if (isTouchUp(event) || isMouseButtonUp(event)) {
-            this.end(event)
-        } else {
-            this.update(event)
-        }
-    }
+	onPointerEvent(event) {
+		if (isTouchUp(event) || isMouseButtonUp(event)) {
+			this.end(event)
+		} else {
+			this.update(event)
+		}
+	}
 
 	update(event) {
 		if (this.isActive) {
-			if (this.onDragMove) {
-				const dragEvent = {
-					deltaLeft: event.left - this.startEvent.left,
-					deltaTop: event.top - this.startEvent.top
-				}
-				this.onDragMove(dragEvent)
-			}
+			if (this.onDragMove) this.onDragMove(this.makeDragEvent(event))
 		}
 	}
 
 	end(event) {
-        this.stopTrackingPointer()
+		this.stopTrackingPointer()
 		this.isStarted = false
 		this.isActive = false
-		if (this.onDragEnd) this.onDragEnd()
+		if (this.onDragEnd) this.onDragEnd(this.makeDragEvent(event))
 	}
 }
 

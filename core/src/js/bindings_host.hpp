@@ -3,6 +3,7 @@
 #include <optional>
 #include <typeindex>
 #include <memory>
+#include <map>
 #include <unordered_map>
 #include <string>
 
@@ -24,6 +25,30 @@ namespace aardvark::js {
 
 class Typedefs;
 
+class AnimationFrame {
+  public:
+    int add_callback(std::function<void()> callback) {
+        id++;
+        callbacks[id] = callback;
+        return id;
+    }
+
+    void remove_callback(int id) {
+        callbacks.erase(id);
+    }
+
+    void call_callbacks() {
+        auto copy = callbacks;
+        callbacks.clear();
+        for (auto it : copy) it.second();
+    }
+
+  private:
+    int id = 0;
+    std::map<int, std::function<void()>> callbacks;
+};
+
+
 constexpr auto PROP_ATTR_STATIC =
     kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete;
 
@@ -41,6 +66,7 @@ class BindingsHost {
     std::shared_ptr<EventLoop> event_loop = std::make_shared<EventLoop>();
     std::unique_ptr<Typedefs> typedefs;
     std::unique_ptr<ModuleLoader> module_loader;
+    std::optional<AnimationFrame> animation_frame;
     std::shared_ptr<DesktopApp> app;
     JSClassRef element_class;
     JSObjectRef element_constructor;

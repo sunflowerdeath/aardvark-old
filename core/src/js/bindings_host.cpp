@@ -51,6 +51,35 @@ JSValueRef gc(JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
     return JSValueMakeUndefined(ctx);
 }
 
+JSValueRef request_animation_frame(JSContextRef ctx, JSObjectRef function,
+                                   JSObjectRef this_object,
+                                   size_t argument_count,
+                                   const JSValueRef arguments[],
+                                   JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto id = host->animation_frame->add_callback(FunctionWrapper<void>(
+        host->ctx,     // ctx
+        arguments[0],  // function
+        nullptr,       // args_to_js
+        nullptr,       // ret_val_from_js
+        [host](JSContextRef ctx, JSValueRef exception) {
+            host->module_loader->handle_exception(exception);
+        }  // exception_handler
+        ));
+    return JSValueMakeNumber(ctx, id);
+}
+
+JSValueRef cancel_animation_frame(JSContextRef ctx, JSObjectRef function,
+                                  JSObjectRef this_object,
+                                  size_t argument_count,
+                                  const JSValueRef arguments[],
+                                  JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto id = JSValueToNumber(ctx, arguments[0], nullptr);
+    host->animation_frame->remove_callback(id);
+    return JSValueMakeUndefined(ctx);
+}
+
 void log_error(JsError error) {
     Log::error("[JS] Uncaught exception");
     Log::error(error.text);
@@ -94,6 +123,10 @@ BindingsHost::BindingsHost() {
     add_function("setTimeout", &set_timeout);
     add_function("clearTimeout", &clear_timeout);
     add_function("gc", &gc);
+
+    animation_frame = AnimationFrame();
+    add_function("requestAnimationFrame", &request_animation_frame);
+    add_function("cancelAnimationFrame", &cancel_animation_frame);
 
     desktop_app_window_list_index.emplace(
         ctx->get(), desktop_app_window_list_create_class());
@@ -165,7 +198,7 @@ BindingsHost* BindingsHost::get(JSContextRef ctx) {
 void BindingsHost::run() {
     if (is_running) return;
     is_running = true;
-    app->run();
+    app->run([this]() { this->animation_frame->call_callbacks(); });
     event_loop->run();
 }
 

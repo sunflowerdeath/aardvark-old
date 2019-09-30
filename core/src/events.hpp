@@ -49,6 +49,7 @@ enum class PointerAction {
 };
 
 struct PointerEvent {
+    int timestamp;
     PointerTool tool;
     int pointer_id;
     PointerAction action;

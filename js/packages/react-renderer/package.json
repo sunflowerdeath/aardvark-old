@@ -14,6 +14,7 @@
   "license": "Unlicense",
   "dependencies": {
     "@advk/common": "*",
+    "animated": "^0.2.2",
     "react-devtools-core": "^3.6.3",
     "react-reconciler": "^0.21.0"
   },
