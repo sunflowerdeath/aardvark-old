@@ -1,6 +1,7 @@
 #pragma once
 
 #include <variant>
+#include <functional>
 
 namespace aardvark {
 
@@ -69,6 +70,15 @@ struct KeyEvent {
     int mods;
 };
 
-using Event = std::variant<WindowEvent, PointerEvent, KeyEvent>;
+// Scroll
+
+struct ScrollEvent {
+    float top;
+    float left;
+};
+
+using Event = std::variant<WindowEvent, PointerEvent, KeyEvent, ScrollEvent>;
+
+using EventHandler = std::function<void(Event)>;
 
 }  // namespace aardvark

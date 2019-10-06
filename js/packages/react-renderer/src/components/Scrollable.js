@@ -1,10 +1,16 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
+import Animated from 'animated'
 import HoverRecognizer from '@advk/common/src/gestures/HoverRecognizer.js'
 import DragRecognizer from '@advk/common/src/gestures/DragRecognizer.js'
 import MultiRecognizer from '@advk/common/src/gestures/MultiRecognizer.js'
 import { Responder, Scroll } from '../nativeComponents'
+import KeyCode from './KeyCode.js'
 
-import Animated from 'animated'
+const KeyAction = {
+	PRESS: 0,
+	RELEASE: 1,
+	REPEAT: 2
+}
 
 const useStateWithGetter = initialState => {
 	const [state, setState] = useState(initialState)
@@ -15,37 +21,47 @@ const useStateWithGetter = initialState => {
 	return [state, setState, () => ref.current]
 }
 
+const springToEdge = ctx => {
+	Animated.spring(ctx.scrollTopValue, { toValue: 0, damping: 10 }).start()
+}
+
 const onDragEnd = (ctx, event) => {
-	try {
-		log('velocity', event.velocity)
-
-		if (ctx.scrollTopValue.__getValue() < 0) {
-			Animated.spring(ctx.scrollTopValue, {
-				toValue: 0
-			}).start()
-			return
-		}
-
-		Animated.decay(ctx.scrollTopValue, { velocity: -event.velocity }).start(
-			({ finished }) => {
-				log('decay end', finished, ctx.scrollTopValue.__getValue())
-				if (!finished) return
-				if (ctx.scrollTopValue.__getValue() < 0) {
-					Animated.spring(ctx.scrollTopValue, {
-						toValue: 0
-					}).start()
-					log('spring')
-				}
-			}
-		)
-	} catch (e) {
-		log(e)
+	if (ctx.scrollTopValue.__getValue() < 0) {
+		springToEdge(ctx)
+		return
 	}
+
+	ctx.decayListener = ctx.scrollTopValue.addListener(({ value }) => {
+		if (value < 0) springToEdge(ctx)
+	})
+	Animated.decay(ctx.scrollTopValue, { velocity: -event.velocity }).start(
+		({ finished }) => {
+			ctx.scrollTopValue.removeListener(ctx.decayListener)
+		}
+	)
+	// while decaying - update the velocity
+	// when decay becomes < 0 - stop animation and run spring with current
+	// velocity
 	log('decay start')
 }
 
+const KEYBOARD_SCROLL_DISTANCE = 10
+
+const onKeyEvent = (ctx, event) => {
+	if (event.action === KeyAction.PRESS || event.action === KeyAction.REPEAT) {
+		if (event.key === KeyCode.UP || event.key == KeyCode.DOWN) {
+			const nextScrollTop =
+				ctx.scrollTopValue.__getValue() +
+				(event.key === KeyCode.UP ? 1 : -1) * KEYBOARD_SCROLL_DISTANCE
+			Animated.spring(ctx.scrollTopValue, {
+				toValue: nextScrollTop,
+				overshootClamping: true
+			}).start()
+		}
+	}
+}
+
 const Scrollable = ({ children }) => {
-	const [scrollTop, setScrollTop, getScrollTop] = useStateWithGetter(0)
 	const ref = useRef()
 	const ctx = useRef({
 		initialScrollTop: 0,
@@ -53,7 +69,6 @@ const Scrollable = ({ children }) => {
 	})
 	useEffect(() =>
 		ctx.current.scrollTopValue.addListener(({ value }) => {
-			// log('update', Math.round(value))
 			ref.current.scrollTop = Math.round(value)
 		})
 	)
@@ -61,8 +76,16 @@ const Scrollable = ({ children }) => {
 		() =>
 			new MultiRecognizer({
 				hover: new HoverRecognizer({
-					onHoverStart: () => log('hover'),
-					onHoverEnd: () => log('hover end')
+					onHoverStart: () => {
+						ctx.current.removeKeyHandler = ref.current.document.addKeyHandler(
+							event => onKeyEvent(ctx.current, event)
+						)
+					},
+					onHoverEnd: () => {
+						if (ctx.current.removeKeyHandler)
+							ctx.current.removeKeyHandler()
+						ctx.current.removeKeyHandler = undefined
+					}
 				}),
 				drag: new DragRecognizer({
 					document: () => ref.current.document,

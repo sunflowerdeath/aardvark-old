@@ -13,7 +13,7 @@ PointerEventManager::PointerEventManager(Document* document)
     reconciler = std::make_unique<ResponderReconciler>(document);
 }
 
-void PointerEventManager::handle_event(PointerEvent event) {
+void PointerEventManager::handle_event(const PointerEvent& event) {
     before_signal(event);
 
     // call elements responders handlers
@@ -32,16 +32,16 @@ void PointerEventManager::handle_event(PointerEvent event) {
     }
 }
 
-nod::connection PointerEventManager::add_handler(PointerEventHandler handler,
-                                                 bool after) {
-    auto& signal = after ? after_signal : before_signal;
+nod::connection PointerEventManager::add_handler(
+    const PointerEventHandler& handler, const bool after_elements) {
+    auto& signal = after_elements ? after_signal : before_signal;
     return signal.connect(handler);
 }
 
 nod::connection PointerEventManager::start_tracking_pointer(
-    int pointer_id, PointerEventHandler handler) {
+    const int pointer_id, const PointerEventHandler& handler) {
     if (!map_contains(pointers_signals, pointer_id)) {
-        pointers_signals[pointer_id] = nod::signal<void(PointerEvent)>();
+        pointers_signals[pointer_id] = nod::signal<void(const PointerEvent&)>();
     }
     return pointers_signals[pointer_id].connect(handler);
 }

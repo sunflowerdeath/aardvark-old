@@ -71,7 +71,7 @@ auto val_sptr = get_shared_ptr();
 Prefer this order of parameters:
 
 1. Immutable parameters. Pass by const reference or by value for small types,
-2. Optional immutable parameters. Pass by pointer or as const ref to `std::optional`,
+2. Optional immutable parameters. Pass by pointer to const or as const ref to `std::optional`.
 3. Mutable/output parameters, pass as pointers.
 
 When calling function or initializing struct with multiple parameters,

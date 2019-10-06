@@ -2,7 +2,9 @@
 
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
+#include "../../events.hpp"
 #include "../../base_types.hpp"
+#include "../../pointer_events/signal_event_sink.hpp"
 #include "desktop_app.hpp"
 
 namespace aardvark {
@@ -29,6 +31,11 @@ class DesktopWindow {
     void restore();
     void hide();
     void focus();
+
+    SignalEventSink<WindowEvent> window_event_sink;
+    SignalEventSink<KeyEvent> key_event_sink;
+    SignalEventSink<ScrollEvent> scroll_event_sink;
+    SignalEventSink<PointerEvent> pointer_event_sink;
 
     Size size;
     DesktopApp* app;

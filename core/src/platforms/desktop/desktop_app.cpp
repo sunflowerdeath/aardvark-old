@@ -7,6 +7,12 @@
 
 namespace aardvark {
 
+int now() {
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch());
+    return ms.count();
+}
+
 // Window events
 void window_focus_callback(GLFWwindow* window, int focused) {
     auto event = focused ? static_cast<Event>(WindowFocusEvent())
@@ -25,11 +31,13 @@ void window_cursor_enter_callback(GLFWwindow* window, int entered) {
     DesktopApp::dispatch_event(window, event);
 };
 
-int now() {
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::system_clock::now().time_since_epoch());
-    return ms.count();
-}
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    auto event = ScrollEvent{
+        static_cast<float>(xoffset),  // left
+        static_cast<float>(yoffset)   // top
+    };
+    DesktopApp::dispatch_event(window, event);
+};
 
 void cursor_pos_callback(GLFWwindow* window, double left, double top) {
     auto event = PointerEvent{
@@ -88,6 +96,7 @@ std::shared_ptr<DesktopWindow> DesktopApp::create_window(Size size) {
     glfwSetWindowCloseCallback(glfw_window, window_close_callback);
     glfwSetCursorEnterCallback(glfw_window, window_cursor_enter_callback);
     // Mouse events
+    glfwSetScrollCallback(glfw_window, scroll_callback);
     glfwSetCursorPosCallback(glfw_window, cursor_pos_callback);
     glfwSetMouseButtonCallback(glfw_window, mouse_button_callback);
     // Keyboard events
@@ -143,14 +152,29 @@ void DesktopApp::render(std::function<void(void)> update_callback) {
 void DesktopApp::handle_event(DesktopWindow* window, Event event) {
     if (event_handler) event_handler(this, event);
 
-    // TODO dispatch keyboard events
+    auto document = documents[window];
+
     if (auto window_event = std::get_if<WindowEvent>(&event)) {
-        // window->handle_event(window_event);
-    } else if (auto pointer_event = std::get_if<PointerEvent>(&event)) {
-        auto document = documents[window];
-        if (!document->is_initial_paint) {
+        window->window_event_sink.handle_event(*window_event);
+        return;
+    }
+
+    if (auto key_event = std::get_if<KeyEvent>(&event)) {
+        window->key_event_sink.handle_event(*key_event);
+        document->key_event_sink.handle_event(*key_event);
+        return;
+    }
+
+    if (auto scroll_event = std::get_if<ScrollEvent>(&event)) {
+        window->scroll_event_sink.handle_event(*scroll_event);
+        document->scroll_event_sink.handle_event(*scroll_event);
+    }
+
+    if (auto pointer_event = std::get_if<PointerEvent>(&event)) {
+        if (!document->is_initial_paint) { // TODO remove check
             document->pointer_event_manager->handle_event(*pointer_event);
         }
+        window->pointer_event_sink.handle_event(*pointer_event);
     }
 };
 

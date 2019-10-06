@@ -15,6 +15,7 @@
 #include "layer.hpp"
 #include "layer_tree.hpp"
 #include "pointer_events/pointer_event_manager.hpp"
+#include "pointer_events/signal_event_sink.hpp"
 
 namespace aardvark {
 
@@ -60,6 +61,8 @@ class Document {
     bool is_initial_paint;
 
     std::unique_ptr<PointerEventManager> pointer_event_manager;
+    SignalEventSink<KeyEvent> key_event_sink;
+    SignalEventSink<ScrollEvent> scroll_event_sink;
 
     std::shared_ptr<Element> root;
 
