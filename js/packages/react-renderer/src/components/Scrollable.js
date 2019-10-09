@@ -15,25 +15,47 @@ const KeyAction = {
 
 const KEYBOARD_SCROLL_DISTANCE = 10
 
-const springToEdge = ctx => {
+const overscroll = overscrollValue => Math.pow(overscrollValue, 0.8)
+
+// Checks if element has overscroll and animates scroll position to normal
+const animateOverscroll = ctx => {
+	const scrollTop = ctx.scrollTopValue.__getValue()
+	const maxScrollTop = getMaxScrollTop(ctx)
+	let toValue = undefined
+	if (scrollTop < 0) toValue = 0
+	else if (scrollTop > maxScrollTop) toValue = maxScrollTop
+	if (toValue === undefined) return false
 	Animated.spring(ctx.scrollTopValue, {
-		toValue: 0,
+		toValue,
 		bounciness: 6,
-        // velocity is based on seconds instead of milliseconds
+		// Velocity is based on seconds instead of milliseconds
 		velocity: ctx.velocityTracker.getVelocity() * 1000
 	}).start()
+	return true
+}
+
+const getMaxScrollTop = ctx => {
+    const elem = ctx.elemRef.current
+    return elem.scrollHeight - elem.height
+}
+
+const onDragMove = (ctx, event) => {
+	const maxScrollTop = getMaxScrollTop(ctx)
+	let nextScrollTop = ctx.initialScrollTop - event.deltaTop
+	if (nextScrollTop < 0) {
+		nextScrollTop = -overscroll(-nextScrollTop)
+	} else if (nextScrollTop > maxScrollTop) {
+		nextScrollTop = maxScrollTop + overscroll(nextScrollTop - maxScrollTop)
+	}
+	ctx.scrollTopValue.setValue(nextScrollTop)
 }
 
 const onDragEnd = (ctx, event) => {
-	const scrollTop = ctx.scrollTopValue.__getValue()
-	if (scrollTop < 0) {
-		springToEdge(ctx)
-		return
-	}
+	if (animateOverscroll(ctx)) return
 
-	ctx.decayListener = ctx.scrollTopValue.addListener(({ value }) => {
-		if (value < 0) springToEdge(ctx)
-	})
+	ctx.decayListener = ctx.scrollTopValue.addListener(() =>
+		animateOverscroll(ctx)
+	)
 	Animated.decay(ctx.scrollTopValue, { velocity: -event.velocity }).start(
 		({ finished }) => {
 			ctx.scrollTopValue.removeListener(ctx.decayListener)
@@ -59,6 +81,7 @@ const onKeyEvent = (ctx, event) => {
 const Scrollable = ({ children }) => {
 	const ref = useRef()
 	const ctx = useRef({
+		elemRef: ref,
 		initialScrollTop: 0,
 		scrollTopValue: new Animated.Value(0),
 		velocityTracker: new VelocityTracker()
@@ -89,11 +112,7 @@ const Scrollable = ({ children }) => {
 					onDragStart: event => {
 						ctx.current.initialScrollTop = ctx.current.scrollTopValue.__getValue()
 					},
-					onDragMove: event => {
-						ctx.current.scrollTopValue.setValue(
-							ctx.current.initialScrollTop - event.deltaTop
-						)
-					},
+					onDragMove: event => onDragMove(ctx.current, event),
 					onDragEnd: event => onDragEnd(ctx.current, event)
 				})
 			})

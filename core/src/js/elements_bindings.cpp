@@ -568,12 +568,22 @@ JSValueRef scroll_elem_get_scroll_top(JSContextRef ctx,
     return int_to_js(ctx, elem->scroll_top);
 }
 
+JSValueRef scroll_elem_get_scroll_height(JSContextRef ctx,
+                                             JSObjectRef object,
+                                             JSStringRef property_name,
+                                             JSValueRef* exception) {
+    auto elem = get_elem<ScrollElement>(ctx, object);
+    return float_to_js(ctx, elem->scroll_height);
+}
+
 JSClassRef scroll_elem_create_class(JSClassRef parent_class) {
     auto definition =
         create_elem_class_definition("ScrollElement", parent_class);
     JSStaticValue static_values[] = {
-        {"scrollTop", scroll_elem_get_scroll_top,
-         scroll_elem_set_scroll_top, kJSPropertyAttributeNone},
+        {"scrollTop", scroll_elem_get_scroll_top, scroll_elem_set_scroll_top,
+         kJSPropertyAttributeNone},
+        {"scrollHeight", scroll_elem_get_scroll_height, nullptr,
+         PROP_ATTR_STATIC},
         {0, 0, 0, 0}};
     definition.staticValues = static_values;
     return JSClassCreate(&definition);

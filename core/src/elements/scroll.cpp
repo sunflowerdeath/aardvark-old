@@ -28,6 +28,7 @@ Size ScrollElement::layout(BoxConstraints constraints) {
         child->rel_position = Position{0, current_height};
         current_height += child_size.height;
     }
+    scroll_height = current_height;
     auto size = constraints.max_size();
     SkPath path;
     path.addRect(0, 0, size.width, size.height);

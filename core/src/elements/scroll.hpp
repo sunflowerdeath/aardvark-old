@@ -25,6 +25,7 @@ class ScrollElement : public MultipleChildrenElement {
     void set_scroll_top(int scroll_top);
     int scroll_top = 0;
     int scroll_left = 0;
+    float scroll_height = 0.0f;
 
   private:
     void update_transform();

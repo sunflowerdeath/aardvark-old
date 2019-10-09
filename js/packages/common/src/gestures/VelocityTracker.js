@@ -10,7 +10,7 @@ const HISTORY_SIZE = 20
 const RECENT_TIME = 100
 
 // Minimal amount of points required to calculate velocity
-const MIN_SIZE = 3
+const MIN_SIZE = 4
 
 // To get reliable velocity value, tracker stores some number of recent
 // events and approximates them to function using least square regression,
