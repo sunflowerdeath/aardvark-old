@@ -1,11 +1,11 @@
-export const PointerEventAction = {
+export const PointerAction = {
     POINTER_DOWN: 0,
     POINTER_UP: 1,
     BUTTON_PRESS: 3,
     BUTTON_RELEASE: 4
 }
 
-export const PointerEventTool = {
+export const PointerTool = {
     TOUCH: 0,
     MOUSE: 1,
     OTHER: 2

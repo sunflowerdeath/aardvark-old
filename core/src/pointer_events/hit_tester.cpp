@@ -10,38 +10,37 @@ void HitTester::test(float left, float top) {
 
 void HitTester::test_element(std::shared_ptr<Element> elem, float left,
                              float top) {
-    if (elem->is_repaint_boundary) {
-        prev_transform = transform;
-        SkMatrix adjusted;
-        adjusted.setTranslate(-elem->abs_position.left,
-                              -elem->abs_position.top);
-        adjusted.postConcat(elem->layer_tree->transform);
-        adjusted.postTranslate(elem->abs_position.left, elem->abs_position.top);
-        static_cast<void>(adjusted.invert(&adjusted));
-        transform = SkMatrix::Concat(adjusted, transform);
-    }
-    auto transformed = SkPoint{left, top};
-    transform.mapPoints(&transformed, 1);
+    SkScalar prev_transform[9];
+    transform.get9(prev_transform);
+
+    transform.postTranslate(-elem->rel_position.left, -elem->rel_position.top);
 
     bool clipped = false;
     if (elem->clip != std::nullopt) {
-        SkPath offset_clip;
-        elem->clip.value().offset(elem->abs_position.left,
-                                  elem->abs_position.top, &offset_clip);
+        // Element's clip is relative to element's position
+        auto transformed = SkPoint{left, top};
+        transform.mapPoints(&transformed, 1);
         clipped =
-            !offset_clip.contains(transformed.x(), transformed.y());  // TODO
+            !elem->clip.value().contains(transformed.x(), transformed.y());
     }
 
     if (!clipped) {
+        if (elem->is_repaint_boundary) {
+            SkMatrix inverse;
+            auto inverted = elem->layer_tree->transform.invert(&inverse);
+            if (inverted) transform.postConcat(inverse);
+        }
+        auto rel_pos = SkPoint{left, top};
+        transform.mapPoints(&rel_pos, 1);
         if (elem->get_hit_test_mode() != HitTestMode::Disabled &&
-            elem->hit_test(transformed.x(), transformed.y())) {
+            elem->hit_test(rel_pos.x(), rel_pos.y())) {
             hit_elements.push_back(elem);
         }
         elem->visit_children(std::bind(&HitTester::test_element, this,
                                        std::placeholders::_1, left, top));
     }
     
-    if (elem->is_repaint_boundary) transform = prev_transform;
+    transform.set9(prev_transform);
 };
 
 }  // namespace aardvark

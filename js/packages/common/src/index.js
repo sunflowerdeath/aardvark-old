@@ -1,5 +1,10 @@
-export { Color } from './color.js'
-export { FlexDirection, FlexAlign, FlexJustify } from './flex.js'
-export { Padding } from './padding.js'
-export { PointerEventAction, PointerEventTool } from './pointerEvents.js'
-export { Value } from './value.js'
+export { Color } from './Color.js'
+export { FlexDirection, FlexAlign, FlexJustify } from './Flex.js'
+export { Padding } from './Padding.js'
+export { Value } from './Value.js'
+export {
+	PointerAction,
+	PointerTool,
+	PointerEventType
+} from './events/PointerEvent.js'
+export { KeyCode, KeyAction } from './events/KeyEvent.js'

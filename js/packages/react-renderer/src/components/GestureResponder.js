@@ -3,14 +3,7 @@ import HoverRecognizer from '@advk/common/src/gestures/HoverRecognizer.js'
 import TapRecognizer from '@advk/common/src/gestures/TapRecognizer.js'
 import MultiRecognizer from '@advk/common/src/gestures/MultiRecognizer.js'
 import { Responder } from '../nativeComponents.js'
-
-const useLastProps = props => {
-	const ref = useRef({})
-	useEffect(() => {
-		ref.current = props
-	}, [props])
-	return ref
-}
+import useLastProps from '../useLastProps.js'
 
 const GestureResponder = props => {
 	const { children } = props
@@ -18,21 +11,21 @@ const GestureResponder = props => {
 	const lastProps = useLastProps(props)
 	const ref = useRef()
 	const [recognizer] = useState(() => {
-		const callbackCall = name => event => {
-			if (typeof lastProps.current[name] === 'function') {
-                lastProps.current[name](event)
+		const makeCallback = name => event => {
+			if (typeof lastProps()[name] === 'function') {
+                lastProps()[name](event)
             }
 		}
 		return new MultiRecognizer({
 			hover: new HoverRecognizer({
-				onHoverStart: callbackCall('onHoverStart'),
-				onHoverEnd: callbackCall('onHoverEnd')
+				onHoverStart: makeCallback('onHoverStart'),
+				onHoverEnd: makeCallback('onHoverEnd')
 			}),
 			tap: new TapRecognizer({
 				document: () => ref.current.document,
-				onPressStart: callbackCall('onPressStart'),
-				onPressEnd: callbackCall('onPressEnd'),
-				onTap: callbackCall('onTap')
+				onPressStart: makeCallback('onPressStart'),
+				onPressEnd: makeCallback('onPressEnd'),
+				onTap: makeCallback('onTap')
 			})
 		})
 	})

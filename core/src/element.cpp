@@ -11,9 +11,7 @@ void Element::change() {
 }
 
 bool Element::hit_test(double left, double top) {
-    return (left >= abs_position.left &&
-            left <= abs_position.left + size.width && top >= abs_position.top &&
-            top <= abs_position.top + size.height);
+    return (left >= 0 && left <= size.width && top >= 0 && top <= size.height);
 };
 
 HitTestMode Element::get_hit_test_mode() { return HitTestMode::PassToParent; };

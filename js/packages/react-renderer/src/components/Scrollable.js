@@ -4,18 +4,17 @@ import HoverRecognizer from '@advk/common/src/gestures/HoverRecognizer.js'
 import DragRecognizer from '@advk/common/src/gestures/DragRecognizer.js'
 import MultiRecognizer from '@advk/common/src/gestures/MultiRecognizer.js'
 import VelocityTracker from '@advk/common/src/gestures/VelocityTracker.js'
+import { KeyCode, KeyAction } from '@advk/common/src/events/KeyEvent.js'
 import { Responder, Scroll } from '../nativeComponents'
-import KeyCode from './KeyCode.js'
+import useLastProps from '../useLastProps.js'
 
-const KeyAction = {
-	PRESS: 0,
-	RELEASE: 1,
-	REPEAT: 2
+const OverscrollResistance = {
+	none: value => value,
+	full: value => 0,
+	diminishing: value => Math.pow(value, 0.8)
 }
 
-const KEYBOARD_SCROLL_DISTANCE = 10
-
-const overscroll = overscrollValue => Math.pow(overscrollValue, 0.8)
+const defaultConfig = {}
 
 // Checks if element has overscroll and animates scroll position to normal
 const animateOverscroll = ctx => {
@@ -35,17 +34,19 @@ const animateOverscroll = ctx => {
 }
 
 const getMaxScrollTop = ctx => {
-    const elem = ctx.elemRef.current
-    return elem.scrollHeight - elem.height
+	const elem = ctx.elemRef.current
+	return elem.scrollHeight - elem.height
 }
 
 const onDragMove = (ctx, event) => {
 	const maxScrollTop = getMaxScrollTop(ctx)
 	let nextScrollTop = ctx.initialScrollTop - event.deltaTop
+	const overscrollResistance = ctx.lastProps().overscrollResistance
 	if (nextScrollTop < 0) {
-		nextScrollTop = -overscroll(-nextScrollTop)
+		nextScrollTop = -overscrollResistance(-nextScrollTop)
 	} else if (nextScrollTop > maxScrollTop) {
-		nextScrollTop = maxScrollTop + overscroll(nextScrollTop - maxScrollTop)
+		nextScrollTop =
+			maxScrollTop + overscrollResistance(nextScrollTop - maxScrollTop)
 	}
 	ctx.scrollTopValue.setValue(nextScrollTop)
 }
@@ -64,23 +65,33 @@ const onDragEnd = (ctx, event) => {
 }
 
 const onKeyEvent = (ctx, event) => {
-	if (event.action === KeyAction.PRESS || event.action === KeyAction.REPEAT) {
-		if (event.key === KeyCode.UP || event.key == KeyCode.DOWN) {
-			let nextScrollTop =
-				ctx.scrollTopValue.__getValue() +
-				(event.key === KeyCode.UP ? 1 : -1) * KEYBOARD_SCROLL_DISTANCE
-			nextScrollTop = Math.max(nextScrollTop, 0)
-			Animated.spring(ctx.scrollTopValue, {
-				toValue: nextScrollTop,
-				overshootClamping: true
-			}).start()
-		}
+	if (
+		(event.action === KeyAction.PRESS ||
+			event.action === KeyAction.REPEAT) &&
+		(event.key === KeyCode.UP || event.key == KeyCode.DOWN)
+	) {
+		const scrollTop = ctx.scrollTopValue.__getValue()
+		let nextScrollTop =
+			scrollTop +
+			(event.key === KeyCode.UP ? 1 : -1) *
+				ctx.lastProps().keyboardScrollSpeed
+		nextScrollTop = Math.min(
+			Math.max(nextScrollTop, 0),
+			getMaxScrollTop(ctx)
+		)
+		if (nextScrollTop === scrollTop) return
+		Animated.spring(ctx.scrollTopValue, {
+			toValue: nextScrollTop,
+			overshootClamping: true
+		}).start()
 	}
 }
 
-const Scrollable = ({ children }) => {
+const Scrollable = props => {
+	const lastProps = useLastProps(props)
 	const ref = useRef()
 	const ctx = useRef({
+		lastProps,
 		elemRef: ref,
 		initialScrollTop: 0,
 		scrollTopValue: new Animated.Value(0),
@@ -119,9 +130,14 @@ const Scrollable = ({ children }) => {
 	)
 	return (
 		<Responder handler={useCallback(recognizer.handler.bind(recognizer))}>
-			<Scroll ref={ref}>{children}</Scroll>
+			<Scroll ref={ref}>{props.children}</Scroll>
 		</Responder>
 	)
+}
+
+Scrollable.defaultProps = {
+	overscrollResistance: OverscrollResistance.diminishing,
+	keyboardScrollSpeed: 10
 }
 
 export default Scrollable

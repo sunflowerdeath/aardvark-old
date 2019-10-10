@@ -1,5 +1,11 @@
 import React, { useState, useCallback } from 'react'
-import { Color, Value, Padding as Padding1, FlexDirection } from '@advk/common'
+import {
+	Color,
+	Value,
+	Padding as Padding1,
+	FlexDirection,
+	PointerEventType
+} from '@advk/common'
 import ReactAardvark, {
 	GestureResponder,
 	Sized,
@@ -7,6 +13,7 @@ import ReactAardvark, {
 	Background,
 	Center,
 	Padding,
+	Responder,
 	IntrinsicWidth,
 	IntrinsicHeight,
 	Flex,
@@ -83,51 +90,64 @@ const Panel = ({ children }) => {
 	)
 }
 
-const Box = ({ color }) => (
-	<Sized sizeConstraints={{ width: Value.abs(50), height: Value.abs(50) }}>
-		<Background color={color} />
-	</Sized>
-)
+const Box = ({ color }) => {
+	const [isHovered, setIsHovered] = useState(false)
+
+	const handler = (event, eventType) => {
+		if (eventType === PointerEventType.ENTER) setIsHovered(true)
+		else if (eventType === PointerEventType.LEAVE) setIsHovered(false)
+	}
+
+	return (
+		<Sized
+			sizeConstraints={{ width: Value.abs(50), height: Value.abs(50) }}
+		>
+			<Responder handler={handler}>
+				<Background color={isHovered ? Color.PURPLE : color} />
+			</Responder>
+		</Sized>
+	)
+}
 
 const App = () => (
 	<Stack>
 		<Background color={Color.WHITE} />
-		<Padding padding={Padding1.all(16)}>
-            <Flex direction={FlexDirection.column}>
-                <Padding padding={Padding1.only('bottom', 16)}>
-                    <Panel>
-                        <Padding padding={Padding1.only('bottom', 16)}>
-                            <Button onTap={() => log('Tap first button')}>
-                                <Text text="Button 1" />
-                            </Button>
-                        </Padding>
-                        <Button onTap={() => log('Tap second button')}>
-                            <Text text="Button 2" />
-                        </Button>
-                    </Panel>
-                </Padding>
-                <Sized
-                    sizeConstraints={{
-                        width: Value.abs(200),
-                        height: Value.abs(200)
-                    }}
-                >
-                    <Stack>
-                        <Background color={Color.LIGHTGREY} />
-                        <Scrollable>
-                            <Box color={Color.RED} />
-                            <Box color={Color.GREEN} />
-                            <Box color={Color.BLUE} />
-                            <Box color={Color.RED} />
-                            <Box color={Color.GREEN} />
-                            <Box color={Color.BLUE} />
-                            <Box color={Color.RED} />
-                            <Box color={Color.GREEN} />
-                            <Box color={Color.BLUE} />
-                        </Scrollable>
-                    </Stack>
-                </Sized>
-            </Flex>
+		<Padding padding={Padding1.symmetrical(20, 40)}>
+			<Flex direction={FlexDirection.column}>
+				<Padding padding={Padding1.only('bottom', 16)}>
+					<Panel>
+						<Padding padding={Padding1.only('bottom', 16)}>
+							<Button onTap={() => log('Tap first button')}>
+								<Text text="Button 1" />
+							</Button>
+						</Padding>
+						<Button onTap={() => log('Tap second button')}>
+							<Text text="Button 2" />
+						</Button>
+					</Panel>
+				</Padding>
+				<Sized
+					sizeConstraints={{
+						width: Value.abs(200),
+						height: Value.abs(200)
+					}}
+				>
+					<Stack>
+						<Background color={Color.LIGHTGREY} />
+						<Scrollable>
+							<Box color={Color.RED} />
+							<Box color={Color.GREEN} />
+							<Box color={Color.BLUE} />
+							<Box color={Color.RED} />
+							<Box color={Color.GREEN} />
+							<Box color={Color.BLUE} />
+							<Box color={Color.RED} />
+							<Box color={Color.GREEN} />
+							<Box color={Color.BLUE} />
+						</Scrollable>
+					</Stack>
+				</Sized>
+			</Flex>
 		</Padding>
 	</Stack>
 )
