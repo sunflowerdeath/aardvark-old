@@ -54,6 +54,7 @@ const animateScroll = (ctx, nextScrollTop) => {
 	Animated.spring(ctx.scrollTopValue, {
 		toValue: nextScrollTop,
 		overshootClamping: true
+        // TODO configure speed
 	}).start()
 }
 
@@ -88,10 +89,19 @@ const onKeyEvent = (ctx, event) => {
 				(event.key === KeyCode.UP ? -1 : 1) *
 				ctx.getProps().keyboardScrollSpeed
 			animateScroll(ctx, clampScrollTop(ctx, scrollTop + delta))
-		} else if (event.key == KeyCode.HOME) {
+		} else if (event.key === KeyCode.HOME) {
 			animateScroll(ctx, 0)
-		} else if (event.key == KeyCode.END) {
+		} else if (event.key === KeyCode.END) {
 			animateScroll(ctx, getMaxScrollTop(ctx))
+		} else if (
+			event.key === KeyCode.PAGE_UP ||
+			event.key === KeyCode.PAGE_DOWN
+		) {
+			const scrollTop = ctx.scrollTopValue.__getValue()
+			const delta =
+				(event.key === KeyCode.PAGE_UP ? -1 : 1) *
+				ctx.elemRef.current.height
+			animateScroll(ctx, clampScrollTop(ctx, scrollTop + delta))
 		}
 	}
 }
