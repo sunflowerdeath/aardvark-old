@@ -14,8 +14,6 @@ const OverscrollResistance = {
 	diminishing: value => Math.pow(value, 0.8)
 }
 
-const defaultConfig = {}
-
 // Checks if element has overscroll and animates scroll position to normal
 const animateOverscroll = ctx => {
 	const scrollTop = ctx.scrollTopValue.__getValue()
@@ -38,10 +36,55 @@ const getMaxScrollTop = ctx => {
 	return elem.scrollHeight - elem.height
 }
 
+const clampScrollTop = (ctx, scrollTop) =>
+	Math.min(Math.max(scrollTop, 0), getMaxScrollTop(ctx))
+
+const onHoverStart = ctx => {
+	const document = ctx.elemRef.current.document
+	ctx.removeKeyHandler = document.addKeyHandler(event =>
+		onKeyEvent(ctx, event)
+	)
+	ctx.removeScrollHandler = document.addScrollHandler(event =>
+		onScrollEvent(ctx, event)
+	)
+}
+
+const animateScrollTop = (ctx, nextScrollTop) => {
+	const scrollTop = ctx.scrollTopValue.__getValue()
+	if (nextScrollTop === scrollTop) return
+	Animated.spring(ctx.scrollTopValue, {
+		toValue: nextScrollTop,
+		overshootClamping: true
+	}).start()
+}
+
+const onKeyEvent = (ctx, event) => {
+	if (
+		(event.action === KeyAction.PRESS ||
+			event.action === KeyAction.REPEAT) &&
+		(event.key === KeyCode.UP || event.key == KeyCode.DOWN)
+	) {
+		const scrollTop = ctx.scrollTopValue.__getValue()
+		const delta =
+			(event.key === KeyCode.UP ? 1 : -1) *
+			ctx.getProps().keyboardScrollSpeed
+		animateScrollTop(ctx, clampScrollTop(ctx, scrollTop + delta))
+	}
+}
+
+const onScrollEvent = (ctx, event) => {
+	const scrollTop = ctx.scrollTopValue.__getValue()
+	const nextScrollTop = clampScrollTop(
+		ctx,
+		scrollTop + -1 * event.top * ctx.getProps().mousewheelScrollSpeed
+	)
+	animateScrollTop(ctx, nextScrollTop)
+}
+
 const onDragMove = (ctx, event) => {
 	const maxScrollTop = getMaxScrollTop(ctx)
 	let nextScrollTop = ctx.initialScrollTop - event.deltaTop
-	const overscrollResistance = ctx.lastProps().overscrollResistance
+	const overscrollResistance = ctx.getProps().overscrollResistance
 	if (nextScrollTop < 0) {
 		nextScrollTop = -overscrollResistance(-nextScrollTop)
 	} else if (nextScrollTop > maxScrollTop) {
@@ -64,42 +107,19 @@ const onDragEnd = (ctx, event) => {
 	)
 }
 
-const onKeyEvent = (ctx, event) => {
-	if (
-		(event.action === KeyAction.PRESS ||
-			event.action === KeyAction.REPEAT) &&
-		(event.key === KeyCode.UP || event.key == KeyCode.DOWN)
-	) {
-		const scrollTop = ctx.scrollTopValue.__getValue()
-		let nextScrollTop =
-			scrollTop +
-			(event.key === KeyCode.UP ? 1 : -1) *
-				ctx.lastProps().keyboardScrollSpeed
-		nextScrollTop = Math.min(
-			Math.max(nextScrollTop, 0),
-			getMaxScrollTop(ctx)
-		)
-		if (nextScrollTop === scrollTop) return
-		Animated.spring(ctx.scrollTopValue, {
-			toValue: nextScrollTop,
-			overshootClamping: true
-		}).start()
-	}
-}
-
 const Scrollable = props => {
-	const lastProps = useLastProps(props)
-	const ref = useRef()
+	const getProps = useLastProps(props)
+	const elemRef = useRef()
 	const ctx = useRef({
-		lastProps,
-		elemRef: ref,
+		getProps,
+		elemRef,
 		initialScrollTop: 0,
 		scrollTopValue: new Animated.Value(0),
 		velocityTracker: new VelocityTracker()
 	})
 	useEffect(() =>
 		ctx.current.scrollTopValue.addListener(({ value }) => {
-			ref.current.scrollTop = Math.round(value)
+			elemRef.current.scrollTop = Math.round(value)
 			ctx.current.velocityTracker.addPoint(Date.now(), value)
 		})
 	)
@@ -107,11 +127,7 @@ const Scrollable = props => {
 		() =>
 			new MultiRecognizer({
 				hover: new HoverRecognizer({
-					onHoverStart: () => {
-						ctx.current.removeKeyHandler = ref.current.document.addKeyHandler(
-							event => onKeyEvent(ctx.current, event)
-						)
-					},
+					onHoverStart: onHoverStart.bind(null, ctx.current),
 					onHoverEnd: () => {
 						if (ctx.current.removeKeyHandler)
 							ctx.current.removeKeyHandler()
@@ -119,7 +135,7 @@ const Scrollable = props => {
 					}
 				}),
 				drag: new DragRecognizer({
-					document: () => ref.current.document,
+					document: () => elemRef.current.document,
 					onDragStart: event => {
 						ctx.current.initialScrollTop = ctx.current.scrollTopValue.__getValue()
 					},
@@ -130,14 +146,16 @@ const Scrollable = props => {
 	)
 	return (
 		<Responder handler={useCallback(recognizer.handler.bind(recognizer))}>
-			<Scroll ref={ref}>{props.children}</Scroll>
+			<Scroll ref={elemRef}>{props.children}</Scroll>
 		</Responder>
 	)
 }
 
 Scrollable.defaultProps = {
 	overscrollResistance: OverscrollResistance.diminishing,
-	keyboardScrollSpeed: 10
+	keyboardScrollSpeed: 10,
+	mousewheelScrollSpeed: 100
 }
 
+export { OverscrollResistance }
 export default Scrollable

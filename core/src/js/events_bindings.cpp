@@ -30,7 +30,8 @@ JSValueRef key_event_to_js(JSContextRef ctx, const KeyEvent& event) {
 
 JSValueRef scroll_event_to_js(JSContextRef ctx, const ScrollEvent& event) {
     auto object = JSObjectMake(ctx, /* jsClass */ nullptr, /* data */ nullptr);
-
+    map_prop_to_js<float, float_to_js>(ctx, object, "top", event.top);
+    map_prop_to_js<float, float_to_js>(ctx, object, "left", event.left);
     return object;
 }
 

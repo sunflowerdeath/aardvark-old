@@ -73,8 +73,8 @@ struct KeyEvent {
 // Scroll
 
 struct ScrollEvent {
-    float top;
     float left;
+    float top;
 };
 
 using Event = std::variant<WindowEvent, PointerEvent, KeyEvent, ScrollEvent>;
