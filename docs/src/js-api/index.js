@@ -8,6 +8,8 @@ import Elements from './elements/elements.md'
 import DesktopApplication from './desktop/desktop-application.md'
 import DesktopWindow from './desktop/desktop-window.md'
 
+import Scrollable from './components/scrollable.md'
+
 export default {
 	name: 'JS API',
 	stories: {
@@ -17,6 +19,7 @@ export default {
         'sized': { name: 'Sized', markdown: Sized },
         'elements': { name: 'Elements', markdown: Elements },
         'desktop-application': { name: 'DesktopApplication', markdown: DesktopApplication },
-        'desktop-window': { name: 'DesktopWindow', markdown: DesktopWindow }
+        'desktop-window': { name: 'DesktopWindow', markdown: DesktopWindow },
+        'scrollable': { name: 'Scrollable', markdown: Scrollable }
 	}
 }
