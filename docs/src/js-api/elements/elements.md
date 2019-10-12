@@ -1,107 +1,68 @@
-# JS / qwe
+# `class Element`
 
-**Contents**
+Base class for all elements.
+
+## Members
 
 ```@toc
+levels: [3]
 ```
 
 ---
 
-## `class Element`
+### `document`
+type: `Document`
 
-Base class for all elements.
+Document
 
-### `appendChild(child)`
+---
 
-### `insertChildBefore(child, beforeChild)`
+### `children`
+type: `Array<Element>`
 
-### `removeChild(child)`
+---
+
+### `parent`
+type: `Element|null`
+
+Parent element.
+
+---
 
 ### `width`
 Type: `number`
 
+Width of the element.
+
+---
+
 ### `height`
+
+Height of the element.
+
+---
 
 ### `left`
 
+---
+
 ### `top`
 
-### `parent`
+---
+
+### `appendChild(child)`
+
+Appends child to the element.
+When element is a single child and already has a child, new child replaces previous.
 
 ---
 
-## `createElement(type, props)`
+### `insertChildBefore(child, beforeChild)`
 
-Creates an element with specified properties.
-Validates types of props.
-
-**Arguments:**
-
-- **type**
-  <br>
-  Type: `string`
-  
-  Type of the element.
-  
-- **props**
-  <br>
-  Type: `object`
-  
-  Properties for the element.
-
-**Returned value:**
-
-[`Element`]() - Created element
+Inserts child before another child.
 
 ---
 
-## `createElementWithChildren(element, props, children)`
+### `removeChild(child)`
 
-Creates an element with specified properties and children.
-Validates types of props and also checks that element gets correct number of
-children.
-
-**Arguments:**
-
-- **type**
-  <br>
-  Type: `string`
-  
-  Type of the element.
-  
-- **props**
-  <br>
-  Type: `object`
-  
-  Props of the element.
-  
-- **children**
-  <br>
-  Type: [`Element`]()` | Array<`[`Element`]()`> | undefined`
-
-**Returned value:**
-
-[`Element`]() - Created element
-
----
-
-## `updateElementProps(element, newProps, oldProps?)`
-
-Updates props of the element.
-When old props are provided, it updates only changed props.
-
-**element**
-<br>
-Type: [`Element`]()
-
-Type of the element.
-
-**props**
-<br>
-Type: `object`
-
-Props of the element.
-
-**children**
-<br>
-Type: `Element | Array<Element> | undefined`
+Removes child from the element.

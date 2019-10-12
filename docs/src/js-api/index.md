@@ -11,10 +11,10 @@
 ## Types
 
 - [`Color`]()
-- [`SizeConstraints`]()
-- [`Alignment`]()
 - [`Value`]()
 - [`PointerEvent`]()
+- [`KeyEvent`]()
+- [`ScrollEvent`]()
 
 ## Elements
 
@@ -27,6 +27,7 @@
 - [`IntrinsicWidth`]()
 - [`Layer`]()
 - [`Sized`]()
+- [`Scroll`]()
 - [`Stack`]()
 
 ### Painting

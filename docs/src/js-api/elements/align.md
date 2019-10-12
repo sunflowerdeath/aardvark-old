@@ -1,6 +1,9 @@
-# JS / Elements / Align
+# `class AlignElement`
 
-Element that positions its child inside the parent on absolute or relative position.
+Element that aligns its child inside the parent on absolute position or 
+relative to the parent's size.
+
+**Extends**: `Element`
 
 ## Example
 
@@ -12,33 +15,33 @@ align.alignment = {
 }
 ```
 
-```js
-const padding = { type: 'abs', value: 10 }
-const align = new Align()
-align.alignment = {
-    left: padding,
-    top: padding,
-    right: padding,
-    bottom: padding
-}
+## Members
+
+```@toc
+levels: [3]
 ```
 
-## Props
+---
 
-**alignment**
-<br>
-type: `Object`
+### `alignment`
 
-Configuration of the alignment.
-Alignment is an object with the following properties:
+Type: `Object`
 
-- **left** `Value` – qwe. Default is `Value.NONE`.
-- **top** `Value` – qwe
-- **right** `Value` – qwe
-- **bottom** `Value` – qwe
+Object describing the alignment with the following properties of type `Value`:
 
-**adjustChildSize**
-<br>
+- `left`
+- `top`
+- `right`
+- `bottom`
+
+Default value is `Value.NONE`.
+
+`left` and `top` has higher precedence, than `right` and `bottom`.
+
+---
+
+### `adjustChildSize`
+
 Type: `boolean`
 <br>
 Default: `true`

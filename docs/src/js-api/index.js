@@ -15,10 +15,12 @@ export default {
 	stories: {
 	    'index': { name: 'Index', markdown: Index },
 	    'react-renderer': { name: 'React renderer', markdown: React },
-        'align': { name: 'Align', markdown: Align },
-        'sized': { name: 'Sized', markdown: Sized },
-        'elements': { name: 'Elements', markdown: Elements },
-        'desktop-application': { name: 'DesktopApplication', markdown: DesktopApplication },
+        'align-element': { name: 'AlignElement', markdown: Align },
+        'sized-element': { name: 'SizedElement', markdown: Sized },
+        'element': { name: 'Element', markdown: Elements },
+        'desktop-application': {
+            name: 'DesktopApplication', markdown: DesktopApplication
+        },
         'desktop-window': { name: 'DesktopWindow', markdown: DesktopWindow },
         'scrollable': { name: 'Scrollable', markdown: Scrollable }
 	}
