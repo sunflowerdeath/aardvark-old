@@ -9,7 +9,8 @@ const Color = {
     GREEN: { red: 0, green: 255, blue: 0, alpha: 255 },
     BLUE: { red: 0, green: 0, blue: 255, alpha: 255 },
     YELLOW: { red: 255, green: 255, blue: 0, alpha: 255 },
-    PURPLE: { red: 255, green: 0, blue: 255, alpha: 255 }
+    PURPLE: { red: 255, green: 0, blue: 255, alpha: 255 },
+    TRANSPARENT: { red: 255, green: 255, blue: 255, alpha: 0 }
 }
 
 export { Color }

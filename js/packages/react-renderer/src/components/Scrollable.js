@@ -29,8 +29,7 @@ const getMaxScrollTop = ctx => {
 	return elem.scrollHeight - elem.height
 }
 
-const isScrollable = ctx =>
-	!ctx.props.isDisabled && getMaxScrollTop(ctx) > 0
+const isScrollable = ctx => !ctx.props.isDisabled && getMaxScrollTop(ctx) > 0
 
 const clampScrollTop = (ctx, scrollTop) =>
 	Math.min(Math.max(scrollTop, 0), getMaxScrollTop(ctx))
@@ -223,18 +222,26 @@ const Scrollable = props => {
 		})
 		return unmount.bind(ctx)
 	})
+	const renderScroll = useCallback(() => (
+		<Scroll
+			ref={ctx.elemRef}
+			onChangeScrollSize={onChangeScrollSize.bind(null, ctx)}
+		>
+			{ctx.props.children}
+		</Scroll>
+	))
 	return (
 		<Responder
 			handler={useCallback((event, eventType) => {
 				ctx.state.recognizer.handler(event, eventType)
 			})}
 		>
-			<Scroll
-				ref={elemRef}
-				onChangeScrollSize={onChangeScrollSize.bind(null, ctx)}
-			>
-				{props.children}
-			</Scroll>
+			{props.contentWrapper
+				? React.createElement(props.contentWrapper, {
+						children: renderScroll,
+						scroll: ctx.elemRef.current
+				  })
+				: renderScroll()}
 		</Responder>
 	)
 }
@@ -245,7 +252,8 @@ Scrollable.propTypes = {
 	dragOverscrollResistance: PropTypes.func.isRequired,
 	dragDecayDeceleration: PropTypes.number.isRequired,
 	keyboardScrollSpeed: PropTypes.number.isRequired,
-	mousewheelScrollSpeed: PropTypes.number.isRequired
+	mousewheelScrollSpeed: PropTypes.number.isRequired,
+	contentWrapper: PropTypes.func
 }
 
 Scrollable.defaultProps = {

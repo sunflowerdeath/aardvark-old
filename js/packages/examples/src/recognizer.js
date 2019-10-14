@@ -7,6 +7,7 @@ import {
 	PointerEventType
 } from '@advk/common'
 import ReactAardvark, {
+	Align,
 	GestureResponder,
 	Sized,
 	Stack,
@@ -90,22 +91,52 @@ const Panel = ({ children }) => {
 	)
 }
 
-const Box = ({ color }) => {
+const range = (from, to) => {
+	const res = []
+	for (let i = from; i <= to; i++) res.push(i)
+	return res
+}
+
+const ListItem = ({ children }) => {
 	const [isHovered, setIsHovered] = useState(false)
 
 	const handler = (event, eventType) => {
 		if (eventType === PointerEventType.ENTER) setIsHovered(true)
 		else if (eventType === PointerEventType.LEAVE) setIsHovered(false)
 	}
-
 	return (
-		<Sized
-			sizeConstraints={{ width: Value.abs(50), height: Value.abs(50) }}
-		>
-			<Responder handler={handler}>
-				<Background color={isHovered ? Color.PURPLE : color} />
-			</Responder>
-		</Sized>
+		<Responder handler={handler}>
+			<IntrinsicHeight>
+				<Stack>
+					<Background
+						color={isHovered ? Color.GREEN : Color.TRANSPARENT}
+					/>
+					<Padding padding={Padding1.all(16)}>
+						<Text text={children.join('')} />
+					</Padding>
+				</Stack>
+			</IntrinsicHeight>
+		</Responder>
+	)
+}
+
+const ContentWrapper = ({ children, elem }) => {
+	return (
+		<Stack>
+			{children()}
+			<Align alignment={{ top: Value.abs(0), right: Value.abs(0) }}>
+				<Sized
+					sizeConstraints={{
+						height: Value.rel(1),
+						width: Value.abs(10)
+					}}
+				>
+					<Background
+						color={{ red: 255, blue: 0, green: 0, alpha: 128 }}
+					/>
+				</Sized>
+			</Align>
+		</Stack>
 	)
 }
 
@@ -134,16 +165,10 @@ const App = () => (
 				>
 					<Stack>
 						<Background color={Color.LIGHTGREY} />
-						<Scrollable>
-							<Box color={Color.RED} />
-							<Box color={Color.GREEN} />
-							<Box color={Color.BLUE} />
-							<Box color={Color.RED} />
-							<Box color={Color.GREEN} />
-							<Box color={Color.BLUE} />
-							<Box color={Color.RED} />
-							<Box color={Color.GREEN} />
-							<Box color={Color.BLUE} />
+						<Scrollable contentWrapper={ContentWrapper}>
+							{range(1, 20).map(i => (
+								<ListItem>Item {i}</ListItem>
+							))}
 						</Scrollable>
 					</Stack>
 				</Sized>

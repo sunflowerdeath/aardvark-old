@@ -2,8 +2,16 @@ import { useEffect, useRef, useState } from 'react'
 
 import useLastValue from './useLastValue.js'
 
+const useFirstRender = () => {
+	const isFirstRender = useRef(true)
+	useEffect(() => {
+		isFirstRender.current = false
+	})
+	return isFirstRender.current
+}
+
 // Hook that creates object resembling `this` in old class components.
-// It has properties `props`, `state` and `setState`, and can be used to store 
+// It has properties `props`, `state` and `setState`, and can be used to store
 // any properties.
 const useContext = ({ initialCtx, props, initialState }) => {
 	const ref = useRef(
@@ -15,11 +23,12 @@ const useContext = ({ initialCtx, props, initialState }) => {
 		typeof initialState === 'function' ? initialState(ctx) : initialState
 	)
 	const getState = useLastValue(state)
-	useEffect(() => {
-        Object.defineProperty(ctx, 'props', { get: getProps })
-        Object.defineProperty(ctx, 'state', { get: getState })
-        Object.defineProperty(ctx, 'setState', { value: setState })
-	})
+	const isFirstRender = useFirstRender()
+	if (isFirstRender) {
+		Object.defineProperty(ctx, 'props', { get: getProps })
+		Object.defineProperty(ctx, 'state', { get: getState })
+		Object.defineProperty(ctx, 'setState', { value: setState })
+	}
 	return ctx
 }
 
