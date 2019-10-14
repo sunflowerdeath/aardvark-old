@@ -3,17 +3,17 @@ import HoverRecognizer from '@advk/common/src/gestures/HoverRecognizer.js'
 import TapRecognizer from '@advk/common/src/gestures/TapRecognizer.js'
 import MultiRecognizer from '@advk/common/src/gestures/MultiRecognizer.js'
 import { Responder } from '../nativeComponents.js'
-import useLastProps from '../useLastProps.js'
+import useLastValue from '../hooks/useLastValue.js'
 
 const GestureResponder = props => {
 	const { children } = props
 
-	const lastProps = useLastProps(props)
+	const getProps = useLastValue(props)
 	const ref = useRef()
 	const [recognizer] = useState(() => {
 		const makeCallback = name => event => {
-			if (typeof lastProps()[name] === 'function') {
-                lastProps()[name](event)
+			if (typeof getProps()[name] === 'function') {
+                getProps()[name](event)
             }
 		}
 		return new MultiRecognizer({

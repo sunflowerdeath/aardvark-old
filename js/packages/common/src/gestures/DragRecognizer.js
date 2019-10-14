@@ -45,6 +45,7 @@ class DragRecognizer {
 		this.treshold = 'treshold' in options ? treshold : DEFAULT_TRESHOLD
 		this.axis = 'axis' in options ? options.axis : DragAxis.VERT
 		this.tool = 'tool' in options ? options.tool : DragTool.ANY
+        this.isDisabled = 'isDisabled' in options ? options.isDisabled : false
 		// this.startPoint - touch or activation
 		// inside/outside
 	}
@@ -53,13 +54,13 @@ class DragRecognizer {
 		const deltaLeft = event.left - this.startEvent.left
 		const deltaTop = event.top - this.startEvent.top
 		this.velocityTracker.addPoint(event.timestamp, deltaTop)
-        const velocity = this.velocityTracker.getVelocity()
-		return { ...event, deltaLeft, deltaTop, velocity }
+		const velocity = this.velocityTracker.getVelocity()
+		return { originalEvent: event, deltaLeft, deltaTop, velocity }
 	}
 
 	handler(event, eventType) {
+        if (this.isDisabled) return
 		if (this.isStarted) return
-
 		if (
 			((this.tool === DragTool.ANY || this.tool === DragTool.MOUSE) &&
 				isMouseButtonPress(event)) ||
@@ -97,11 +98,21 @@ class DragRecognizer {
 	}
 
 	end(event) {
+        if (!this.isStarted) return
 		this.stopTrackingPointer()
 		this.isStarted = false
 		this.isActive = false
 		if (this.onDragEnd) this.onDragEnd(this.makeDragEvent(event))
 	}
+
+    enable() {
+        this.isDisabled = false
+    }
+
+    disable() {
+        this.isDisabled = true
+        this.end()
+    }
 }
 
 export default DragRecognizer

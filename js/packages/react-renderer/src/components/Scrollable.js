@@ -7,12 +7,9 @@ import MultiRecognizer from '@advk/common/src/gestures/MultiRecognizer.js'
 import RawRecognizer from '@advk/common/src/gestures/RawRecognizer.js'
 import VelocityTracker from '@advk/common/src/gestures/VelocityTracker.js'
 import { KeyCode, KeyAction } from '@advk/common/src/events/KeyEvent.js'
-import {
-	PointerTool,
-	PointerAction
-} from '@advk/common/src/events/PointerEvent.js'
+import { isMouseButtonPress } from '@advk/common/src/events/PointerEvent.js'
 import { Responder, Scroll } from '../nativeComponents'
-import useLastProps from '../useLastProps.js'
+import useContext from '../hooks/useContext.js'
 
 const OverscrollResistance = {
 	none: value => value,
@@ -32,6 +29,9 @@ const getMaxScrollTop = ctx => {
 	return elem.scrollHeight - elem.height
 }
 
+const isScrollable = ctx =>
+	!ctx.props.isDisabled && getMaxScrollTop(ctx) > 0
+
 const clampScrollTop = (ctx, scrollTop) =>
 	Math.min(Math.max(scrollTop, 0), getMaxScrollTop(ctx))
 
@@ -41,7 +41,7 @@ const animateOverscroll = ctx => {
 	if (toValue === scrollTop) return false
 	Animated.spring(ctx.scrollTopValue, {
 		toValue,
-		bounciness: ctx.getProps().dragOverscrollBounciness,
+		bounciness: ctx.props.dragOverscrollBounciness,
 		// Velocity is based on seconds instead of milliseconds
 		velocity: ctx.velocityTracker.getVelocity() * 1000
 	}).start()
@@ -54,13 +54,20 @@ const animateScroll = (ctx, nextScrollTop) => {
 	Animated.spring(ctx.scrollTopValue, {
 		toValue: nextScrollTop,
 		overshootClamping: true
-        // TODO configure speed
+		// TODO configure speed
 	}).start()
+}
+
+const onChangeScrollSize = ctx => {
+	const dragRecognizer = recognizer.recognizers.drag
+	const isDisabled =
+		cts.props.isDisabled || elemRef.scrollHeight <= elemRef.height
+	isDisabled ? dragRecognizer.disable() : dragRecognizer.enable()
 }
 
 // Keyboard
 
-// which Scrollable currently handles key events
+// Which Scrollable currently handles key events
 let currentKeyHandler
 
 const makeCurrentKeyHandler = ctx => {
@@ -70,24 +77,28 @@ const makeCurrentKeyHandler = ctx => {
 	currentKeyHandler = ctx
 }
 
+// When there are multiple nested scrollables, only top one should become active
+let alreadySetKeyHandler = false
+
 const onRawEvent = (ctx, event) => {
-	if (
-		event.tool === PointerTool.MOUSE &&
-		event.action === PointerAction.BUTTON_PRESS
-	) {
-		// TODO when multiple nested - should register on arena
-		// and first one should win
+	if (!isScrollable(ctx)) return
+	if (!alreadySetKeyHandler && isMouseButtonPress(event)) {
 		makeCurrentKeyHandler(ctx)
+		alreadySetKeyHandler = true
+		setTimeout(() => {
+			alreadySetKeyHandler = false
+		}, 0)
 	}
 }
 
 const onKeyEvent = (ctx, event) => {
+	if (!isScrollable(ctx)) return
 	if (event.action === KeyAction.PRESS || event.action === KeyAction.REPEAT) {
 		if (event.key === KeyCode.UP || event.key == KeyCode.DOWN) {
 			const scrollTop = ctx.scrollTopValue.__getValue()
 			const delta =
 				(event.key === KeyCode.UP ? -1 : 1) *
-				ctx.getProps().keyboardScrollSpeed
+				ctx.props.keyboardScrollSpeed
 			animateScroll(ctx, clampScrollTop(ctx, scrollTop + delta))
 		} else if (event.key === KeyCode.HOME) {
 			animateScroll(ctx, 0)
@@ -116,23 +127,33 @@ const onHoverStart = ctx => {
 
 const onHoverEnd = ctx => removeHandler(ctx, 'removeScrollHandler')
 
+// When there are multiple nested scrollables, only top one should be scrolled
+const alreadyScrolled = false
+
 const onScrollEvent = (ctx, event) => {
+	if (!isScrollable(ctx) || alreadyScrolled) return
 	const scrollTop = ctx.scrollTopValue.__getValue()
 	const nextScrollTop = clampScrollTop(
 		ctx,
-		scrollTop + -1 * event.top * ctx.getProps().mousewheelScrollSpeed
+		scrollTop + -1 * event.top * ctx.props.mousewheelScrollSpeed
 	)
 	animateScroll(ctx, nextScrollTop)
+	alreadyScrolled = true
+	setTimeout(() => {
+		alreadyScrolled = false
+	}, 0)
 }
 
 // Touch
-const onDragStart = (ctx, event) =>
-	(ctx.initialScrollTop = ctx.scrollTopValue.__getValue())
+const onDragStart = (ctx, event) => {
+	if (!isScrollable(ctx)) return
+	ctx.initialScrollTop = ctx.scrollTopValue.__getValue()
+}
 
 const onDragMove = (ctx, event) => {
 	const maxScrollTop = getMaxScrollTop(ctx)
 	let nextScrollTop = ctx.initialScrollTop - event.deltaTop
-	const overscrollResistance = ctx.getProps().dragOverscrollResistance
+	const overscrollResistance = ctx.props.dragOverscrollResistance
 	if (nextScrollTop < 0) {
 		nextScrollTop = -overscrollResistance(-nextScrollTop)
 	} else if (nextScrollTop > maxScrollTop) {
@@ -150,7 +171,7 @@ const onDragEnd = (ctx, event) => {
 	)
 	Animated.decay(ctx.scrollTopValue, {
 		velocity: -event.velocity,
-		deceleration: ctx.getProps().dragDecayDeceleration
+		deceleration: ctx.props.dragDecayDeceleration
 	}).start(({ finished }) => {
 		ctx.scrollTopValue.removeListener(ctx.decayListener)
 	})
@@ -166,48 +187,60 @@ const unmount = ctx => {
 }
 
 const Scrollable = props => {
-	const getProps = useLastProps(props)
 	const elemRef = useRef()
-	const ctx = useRef({
-		getProps,
-		elemRef,
-		initialScrollTop: 0,
-		scrollTopValue: new Animated.Value(0),
-		velocityTracker: new VelocityTracker()
-	})
-	useEffect(() =>
-		ctx.current.scrollTopValue.addListener(({ value }) => {
-			elemRef.current.scrollTop = Math.round(value)
-			ctx.current.velocityTracker.addPoint(Date.now(), value)
-		})
-	)
-	useEffect(() => unmount.bind(ctx))
-	const [recognizer] = useState(
-		() =>
-			new MultiRecognizer({
+	const ctx = useContext({
+		props,
+		initialCtx: () => ({
+			elemRef,
+			initialScrollTop: 0,
+			scrollTopValue: new Animated.Value(0),
+			velocityTracker: new VelocityTracker()
+		}),
+		initialState: ctx => ({
+			recognizer: new MultiRecognizer({
 				hover: new HoverRecognizer({
-					onHoverStart: onHoverStart.bind(null, ctx.current),
-					onHoverEnd: onHoverEnd.bind(null, ctx.current)
+					onHoverStart: () => {
+						onHoverStart.bind(null, ctx)()
+					},
+					onHoverEnd: onHoverEnd.bind(null, ctx)
 				}),
 				drag: new DragRecognizer({
-					document: () => elemRef.current.document,
-					onDragStart: onDragStart.bind(null, ctx.current),
-					onDragMove: onDragMove.bind(null, ctx.current),
-					onDragEnd: onDragEnd.bind(null, ctx.current)
+					document: () => ctx.elemRef.current.document,
+					onDragStart: onDragStart.bind(null, ctx),
+					onDragMove: onDragMove.bind(null, ctx),
+					onDragEnd: onDragEnd.bind(null, ctx)
 				}),
 				raw: new RawRecognizer({
-					handler: onRawEvent.bind(null, ctx.current)
+					handler: onRawEvent.bind(null, ctx)
 				})
 			})
-	)
+		})
+	})
+	useEffect(() => {
+		ctx.scrollTopValue.addListener(({ value }) => {
+			elemRef.current.scrollTop = Math.round(value)
+			ctx.velocityTracker.addPoint(Date.now(), value)
+		})
+		return unmount.bind(ctx)
+	})
 	return (
-		<Responder handler={useCallback(recognizer.handler.bind(recognizer))}>
-			<Scroll ref={elemRef}>{props.children}</Scroll>
+		<Responder
+			handler={useCallback((event, eventType) => {
+				ctx.state.recognizer.handler(event, eventType)
+			})}
+		>
+			<Scroll
+				ref={elemRef}
+				onChangeScrollSize={onChangeScrollSize.bind(null, ctx)}
+			>
+				{props.children}
+			</Scroll>
 		</Responder>
 	)
 }
 
 Scrollable.propTypes = {
+	isDisabled: PropTypes.bool.isRequired,
 	dragOverscrollBounciness: PropTypes.number.isRequired,
 	dragOverscrollResistance: PropTypes.func.isRequired,
 	dragDecayDeceleration: PropTypes.number.isRequired,
@@ -216,6 +249,7 @@ Scrollable.propTypes = {
 }
 
 Scrollable.defaultProps = {
+	isDisabled: false,
 	dragOverscrollBounciness: 6,
 	dragOverscrollResistance: OverscrollResistance.diminishing,
 	dragDecayDeceleration: 0.998,
