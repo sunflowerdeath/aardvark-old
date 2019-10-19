@@ -4,6 +4,51 @@
 
 namespace aardvark::js {
 
+// Size
+Size size_from_js(JSContextRef ctx, JSValueRef js_value) {
+    auto object = JSValueToObject(ctx, js_value, nullptr);
+    auto size = Size();
+    map_prop_from_js<float, float_from_js>(ctx, object, "width", &size.width);
+    map_prop_from_js<float, float_from_js>(ctx, object, "height", &size.height);
+    return size;
+}
+
+JSValueRef size_to_js(JSContextRef ctx, const Size& size) {
+    auto object = JSObjectMake(ctx, nullptr, nullptr);
+    map_prop_to_js<float, float_to_js>(ctx, object, "width", size.width);
+    map_prop_to_js<float, float_to_js>(ctx, object, "height", size.height);
+    return object;
+}
+
+// BoxConstraints
+BoxConstraints box_constraints_from_js(JSContextRef ctx, JSValueRef js_value) {
+    auto object = JSValueToObject(ctx, js_value, nullptr);
+    auto constraints = BoxConstraints();
+    map_prop_from_js<float, float_from_js>(ctx, object, "minWidth",
+                                           &constraints.min_width);
+    map_prop_from_js<float, float_from_js>(ctx, object, "maxWidth",
+                                           &constraints.max_width);
+    map_prop_from_js<float, float_from_js>(ctx, object, "minHeight",
+                                           &constraints.min_height);
+    map_prop_from_js<float, float_from_js>(ctx, object, "maxHeight",
+                                           &constraints.max_height);
+    return constraints;
+}
+
+JSValueRef box_constraints_to_js(JSContextRef ctx,
+                                 const BoxConstraints& constraints) {
+    auto object = JSObjectMake(ctx, nullptr, nullptr);
+    map_prop_to_js<float, float_to_js>(ctx, object, "minWidth",
+                                       constraints.min_width);
+    map_prop_to_js<float, float_to_js>(ctx, object, "maxWidth",
+                                       constraints.max_width);
+    map_prop_to_js<float, float_to_js>(ctx, object, "minHeight",
+                                       constraints.min_height);
+    map_prop_to_js<float, float_to_js>(ctx, object, "maxHeight",
+                                       constraints.max_height);
+    return object;
+}
+
 // Color
 
 SkColor color_from_js(JSContextRef ctx, JSValueRef js_value) {
@@ -19,7 +64,7 @@ SkColor color_from_js(JSContextRef ctx, JSValueRef js_value) {
     return SkColorSetARGB(alpha, red, green, blue);
 }
 
-JSValueRef color_to_js(JSContextRef ctx, SkColor color) {
+JSValueRef color_to_js(JSContextRef ctx, const SkColor& color) {
     auto object = JSObjectMake(ctx, nullptr, nullptr);
     map_prop_to_js<int, int_to_js>(ctx, object, "alpha", SkColorGetA(color));
     map_prop_to_js<int, int_to_js>(ctx, object, "red", SkColorGetR(color));

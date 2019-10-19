@@ -2,6 +2,7 @@
 #include "background.hpp"
 #include "border.hpp"
 #include "center.hpp"
+#include "custom_layout.hpp"
 #include "clip.hpp"
 #include "fixed_size.hpp"
 #include "flex.hpp"

@@ -149,6 +149,14 @@ JSValueRef element_insert_before_child(JSContextRef ctx, JSObjectRef function,
     return JSValueMakeUndefined(ctx);
 }
 
+JSValueRef element_immediate_layout(JSContextRef ctx, JSObjectRef function,
+                                    JSObjectRef object, size_t argument_count,
+                                    const JSValueRef arguments[],
+                                    JSValueRef* exception) {
+    get_elem(ctx, object)->immediate_layout();
+    return JSValueMakeUndefined(ctx);
+}
+
 void element_finalize(JSObjectRef object) {
     ObjectsIndex<Element>::remove(object);
 }
@@ -159,6 +167,7 @@ JSClassRef element_create_class() {
         {"appendChild", element_append_child, PROP_ATTR_STATIC},
         {"removeChild", element_remove_child, PROP_ATTR_STATIC},
         {"insertBeforeChild", element_insert_before_child, PROP_ATTR_STATIC},
+        {"immediateLayout", element_immediate_layout, PROP_ATTR_STATIC},
         {0, 0, 0}};
     JSStaticValue static_values[] = {
         {"document", element_get_document, nullptr, PROP_ATTR_STATIC},
@@ -234,14 +243,14 @@ JSClassRef align_elem_create_class(JSClassRef parent_class) {
 // Background
 //------------------------------------------------------------------------------
 
-JSValueRef background_element_get_color(JSContextRef ctx, JSObjectRef object,
+JSValueRef background_elem_get_color(JSContextRef ctx, JSObjectRef object,
                                         JSStringRef property_name,
                                         JSValueRef* exception) {
     auto elem = get_elem<elements::Background>(ctx, object);
     return color_to_js(ctx, elem->color);
 }
 
-bool background_element_set_color(JSContextRef ctx, JSObjectRef object,
+bool background_elem_set_color(JSContextRef ctx, JSObjectRef object,
                                   JSStringRef property_name, JSValueRef value,
                                   JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
@@ -261,7 +270,7 @@ JSClassRef background_elem_create_class(JSClassRef parent_class) {
     auto definition =
         create_elem_class_definition("BackgroundElement", parent_class);
     JSStaticValue static_values[] = {
-        {"color", background_element_get_color, background_element_set_color,
+        {"color", background_elem_get_color, background_elem_set_color,
          kJSPropertyAttributeNone},
         {0, 0, 0, 0}};
     definition.staticValues = static_values;
@@ -275,6 +284,44 @@ JSClassRef background_elem_create_class(JSClassRef parent_class) {
 JSClassRef center_elem_create_class(JSClassRef parent_class) {
     auto definition =
         create_elem_class_definition("CenterElement", parent_class);
+    return JSClassCreate(&definition);
+}
+
+//------------------------------------------------------------------------------
+// CustomLayout
+//------------------------------------------------------------------------------
+
+std::vector<JSValueRef> custom_layout_args_to_js(JSContextRef ctx, Element* elem,
+                                                 BoxConstraints constraints) {
+    auto host = BindingsHost::get(ctx);
+    return {host->element_index->get_js_object(elem),
+            box_constraints_to_js(ctx, constraints)};
+}
+
+bool custom_layout_elem_set_layout(JSContextRef ctx, JSObjectRef object,
+                                   JSStringRef property_name, JSValueRef value,
+                                   JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto elem = get_elem<elements::CustomLayout>(ctx, object);
+    auto layout = FunctionWrapper<Size, Element*, BoxConstraints>(
+        host->ctx,                 // ctx
+        value,                     // function
+        custom_layout_args_to_js,  // args_to_js
+        size_from_js,              // ret_val_from_js
+        nullptr                    // exception_handler
+    );
+    elem->layout_proc = layout;
+    return true;
+}
+
+JSClassRef custom_layout_elem_create_class(JSClassRef parent_class) {
+    auto definition =
+        create_elem_class_definition("CustomLayout", parent_class);
+    JSStaticValue static_values[] = {
+        {"layout", nullptr, custom_layout_elem_set_layout,
+         kJSPropertyAttributeNone},
+        {0, 0, 0, 0}};
+    definition.staticValues = static_values;
     return JSClassCreate(&definition);
 }
 

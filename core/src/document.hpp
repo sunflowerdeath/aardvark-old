@@ -70,9 +70,13 @@ class Document {
 
     void compose_layers();
 
+    void immediate_layout_element(Element* elem);
+
   private:
     sk_sp<GrContext> gr_context;
     ElementsSet changed_elements;
+    ElementsSet relayout_boundaries;
+    ElementsSet repaint_boundaries;
     // Currently painted element
     Element* current_element = nullptr;
     // Layer tree of the current repaint boundary element
@@ -87,6 +91,8 @@ class Document {
     bool inside_changed = false;
     void initial_paint();
     bool repaint();
+    void layout_boundary_element(Element* elem);
+
     void paint_layer_tree(LayerTree* tree);
 };
 

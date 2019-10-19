@@ -153,6 +153,9 @@ BindingsHost::BindingsHost() {
     add_elem_class("CenterElement", typeid(elements::Center),
                    center_elem_create_class,
                    elem_constructor<elements::Center>);
+    add_elem_class("CustomLayoutElement", typeid(elements::CustomLayout),
+                   custom_layout_elem_create_class,
+                   elem_constructor<elements::CustomLayout>);
     add_elem_class("IntrinsicHeightElement", typeid(elements::IntrinsicHeight),
                    intrinsic_height_elem_create_class,
                    elem_constructor<elements::IntrinsicHeight>);

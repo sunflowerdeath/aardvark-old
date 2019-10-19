@@ -132,6 +132,10 @@ class Element {
 
     std::shared_ptr<LayerTree> layer_tree;
 
+    // If element is changed or belongs to a changed part of the document,
+    // it forces it to immediately perform relayout.
+    void immediate_layout();
+
   private:
     // Whether the element was changed by updating props or performig relayout
     // since last repaint.

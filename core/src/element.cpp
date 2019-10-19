@@ -12,7 +12,7 @@ void Element::change() {
 
 bool Element::hit_test(double left, double top) {
     return (left >= 0 && left <= size.width && top >= 0 && top <= size.height);
-};
+}
 
 HitTestMode Element::get_hit_test_mode() { return HitTestMode::PassToParent; };
 
@@ -23,29 +23,32 @@ bool Element::is_parent_of(Element* elem) {
         current = current->parent;
     }
     return false;
-};
+}
 
 Element* Element::find_closest_relayout_boundary() {
     if (this->is_relayout_boundary) return this;
     auto current = this->parent;
     while (!current->is_relayout_boundary) current = current->parent;
     return current;
-};
+}
 
 Element* Element::find_closest_repaint_boundary() {
     if (this->is_repaint_boundary) return this;
     auto current = this->parent;
     while (!current->is_repaint_boundary) current = current->parent;
     return current;
-};
+}
 
+void Element::immediate_layout() {
+    if (document != nullptr) document->immediate_layout_element(this);
+}
 
 SingleChildElement::SingleChildElement(std::shared_ptr<Element> child,
                                        bool is_repaint_boundary,
                                        bool size_depends_on_parent)
     : child(child), Element(is_repaint_boundary, size_depends_on_parent) {
     if (child) child->parent = this;
-};
+}
 
 void SingleChildElement::paint(bool is_changed) {
     document->paint_element(child.get());
@@ -57,13 +60,13 @@ void SingleChildElement::remove_child(std::shared_ptr<Element> child) {
         this->child = nullptr;
         change();
     }
-};
+}
 
 void SingleChildElement::append_child(std::shared_ptr<Element> child) {
     this->child = child;
     child->parent = this;
     change();
-};
+}
 
 MultipleChildrenElement::MultipleChildrenElement(
     std::vector<std::shared_ptr<Element>> children, bool is_repaint_boundary,
@@ -103,13 +106,13 @@ void MultipleChildrenElement::remove_child(std::shared_ptr<Element> child) {
         children.erase(it);
         change();
     }
-};
+}
 
 void MultipleChildrenElement::append_child(std::shared_ptr<Element> child) {
     child->parent = this;
     children.push_back(child);
     change();
-};
+}
 
 void MultipleChildrenElement::insert_before_child(
     std::shared_ptr<Element> child, std::shared_ptr<Element> before_child) {
@@ -118,10 +121,10 @@ void MultipleChildrenElement::insert_before_child(
     child->parent = this;
     children.insert(it, child);
     change();
-};
+}
 
 void MultipleChildrenElement::visit_children(ChildrenVisitor visitor) {
     for (auto child : children) visitor(child);
-};
+}
 
 }  // namespace aardvark

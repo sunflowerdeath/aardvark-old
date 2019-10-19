@@ -67,24 +67,28 @@ bool Document::repaint() {
             return false;  // nothing to do
         }
     }
-    ElementsSet relayout_boundaries;
     for (auto elem : changed_elements) {
         add_only_parent(relayout_boundaries,
                         elem->find_closest_relayout_boundary());
     }
-    ElementsSet repaint_boundaries;
     for (auto elem : relayout_boundaries) {
-        layout_element(elem, elem->prev_constraints);
-        add_only_parent(repaint_boundaries,
-                        elem->find_closest_repaint_boundary());
-        elem->is_changed = true;
+        layout_boundary_element(elem);
     }
     for (auto elem : repaint_boundaries) {
         paint_element(elem, /* is_repaint_root */ true);
     }
+    relayout_boundaries.clear();
+    repaint_boundaries.clear();
     changed_elements.clear();
     compose_layers();
     return true;
+}
+
+void Document::layout_boundary_element(Element* elem) {
+    layout_element(elem, elem->prev_constraints);
+    add_only_parent(repaint_boundaries,
+                    elem->find_closest_repaint_boundary());
+    elem->is_changed = true;
 }
 
 Size Document::layout_element(Element* elem, BoxConstraints constraints) {
@@ -94,6 +98,23 @@ Size Document::layout_element(Element* elem, BoxConstraints constraints) {
     auto size = elem->layout(constraints);
     elem->prev_constraints = constraints;
     return size;
+}
+
+void Document::immediate_layout_element(Element* elem) {
+    // Check if element is changed or inside changed parent
+    auto current = elem;
+    auto changed_it = changed_elements.end();
+    while (current != nullptr) {
+        changed_it = changed_elements.find(elem);
+        if (changed_it != changed_elements.end()) break;
+        current = current->parent;
+    }
+
+    if (changed_it != changed_elements.end()) {
+        auto boundary = (*changed_it)->find_closest_relayout_boundary();
+        layout_boundary_element(boundary);
+        changed_elements.erase(changed_it);
+    }
 }
 
 SkPath offset_path(SkPath* path, Position offset) {
