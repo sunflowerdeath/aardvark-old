@@ -2,4 +2,6 @@
 BasedOnStyle: Google
 IndentWidth: 4
 AccessModifierOffset: -2
+PointerAlignment: Left
+DerivePointerAlignment: false
 ---

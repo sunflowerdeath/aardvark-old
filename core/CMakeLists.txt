@@ -281,6 +281,7 @@ if(ADV_ENABLE_JS)
     target_sources(aardvark PRIVATE
         src/js/bindings_host.cpp
         src/js/base_types_bindings.cpp
+        src/js/base_types_mappers.cpp
         src/js/check_types.cpp
         src/js/document_bindings.cpp
         src/js/elements_bindings.cpp
