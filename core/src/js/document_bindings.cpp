@@ -4,7 +4,7 @@
 #include "bindings_host.hpp"
 #include "signal_connection_bindings.hpp"
 #include "function_wrapper.hpp"
-#include "events_bindings.hpp"
+#include "base_types_mappers.hpp"
 #include "../pointer_events/signal_event_sink.hpp"
 
 namespace aardvark::js {
@@ -12,13 +12,12 @@ namespace aardvark::js {
 // helpers
 
 template <typename T>
-JSValueRef signal_event_sink_add_handler(
-    SignalEventSink<T>& sink,
-    std::function<JSValueRef(JSContextRef, const T&)> event_to_js,
-    JSContextRef ctx, JSValueRef value) {
+JSValueRef signal_event_sink_add_handler(SignalEventSink<T>& sink,
+                                         Mapper<T>* mapper, JSContextRef ctx,
+                                         JSValueRef value) {
     auto host = BindingsHost::get(ctx);
-    auto args_to_js = [event_to_js](JSContextRef ctx, T arg) {
-        return std::vector<JSValueRef>{event_to_js(ctx, arg)};
+    auto args_to_js = [mapper](JSContextRef ctx, T arg) {
+        return std::vector<JSValueRef>{mapper->to_js(ctx, arg)};
     };
     auto handler = FunctionWrapper<void, T>(host->ctx,   // ctx
                                             value,       // function
@@ -40,7 +39,7 @@ JSValueRef document_add_key_handler(JSContextRef ctx, JSObjectRef function,
                                     const JSValueRef arguments[],
                                     JSValueRef* exception) {
     return signal_event_sink_add_handler<KeyEvent>(
-        get_document(ctx, object)->key_event_sink, key_event_to_js, ctx,
+        get_document(ctx, object)->key_event_sink, key_event_mapper(), ctx,
         arguments[0]);
 }
 
@@ -49,13 +48,13 @@ JSValueRef document_add_scroll_handler(JSContextRef ctx, JSObjectRef function,
                                     const JSValueRef arguments[],
                                     JSValueRef* exception) {
     return signal_event_sink_add_handler<ScrollEvent>(
-        get_document(ctx, object)->scroll_event_sink, scroll_event_to_js, ctx,
-        arguments[0]);
+        get_document(ctx, object)->scroll_event_sink, scroll_event_mapper(),
+        ctx, arguments[0]);
 }
 
 std::vector<JSValueRef> pointer_event_handler_args_to_js(JSContextRef ctx,
                                                          PointerEvent event) {
-    return std::vector<JSValueRef>{pointer_event_to_js(ctx, event)};
+    return std::vector<JSValueRef>{pointer_event_mapper()->to_js(ctx, event)};
 }
 
 FunctionWrapper<void, PointerEvent> pointer_event_handler_from_js(

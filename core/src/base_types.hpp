@@ -5,10 +5,11 @@ namespace aardvark {
 struct Value {
     enum class ValueType { none, abs, rel };
 
+    Value(){};
     Value(ValueType type, float value) : type(type), value(value){};
 
-    ValueType type;
-    float value;
+    ValueType type = ValueType::none;
+    float value = 0;
 
     float calc(float total, float fallback = 0) {
         if (type == ValueType::none) return fallback;
@@ -43,7 +44,8 @@ inline bool operator!=(const Size& lhs, const Size& rhs) {
 };
 
 struct Position {
-    Position(float left = 0, float top = 0) : left(left), top(top) {};
+    Position(){};
+    Position(float left, float top) : left(left), top(top) {};
     float left = 0;
     float top = 0;
     static Position add(Position a, Position b);
@@ -63,6 +65,24 @@ inline Position operator+(const Position& lhs, const Position& rhs) {
         lhs.top + rhs.top     // top
     );
 };
+
+/*
+struct Color {
+    int red;
+    int green;
+    int blue;
+    int alpha;
+
+    SkColor to_sk_color() {
+        return SkColorSetARGB(alpha, red, green, blue);
+    }
+
+    static Color from_sk_color(const SkColor& sk_color) {
+        return Color{SkColorGetR(sk_color), SkColorGetG(sk_color),
+                     SkColorGetB(sk_color), SkColorGetA(sk_color)};
+    }
+};
+*/
 
 }  // namespace aardvark
 

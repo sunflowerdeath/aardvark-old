@@ -2,11 +2,12 @@
 
 #include "../elements/elements.hpp"
 #include "helpers.hpp"
-#include "base_types_bindings.hpp"
-#include "events_bindings.hpp"
+#include "base_types_mappers.hpp"
 #include "function_wrapper.hpp"
 
 namespace aardvark::js {
+
+using namespace std::placeholders;
 
 std::shared_ptr<Element> get_elem(JSContextRef ctx, JSObjectRef object) {
     return BindingsHost::get(ctx)->element_index->get_native_object(object);
@@ -190,8 +191,8 @@ JSObjectRef element_call_as_constructor(JSContextRef ctx,
                                         size_t argument_count,
                                         const JSValueRef arguments[],
                                         JSValueRef* exception) {
-    auto message =
-        str_to_js(ctx, "Element's constructor can't be called directly.");
+    auto message = str_mapper()->to_js(
+        ctx, "Element's constructor can't be called directly.");
     *exception = JSObjectMakeError(ctx, 1, &message, nullptr);
     return nullptr;
 }
@@ -215,7 +216,8 @@ bool align_element_set_align(JSContextRef ctx, JSObjectRef object,
     */
 
     auto elem = get_elem<elements::Align>(ctx, object);
-    auto insets = alignment_from_js(ctx, JSValueToObject(ctx, value, nullptr));
+    auto insets =
+        alignment_mapper()->from_js(ctx, JSValueToObject(ctx, value, nullptr));
     elem->insets = insets;
     elem->change();
     return true;
@@ -225,7 +227,7 @@ JSValueRef align_element_get_align(JSContextRef ctx, JSObjectRef object,
                                    JSStringRef property_name,
                                    JSValueRef* exception) {
     auto elem = get_elem<elements::Align>(ctx, object);
-    return alignment_to_js(ctx, elem->insets);
+    return alignment_mapper()->to_js(ctx, elem->insets);
 }
 
 JSClassRef align_elem_create_class(JSClassRef parent_class) {
@@ -247,7 +249,7 @@ JSValueRef background_elem_get_color(JSContextRef ctx, JSObjectRef object,
                                         JSStringRef property_name,
                                         JSValueRef* exception) {
     auto elem = get_elem<elements::Background>(ctx, object);
-    return color_to_js(ctx, elem->color);
+    return color_mapper()->to_js(ctx, elem->color);
 }
 
 bool background_elem_set_color(JSContextRef ctx, JSObjectRef object,
@@ -261,7 +263,7 @@ bool background_elem_set_color(JSContextRef ctx, JSObjectRef object,
     if (check_types::to_exception(error, ctx, exception)) return false;
 
     auto elem = get_elem<elements::Background>(ctx, object);
-    elem->color = color_from_js(ctx, value);
+    elem->color = color_mapper()->from_js(ctx, value);
     elem->change();
     return true;
 }
@@ -295,7 +297,7 @@ std::vector<JSValueRef> custom_layout_args_to_js(JSContextRef ctx, Element* elem
                                                  BoxConstraints constraints) {
     auto host = BindingsHost::get(ctx);
     return {host->element_index->get_js_object(elem),
-            box_constraints_to_js(ctx, constraints)};
+            box_constraints_mapper()->to_js(ctx, constraints)};
 }
 
 bool custom_layout_elem_set_layout(JSContextRef ctx, JSObjectRef object,
@@ -307,8 +309,9 @@ bool custom_layout_elem_set_layout(JSContextRef ctx, JSObjectRef object,
         host->ctx,                 // ctx
         value,                     // function
         custom_layout_args_to_js,  // args_to_js
-        size_from_js,              // ret_val_from_js
-        nullptr                    // exception_handler
+        std::bind(&Mapper<Size>::from_js, size_mapper(), _1,
+                  _2),  // ret_val_from_js
+        nullptr         // exception_handler
     );
     elem->layout_proc = layout;
     return true;
@@ -352,7 +355,7 @@ JSClassRef intrinsic_width_elem_create_class(JSClassRef parent_class) {
 JSValueRef flex_elem_get_direction(JSContextRef ctx, JSObjectRef object,
                              JSStringRef property_name, JSValueRef* exception) {
     auto elem = get_elem<elements::Flex>(ctx, object);
-    return int_to_js(ctx, static_cast<int>(elem->direction));
+    return int_mapper()->to_js(ctx, static_cast<int>(elem->direction));
 }
 
 bool flex_elem_set_direction(JSContextRef ctx, JSObjectRef object,
@@ -369,7 +372,7 @@ JSValueRef flex_elem_get_align(JSContextRef ctx, JSObjectRef object,
                                JSStringRef property_name,
                                JSValueRef* exception) {
     auto elem = get_elem<elements::Flex>(ctx, object);
-    return int_to_js(ctx, static_cast<int>(elem->align));
+    return int_mapper()->to_js(ctx, static_cast<int>(elem->align));
 }
 
 bool flex_elem_set_align(JSContextRef ctx, JSObjectRef object,
@@ -385,7 +388,7 @@ JSValueRef flex_elem_get_justify(JSContextRef ctx, JSObjectRef object,
                                  JSStringRef property_name,
                                  JSValueRef* exception) {
     auto elem = get_elem<elements::Flex>(ctx, object);
-    return int_to_js(ctx, static_cast<int>(elem->justify));
+    return int_mapper()->to_js(ctx, static_cast<int>(elem->justify));
 }
 
 bool flex_elem_set_justify(JSContextRef ctx, JSObjectRef object,
@@ -419,7 +422,7 @@ JSValueRef flex_child_elem_get_flex(JSContextRef ctx, JSObjectRef object,
                                  JSStringRef property_name,
                                  JSValueRef* exception) {
     auto elem = get_elem<elements::FlexChild>(ctx, object);
-    return int_to_js(ctx, elem->flex);
+    return int_mapper()->to_js(ctx, elem->flex);
 }
 
 bool flex_child_elem_set_flex(JSContextRef ctx, JSObjectRef object,
@@ -436,7 +439,7 @@ JSValueRef flex_child_elem_get_align(JSContextRef ctx, JSObjectRef object,
                                  JSValueRef* exception) {
     auto elem = get_elem<elements::FlexChild>(ctx, object);
     if (elem->align == std::nullopt) return JSValueMakeUndefined(ctx);
-    return int_to_js(ctx, static_cast<int>(elem->align.value()));
+    return int_mapper()->to_js(ctx, static_cast<int>(elem->align.value()));
 }
 
 bool flex_child_elem_set_align(JSContextRef ctx, JSObjectRef object,
@@ -491,14 +494,14 @@ JSValueRef padding_elem_get_padding(JSContextRef ctx, JSObjectRef object,
                                       JSStringRef property_name,
                                       JSValueRef* exception) {
     auto elem = get_elem<PaddingElement>(ctx, object);
-    return padding_to_js(ctx, elem->padding);
+    return padding_mapper()->to_js(ctx, elem->padding);
 }
 
 bool padding_elem_set_padding(JSContextRef ctx, JSObjectRef object,
                                 JSStringRef property_name, JSValueRef value,
                                 JSValueRef* exception) {
     auto elem = get_elem<PaddingElement>(ctx, object);
-    elem->padding = padding_from_js(ctx, value);
+    elem->padding = padding_mapper()->from_js(ctx, value);
     elem->change();
     return true;
 }
@@ -522,7 +525,7 @@ std::vector<JSValueRef> responder_handler_args_to_js(
     JSContextRef ctx, PointerEvent event, ResponderEventType event_type) {
     auto event_type_num =
         static_cast<std::underlying_type_t<ResponderEventType>>(event_type);
-    return std::vector<JSValueRef>{pointer_event_to_js(ctx, event),
+    return std::vector<JSValueRef>{pointer_event_mapper()->to_js(ctx, event),
                                    JSValueMakeNumber(ctx, event_type_num)};
 }
 
@@ -571,7 +574,7 @@ JSValueRef text_element_get_text(JSContextRef ctx, JSObjectRef object,
                                  JSStringRef property_name,
                                  JSValueRef* exception) {
     auto elem = get_elem<elements::Text>(ctx, object);
-    return icu_str_to_js(ctx, elem->text);
+    return icu_str_mapper()->to_js(ctx, elem->text);
 }
 
 bool text_element_set_text(JSContextRef ctx, JSObjectRef object,
@@ -612,7 +615,7 @@ JSValueRef scroll_elem_get_scroll_top(JSContextRef ctx,
                                              JSStringRef property_name,
                                              JSValueRef* exception) {
     auto elem = get_elem<ScrollElement>(ctx, object);
-    return int_to_js(ctx, elem->scroll_top);
+    return int_mapper()->to_js(ctx, elem->scroll_top);
 }
 
 JSValueRef scroll_elem_get_scroll_height(JSContextRef ctx,
@@ -620,7 +623,7 @@ JSValueRef scroll_elem_get_scroll_height(JSContextRef ctx,
                                              JSStringRef property_name,
                                              JSValueRef* exception) {
     auto elem = get_elem<ScrollElement>(ctx, object);
-    return float_to_js(ctx, elem->scroll_height);
+    return float_mapper()->to_js(ctx, elem->scroll_height);
 }
 
 JSClassRef scroll_elem_create_class(JSClassRef parent_class) {
@@ -645,8 +648,8 @@ bool sized_elem_set_size_constraints(JSContextRef ctx, JSObjectRef object,
                                        JSValueRef value,
                                        JSValueRef* exception) {
     auto elem = get_elem<elements::Sized>(ctx, object);
-    elem->size_constraints =
-        size_constraints_from_js(ctx, JSValueToObject(ctx, value, nullptr));
+    elem->size_constraints = size_constraints_mapper()->from_js(
+        ctx, JSValueToObject(ctx, value, nullptr));
     elem->change();
     return true;
 }
@@ -656,7 +659,7 @@ JSValueRef sized_elem_get_size_constraints(JSContextRef ctx,
                                              JSStringRef property_name,
                                              JSValueRef* exception) {
     auto elem = get_elem<elements::Sized>(ctx, object);
-    return size_constraints_to_js(ctx, elem->size_constraints);
+    return size_constraints_mapper()->to_js(ctx, elem->size_constraints);
 }
 
 JSClassRef sized_elem_create_class(JSClassRef parent_class) {
@@ -700,7 +703,7 @@ bool translate_elem_set_left(JSContextRef ctx, JSObjectRef object,
                              JSStringRef property_name, JSValueRef value,
                              JSValueRef* exception) {
     auto elem = get_elem<TranslateElement>(ctx, object);
-    elem->translation.left = value_from_js(ctx, value);
+    elem->translation.left = value_mapper()->from_js(ctx, value);
     elem->change();
     return true;
 }
@@ -709,14 +712,14 @@ JSValueRef translate_elem_get_left(JSContextRef ctx, JSObjectRef object,
                                    JSStringRef property_name,
                                    JSValueRef* exception) {
     auto elem = get_elem<TranslateElement>(ctx, object);
-    return value_to_js(ctx, elem->translation.left);
+    return value_mapper()->to_js(ctx, elem->translation.left);
 }
 
 bool translate_elem_set_top(JSContextRef ctx, JSObjectRef object,
                              JSStringRef property_name, JSValueRef value,
                              JSValueRef* exception) {
     auto elem = get_elem<TranslateElement>(ctx, object);
-    elem->translation.top = value_from_js(ctx, value);
+    elem->translation.top = value_mapper()->from_js(ctx, value);
     elem->change();
     return true;
 }
@@ -725,7 +728,7 @@ JSValueRef translate_elem_get_top(JSContextRef ctx, JSObjectRef object,
                                    JSStringRef property_name,
                                    JSValueRef* exception) {
     auto elem = get_elem<TranslateElement>(ctx, object);
-    return value_to_js(ctx, elem->translation.top);
+    return value_mapper()->to_js(ctx, elem->translation.top);
 }
 
 JSClassRef translate_elem_create_class(JSClassRef parent_class) {
