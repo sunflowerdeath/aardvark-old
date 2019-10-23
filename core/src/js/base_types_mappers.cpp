@@ -1,53 +1,41 @@
 #include "base_types_mappers.hpp"
 
-#define MAPPER(NAME, TYPE, DEFINITION)   \
-    Mapper<TYPE>* NAME() {               \
-        static auto mapper = DEFINITION; \
-        return &mapper;                  \
-    }
+#define GET(name) [](auto* obj) { return &(obj->name); }
 
 namespace aardvark::js {
 
-MAPPER(int_mapper, int, (SimpleMapper<int, int_to_js, int_from_js>()));
+Mapper<int>* int_mapper = new SimpleMapper<int, int_to_js, int_from_js>();
+Mapper<float>* float_mapper =
+    new SimpleMapper<float, float_to_js, float_from_js>();
+Mapper<std::string>* str_mapper =
+    new SimpleMapper<std::string, str_to_js, str_from_js>();
+Mapper<UnicodeString>* icu_str_mapper =
+    new SimpleMapper<UnicodeString, icu_str_to_js, icu_str_from_js>();
 
-MAPPER(float_mapper, float,
-       (SimpleMapper<float, float_to_js, float_from_js>()));
+Mapper<Size>* size_mapper = new ObjectMapper<Size>(
+    {new PropMapper<Size, float>(float_mapper, "width", GET(width)),
+     new PropMapper<Size, float>(float_mapper, "height", GET(height))});
 
-MAPPER(str_mapper, std::string,
-       (SimpleMapper<std::string, str_to_js, str_from_js>()));
+Mapper<Position>* position_mapper = new ObjectMapper<Position>(
+    {new PropMapper<Position, float>(float_mapper, "left", GET(left)),
+     new PropMapper<Position, float>(float_mapper, "top", GET(top))});
 
-MAPPER(icu_str_mapper, UnicodeString,
-       (SimpleMapper<UnicodeString, icu_str_to_js, icu_str_from_js>()));
+using ValueType = Value::ValueType;
+auto value_type_mapper = new EnumMapper<ValueType>(int_mapper);
+Mapper<Value>* value_mapper = new ObjectMapper<Value>(
+    {new PropMapper<Value, ValueType>(value_type_mapper, "type", GET(type)),
+     new PropMapper<Value, float>(float_mapper, "value", GET(value))});
 
-MAPPER(size_mapper, Size,
-       ObjectMapper<Size>(
-           {ADV_PROP_MAPPER(Size, float, float_mapper(), "width", width),
-            ADV_PROP_MAPPER(Size, float, float_mapper(), "height", height)}));
-
-MAPPER(position_mapper, Position,
-       ObjectMapper<Position>(
-           {ADV_PROP_MAPPER(Position, float, float_mapper(), "left", left),
-            ADV_PROP_MAPPER(Position, float, float_mapper(), "top", top)}));
-
-MAPPER(value_type_mapper, Value::ValueType,
-       EnumMapper<Value::ValueType>(int_mapper()));
-
-MAPPER(value_mapper, Value,
-       ObjectMapper<Value>({ADV_PROP_MAPPER(Value, Value::ValueType,
-                                            value_type_mapper(), "type", type),
-                            ADV_PROP_MAPPER(Value, float, float_mapper(),
-                                            "value", value)}));
-
-MAPPER(box_constraints_mapper, BoxConstraints,
-       ObjectMapper<BoxConstraints>(
-           {ADV_PROP_MAPPER(BoxConstraints, float, float_mapper(), "minWidth",
-                            min_width),
-            ADV_PROP_MAPPER(BoxConstraints, float, float_mapper(), "maxWidth",
-                            max_width),
-            ADV_PROP_MAPPER(BoxConstraints, float, float_mapper(), "minHeight",
-                            min_height),
-            ADV_PROP_MAPPER(BoxConstraints, float, float_mapper(), "maxHeight",
-                            max_height)}));
+Mapper<BoxConstraints>* box_constraints_mapper =
+    new ObjectMapper<BoxConstraints>(
+        {new PropMapper<BoxConstraints, float>(float_mapper, "minWidth",
+                                               GET(min_width)),
+         new PropMapper<BoxConstraints, float>(float_mapper, "maxWidth",
+                                               GET(max_width)),
+         new PropMapper<BoxConstraints, float>(float_mapper, "minHeight",
+                                               GET(min_height)),
+         new PropMapper<BoxConstraints, float>(float_mapper, "maxHeight",
+                                               GET(max_height))});
 
 SkColor color_from_js(JSContextRef ctx, JSValueRef js_value) {
     auto object = JSValueToObject(ctx, js_value, nullptr);
@@ -71,76 +59,60 @@ JSValueRef color_to_js(JSContextRef ctx, const SkColor& color) {
     return object;
 }
 
-MAPPER(color_mapper, SkColor,
-       (SimpleMapper<SkColor, color_to_js, color_from_js>()));
+Mapper<SkColor>* color_mapper =
+    new SimpleMapper<SkColor, color_to_js, color_from_js>();
 
-MAPPER(alignment_mapper, elements::EdgeInsets,
-       ObjectMapper<elements::EdgeInsets>(
-           {ADV_PROP_MAPPER(elements::EdgeInsets, Value, value_mapper(), "left",
-                            left),
-            ADV_PROP_MAPPER(elements::EdgeInsets, Value, value_mapper(), "top",
-                            top),
-            ADV_PROP_MAPPER(elements::EdgeInsets, Value, value_mapper(),
-                            "right", right),
-            ADV_PROP_MAPPER(elements::EdgeInsets, Value, value_mapper(),
-                            "bottom", bottom)}));
+using Alignment = elements::EdgeInsets;
+Mapper<Alignment>* alignment_mapper = new ObjectMapper<Alignment>(
+    {new PropMapper<Alignment, Value>(value_mapper, "left", GET(left)),
+     new PropMapper<Alignment, Value>(value_mapper, "top", GET(top)),
+     new PropMapper<Alignment, Value>(value_mapper, "right", GET(right)),
+     new PropMapper<Alignment, Value>(value_mapper, "bottom", GET(bottom))});
 
-MAPPER(padding_mapper, Padding,
-       ObjectMapper<Padding>(
-           {ADV_PROP_MAPPER(Padding, float, float_mapper(), "left", left),
-            ADV_PROP_MAPPER(Padding, float, float_mapper(), "top", top),
-            ADV_PROP_MAPPER(Padding, float, float_mapper(), "right", right),
-            ADV_PROP_MAPPER(Padding, float, float_mapper(), "bottom",
-                            bottom)}));
+Mapper<Padding>* padding_mapper = new ObjectMapper<Padding>(
+    {new PropMapper<Padding, float>(float_mapper, "left", GET(left)),
+     new PropMapper<Padding, float>(float_mapper, "top", GET(top)),
+     new PropMapper<Padding, float>(float_mapper, "right", GET(right)),
+     new PropMapper<Padding, float>(float_mapper, "bottom", GET(bottom))});
 
-MAPPER(size_constraints_mapper, elements::SizeConstraints,
-       ObjectMapper<elements::SizeConstraints>({
-           ADV_PROP_MAPPER(elements::SizeConstraints, Value, value_mapper(),
-                           "width", width),
-           ADV_PROP_MAPPER(elements::SizeConstraints, Value, value_mapper(),
-                           "height", height),
-           ADV_PROP_MAPPER(elements::SizeConstraints, Value, value_mapper(),
-                           "minWidth", min_width),
-           ADV_PROP_MAPPER(elements::SizeConstraints, Value, value_mapper(),
-                           "minHeight", min_height),
-           ADV_PROP_MAPPER(elements::SizeConstraints, Value, value_mapper(),
-                           "maxWidth", max_width),
-           ADV_PROP_MAPPER(elements::SizeConstraints, Value, value_mapper(),
-                           "maxHeight", max_height),
-       }));
+using SizeConstraints = elements::SizeConstraints;
+Mapper<SizeConstraints>* size_constraints_mapper =
+    new ObjectMapper<SizeConstraints>(
+        {new PropMapper<SizeConstraints, Value>(value_mapper, "width",
+                                                GET(width)),
+         new PropMapper<SizeConstraints, Value>(value_mapper, "height",
+                                                GET(height)),
+         new PropMapper<SizeConstraints, Value>(value_mapper, "minWidth",
+                                                GET(min_width)),
+         new PropMapper<SizeConstraints, Value>(value_mapper, "minHeight",
+                                                GET(min_height)),
+         new PropMapper<SizeConstraints, Value>(value_mapper, "maxWidth",
+                                                GET(max_width)),
+         new PropMapper<SizeConstraints, Value>(value_mapper, "maxHeight",
+                                                GET(max_height))});
 
-MAPPER(pointer_tool_mapper, PointerTool,
-       EnumMapper<PointerTool>(int_mapper()));
+auto pointer_tool_mapper = new EnumMapper<PointerTool>(int_mapper);
+auto pointer_action_mapper = new EnumMapper<PointerAction>(int_mapper);
+Mapper<PointerEvent>* pointer_event_mapper = new ObjectMapper<PointerEvent>(
+    {new PropMapper<PointerEvent, int>(int_mapper, "timestamp", GET(timestamp)),
+     new PropMapper<PointerEvent, int>(int_mapper, "pointerId",
+                                       GET(pointer_id)),
+     new PropMapper<PointerEvent, PointerTool>(pointer_tool_mapper, "tool",
+                                               GET(tool)),
+     new PropMapper<PointerEvent, PointerAction>(pointer_action_mapper,
+                                                 "action", GET(action)),
+     new PropMapper<PointerEvent, float>(float_mapper, "left", GET(left)),
+     new PropMapper<PointerEvent, float>(float_mapper, "top", GET(top))});
 
-MAPPER(pointer_action_mapper, PointerAction,
-       EnumMapper<PointerAction>(int_mapper()));
+auto key_action_mapper = new EnumMapper<KeyAction>(int_mapper);
+Mapper<KeyEvent>* key_event_mapper = new ObjectMapper<KeyEvent>(
+    {new PropMapper<KeyEvent, int>(int_mapper, "key", GET(key)),
+     new PropMapper<KeyEvent, int>(int_mapper, "scancode", GET(scancode)),
+     new PropMapper<KeyEvent, KeyAction>(key_action_mapper, "action",
+                                         GET(action))});
 
-MAPPER(pointer_event_mapper, PointerEvent,
-       ObjectMapper<PointerEvent>(
-           {ADV_PROP_MAPPER(PointerEvent, int, int_mapper(), "timestamp",
-                            timestamp),
-            ADV_PROP_MAPPER(PointerEvent, int, int_mapper(), "pointerId",
-                            pointer_id),
-            ADV_PROP_MAPPER(PointerEvent, PointerTool, pointer_tool_mapper(),
-                            "tool", tool),
-            ADV_PROP_MAPPER(PointerEvent, PointerAction,
-                            pointer_action_mapper(), "action", action),
-            ADV_PROP_MAPPER(PointerEvent, float, float_mapper(), "left", left),
-            ADV_PROP_MAPPER(PointerEvent, float, float_mapper(), "top", top)}));
-
-MAPPER(key_action_mapper, KeyAction, EnumMapper<KeyAction>(int_mapper()));
-
-MAPPER(key_event_mapper, KeyEvent,
-       ObjectMapper<KeyEvent>(
-           {ADV_PROP_MAPPER(KeyEvent, int, int_mapper(), "key", key),
-            ADV_PROP_MAPPER(KeyEvent, int, int_mapper(), "scancode", scancode),
-            ADV_PROP_MAPPER(KeyEvent, KeyAction, key_action_mapper(), "action",
-                            action)}));
-
-MAPPER(scroll_event_mapper, ScrollEvent,
-       ObjectMapper<ScrollEvent>(
-           {ADV_PROP_MAPPER(ScrollEvent, float, float_mapper(), "top", top),
-            ADV_PROP_MAPPER(ScrollEvent, float, float_mapper(), "left",
-                            left)}));
+Mapper<ScrollEvent>* scroll_event_mapper = new ObjectMapper<ScrollEvent>(
+    {new PropMapper<ScrollEvent, float>(float_mapper, "top", GET(top)),
+     new PropMapper<ScrollEvent, float>(float_mapper, "left", GET(left))});
 
 }  // namespace aardvark::js

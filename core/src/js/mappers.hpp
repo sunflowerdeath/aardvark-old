@@ -5,11 +5,6 @@
 #include <vector>
 #include "JavaScriptCore/JavaScript.h"
 
-// Helper for shorter defining PropMapper
-#define ADV_PROP_MAPPER(T, F, MAPPER, PROP_NAME, MEMBER_NAME) \
-    std::make_shared<PropMapper<T, F>>(                       \
-        MAPPER, PROP_NAME, [](T* value) { return &(value->MEMBER_NAME); })
-
 namespace aardvark::js {
 
 // Interface for mapping native value to JS value
@@ -101,8 +96,7 @@ class PropMapper : public BasePropMapper<T> {
 template <typename T>
 class ObjectMapper : public Mapper<T> {
   public:
-    ObjectMapper(std::vector<std::shared_ptr<BasePropMapper<T>>> fields)
-        : fields(std::move(fields)){};
+    ObjectMapper(std::vector<BasePropMapper<T>*> fields) : fields(fields){};
 
     JSValueRef to_js(JSContextRef ctx, const T& value) override {
         auto object = JSObjectMake(ctx, nullptr, nullptr);
@@ -118,7 +112,7 @@ class ObjectMapper : public Mapper<T> {
     };
 
   private:
-    std::vector<std::shared_ptr<BasePropMapper<T>>> fields;
+    std::vector<BasePropMapper<T>*> fields;
 };
 
 }  // namespace aardvark::js

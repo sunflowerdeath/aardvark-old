@@ -39,7 +39,7 @@ JSValueRef document_add_key_handler(JSContextRef ctx, JSObjectRef function,
                                     const JSValueRef arguments[],
                                     JSValueRef* exception) {
     return signal_event_sink_add_handler<KeyEvent>(
-        get_document(ctx, object)->key_event_sink, key_event_mapper(), ctx,
+        get_document(ctx, object)->key_event_sink, key_event_mapper, ctx,
         arguments[0]);
 }
 
@@ -48,13 +48,13 @@ JSValueRef document_add_scroll_handler(JSContextRef ctx, JSObjectRef function,
                                     const JSValueRef arguments[],
                                     JSValueRef* exception) {
     return signal_event_sink_add_handler<ScrollEvent>(
-        get_document(ctx, object)->scroll_event_sink, scroll_event_mapper(),
+        get_document(ctx, object)->scroll_event_sink, scroll_event_mapper,
         ctx, arguments[0]);
 }
 
 std::vector<JSValueRef> pointer_event_handler_args_to_js(JSContextRef ctx,
                                                          PointerEvent event) {
-    return std::vector<JSValueRef>{pointer_event_mapper()->to_js(ctx, event)};
+    return std::vector<JSValueRef>{pointer_event_mapper->to_js(ctx, event)};
 }
 
 FunctionWrapper<void, PointerEvent> pointer_event_handler_from_js(
