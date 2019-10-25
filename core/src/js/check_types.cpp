@@ -174,7 +174,7 @@ Checker make_shape(std::unordered_map<std::string, Checker> shape, bool loose) {
         auto object = JSValueToObject(ctx, value, nullptr);
         for (auto& it : shape) {
             auto key = JsStringWrapper(it.first);
-            auto key_value = JSValueRef();
+            JSValueRef key_value;
             if (JSObjectHasProperty(ctx, object, key.get())) {
                 key_value =
                     JSObjectGetProperty(ctx, object, key.get(), nullptr);

@@ -115,5 +115,69 @@ class ObjectMapper : public Mapper<T> {
     std::vector<BasePropMapper<T>*> fields;
 };
 
+template <typename F, typename... Ts>
+inline void template_foreach(F f, const Ts&... args) {
+    // initializer_list allows to expand variadic template parameter `args` to
+    // multiple statements. Each expansion calls provided lambda function with
+    // item from `args`.
+    (void)std::initializer_list<int>{[&f](const auto& arg) {
+        f(arg);
+        return 0;
+    }(args)...};
+}
+
+template <typename T, typename... F>
+class BetterObjectMapper : public Mapper<T> {
+  public:
+    BetterObjectMapper(std::tuple<const char*, F T::*, Mapper<F>*>... fields) {
+        template_foreach(
+            [&](const auto& arg) { prop_names.push_back(std::get<0>(arg)); });
+
+        // Generated function that iterates over all property definitions and
+        // maps js properties and corresponding object members using mappers
+        map_props_to_js = [&](JSContextRef ctx, const T& value) {
+            auto result = JSObjectMake(ctx, nullptr, nullptr);
+            template_foreach(
+                [&](const auto& def) {
+                    auto [prop_name, member_ptr, mapper] = def;
+                    auto prop_value = mapper->to_js(ctx, value.*member_ptr);
+                    auto js_prop_name = JsStringCache::get(prop_name);
+                    JSObjectSetProperty(ctx, result, js_prop_name, prop_value,
+                                        kJSPropertyAttributeNone, nullptr);
+                },
+                fields...);
+            return result;
+        };
+
+        map_props_from_js = [&](JSContextRef ctx, JSValueRef value) {
+            auto object = JSValueToObject(ctx, value, nullptr);
+            T result;
+            template_foreach([&](const auto& def){
+                auto [prop_name, member_ptr, mapper] = def;
+                auto js_prop_name = JsStringCache::get(prop_name);
+                if (JSObjectHasProperty(ctx, object, js_prop_name)) {
+                    auto prop_value =
+                        JSObjectGetProperty(ctx, object, js_prop_name, nullptr);
+                    result.*member_ptr = mapper->from_js(ctx, prop_value);
+                }
+            }, fields...);
+            return result;
+        };
+    }
+
+    JSValueRef to_js(JSContextRef ctx, const T& value) override {
+        return map_props_to_js(ctx, value);
+    };
+
+    T from_js(JSContextRef ctx, JSValueRef value) override {
+        return map_props_from_js(ctx, value);
+    };
+
+  private:
+    std::vector<const char*> prop_names;
+    std::function<JSValueRef(JSContextRef ctx, const T& value)> map_props_to_js;
+    std::function<T(JSContextRef ctx, JSValueRef value)> map_props_from_js;
+};
+
 }  // namespace aardvark::js
 

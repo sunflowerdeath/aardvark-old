@@ -12,13 +12,14 @@ Mapper<std::string>* str_mapper =
 Mapper<UnicodeString>* icu_str_mapper =
     new SimpleMapper<UnicodeString, icu_str_to_js, icu_str_from_js>();
 
-Mapper<Size>* size_mapper = new ObjectMapper<Size>(
-    {new PropMapper<Size, float>(float_mapper, "width", GET(width)),
-     new PropMapper<Size, float>(float_mapper, "height", GET(height))});
+Mapper<Size>* size_mapper = new BetterObjectMapper<Size, float, float>(
+    {{"width", &Size::width, float_mapper},
+     {"height", &Size::height, float_mapper}});
 
-Mapper<Position>* position_mapper = new ObjectMapper<Position>(
-    {new PropMapper<Position, float>(float_mapper, "left", GET(left)),
-     new PropMapper<Position, float>(float_mapper, "top", GET(top))});
+Mapper<Position>* position_mapper =
+    new BetterObjectMapper<Position, float, float>(
+        {{"left", &Position::left, float_mapper},
+         {"top", &Position::left, float_mapper}});
 
 using ValueType = Value::ValueType;
 auto value_type_mapper = new EnumMapper<ValueType>(int_mapper);
@@ -27,15 +28,12 @@ Mapper<Value>* value_mapper = new ObjectMapper<Value>(
      new PropMapper<Value, float>(float_mapper, "value", GET(value))});
 
 Mapper<BoxConstraints>* box_constraints_mapper =
-    new ObjectMapper<BoxConstraints>(
-        {new PropMapper<BoxConstraints, float>(float_mapper, "minWidth",
-                                               GET(min_width)),
-         new PropMapper<BoxConstraints, float>(float_mapper, "maxWidth",
-                                               GET(max_width)),
-         new PropMapper<BoxConstraints, float>(float_mapper, "minHeight",
-                                               GET(min_height)),
-         new PropMapper<BoxConstraints, float>(float_mapper, "maxHeight",
-                                               GET(max_height))});
+    new BetterObjectMapper<BoxConstraints, float, float, float, float>({
+        {"minWidth", &BoxConstraints::min_width, float_mapper},
+        {"maxWidth", &BoxConstraints::max_width, float_mapper},
+        {"minHeight", &BoxConstraints::min_height, float_mapper},
+        {"maxHeight", &BoxConstraints::max_height, float_mapper},
+    });
 
 SkColor color_from_js(JSContextRef ctx, JSValueRef js_value) {
     auto object = JSValueToObject(ctx, js_value, nullptr);
@@ -77,19 +75,14 @@ Mapper<Padding>* padding_mapper = new ObjectMapper<Padding>(
 
 using SizeConstraints = elements::SizeConstraints;
 Mapper<SizeConstraints>* size_constraints_mapper =
-    new ObjectMapper<SizeConstraints>(
-        {new PropMapper<SizeConstraints, Value>(value_mapper, "width",
-                                                GET(width)),
-         new PropMapper<SizeConstraints, Value>(value_mapper, "height",
-                                                GET(height)),
-         new PropMapper<SizeConstraints, Value>(value_mapper, "minWidth",
-                                                GET(min_width)),
-         new PropMapper<SizeConstraints, Value>(value_mapper, "minHeight",
-                                                GET(min_height)),
-         new PropMapper<SizeConstraints, Value>(value_mapper, "maxWidth",
-                                                GET(max_width)),
-         new PropMapper<SizeConstraints, Value>(value_mapper, "maxHeight",
-                                                GET(max_height))});
+    new BetterObjectMapper<SizeConstraints, Value, Value, Value, Value, Value,
+                           Value>(
+        {"width", &SizeConstraints::width, value_mapper},
+        {"height", &SizeConstraints::height, value_mapper},
+        {"minWidth", &SizeConstraints::min_width, value_mapper},
+        {"minHeight", &SizeConstraints::min_height, value_mapper},
+        {"maxWidth", &SizeConstraints::max_width, value_mapper},
+        {"maxHeight", &SizeConstraints::max_height, value_mapper});
 
 auto pointer_tool_mapper = new EnumMapper<PointerTool>(int_mapper);
 auto pointer_action_mapper = new EnumMapper<PointerAction>(int_mapper);
