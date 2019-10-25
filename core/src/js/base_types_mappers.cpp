@@ -1,7 +1,5 @@
 #include "base_types_mappers.hpp"
 
-#define GET(name) [](auto* obj) { return &(obj->name); }
-
 namespace aardvark::js {
 
 Mapper<int>* int_mapper = new SimpleMapper<int, int_to_js, int_from_js>();
@@ -12,23 +10,23 @@ Mapper<std::string>* str_mapper =
 Mapper<UnicodeString>* icu_str_mapper =
     new SimpleMapper<UnicodeString, icu_str_to_js, icu_str_from_js>();
 
-Mapper<Size>* size_mapper = new BetterObjectMapper<Size, float, float>(
+Mapper<Size>* size_mapper = new ObjectMapper<Size, float, float>(
     {{"width", &Size::width, float_mapper},
      {"height", &Size::height, float_mapper}});
 
-Mapper<Position>* position_mapper =
-    new BetterObjectMapper<Position, float, float>(
-        {{"left", &Position::left, float_mapper},
-         {"top", &Position::left, float_mapper}});
+Mapper<Position>* position_mapper = new ObjectMapper<Position, float, float>(
+    {{"left", &Position::left, float_mapper},
+     {"top", &Position::top, float_mapper}});
 
 using ValueType = Value::ValueType;
 auto value_type_mapper = new EnumMapper<ValueType>(int_mapper);
-Mapper<Value>* value_mapper = new ObjectMapper<Value>(
-    {new PropMapper<Value, ValueType>(value_type_mapper, "type", GET(type)),
-     new PropMapper<Value, float>(float_mapper, "value", GET(value))});
+Mapper<Value>* value_mapper = new ObjectMapper<Value, ValueType, float>({
+    {"type", &Value::type, value_type_mapper},
+    {"value", &Value::value, float_mapper},
+});
 
 Mapper<BoxConstraints>* box_constraints_mapper =
-    new BetterObjectMapper<BoxConstraints, float, float, float, float>({
+    new ObjectMapper<BoxConstraints, float, float, float, float>({
         {"minWidth", &BoxConstraints::min_width, float_mapper},
         {"maxWidth", &BoxConstraints::max_width, float_mapper},
         {"minHeight", &BoxConstraints::min_height, float_mapper},
@@ -61,22 +59,23 @@ Mapper<SkColor>* color_mapper =
     new SimpleMapper<SkColor, color_to_js, color_from_js>();
 
 using Alignment = elements::EdgeInsets;
-Mapper<Alignment>* alignment_mapper = new ObjectMapper<Alignment>(
-    {new PropMapper<Alignment, Value>(value_mapper, "left", GET(left)),
-     new PropMapper<Alignment, Value>(value_mapper, "top", GET(top)),
-     new PropMapper<Alignment, Value>(value_mapper, "right", GET(right)),
-     new PropMapper<Alignment, Value>(value_mapper, "bottom", GET(bottom))});
+Mapper<Alignment>* alignment_mapper =
+    new ObjectMapper<Alignment, Value, Value, Value, Value>(
+        {{"left", &Alignment::left, value_mapper},
+         {"top", &Alignment::top, value_mapper},
+         {"right", &Alignment::right, value_mapper},
+         {"bottom", &Alignment::bottom, value_mapper}});
 
-Mapper<Padding>* padding_mapper = new ObjectMapper<Padding>(
-    {new PropMapper<Padding, float>(float_mapper, "left", GET(left)),
-     new PropMapper<Padding, float>(float_mapper, "top", GET(top)),
-     new PropMapper<Padding, float>(float_mapper, "right", GET(right)),
-     new PropMapper<Padding, float>(float_mapper, "bottom", GET(bottom))});
+Mapper<Padding>* padding_mapper =
+    new ObjectMapper<Padding, float, float, float, float>(
+        {{"left", &Padding::left, float_mapper},
+         {"top", &Padding::top, float_mapper},
+         {"right", &Padding::right, float_mapper},
+         {"bottom", &Padding::bottom, float_mapper}});
 
 using SizeConstraints = elements::SizeConstraints;
 Mapper<SizeConstraints>* size_constraints_mapper =
-    new BetterObjectMapper<SizeConstraints, Value, Value, Value, Value, Value,
-                           Value>(
+    new ObjectMapper<SizeConstraints, Value, Value, Value, Value, Value, Value>(
         {"width", &SizeConstraints::width, value_mapper},
         {"height", &SizeConstraints::height, value_mapper},
         {"minWidth", &SizeConstraints::min_width, value_mapper},
@@ -86,26 +85,27 @@ Mapper<SizeConstraints>* size_constraints_mapper =
 
 auto pointer_tool_mapper = new EnumMapper<PointerTool>(int_mapper);
 auto pointer_action_mapper = new EnumMapper<PointerAction>(int_mapper);
-Mapper<PointerEvent>* pointer_event_mapper = new ObjectMapper<PointerEvent>(
-    {new PropMapper<PointerEvent, int>(int_mapper, "timestamp", GET(timestamp)),
-     new PropMapper<PointerEvent, int>(int_mapper, "pointerId",
-                                       GET(pointer_id)),
-     new PropMapper<PointerEvent, PointerTool>(pointer_tool_mapper, "tool",
-                                               GET(tool)),
-     new PropMapper<PointerEvent, PointerAction>(pointer_action_mapper,
-                                                 "action", GET(action)),
-     new PropMapper<PointerEvent, float>(float_mapper, "left", GET(left)),
-     new PropMapper<PointerEvent, float>(float_mapper, "top", GET(top))});
+Mapper<PointerEvent>* pointer_event_mapper =
+    new ObjectMapper<PointerEvent, int, int, PointerTool, PointerAction, float,
+                     float>({
+        {"timestamp", &PointerEvent::timestamp, int_mapper},
+        {"pointerId", &PointerEvent::pointer_id, int_mapper},
+        {"tool", &PointerEvent::tool, pointer_tool_mapper},
+        {"action", &PointerEvent::action, pointer_action_mapper},
+        {"left", &PointerEvent::left, float_mapper},
+        {"top", &PointerEvent::top, float_mapper},
+    });
 
 auto key_action_mapper = new EnumMapper<KeyAction>(int_mapper);
-Mapper<KeyEvent>* key_event_mapper = new ObjectMapper<KeyEvent>(
-    {new PropMapper<KeyEvent, int>(int_mapper, "key", GET(key)),
-     new PropMapper<KeyEvent, int>(int_mapper, "scancode", GET(scancode)),
-     new PropMapper<KeyEvent, KeyAction>(key_action_mapper, "action",
-                                         GET(action))});
+Mapper<KeyEvent>* key_event_mapper =
+    new ObjectMapper<KeyEvent, int, int, KeyAction>(
+        {{"key", &KeyEvent::key, int_mapper},
+         {"scancode", &KeyEvent::scancode, int_mapper},
+         {"action", &KeyEvent::action, key_action_mapper}});
 
-Mapper<ScrollEvent>* scroll_event_mapper = new ObjectMapper<ScrollEvent>(
-    {new PropMapper<ScrollEvent, float>(float_mapper, "top", GET(top)),
-     new PropMapper<ScrollEvent, float>(float_mapper, "left", GET(left))});
+Mapper<ScrollEvent>* scroll_event_mapper =
+    new ObjectMapper<ScrollEvent, float, float>(
+        {{"left", &ScrollEvent::left, float_mapper},
+         {"top", &ScrollEvent::top, float_mapper}});
 
 }  // namespace aardvark::js
