@@ -4,30 +4,18 @@
 #include <regex>
 #include "../utils/log.hpp"
 #include "../utils/files_utils.hpp"
+#include "mappers.hpp"
+#include "base_types_mappers.hpp"
 
 namespace aardvark::js {
 
 namespace fs = std::experimental::filesystem;
 
-JsErrorLocation js_error_location_from_js(JSContextRef ctx, JSValueRef value) {
-    auto object = JSValueToObject(ctx, value, nullptr);
-    auto loc = JsErrorLocation();
-    map_prop_from_js<std::string, str_from_js>(ctx, object, "sourceURL",
-                                               &loc.source_url);
-    map_prop_from_js<int, int_from_js>(ctx, object, "line", &loc.line);
-    map_prop_from_js<int, int_from_js>(ctx, object, "column", &loc.column);
-    return loc;
-}
-
-JSValueRef js_error_location_to_js(JSContextRef ctx,
-                                   const JsErrorLocation& location) {
-    auto object = JSObjectMake(ctx, nullptr, nullptr);
-    map_prop_to_js<std::string, str_to_js>(ctx, object, "sourceURL",
-                                           location.source_url);
-    map_prop_to_js<int, int_to_js>(ctx, object, "line", location.line);
-    map_prop_to_js<int, int_to_js>(ctx, object, "column", location.column);
-    return object;
-}
+auto js_error_location_mapper =
+    new ObjectMapper<JsErrorLocation, std::string, int, int>(
+        {"sourceURL", &JsErrorLocation::source_url, str_mapper},
+        {"line", &JsErrorLocation::line, int_mapper},
+        {"column", &JsErrorLocation::column, int_mapper});
 
 std::string get_source_map_url(const std::string& source) {
     static auto re = std::regex("\n//# sourceMappingURL=(.+)$");
@@ -116,7 +104,7 @@ void ModuleLoader::handle_exception(JSValueRef exception) {
     if (ctx_wptr.expired()) return;
     auto ctx = ctx_wptr.lock()->get();
 
-    auto location = js_error_location_from_js(ctx, exception);
+    auto location = js_error_location_mapper->from_js(ctx, exception);
     auto error = JsError{
         exception,                                  // value
         aardvark::js::str_from_js(ctx, exception),  // text
@@ -134,10 +122,8 @@ std::optional<JsErrorLocation> ModuleLoader::get_original_location(
     if (!enable_source_maps || location.source_url.empty()) return std::nullopt;
     auto it = source_maps.find(location.source_url);
     if (it == source_maps.end()) return std::nullopt;
-    auto object = JSValueToObject(ctx, js_get_original_location.get(), nullptr);
-    JSValueRef args[] = {js_error_location_to_js(ctx, location),
-                         it->second.get()};
-    auto exception = JSValueRef();
+    auto source_map = it->second.get();
+
     auto result = JSObjectCallAsFunction(ctx,        // ctx
                                          object,     // object
                                          nullptr,    // thisObject
@@ -149,7 +135,7 @@ std::optional<JsErrorLocation> ModuleLoader::get_original_location(
         Log::warn("Could not get original location from source map");
         return std::nullopt;
     }
-    return js_error_location_from_js(ctx, result);
+    return js_error_location_mapper->from_js(ctx, result);
 }
 
 }  // namespace aardvark::js

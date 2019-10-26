@@ -67,15 +67,16 @@ class ObjectMapper : public Mapper<T> {
   public:
     ObjectMapper(std::tuple<const char*, F T::*, Mapper<F>*>... fields) {
         template_foreach(
-            [&](const auto& arg) { prop_names.push_back(std::get<0>(arg)); });
+            [&](const auto& arg) { prop_names.push_back(std::get<0>(arg)); },
+            fields...);
 
         // Generated function that iterates over all property definitions and
         // maps js properties and corresponding object members using mappers
         map_props_to_js = [=](JSContextRef ctx, const T& value) {
             auto result = JSObjectMake(ctx, nullptr, nullptr);
             template_foreach(
-                [&](const auto& def) {
-                    auto [prop_name, member_ptr, mapper] = def;
+                [&](const auto& field) {
+                    auto [prop_name, member_ptr, mapper] = field;
                     auto prop_value = mapper->to_js(ctx, value.*member_ptr);
                     auto js_prop_name = JsStringCache::get(prop_name);
                     JSObjectSetProperty(ctx, result, js_prop_name, prop_value,
@@ -86,10 +87,13 @@ class ObjectMapper : public Mapper<T> {
         };
 
         map_props_from_js = [=](JSContextRef ctx, JSValueRef value) {
+            // TODO check if value is object
             auto object = JSValueToObject(ctx, value, nullptr);
+            // TODO check properties
             T result;
-            template_foreach([&](const auto& def){
-                auto [prop_name, member_ptr, mapper] = def;
+            template_foreach([&](const auto& field){
+                // TODO check property type (call mapper->check)
+                auto [prop_name, member_ptr, mapper] = field;
                 auto js_prop_name = JsStringCache::get(prop_name);
                 if (JSObjectHasProperty(ctx, object, js_prop_name)) {
                     auto prop_value =
@@ -108,6 +112,14 @@ class ObjectMapper : public Mapper<T> {
     T from_js(JSContextRef ctx, JSValueRef value) override {
         return map_props_from_js(ctx, value);
     };
+
+    /*
+    T from_js(JSContextRef ctx, JSValueRef value,
+              const CheckErrorParams& err_params,
+              JSValueRef* exception) override {
+        return map_props_from_js(ctx, value, err_params, exception);
+    };
+    */
 
   private:
     std::vector<const char*> prop_names;
