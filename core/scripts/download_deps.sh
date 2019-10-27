@@ -7,8 +7,11 @@ mkdir -p $ROOT/downloads
 cd $ROOT/downloads
 
 # fmt@5.2.1
-# echo "clone fmt@5.2.1"
-# git clone https://github.com/fmtlib/fmt -b 5.2.1 --depth 1
+#echo "clone fmt@5.2.1"
+#git clone https://github.com/fmtlib/fmt -b 5.2.1 --depth 1
+
+# fmt@5.3.0
+curl "https://github.com/fmtlib/fmt/releases/download/5.3.0/fmt-5.3.0.zip" -L -# > fmt-5.3.0.zip
 
 # boost@1.71.0
 echo "download boost@1.71.0"
@@ -37,3 +40,11 @@ curl "https://github.com/glfw/glfw/releases/download/3.2.1/glfw-3.2.1.zip" -L -#
 # Catch2
 echo "download Catch2"
 curl "https://github.com/catchorg/Catch2/releases/download/v2.5.0/catch.hpp" -L -# > catch.hpp
+
+# nod@0.5.0
+echo "download nod"
+curl "https://github.com/fr00b0/nod/archive/v0.5.0.zip" -L -# > nod-0.5.0.zip
+
+# spdlog@1.4.2
+echo "download spdlog@1.4.2"
+curl "https://github.com/gabime/spdlog/archive/v1.4.2.zip" -L -# > spdlog-1.4.2.zip

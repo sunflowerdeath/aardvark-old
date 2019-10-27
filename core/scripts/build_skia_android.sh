@@ -5,12 +5,13 @@ BUILD_DIR=$SKIA_DIR/lib/android-arm64
 
 $SKIA_DIR/bin/gn gen $BUILD_DIR --root=$SKIA_DIR --args="\
 is_official_build=true \
-skia_enable_tools=false \
 target_os=\"android\" \
 target_cpu=\"arm64\" \
 skia_use_icu=false \
+skia_use_dng_sdk=false \
 skia_use_sfntly=false \
 skia_use_piex=false \
+skia_enable_pdf=false \
 skia_use_libwebp=false \
 skia_use_system_expat=false \
 skia_use_system_freetype2=false \

@@ -124,8 +124,12 @@ std::optional<JsErrorLocation> ModuleLoader::get_original_location(
     if (it == source_maps.end()) return std::nullopt;
     auto source_map = it->second.get();
 
+    auto func = JSValueToObject(ctx, js_get_original_location.get(), nullptr);
+    JSValueRef args[] = {js_error_location_mapper->to_js(ctx, location),
+                         source_map};
+    JSValueRef exception;
     auto result = JSObjectCallAsFunction(ctx,        // ctx
-                                         object,     // object
+                                         func,       // object
                                          nullptr,    // thisObject
                                          2,          // argumentCount
                                          args,       // arguments[],
