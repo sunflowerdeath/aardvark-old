@@ -51,9 +51,10 @@ if [ "$DEP" = "nod" ] || [ "$DEP" = "all" ]; then
 fi
 
 if [ "$DEP" = "skia" ] || [ "$DEP" = "all" ]; then
-	echo "clone skia@m71"
+	echo "download skia@m71"
+	curl https://github.com/google/skia/archive/chrome/m71.zip -L -# > skia-chrome-m71.zip
 	# git clone https://github.com/google/skia.git -b chrome/m71 --depth 1
-	git clone https://skia.googlesource.com/skia.git -b chrome/m71 --depth 1
+	# git clone https://skia.googlesource.com/skia.git -b chrome/m71 --depth 1
 fi
 
 if [ "$DEP" = "spdlog" ] || [ "$DEP" = "all" ]; then

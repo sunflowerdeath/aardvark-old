@@ -65,8 +65,9 @@ fi
 # skia
 if [ "$DEP" = "skia" ] || [ "$DEP" = "all" ]; then
 	SKIA_DIR=$ROOT/externals/skia
-	echo "Skia: copy source"
-	cp $ROOT/downloads/skia $SKIA_DIR -r
+	echo "Skia: extract source"
+	unzip -q $ROOT/downloads/skia-chrome-m71.zip -d $ROOT/externals
+	mv $ROOT/externals/skia-chrome-m71 $ROOT/externals/skia
 	# Patch disables unneeded third-party deps to reduce download size
 	echo "Skia: patch source"
 	patch -d $SKIA_DIR -p3 < $ROOT/scripts/skia.patch
@@ -91,5 +92,5 @@ if [ "$DEP" = "webkitgtk" ] || [ "$DEP" = "all" ]; then
 	patch -d $WEBKIT_DIR -p3 < $ROOT/scripts/WebKit.patch
 	echo "WebKit: copy include headers"
 	mkdir -p $WEBKIT_DIR/include/JavaScriptCore
-	cp -r $WEBKIT_DIR/Source/JavaScriptCore/API $WEBKIT_DIR/include/JavaScriptCore
+	cp -a $WEBKIT_DIR/Source/JavaScriptCore/API/. $WEBKIT_DIR/include/JavaScriptCore
 fi
