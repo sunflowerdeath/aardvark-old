@@ -6,7 +6,8 @@
   "scripts": {
     "build": "../../node_modules/.bin/webpack",
     "start": "../../../core/build/bin/jsc_example build/main.js",
-    "debug": "gdb --args ../../../core/build/bin/jsc_example build/main.js"
+    "debug": "gdb --args ../../../core/build/bin/jsc_example build/main.js",
+    "lldb": "lldb ../../../core/build/bin/jsc_example -- build/main.js"
   },
   "dependencies": {
     "@advk/common": "*",

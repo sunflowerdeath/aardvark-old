@@ -3,8 +3,8 @@
 ICU_DIR=$PWD/externals/icu
 
 # usage: 
-# PLATFORM=android ARCH=arm|arm64 ./scripts/compile_icu.sh
-# PLATFORM=linux ARCH=x86|x86_64 ./scripts/compile_icu.sh
+# PLATFORM=android ARCH=arm|arm64 ./scripts/build_icu.sh
+# PLATFORM=linux ARCH=x86|x86_64 ./scripts/build_icu.sh
 
 COMMON_OPTIONS=" \
     --enable-static=yes \
@@ -23,6 +23,15 @@ COMMON_CXXFLAGS="$COMMON_CFLAGS --std=c++11"
 
 mkdir -p $ICU_DIR/build-$PLATFORM-$ARCH
 cd $ICU_DIR/build-$PLATFORM-$ARCH
+
+if [ "$PLATFORM" = "linux" ]; then
+    $ICU_DIR/source/configure \
+        $COMMON_OPTIONS \
+        CFLAGS="$COMMON_CFLAGS" \
+        CXXFLAGS="$COMMON_CXXFLAGS" \
+        CC=clang \
+        CXX=clang++
+fi
 
 if [ "$PLATFORM" = "android" ]; then
     if [ "$ARCH" = "arm64" ]; then
@@ -49,15 +58,6 @@ if [ "$PLATFORM" = "android" ]; then
         CXX=$CXX \
         AR=$TOOLCHAIN_DIR/$CROSS_COMPILE_PLATFORM-ar \
         RANLIB=$TOOLCHAIN_DIR/$CROSS_COMPILE_PLATFORM-ranlib
-fi
-
-if [ "$PLATFORM" = "linux" ]; then
-    $ICU_DIR/source/configure \
-        $COMMON_OPTIONS \
-        CFLAGS="$COMMON_CFLAGS" \
-        CXXFLAGS="$COMMON_CXXFLAGS" \
-        CC=clang \
-        CXX=clang++
 fi
 
 make -j7

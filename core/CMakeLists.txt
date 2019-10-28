@@ -133,20 +133,19 @@ set(SKIA_DEPS ${DL_LIB} ${CMAKE_THREAD_LIBS_INIT})
 if (ADV_PLATFORM STREQUAL "linux")
     set(SKIA_DEFINES ${SKIA_DEFINES} "SK_SAMPLES_FOR_X") # always set for linux
 
-    cmake_policy(SET CMP0072 NEW)       # prefer GLVND libs to legacy GL lib
-    find_package(OpenGL)
+    # cmake_policy(SET CMP0072 NEW)       # prefer GLVND libs to legacy GL lib
+    find_package(OpenGL REQUIRED)
     find_library(Z_LIB z)               # "skia_use_system_zlib"
     find_library(FONTCONFIG_LIB libfontconfig.so) # skia_use_fontconfig
-    find_library(EXPAT_LIB expat)       # skia_use_expat skia_use_system_expat
     find_library(FREETYPE_LIB freetype) # skia_use_system_freetype2
     find_library(JPEG_LIB jpeg)         # skia_use_system_libjpeg_turbo
     find_library(PNG_LIB png)           # skia_use_system_libpng
 
     set(SKIA_DEPS 
         ${SKIA_DEPS}
-        OpenGL::GL
+        OpenGL::OpenGL
+		OpenGL::GLX
         ${Z_LIB}
-        ${EXPAT_LIB}
         ${FONTCONFIG_LIB}
         ${FREETYPE_LIB}
         ${JPEG_LIB}
@@ -159,7 +158,7 @@ endif()
 
 add_library(skia STATIC IMPORTED GLOBAL)
 set_target_properties(skia PROPERTIES
-	IMPORTED_LOCATION "${SKIA_DIR}/lib/${ADV_PLATFORM}-${ADV_ARCH}/libskia.a"
+	IMPORTED_LOCATION "${SKIA_DIR}/build-${ADV_PLATFORM}-${ADV_ARCH}/libskia.a"
 	INTERFACE_INCLUDE_DIRECTORIES "${SKIA_INCLUDE_DIRS}"
 	INTERFACE_COMPILE_DEFINITIONS "${SKIA_DEFINES}"
 	INTERFACE_LINK_LIBRARIES "${SKIA_DEPS}")

@@ -1,5 +1,7 @@
 #include "layer.hpp"
 
+#include <iostream>
+
 #define GR_GL_FRAMEBUFFER_BINDING 0x8CA6
 #define GR_GL_BGRA8 0x93A1
 #define GR_GL_RGBA8 0x8058
@@ -74,6 +76,9 @@ std::shared_ptr<Layer> Layer::make_screen_layer(sk_sp<GrContext> gr_context) {
     auto surface(SkSurface::MakeFromBackendRenderTarget(
         gr_context.get(), target, kBottomLeft_GrSurfaceOrigin, color_type,
         nullptr, &props));
+	if (surface == nullptr) {
+		std::cout << "COULD NOT SURFACE" << std::endl;
+	}
     return std::make_shared<Layer>(surface);
 };
 

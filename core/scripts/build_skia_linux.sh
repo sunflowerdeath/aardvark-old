@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 SKIA_DIR=$PWD/externals/skia
-BUILD_DIR=$SKIA_DIR/lib/linux-x86-64
+BUILD_DIR=$SKIA_DIR/build-linux-x86_64
 
 # Skia build configuration:
 # is_official_build=true	Use system libs and disable test utilities 
