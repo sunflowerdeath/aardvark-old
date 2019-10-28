@@ -5,7 +5,7 @@
 namespace aardvark {
 
 const int STENCIL_BITS = 8;
-const int MSAA_SAMPLE_COUNT = 4;  // 4;
+const int MSAA_SAMPLE_COUNT = 0;
 
 DesktopWindow::DesktopWindow(DesktopApp* app, const Size& size)
     : app(app), size(size) {

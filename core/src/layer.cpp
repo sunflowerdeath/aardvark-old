@@ -1,6 +1,7 @@
 #include "layer.hpp"
 
-#include <iostream>
+#include <cstdlib>
+#include "utils/log.hpp"
 
 #define GR_GL_FRAMEBUFFER_BINDING 0x8CA6
 #define GR_GL_BGRA8 0x93A1
@@ -43,7 +44,7 @@ void Layer::paint_layer(Layer* layer, Position pos) {
 };
 
 const int STENCIL_BITS = 8;
-const int MSAA_SAMPLE_COUNT = 4;
+const int MSAA_SAMPLE_COUNT = 0;
 
 void measure_current_viewport_size(GLint* width, GLint* height) {
     GLint dimensions[4];
@@ -53,31 +54,34 @@ void measure_current_viewport_size(GLint* width, GLint* height) {
 }
 
 std::shared_ptr<Layer> Layer::make_screen_layer(sk_sp<GrContext> gr_context) {
-    // sk_sp<GrContext> gr_context = GrContext::MakeGL();
     // These values may be different on some devices
     const SkColorType color_type = kRGBA_8888_SkColorType;
     const GrGLenum color_format = GR_GL_RGBA8;
-    // Wrap the frame buffer object attached to the screen in a Skia render
-    // target Get an id of the current framebuffer object
-    GrGLint buffer;
-    glGetIntegerv(GR_GL_FRAMEBUFFER_BINDING, &buffer);
-    GrGLFramebufferInfo info;
-    info.fFBOID = (GrGLuint)buffer;
-    info.fFormat = color_format;
-    // Measure size
+
+    // Measure viewport size
     GLint width;
     GLint height;
     measure_current_viewport_size(&width, &height);
-    // Create skia render target
-    GrBackendRenderTarget target(width, height, MSAA_SAMPLE_COUNT, STENCIL_BITS,
-                                 info);
+
+	// Get an id of the currently attached to the screen framebuffer
+    GrGLint buffer;
+    glGetIntegerv(GR_GL_FRAMEBUFFER_BINDING, &buffer);
+
+    // Wrap the framebuffer in a Skia render target
+    GrGLFramebufferInfo info;
+    info.fFBOID = (GrGLuint)buffer;
+    info.fFormat = color_format;
+    auto target = GrBackendRenderTarget(width, height, MSAA_SAMPLE_COUNT,
+                                        STENCIL_BITS, info);
+
     // Setup skia surface
     SkSurfaceProps props(SkSurfaceProps::kLegacyFontHost_InitType);
     auto surface(SkSurface::MakeFromBackendRenderTarget(
         gr_context.get(), target, kBottomLeft_GrSurfaceOrigin, color_type,
         nullptr, &props));
 	if (surface == nullptr) {
-		std::cout << "COULD NOT SURFACE" << std::endl;
+		Log::error("[Layer] Cannot create screen layer surface");
+		std::exit(EXIT_FAILURE);
 	}
     return std::make_shared<Layer>(surface);
 };
