@@ -1,9 +1,12 @@
 sudo apt install \
+    curl \
     cmake \
     clang \
+    ruby \
     ninja-build \
     libfontconfig-dev \
     libjpeg-dev \
     libpng-dev \
-    mesa-common-dev \
+    libgl1-mesa-dev \
+    libglu1-mesa-dev \
     xorg-dev
