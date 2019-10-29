@@ -10,7 +10,7 @@ const TransformMatrix = {
         0, 1, 0,
         0, 0, 1],
 
-	makeTranslate() {
+	makeTranslate(dx, dy) {
 		// prettier-ignore
 		return [
             1, 0, dx,
@@ -38,10 +38,10 @@ const TransformMatrix = {
 
 	append(a, b) {
 		// prettier-ignore
-		return new Matrix(
+		return [
             rowxcol(a, b, 0, 0), rowxcol(a, b, 0, 1), rowxcol(a, b, 0, 2),
             rowxcol(a, b, 1, 0), rowxcol(a, b, 1, 1), rowxcol(a, b, 1, 2),
-            rowxcol(a, b, 2, 0), rowxcol(a, b, 2, 1), rowxcol(a, b, 2, 2))
+            rowxcol(a, b, 2, 0), rowxcol(a, b, 2, 1), rowxcol(a, b, 2, 2)]
 	}
 }
 
