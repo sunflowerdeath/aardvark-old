@@ -11,7 +11,7 @@ Size Layer::layout(BoxConstraints constraints) {
 };
 
 void Layer::paint(bool is_changed) {
-    layer_tree->transform = *std::get_if<SkMatrix>(&transform);
+    layer_tree->transform = transform;
     document->paint_element(child.get());
 };
 

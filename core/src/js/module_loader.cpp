@@ -1,5 +1,6 @@
 #include "module_loader.hpp"
 
+#include <iostream>
 #include <experimental/filesystem>
 #include <regex>
 #include "../utils/log.hpp"
@@ -104,7 +105,8 @@ void ModuleLoader::handle_exception(JSValueRef exception) {
     if (ctx_wptr.expired()) return;
     auto ctx = ctx_wptr.lock()->get();
 
-    auto location = js_error_location_mapper->from_js(ctx, exception);
+    // auto location = js_error_location_mapper->from_js(ctx, exception);
+    auto location = JsErrorLocation{};
     auto error = JsError{
         exception,                                  // value
         aardvark::js::str_from_js(ctx, exception),  // text

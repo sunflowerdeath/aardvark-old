@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SkMatrix.h"
 #include "../base_types.hpp"
 #include "../box_constraints.hpp"
 #include "../events.hpp"
@@ -21,6 +22,7 @@ extern Mapper<Position>* position_mapper;
 extern Mapper<Value>* value_mapper;
 extern Mapper<BoxConstraints>* box_constraints_mapper;
 extern Mapper<SkColor>* color_mapper;
+extern Mapper<SkMatrix>* matrix_mapper;
 
 extern Mapper<PointerEvent>* pointer_event_mapper;
 extern Mapper<KeyEvent>* key_event_mapper;

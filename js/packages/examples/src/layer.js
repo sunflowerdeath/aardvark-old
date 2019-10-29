@@ -11,11 +11,16 @@ import ReactAardvark, {
 const win = application.createWindow(640, 480)
 const document = application.getDocument(win)
 
+const toRad = deg => deg * Math.PI / 180
+
+// const matrix = TransformMatrix.identity
+const matrix = TransformMatrix.makeRotate(toRad(45), 50, 50)
+
 const App = () => (
 	<Stack>
 		<Background color={Color.WHITE} />
 		<Align align={{ top: Value.abs(50), left: Value.abs(50) }}>
-			<Layer>
+			<Layer transform={matrix}>
 				<Sized
 					sizeConstraints={{
 						width: Value.abs(100),

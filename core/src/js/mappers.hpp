@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include "JavaScriptCore/JavaScript.h"
+#include "../utils/log.hpp"
 
 namespace aardvark::js {
 
@@ -96,8 +97,10 @@ class ObjectMapper : public Mapper<T> {
                 auto [prop_name, member_ptr, mapper] = field;
                 auto js_prop_name = JsStringCache::get(prop_name);
                 if (JSObjectHasProperty(ctx, object, js_prop_name)) {
-                    auto prop_value =
-                        JSObjectGetProperty(ctx, object, js_prop_name, nullptr);
+                    JSValueRef exception;
+                    auto prop_value = JSObjectGetProperty(
+                        ctx, object, js_prop_name, &exception);
+                    auto value = mapper->from_js(ctx, prop_value);
                     result.*member_ptr = mapper->from_js(ctx, prop_value);
                 }
             }, fields...);

@@ -56,6 +56,26 @@ JSValueRef color_to_js(JSContextRef ctx, const SkColor& color) {
 Mapper<SkColor>* color_mapper =
     new SimpleMapper<SkColor, color_to_js, color_from_js>();
 
+SkMatrix matrix_from_js(JSContextRef ctx, JSValueRef js_value) {
+    auto object = JSValueToObject(ctx, js_value, nullptr);
+    float values[9];
+    for (auto i = 0; i < 9; i++) {
+        values[i] = float_mapper->from_js(
+            ctx, JSObjectGetPropertyAtIndex(ctx, object, i, nullptr));
+    }
+    auto matrix = SkMatrix();
+    matrix.set9(values);
+    return matrix;
+}
+
+JSValueRef matrix_to_js(JSContextRef ctx, const SkMatrix& color) {
+    // TODO
+    return JSValueMakeUndefined(ctx);
+}
+
+Mapper<SkMatrix>* matrix_mapper =
+    new SimpleMapper<SkMatrix, matrix_to_js, matrix_from_js>();
+
 using Alignment = elements::EdgeInsets;
 Mapper<Alignment>* alignment_mapper =
     new ObjectMapper<Alignment, Value, Value, Value, Value>(
