@@ -62,7 +62,6 @@ if [ "$DEP" = "nod" ] || [ "$DEP" = "all" ]; then
 	mv $ROOT/externals/nod-0.5.0 $ROOT/externals/nod
 fi
 
-# skia
 if [ "$DEP" = "skia" ] || [ "$DEP" = "all" ]; then
 	SKIA_DIR=$ROOT/externals/skia
 	echo "Skia: extract source"

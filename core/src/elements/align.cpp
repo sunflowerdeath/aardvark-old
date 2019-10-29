@@ -23,8 +23,8 @@ float Align::get_intrinsic_width() {
 
 Size Align::layout(BoxConstraints constraints) {
     auto left = insets.left.calc(constraints.max_width);
-    auto right = insets.right.calc(constraints.max_width);
     auto top = insets.top.calc(constraints.max_height);
+    auto right = insets.right.calc(constraints.max_width);
     auto bottom = insets.bottom.calc(constraints.max_height);
     auto horiz = left + right;
     auto vert = top + bottom;

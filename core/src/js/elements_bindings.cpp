@@ -150,6 +150,19 @@ JSValueRef element_insert_before_child(JSContextRef ctx, JSObjectRef function,
     return JSValueMakeUndefined(ctx);
 }
 
+JSValueRef element_set_layout_props(JSContextRef ctx, JSObjectRef function,
+                                    JSObjectRef object, size_t argument_count,
+                                    const JSValueRef arguments[],
+                                    JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto elem = host->element_index->get_native_object(object);
+    auto rel_position = position_mapper->from_js(ctx, arguments[0]);
+    auto size = size_mapper->from_js(ctx, arguments[1]);
+    elem->rel_position = rel_position;
+    elem->size = size;
+    return JSValueMakeUndefined(ctx);
+}
+
 JSValueRef element_immediate_layout(JSContextRef ctx, JSObjectRef function,
                                     JSObjectRef object, size_t argument_count,
                                     const JSValueRef arguments[],
@@ -168,6 +181,7 @@ JSClassRef element_create_class() {
         {"appendChild", element_append_child, PROP_ATTR_STATIC},
         {"removeChild", element_remove_child, PROP_ATTR_STATIC},
         {"insertBeforeChild", element_insert_before_child, PROP_ATTR_STATIC},
+        {"setLayoutProps", element_set_layout_props, PROP_ATTR_STATIC},
         {"immediateLayout", element_immediate_layout, PROP_ATTR_STATIC},
         {0, 0, 0}};
     JSStaticValue static_values[] = {
@@ -216,9 +230,8 @@ bool align_element_set_align(JSContextRef ctx, JSObjectRef object,
     */
 
     auto elem = get_elem<elements::Align>(ctx, object);
-    auto insets =
-        alignment_mapper->from_js(ctx, JSValueToObject(ctx, value, nullptr));
-    elem->insets = insets;
+    auto alignment = alignment_mapper->from_js(ctx, value);
+    elem->insets = alignment;
     elem->change();
     return true;
 }
@@ -286,6 +299,16 @@ JSClassRef background_elem_create_class(JSClassRef parent_class) {
 JSClassRef center_elem_create_class(JSClassRef parent_class) {
     auto definition =
         create_elem_class_definition("CenterElement", parent_class);
+    return JSClassCreate(&definition);
+}
+
+//------------------------------------------------------------------------------
+// Clip
+//------------------------------------------------------------------------------
+
+JSClassRef clip_elem_create_class(JSClassRef parent_class) {
+    auto definition =
+        create_elem_class_definition("ClipElement", parent_class);
     return JSClassCreate(&definition);
 }
 
@@ -483,6 +506,16 @@ JSClassRef flex_child_elem_create_class(JSClassRef parent_class) {
          flex_child_elem_set_tight_fit, kJSPropertyAttributeNone},
         {0, 0, 0, 0}};
     definition.staticValues = static_values;
+    return JSClassCreate(&definition);
+}
+
+//------------------------------------------------------------------------------
+// Layer
+//------------------------------------------------------------------------------
+
+JSClassRef layer_elem_create_class(JSClassRef parent_class) {
+    auto definition =
+        create_elem_class_definition("LayerElement", parent_class);
     return JSClassCreate(&definition);
 }
 

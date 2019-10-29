@@ -20,18 +20,16 @@ Mapper<Position>* position_mapper = new ObjectMapper<Position, float, float>(
 
 using ValueType = Value::ValueType;
 auto value_type_mapper = new EnumMapper<ValueType>(int_mapper);
-Mapper<Value>* value_mapper = new ObjectMapper<Value, ValueType, float>({
-    {"type", &Value::type, value_type_mapper},
-    {"value", &Value::value, float_mapper},
-});
+Mapper<Value>* value_mapper = new ObjectMapper<Value, ValueType, float>(
+    {{"type", &Value::type, value_type_mapper},
+     {"value", &Value::value, float_mapper}});
 
 Mapper<BoxConstraints>* box_constraints_mapper =
-    new ObjectMapper<BoxConstraints, float, float, float, float>({
-        {"minWidth", &BoxConstraints::min_width, float_mapper},
-        {"maxWidth", &BoxConstraints::max_width, float_mapper},
-        {"minHeight", &BoxConstraints::min_height, float_mapper},
-        {"maxHeight", &BoxConstraints::max_height, float_mapper},
-    });
+    new ObjectMapper<BoxConstraints, float, float, float, float>(
+        {{"minWidth", &BoxConstraints::min_width, float_mapper},
+         {"maxWidth", &BoxConstraints::max_width, float_mapper},
+         {"minHeight", &BoxConstraints::min_height, float_mapper},
+         {"maxHeight", &BoxConstraints::max_height, float_mapper}});
 
 SkColor color_from_js(JSContextRef ctx, JSValueRef js_value) {
     auto object = JSValueToObject(ctx, js_value, nullptr);
@@ -87,14 +85,13 @@ auto pointer_tool_mapper = new EnumMapper<PointerTool>(int_mapper);
 auto pointer_action_mapper = new EnumMapper<PointerAction>(int_mapper);
 Mapper<PointerEvent>* pointer_event_mapper =
     new ObjectMapper<PointerEvent, int, int, PointerTool, PointerAction, float,
-                     float>({
-        {"timestamp", &PointerEvent::timestamp, int_mapper},
-        {"pointerId", &PointerEvent::pointer_id, int_mapper},
-        {"tool", &PointerEvent::tool, pointer_tool_mapper},
-        {"action", &PointerEvent::action, pointer_action_mapper},
-        {"left", &PointerEvent::left, float_mapper},
-        {"top", &PointerEvent::top, float_mapper},
-    });
+                     float>(
+        {{"timestamp", &PointerEvent::timestamp, int_mapper},
+         {"pointerId", &PointerEvent::pointer_id, int_mapper},
+         {"tool", &PointerEvent::tool, pointer_tool_mapper},
+         {"action", &PointerEvent::action, pointer_action_mapper},
+         {"left", &PointerEvent::left, float_mapper},
+         {"top", &PointerEvent::top, float_mapper}});
 
 auto key_action_mapper = new EnumMapper<KeyAction>(int_mapper);
 Mapper<KeyEvent>* key_event_mapper =

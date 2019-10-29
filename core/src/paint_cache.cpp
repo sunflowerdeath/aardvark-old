@@ -10,11 +10,11 @@ void PaintCache::restart(bool is_changed) {
     current_index = 0;
 }
 
-void PaintCache::paint(SkCanvas* real_canvas,
+void PaintCache::paint(SkCanvas* canvas,
                        std::function<void(SkCanvas*)> painter) {
     if (is_changed) {
         // Record commands as picture
-        auto info = real_canvas->imageInfo();
+        auto info = canvas->imageInfo();
         SkPictureRecorder recorder;
         SkCanvas* picture_canvas =
             recorder.beginRecording({0, 0, static_cast<float>(info.width()),
@@ -24,7 +24,7 @@ void PaintCache::paint(SkCanvas* real_canvas,
         records.push_back(picture);
     }
     // Replay commands from picture
-    real_canvas->drawPicture(records[current_index]);
+    canvas->drawPicture(records[current_index]);
     current_index++;
 }
 

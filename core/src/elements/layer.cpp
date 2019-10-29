@@ -2,12 +2,6 @@
 
 namespace aardvark::elements {
 
-Layer::Layer(std::shared_ptr<Element> child,
-             std::variant<SkMatrix, TransformOptions> transform)
-    : SingleChildElement(child, /* is_repaint_boundary */ true,
-                         /* size_depends_on_parent */ true),
-      transform(transform){};
-
 Size Layer::layout(BoxConstraints constraints) {
     child->size =
         document->layout_element(child.get(), constraints.make_loose());

@@ -153,6 +153,9 @@ BindingsHost::BindingsHost() {
     add_elem_class("CenterElement", typeid(elements::Center),
                    center_elem_create_class,
                    elem_constructor<elements::Center>);
+    add_elem_class("ClipElement", typeid(elements::Clip),
+                   clip_elem_create_class,
+                   elem_constructor<elements::Clip>);
     add_elem_class("CustomLayoutElement", typeid(elements::CustomLayout),
                    custom_layout_elem_create_class,
                    elem_constructor<elements::CustomLayout>);
@@ -167,6 +170,8 @@ BindingsHost::BindingsHost() {
     add_elem_class("FlexChildElement", typeid(elements::FlexChild),
                    flex_child_elem_create_class,
                    elem_constructor<elements::FlexChild>);
+    add_elem_class("LayerElement", typeid(elements::Layer),
+                   layer_elem_create_class, elem_constructor<elements::Layer>);
     add_elem_class("PaddingElement", typeid(PaddingElement),
                    padding_elem_create_class, elem_constructor<PaddingElement>);
     add_elem_class("ResponderElement", typeid(elements::ResponderElement),

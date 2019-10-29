@@ -104,6 +104,20 @@ JSValueRef document_add_handler(JSContextRef ctx, JSObjectRef function,
     return signal_connection_to_js(ctx, std::move(connection));
 }
 
+JSValueRef document_immediate_layout_element(JSContextRef ctx,
+                                             JSObjectRef function,
+                                             JSObjectRef object,
+                                             size_t argument_count,
+                                             const JSValueRef arguments[],
+                                             JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto document = host->document_index->get_native_object(object);
+    auto element = host->element_index->get_native_object(
+        JSValueToObject(ctx, arguments[0], exception));
+    document->immediate_layout_element(element.get());
+    return JSValueMakeUndefined(ctx);
+}
+
 JSValueRef document_start_tracking_pointer(JSContextRef ctx,
                                            JSObjectRef function,
                                            JSObjectRef object,
@@ -125,6 +139,8 @@ JSClassRef document_create_class() {
         {"addHandler", document_add_handler, PROP_ATTR_STATIC},
         {"addKeyHandler", document_add_key_handler, PROP_ATTR_STATIC},
         {"addScrollHandler", document_add_scroll_handler, PROP_ATTR_STATIC},
+        {"immediateLayoutElement", document_immediate_layout_element,
+         PROP_ATTR_STATIC},
         {"startTrackingPointer", document_start_tracking_pointer,
          PROP_ATTR_STATIC},
         {0, 0, 0}};

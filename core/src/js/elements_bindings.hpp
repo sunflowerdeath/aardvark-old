@@ -24,11 +24,13 @@ JSObjectRef elem_constructor(JSContextRef ctx, JSObjectRef constructor,
 JSClassRef align_elem_create_class(JSClassRef parent_class);
 JSClassRef background_elem_create_class(JSClassRef parent_class);
 JSClassRef center_elem_create_class(JSClassRef parent_class);
+JSClassRef clip_elem_create_class(JSClassRef parent_class);
 JSClassRef custom_layout_elem_create_class(JSClassRef parent_class);
 JSClassRef intrinsic_height_elem_create_class(JSClassRef parent_class);
 JSClassRef intrinsic_width_elem_create_class(JSClassRef parent_class);
 JSClassRef flex_elem_create_class(JSClassRef parent_class);
 JSClassRef flex_child_elem_create_class(JSClassRef parent_class);
+JSClassRef layer_elem_create_class(JSClassRef parent_class);
 JSClassRef padding_elem_create_class(JSClassRef parent_class);
 JSClassRef responder_elem_create_class(JSClassRef parent_class);
 JSClassRef scroll_elem_create_class(JSClassRef parent_class);

@@ -1,7 +1,7 @@
 const path = require('path')
 
 module.exports = {
-	entry: './src/recognizer.js',
+	entry: './src/layer.js',
 	output: {
 		path: path.resolve(__dirname, 'build'),
 		filename: 'main.js'
