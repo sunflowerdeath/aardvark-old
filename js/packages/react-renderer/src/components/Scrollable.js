@@ -18,9 +18,9 @@ const OverscrollResistance = {
 }
 
 const removeHandler = (object, key) => {
-	if (object[key]) {
+	if (key in object) {
 		object[key]()
-		object[key] = undefined
+		delete object[key]
 	}
 }
 
@@ -198,9 +198,7 @@ const Scrollable = props => {
 		initialState: ctx => ({
 			recognizer: new MultiRecognizer({
 				hover: new HoverRecognizer({
-					onHoverStart: () => {
-						onHoverStart.bind(null, ctx)()
-					},
+					onHoverStart: onHoverStart.bind(null, ctx),
 					onHoverEnd: onHoverEnd.bind(null, ctx)
 				}),
 				drag: new DragRecognizer({
@@ -220,7 +218,7 @@ const Scrollable = props => {
 			elemRef.current.scrollTop = Math.round(value)
 			ctx.velocityTracker.addPoint(Date.now(), value)
 		})
-		return unmount.bind(ctx)
+		return unmount.bind(null, ctx)
 	})
 	const renderScroll = useCallback(() => (
 		<Scroll

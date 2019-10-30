@@ -1,145 +1,62 @@
-import {
-    GestureResolver, PointerEventAction, PointerEventTool 
-} from '@advk/common'
+import React, { useState } from 'react'
+import { Color, FlexDirection, FlexAlign, Padding as Padding1 } from '@advk/common'
+import ReactAardvark, {
+    Background,
+    Flex,
+    FlexChild,
+    Stack,
+    Text,
+    Padding
+} from '@advk/react-renderer'
 
-let window = application.createWindow(640, 480)
-log('create window')
-log('app.windows.size =', application.windows.size)
-log('app.windows[0].width =', application.windows[0].width)
-let doc = application.getDocument(window)
-log('get doc')
+import ScrollExample from './ScrollExample.js'
+import LayerExample from './LayerExample.js'
 
-const gestureResolver = new GestureResolver(doc)
+import Button from './Button.js'
 
-const isLeftMouseButtonPress = event =>
-    event.tool === PointerEventTool.MOUSE &&
-    event.action === PointerEventAction.BUTTON_PRESS // &&
-    // event.button === 0
+const examples = [
+    { name: 'Scroll', component: ScrollExample },
+    { name: 'Layer', component: LayerExample }
+]
 
-const isLeftMouseButtonUp = event =>
-    event.tool === PointerEventTool.MOUSE &&
-    event.action === PointerEventAction.BUTTON_RELEASE // &&
-    // event.button === 0
+const Main = () => {
+    const [selected, setSelected] = useState()
 
-const isTouchDown = event =>
-    event.device === PointerEventTool.TOUCH &&
-    event.action === PointerEventAction.POINTER_DOWN
+    if (selected === undefined) {
+        const examplesButtons = examples.map(item => (
+            <Button onTap={() => setSelected(item)}>
+                <Text text={item.name} />
+            </Button>
+        ))
 
-const isTouchUp = event =>
-    event.device === PointerEventTool.TOUCH &&
-    event.action === PointerEventAction.POINTER_UP
-
-class Button {
-    constructor(args) {
-        Object.assign(this, args)
-    }
-
-    make() {
-        let elem = new Responder()
-        elem.appendChild(this.child)
-        elem.hander = this.onResponderEvent.bind(this)
-        return elem
-    }
-
-    onResponderEvent(event) {
-        if (this.isPressed && event.pointerId === this.pressedPointer) {
-            if (isTouchUp(event)) {
-                if (this.isAccepted) this.onClick(event)
-                this.unpress()
-            } else if (isLeftMouseButtonUp(event)) {
-                this.unpress()
-                this.onClick(event)
-            }
-            return
-        }
-
-        if (isLeftMouseButtonPress(event) || isTouchDown(event)) {
-            this.press(event)
-        }
-    }
-
-    onPointerEvent(event) {
-        if (isTouchUp(event) || isLeftMouseButtonUp(event)) this.unpress()
-    }
-
-    press(event) {
-        this.onPress()
-        this.isPressed = true
-        this.pressedPointer = event.pointerId
-        this.stopTrackingPointer = doc.startTrackingPointer(
-            event.pointerId,
-            this.onPointerEvent.bind(this)
+        return (
+            <Stack>
+                <Background color={Color.WHITE} />
+                <Flex direction={FlexDirection.column}>{examplesButtons}</Flex>
+            </Stack>
         )
-        if (event.device === PointerEventDevice.TOUCH) {
-            this.gestureResolverEntry = gestureResolver.addEntry(
-                event.pointerId,
-                this.onGestureResolve.bind(this)
-            )
-        }
     }
 
-    onGestureResolve(isAccepted) {
-        this.isAccepted = isAccepted
-        if (!isAccepted) this.unpress()
-    }
-
-    unpress() {
-        this.onUnpress()
-        this.isPressed = false
-        this.isAccepted = false
-        this.stopTrackingPointer()
-    }
+    return (
+        <Stack>
+            <Background color={Color.WHITE} />
+            <Flex direction={FlexDirection.column}>
+                <Flex>
+                    <Button onTap={() => setSelected(undefined)}>
+                        <Text text="<- BACK" />
+                    </Button>
+                    <FlexChild align={FlexAlign.center}>
+                        <Padding padding={Padding1.only('left', 16)}>
+                            <Text text={selected.name} />
+                        </Padding>
+                    </FlexChild>
+                </Flex>
+                {React.createElement(selected.component)}
+            </Flex>
+        </Stack>
+    )
 }
 
-let stack = new Stack()
-
-let text = new Text("Hello World")
-log(text.text)
-text.text = "Hello, Text"
-stack.appendChild(text)
-
-let bg = new Background()
-bg.color = { alpha: 255, red: 0, green: 255, blue: 0 }
-
-/*
-let onClick = () => log('click')
-let onPress = () => log('press')
-let onUnpress = () => log('unpress')
-let button = new Button({ child: bg, onClick, onPress, onUnpress })
-let buttonElem = button.make()
-*/
-
-let sized = new Sized()
-sized.sizeConstraints = {
-    minWidth: {type: 'abs', value: 200},
-    maxWidth: {type: 'abs', value: 200},
-    minHeight: {type: 'abs', value: 50},
-    maxHeight: {type: 'abs', value: 50}
-}
-let align = new Align()
-align.align = {
-    left: {type: 'abs', value: 50},
-    top: {type: 'abs', value: 100}
-}
-
-sized.appendChild(bg)
-align.appendChild(sized)
-stack.appendChild(align)
-
-doc.root = stack
-
-/*
-let removeHandler
-let handler = event => {
-    log('pointer event ' + JSON.stringify(event))
-    if (event.action == 3) removeHandler()
-}
-removeHandler = doc.addHandler(handler)
-
-let stopTracking
-let trackHandler = event => {
-    log('tracked pointer ' + JSON.stringify(event))
-    if (event.action == 3) stopTracking()
-}
-stopTracking = doc.startTrackingPointer(0, trackHandler)
-*/
+const win = application.createWindow(640, 480)
+const document = application.getDocument(win)
+ReactAardvark.render(<Main />, document)

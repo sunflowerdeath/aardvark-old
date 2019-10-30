@@ -13,15 +13,12 @@ import ReactAardvark, {
 
 import Button from './Button.js'
 
-const win = application.createWindow(640, 480)
-const document = application.getDocument(win)
-
 const toRad = deg => (deg * Math.PI) / 180
 
 const INITIAL_COLOR = { red: 179, green: 229, blue: 252, alpha: 255 }
 const HOVERED_COLOR = { red: 79, green: 195, blue: 247, alpha: 255 }
 
-const App = () => {
+const LayerExample = () => {
     const [isHovered, setIsHovered] = useState(false)
     const [translate, setTranslate] = useState(0)
     const [rotate, setRotate] = useState(45)
@@ -35,7 +32,6 @@ const App = () => {
     )
     return (
         <Stack>
-            <Background color={Color.WHITE} />
             <Align align={{ top: Value.abs(50), left: Value.abs(50) }}>
                 <Layer transform={matrix}>
                     <GestureResponder
@@ -87,4 +83,4 @@ const App = () => {
     )
 }
 
-ReactAardvark.render(<App />, document)
+export default LayerExample
