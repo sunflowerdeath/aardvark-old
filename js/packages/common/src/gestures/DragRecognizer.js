@@ -71,6 +71,10 @@ class DragRecognizer {
 		}
 	}
 
+    destroy() {
+        this.end()
+    }
+
 	start(event) {
 		this.isStarted = true
 		this.startEvent = event

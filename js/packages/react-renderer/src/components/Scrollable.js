@@ -177,6 +177,7 @@ const onDragEnd = (ctx, event) => {
 }
 
 const unmount = ctx => {
+    ctx.scrollTopValue.stopAnimation()
 	removeHandler(ctx, 'removeScrollHandler')
 	removeHandler(ctx, 'removeKeyHandler')
 	if (currentKeyHandler === ctx) {

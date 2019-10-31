@@ -7,14 +7,12 @@
 #include "../document.hpp"
 #include "hit_tester.hpp"
 #include "responder.hpp"
-#include "responder_reconciler.hpp"
 
 namespace aardvark {
 
 class Element;
 class Document;
 class HitTester;
-class ResponderReconciler;
 
 // Class that controls handling of document pointer events
 class PointerEventManager {
@@ -30,15 +28,29 @@ class PointerEventManager {
     nod::connection start_tracking_pointer(const int pointer_id,
                                            const PointerEventHandler& handler);
 
+    // Hit testing for all pointer events is performed before calling any
+    // handlers, because they may change the document and then hit testing
+    // will be incorrect.
+    // Event manager remembers hit elements for each event and then
+    // dispatches events according to that.
+    void clear_hit_elems();
+    void store_hit_elems(const PointerEvent& event);
     void handle_event(const PointerEvent& event);
 
   private:
     Document* document;
-    std::unique_ptr<HitTester> hit_tester;
-    std::unique_ptr<ResponderReconciler> reconciler;
+
     nod::signal<void(const PointerEvent&)> before_signal;
     nod::signal<void(const PointerEvent&)> after_signal;
     std::map<int, nod::signal<void(const PointerEvent&)>> pointers_signals;
+
+    std::unique_ptr<HitTester> hit_tester;
+    std::unordered_map<PointerEvent*, std::vector<std::weak_ptr<Element>>>
+        hit_elems;
+    std::unordered_map<int, std::vector<std::weak_ptr<Element>>> prev_hit_elems;
+    void call_responders_handlers(
+        const PointerEvent& event,
+        const std::vector<std::weak_ptr<Element>>& hit_elems);
 };
 
 }

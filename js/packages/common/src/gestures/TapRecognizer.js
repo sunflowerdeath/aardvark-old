@@ -32,6 +32,7 @@ class TapRecognizer {
 	}
 
 	handler(event, eventType) {
+        if (this.isDestroyed) return
 		if (this.isPressed && event.pointerId === this.pressedPointer) {
 			if (isTouchUp(event)) {
 				if (this.isAccepted && this.onTap) this.onTap(event)
@@ -48,11 +49,17 @@ class TapRecognizer {
 		}
 	}
 
+    destroy() {
+        this.isDestroyed = true
+        if (this.isPressed) this.unpress()
+    }
+
 	onPointerEvent(event) {
 		if (isTouchUp(event) || isLeftMouseButtonUp(event)) this.unpress(event)
 	}
 
 	press(event) {
+        log('PRESS')
 		this.stopTrackingPointer = this.document().startTrackingPointer(
 			event.pointerId,
 			this.onPointerEvent

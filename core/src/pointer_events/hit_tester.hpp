@@ -14,12 +14,13 @@ class Document;
 class HitTester {
   public:
     HitTester(Document* document) : document(document){};
-    void test(float left, float top);
-    std::vector<std::shared_ptr<Element>> hit_elements;
+    std::vector<std::weak_ptr<Element>> test(float left, float top);
+
   private:
     Document* document;
     void test_element(std::shared_ptr<Element> elem, float left, float top);
     SkMatrix transform;
+    std::vector<std::shared_ptr<Element>> elements_under_pointer;
 };
 
 }

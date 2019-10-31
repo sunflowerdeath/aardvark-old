@@ -1,5 +1,7 @@
 #include "element.hpp"
 
+#include <iostream>
+
 namespace aardvark {
 
 Element::Element(bool is_repaint_boundary, bool size_depends_on_parent)
@@ -57,6 +59,7 @@ void SingleChildElement::paint(bool is_changed) {
 void SingleChildElement::remove_child(std::shared_ptr<Element> child) {
     if (this->child == child) {
         this->child->parent = nullptr;
+        this->child->document = nullptr;
         this->child = nullptr;
         change();
     }
@@ -103,6 +106,7 @@ void MultipleChildrenElement::remove_child(std::shared_ptr<Element> child) {
     auto it = std::find(children.begin(), children.end(), child);
     if (it != children.end()) {
         child->parent = nullptr;
+        child->document = nullptr;
         children.erase(it);
         change();
     }

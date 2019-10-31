@@ -6,42 +6,53 @@ import { Responder } from '../nativeComponents.js'
 import useLastValue from '../hooks/useLastValue.js'
 
 const GestureResponder = props => {
-	const { children } = props
+    const { children } = props
 
-	const getProps = useLastValue(props)
-	const ref = useRef()
-	const [recognizer] = useState(() => {
-		const makeCallback = name => event => {
-			if (typeof getProps()[name] === 'function') {
+    const getProps = useLastValue(props)
+    const ref = useRef()
+    const [recognizer] = useState(() => {
+        const makeCallback = name => event => {
+            if (typeof getProps()[name] === 'function') {
                 getProps()[name](event)
             }
-		}
-		return new MultiRecognizer({
-			hover: new HoverRecognizer({
-				onHoverStart: makeCallback('onHoverStart'),
-				onHoverEnd: makeCallback('onHoverEnd')
-			}),
-			tap: new TapRecognizer({
-				document: () => ref.current.document,
-				onPressStart: makeCallback('onPressStart'),
-				onPressEnd: makeCallback('onPressEnd'),
-				onTap: makeCallback('onTap')
-			})
-		})
-	})
+        }
+        return new MultiRecognizer({
+            /*
+            hover: new HoverRecognizer({
+                onHoverStart: makeCallback('onHoverStart'),
+                onHoverEnd: makeCallback('onHoverEnd')
+            }),
+            */
+            tap: new TapRecognizer({
+                document: () => ref.current.document,
+                onPressStart: makeCallback('onPressStart'),
+                onPressEnd: makeCallback('onPressEnd'),
+                onTap: makeCallback('onTap')
+            })
+        })
+    })
 
-	const handler = useCallback(recognizer.handler.bind(recognizer), [
-		recognizer
-	])
+    const didUnmountRef = useRef(false)
+    useEffect(() => {
+        return () => {
+            log('UNMOUNT')
+            recognizer.destroy()
+            didUnmountRef.current = true
+        }
+    }, [])
 
-	return (
-		<Responder
-			handler={handler}
-			ref={ref}
-		>
-			{children}
-		</Responder>
-	)
+    const handler = useCallback(
+        (...args) => {
+            if (!didUnmountRef.current) recognizer.handler(...args)
+        },
+        [recognizer]
+    )
+
+    return (
+        <Responder handler={handler} ref={ref}>
+            {children}
+        </Responder>
+    )
 }
 
 export default GestureResponder

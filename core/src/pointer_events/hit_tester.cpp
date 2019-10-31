@@ -2,10 +2,41 @@
 
 namespace aardvark {
 
-void HitTester::test(float left, float top) {
-    transform.reset();
-    hit_elements.clear();
+std::vector<std::weak_ptr<Element>> HitTester::test(float left, float top) {
     test_element(document->root, left, top);
+
+    auto hit_elements = std::vector<std::shared_ptr<Element>>();
+    // Iterate elements from top to bottom
+    auto it = elements_under_pointer.rbegin();
+    while (it != elements_under_pointer.rend()) {
+        auto elem = *it;
+        hit_elements.push_back(elem);
+        auto mode = elem->get_hit_test_mode();
+        if (mode == HitTestMode::PassThrough) {
+            it++;  // Pass to the next element
+        } else if (mode == HitTestMode::PassToParent) {
+            // Pass to next element that is parent of passing
+            it++;
+            while (it != elements_under_pointer.rend()) {
+                if ((*it)->is_parent_of(elem.get())) break;
+                it++;
+            }
+        } else if (mode == HitTestMode::Absorb) {
+            break;  // Do not pass event handling
+        }
+    }
+
+    auto hit_elements_with_responders = std::vector<std::weak_ptr<Element>>();
+    for (auto elem : hit_elements) {
+        if (elem->get_responder() != nullptr) {
+            hit_elements_with_responders.push_back(elem);
+        }
+    }
+
+    transform.reset();
+    elements_under_pointer.clear();
+
+    return hit_elements_with_responders;
 }
 
 void HitTester::test_element(std::shared_ptr<Element> elem, float left,
@@ -34,7 +65,7 @@ void HitTester::test_element(std::shared_ptr<Element> elem, float left,
         transform.mapPoints(&rel_pos, 1);
         if (elem->get_hit_test_mode() != HitTestMode::Disabled &&
             elem->hit_test(rel_pos.x(), rel_pos.y())) {
-            hit_elements.push_back(elem);
+            elements_under_pointer.push_back(elem);
         }
         elem->visit_children(std::bind(&HitTester::test_element, this,
                                        std::placeholders::_1, left, top));

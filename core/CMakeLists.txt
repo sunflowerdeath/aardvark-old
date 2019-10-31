@@ -265,10 +265,11 @@ add_library(aardvark ${ADV_LIB_TYPE}
     src/elements/translate.cpp
     src/pointer_events/hit_tester.cpp
     src/pointer_events/pointer_event_manager.cpp
-    src/pointer_events/responder_reconciler.cpp
     src/utils/event_loop.cpp
     src/utils/websocket.cpp
 )
+
+# src/pointer_events/responder_reconciler.cpp
 
 # TODO include dir
 target_include_directories(aardvark INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/src)
