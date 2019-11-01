@@ -2,8 +2,6 @@
 #include "SkPathOps.h"
 #include "elements/placeholder.hpp"
 
-#include <iostream>
-
 namespace aardvark {
 
 SkPath offset_path(SkPath* path, Position offset) {
@@ -148,15 +146,15 @@ void Document::paint_element(Element* elem, bool is_repaint_root) {
     }
     */
 
+    // Layers from previous layer tree of the current repaint boundary element
+    std::vector<LayerTreeNode> prev_layers_pool;
 	if (elem->is_repaint_boundary) {
         if (!is_repaint_root && current_layer_tree != nullptr) {
             current_layer_tree->add(elem->layer_tree.get());
         }
 		current_layer_tree = elem->layer_tree.get();
-        prev_layers = std::move(current_layer_tree->children);
-        // current_layer_tree->children.clear();
-        // prev_layers = std::move(elem->layer_tree->children);
-        // std::cout << "COUNT" << prev_layers.size() << std::endl;
+        prev_layers_pool = std::move(layers_pool);
+        layers_pool = std::move(current_layer_tree->children);
 		current_layer = nullptr;
 	}
 
@@ -199,7 +197,7 @@ void Document::paint_element(Element* elem, bool is_repaint_root) {
 
     current_clip = prev_clip;  // Restore clip
     if (elem->is_repaint_boundary) {
-        prev_layers.clear();
+        layers_pool = std::move(prev_layers_pool);
         current_layer_tree = current_layer_tree->parent;
         current_layer = nullptr;
     }
@@ -235,8 +233,8 @@ void Document::setup_layer(Layer* layer, Element* elem) {
 // Creates layer and adds it to the current layer tree, reusing layers from
 // previous repaint if possible.
 Layer* Document::create_layer(Size size) {
-    auto it = prev_layers.begin();
-    while (it != prev_layers.end()) {
+    auto it = layers_pool.begin();
+    while (it != layers_pool.end()) {
         auto prev_layer =
             std::get_if<std::shared_ptr<Layer>>(&*it /* lol ok */);
         if (prev_layer != nullptr &&
@@ -246,14 +244,12 @@ Layer* Document::create_layer(Size size) {
         it++;
     }
     std::shared_ptr<Layer> layer = nullptr;
-    if (it == prev_layers.end()) {
-        std::cout << "CREATE" << size.width << "," << size.height << std::endl;
+    if (it == layers_pool.end()) {
         layer = Layer::make_offscreen_layer(gr_context, size);
     } else {
-        std::cout << "REUSE" << size.width << "," << size.height << std::endl;
         layer = std::get<std::shared_ptr<Layer>>(*it);
         layer->reset();
-        prev_layers.erase(it);
+        layers_pool.erase(it);
     }
     current_layer_tree->add(layer);
     current_layer = layer.get();
@@ -283,12 +279,10 @@ void Document::paint_layer_tree(LayerTree* tree) {
     }
     for (auto item : tree->children) {
         if (std::holds_alternative<LayerTree*>(item)) {
-            std::cout << "PAINT TREE" << std::endl;
             auto child_tree = std::get<LayerTree*>(item);
             paint_layer_tree(child_tree);
         } else {
             auto child_layer = std::get<std::shared_ptr<Layer>>(item);
-            std::cout << "PAINT LAYER" << child_layer->size.width << std::endl;
             screen->paint_layer(child_layer.get(), Position{0, 0});
         }
     }

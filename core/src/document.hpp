@@ -82,7 +82,7 @@ class Document {
     // Layer tree of the current repaint boundary element
     LayerTree* current_layer_tree = nullptr;
     // Layers from previous layer tree of the current repaint boundary element
-    std::vector<LayerTreeNode> prev_layers;
+    std::vector<LayerTreeNode> layers_pool;
     // Layer that is currently used for painting
     Layer* current_layer = nullptr;
     std::optional<SkPath> current_clip = std::nullopt;
