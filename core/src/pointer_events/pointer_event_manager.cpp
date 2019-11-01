@@ -7,9 +7,18 @@ bool map_contains(const std::map<K, V>& map, const K& key) {
     return map.find(key) != map.end();
 }
 
-template <class T>
-bool vec_contains(const std::vector<T>& vec, T item) {
-    return std::find(vec.begin(), vec.end(), item) != vec.end();
+template <typename A, typename B>
+inline bool wptr_equals(const std::weak_ptr<A>& a, const std::weak_ptr<B>& b) {
+    return !a.expired() && a.lock() == b.lock();
+}
+
+bool contains_elem(std::vector<std::weak_ptr<Element>>* elems,
+                   std::weak_ptr<Element> target) {
+    auto pred = [&target](std::weak_ptr<Element>& elem) {
+        return wptr_equals(elem, target);
+    };
+    auto res = std::find_if(elems->begin(), elems->end(), pred);
+    return res != elems->end();
 };
 
 PointerEventManager::PointerEventManager(Document* document)
@@ -31,20 +40,10 @@ nod::connection PointerEventManager::start_tracking_pointer(
     return pointers_signals[pointer_id].connect(handler);
 }
 
-void PointerEventManager::store_hit_elems(const PointerEvent& event) {
-    hit_elems[const_cast<PointerEvent*>(&event)] =
-        hit_tester->test(event.left, event.top);
-}
-
-void PointerEventManager::clear_hit_elems() {
-    hit_elems.clear();
-}
-
 void PointerEventManager::handle_event(const PointerEvent& event) {
     before_signal(event);
 
-    call_responders_handlers(event,
-                             hit_elems[const_cast<PointerEvent*>(&event)]);
+    call_responders_handlers(event);
 
     if (map_contains(pointers_signals, event.pointer_id)) {
         pointers_signals[event.pointer_id](event);
@@ -58,9 +57,8 @@ void PointerEventManager::handle_event(const PointerEvent& event) {
     }
 }
 
-void PointerEventManager::call_responders_handlers(
-    const PointerEvent& event,
-    const std::vector<std::weak_ptr<Element>>& hit_elems) {
+void PointerEventManager::call_responders_handlers(const PointerEvent& event) {
+    auto hit_elems = hit_tester->test(event.left, event.top);
 
     std::vector<std::weak_ptr<Element>>* pointer_prev_hit_elems;
     auto it = prev_hit_elems.find(event.pointer_id);
@@ -82,10 +80,13 @@ void PointerEventManager::call_responders_handlers(
             }
         }
     } else {
-        // Call `remove` handlers of responders that are no longer active
+        // Call `remove` handlers of responders that are no longer hit
         for (auto elem_wptr : *pointer_prev_hit_elems) {
             if (auto elem = elem_wptr.lock()) {
-                if (!vec_contains(hit_elems, elem_wptr)) {
+                if (!contains_elem(
+                        const_cast<std::vector<std::weak_ptr<Element>>*>(
+                            &hit_elems),
+                        elem_wptr)) {
                     elem->get_responder()->handler(event,
                                                    ResponderEventType::remove);
                 }
@@ -95,7 +96,7 @@ void PointerEventManager::call_responders_handlers(
         for (auto elem_wptr : hit_elems) {
             if (auto elem = elem_wptr.lock()) {
                 auto event_type =
-                    vec_contains(*pointer_prev_hit_elems, elem_wptr)
+                    contains_elem(pointer_prev_hit_elems, elem_wptr)
                         ? ResponderEventType::update
                         : ResponderEventType::add;
                 elem->get_responder()->handler(event, event_type);

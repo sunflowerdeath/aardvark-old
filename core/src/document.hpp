@@ -27,6 +27,8 @@ class PointerEventManager;
 // TODO maybe weak ptr
 using ElementsSet = std::unordered_set<Element*>;
 
+using LayerTreeNode = std::variant<LayerTree*, std::shared_ptr<Layer>>;
+
 class Document {
   public:
     Document(std::shared_ptr<Element> root = nullptr);
@@ -38,7 +40,7 @@ class Document {
     void change_element(Element* elem);
 
     // Paints document
-    bool paint();
+    bool render();
 
     // Elements should call this function to layout its children
     Size layout_element(Element* elem, BoxConstraints constraints);
@@ -58,7 +60,7 @@ class Document {
 
     std::shared_ptr<Layer> screen;
 
-    bool is_initial_paint;
+    bool is_initial_render;
 
     std::unique_ptr<PointerEventManager> pointer_event_manager;
     SignalEventSink<KeyEvent> key_event_sink;
@@ -67,8 +69,6 @@ class Document {
     std::shared_ptr<Element> root;
 
     bool need_recompose = false;
-
-    void compose_layers();
 
     void immediate_layout_element(Element* elem);
 
@@ -81,18 +81,21 @@ class Document {
     Element* current_element = nullptr;
     // Layer tree of the current repaint boundary element
     LayerTree* current_layer_tree = nullptr;
-    // Previous layer tree of the current repaint boundary element
-    LayerTree* prev_layer_tree = nullptr;
+    // Layers from previous layer tree of the current repaint boundary element
+    std::vector<LayerTreeNode> prev_layers;
     // Layer that is currently used for painting
     Layer* current_layer = nullptr;
     std::optional<SkPath> current_clip = std::nullopt;
     // Whether the current element or some of its parent is changed since last
     // repaint
     bool inside_changed = false;
-    void initial_paint();
-    bool repaint();
-    void layout_boundary_element(Element* elem);
 
+    bool initial_render();
+    bool rerender();
+    void relayout();
+    void relayout_boundary_element(Element* elem);
+    bool repaint();
+    void compose();
     void paint_layer_tree(LayerTree* tree);
 };
 

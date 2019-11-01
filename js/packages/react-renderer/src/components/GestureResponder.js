@@ -17,12 +17,10 @@ const GestureResponder = props => {
             }
         }
         return new MultiRecognizer({
-            /*
             hover: new HoverRecognizer({
                 onHoverStart: makeCallback('onHoverStart'),
                 onHoverEnd: makeCallback('onHoverEnd')
             }),
-            */
             tap: new TapRecognizer({
                 document: () => ref.current.document,
                 onPressStart: makeCallback('onPressStart'),

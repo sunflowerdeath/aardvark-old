@@ -24,7 +24,7 @@ class LayerTree {
     Element* element;
 
     // Parent layer tree
-    LayerTree* parent;
+    LayerTree* parent = nullptr;
 
     // Child layers and trees
     std::vector<LayerTreeNode> children;
@@ -36,14 +36,11 @@ class LayerTree {
     // Adds new item to the tree
     void add(LayerTreeNode item);
 
-    // Replace one item with another
-    void replace(LayerTreeNode old_item, LayerTreeNode new_item);
+    // Removes item from the tree
+    // void remove(LayerTreeNode layer);
 
-    // Removes layer from the tree
-    void remove_layer(std::shared_ptr<Layer> layer);
-
-    // Finds layer in the current tree that has given size
-    std::shared_ptr<Layer> find_by_size(Size size);
+    // Add this tree to new parent, and remove from old one
+    // void set_parent(LayerTree* new_parent);
 };
 
 }  // namespace aardvark

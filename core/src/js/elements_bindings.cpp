@@ -517,15 +517,14 @@ JSValueRef layer_elem_get_transform(JSContextRef ctx, JSObjectRef object,
                                     JSStringRef property_name,
                                     JSValueRef* exception) {
     auto elem = get_elem<elements::Layer>(ctx, object);
-    return matrix_mapper->to_js(ctx, elem->transform);
+    return matrix_mapper->to_js(ctx, elem->get_transform());
 }
 
 bool layer_elem_set_transform(JSContextRef ctx, JSObjectRef object,
                               JSStringRef property_name, JSValueRef value,
                               JSValueRef* exception) {
     auto elem = get_elem<elements::Layer>(ctx, object);
-    elem->transform = matrix_mapper->from_js(ctx, value);
-    elem->change();
+    elem->set_transform(matrix_mapper->from_js(ctx, value));
     return true;
 }
 

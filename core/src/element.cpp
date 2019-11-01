@@ -1,12 +1,11 @@
 #include "element.hpp"
 
-#include <iostream>
-
 namespace aardvark {
 
 Element::Element(bool is_repaint_boundary, bool size_depends_on_parent)
     : is_repaint_boundary(is_repaint_boundary),
-      size_depends_on_parent(size_depends_on_parent){};
+      size_depends_on_parent(size_depends_on_parent),
+      layer_tree(std::make_shared<LayerTree>(this)){};
 
 void Element::change() {
     if (document != nullptr) document->change_element(this);

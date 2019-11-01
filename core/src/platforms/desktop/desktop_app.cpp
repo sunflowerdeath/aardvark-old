@@ -131,17 +131,17 @@ void DesktopApp::render(std::function<void(void)> update_callback) {
     auto start = std::chrono::high_resolution_clock::now();
     glfwPollEvents();
 
-    bool painted = false;
+    bool rendered = false;
     for (auto& window : windows) {
         window->make_current();
-        painted = painted || documents[window.get()]->paint();
+        rendered = rendered || documents[window.get()]->render();
         window->swap_now();
     }
     auto end = std::chrono::high_resolution_clock::now();
     auto time =
         std::chrono::duration_cast<std::chrono::microseconds>(end - start)
             .count();
-    if (painted) {
+    if (rendered) {
         Log::debug("[DesktopApp] frame time {}ms", time / 1000.0);
     }
     auto timeout = (time < FRAME_TIME) ? (FRAME_TIME - time) : 0;
@@ -149,56 +149,33 @@ void DesktopApp::render(std::function<void(void)> update_callback) {
         std::bind(&DesktopApp::render, this, update_callback), timeout);
 }
 
-void DesktopApp::receive_event(DesktopWindow* window, Event event) {
-    window_events[window].push_back(event);
+void DesktopApp::handle_event(DesktopWindow* window, Event event) {
+    auto document = documents[window];
+    if (event_handler) event_handler(this, event);
+
+    if (auto window_event = std::get_if<WindowEvent>(&event)) {
+        window->window_event_sink.handle_event(*window_event);
+        return;
+    }
+
+    if (auto key_event = std::get_if<KeyEvent>(&event)) {
+        window->key_event_sink.handle_event(*key_event);
+        document->key_event_sink.handle_event(*key_event);
+        return;
+    }
+
+    if (auto scroll_event = std::get_if<ScrollEvent>(&event)) {
+        window->scroll_event_sink.handle_event(*scroll_event);
+        document->scroll_event_sink.handle_event(*scroll_event);
+    }
+
+    if (auto pointer_event = std::get_if<PointerEvent>(&event)) {
+        if (!document->is_initial_render) {  // TODO remove check
+            document->pointer_event_manager->handle_event(
+                *pointer_event);
+        }
+        window->pointer_event_sink.handle_event(*pointer_event);
+    }
 }
-
-void DesktopApp::handle_events() {
-    for (auto it: window_events) {
-        auto window = it->first;
-        auto events& = it->second;
-        auto pointer_event_manager = documents[window]->pointer_event_manager;
-        pointer_event_manager->clear_hit_elems();
-        for (auto event& : events) {
-            if (auto pointer_event = std::get_if<PointerEvent>(&event)) {
-                pointer_event_manager->store_hit_elems(*event);
-            }
-        }
-    }
-
-    for (auto it: window_events) {
-        auto window = it->first;
-        auto events& = it->second;
-        auto document = documents[window];
-        for (auto event& : events) {
-            if (event_handler) event_handler(this, event);
-
-            if (auto window_event = std::get_if<WindowEvent>(&event)) {
-                window->window_event_sink.handle_event(*window_event);
-                return;
-            }
-
-            if (auto key_event = std::get_if<KeyEvent>(&event)) {
-                window->key_event_sink.handle_event(*key_event);
-                document->key_event_sink.handle_event(*key_event);
-                return;
-            }
-
-            if (auto scroll_event = std::get_if<ScrollEvent>(&event)) {
-                window->scroll_event_sink.handle_event(*scroll_event);
-                document->scroll_event_sink.handle_event(*scroll_event);
-            }
-
-            if (auto pointer_event = std::get_if<PointerEvent>(&event)) {
-                if (!document->is_initial_paint) {  // TODO remove check
-                    document->pointer_event_manager->handle_event(
-                        *pointer_event);
-                }
-                window->pointer_event_sink.handle_event(*pointer_event);
-            }
-        }
-    }
-
-};
 
 }  // namespace aardvark

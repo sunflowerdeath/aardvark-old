@@ -2,7 +2,15 @@
 #include "SkPathOps.h"
 #include "elements/placeholder.hpp"
 
+#include <iostream>
+
 namespace aardvark {
+
+SkPath offset_path(SkPath* path, Position offset) {
+    SkPath offset_path;
+    path->offset(offset.left, offset.top, &offset_path);
+    return offset_path;
+}
 
 // Add element to set ensuring that no element will be the children of another
 void add_only_parent(ElementsSet& set, Element* added) {
@@ -32,63 +40,62 @@ Document::Document(std::shared_ptr<Element> root) {
 
 void Document::set_root(std::shared_ptr<Element> new_root) {
     root = new_root;
+    root->parent = nullptr;
+    root->document = this;
     root->is_repaint_boundary = true;
     root->rel_position = Position();
     root->size = screen->size;
-    is_initial_paint = true;
+    is_initial_render = true;
 }
 
 void Document::change_element(Element* elem) { changed_elements.insert(elem); }
 
-bool Document::paint() {
-    if (is_initial_paint) {
-        initial_paint();
-        return true;
+bool Document::render() {
+    if (is_initial_render) {
+        return initial_render();
     } else {
-        return repaint();
+        return rerender();
     }
 }
 
-void Document::initial_paint() {
-    layout_element(root.get(),
-                   BoxConstraints::from_size(screen->size, true /* tight */));
+bool Document::initial_render() {
+    layout_element(root.get(), BoxConstraints::from_size(screen->size,
+                                                         true /* tight */));
     current_clip = std::nullopt;
     paint_element(root.get(), /* is_repaint_root */ true);
-    compose_layers();
-    is_initial_paint = false;
-}
-
-bool Document::repaint() {
-    if (changed_elements.empty()) {
-        if (need_recompose) {
-            compose_layers();
-            return true;
-        } else {
-            return false;  // nothing to do
-        }
-    }
-    for (auto elem : changed_elements) {
-        add_only_parent(relayout_boundaries,
-                        elem->find_closest_relayout_boundary());
-    }
-    for (auto elem : relayout_boundaries) {
-        layout_boundary_element(elem);
-    }
-    for (auto elem : repaint_boundaries) {
-        paint_element(elem, /* is_repaint_root */ true);
-    }
-    relayout_boundaries.clear();
-    repaint_boundaries.clear();
-    changed_elements.clear();
-    compose_layers();
+    compose();
+    is_initial_render = false;
     return true;
 }
 
-void Document::layout_boundary_element(Element* elem) {
-    layout_element(elem, elem->prev_constraints);
-    add_only_parent(repaint_boundaries,
-                    elem->find_closest_repaint_boundary());
-    elem->is_changed = true;
+bool Document::rerender() {
+    relayout();
+    auto painted = repaint();
+    if (painted || need_recompose) {
+        compose();
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void Document::relayout() {
+	for (auto elem : changed_elements) {
+		add_only_parent(relayout_boundaries,
+						elem->find_closest_relayout_boundary());
+	}
+	changed_elements.clear();
+	for (auto elem : relayout_boundaries) {
+		relayout_boundary_element(elem);
+	}
+	relayout_boundaries.clear();
+}
+
+void Document::relayout_boundary_element(Element* elem) {
+	layout_element(elem, elem->prev_constraints);
+	add_only_parent(repaint_boundaries,
+					elem->find_closest_repaint_boundary());
+	elem->is_changed = true;
 }
 
 Size Document::layout_element(Element* elem, BoxConstraints constraints) {
@@ -98,6 +105,15 @@ Size Document::layout_element(Element* elem, BoxConstraints constraints) {
     auto size = elem->layout(constraints);
     elem->prev_constraints = constraints;
     return size;
+}
+
+bool Document::repaint() {
+	if (repaint_boundaries.empty()) return false;
+	for (auto elem : repaint_boundaries) {
+        paint_element(elem, /* is_repaint_root */ true);
+    }
+    repaint_boundaries.clear();
+	return true;
 }
 
 void Document::immediate_layout_element(Element* elem) {
@@ -112,15 +128,9 @@ void Document::immediate_layout_element(Element* elem) {
 
     if (changed_it != changed_elements.end()) {
         auto boundary = (*changed_it)->find_closest_relayout_boundary();
-        layout_boundary_element(boundary);
+        relayout_boundary_element(boundary);
         changed_elements.erase(changed_it);
     }
-}
-
-SkPath offset_path(SkPath* path, Position offset) {
-    SkPath offset_path;
-    path->offset(offset.left, offset.top, &offset_path);
-    return offset_path;
 }
 
 void Document::paint_element(Element* elem, bool is_repaint_root) {
@@ -138,28 +148,18 @@ void Document::paint_element(Element* elem, bool is_repaint_root) {
     }
     */
 
-    auto pin_prev_layer_tree = elem->layer_tree;  // pin shared pointer
-    if (elem->is_repaint_boundary) {
-        // Save previous tree to be able to reuse layers from it
-        prev_layer_tree = elem->layer_tree.get();
-        LayerTree* parent_tree =
-            is_repaint_root
-                ? (is_initial_paint ? nullptr : prev_layer_tree->parent)
-                : current_layer_tree;
-        // Create new tree and add it to the parent tree
-        elem->layer_tree = std::make_shared<LayerTree>(elem);
-        elem->layer_tree->parent = parent_tree;
-        if (parent_tree != nullptr) {
-            if (is_repaint_root) {
-                parent_tree->replace(prev_layer_tree, elem->layer_tree.get());
-            } else {
-                parent_tree->add(elem->layer_tree.get());
-            }
+	if (elem->is_repaint_boundary) {
+        if (!is_repaint_root && current_layer_tree != nullptr) {
+            current_layer_tree->add(elem->layer_tree.get());
         }
-        // Make new tree current
-        current_layer_tree = elem->layer_tree.get();
-        current_layer = nullptr;
-    }
+		current_layer_tree = elem->layer_tree.get();
+        prev_layers = std::move(current_layer_tree->children);
+        // current_layer_tree->children.clear();
+        // prev_layers = std::move(elem->layer_tree->children);
+        // std::cout << "COUNT" << prev_layers.size() << std::endl;
+		current_layer = nullptr;
+	}
+
     elem->abs_position =
         elem->parent == nullptr
             ? elem->rel_position
@@ -167,34 +167,28 @@ void Document::paint_element(Element* elem, bool is_repaint_root) {
 
     // Clipping
     auto prev_clip = current_clip;
-    if (is_repaint_root) {
-        // Repaint root doesn't get clip, because its paint is called by 
-        // the document, not by the parent element, so it restores its clip
-        // from the prev layer tree.
-        if (!is_initial_paint) current_layer_tree->clip = prev_layer_tree->clip;
-    } else {
-        if (elem->clip != std::nullopt) {
-            // Offset clip to position of the clipped element
-            SkPath offset_clip =
-                offset_path(&elem->clip.value(), elem->abs_position);
-            if (current_clip == std::nullopt) {
-                current_clip = offset_clip;
-            } else {
-                // Intersect prev clip with element's clip and make it new
-                // current clip
-                Op(current_clip.value(), offset_clip, kIntersect_SkPathOp,
-                   &current_clip.value());
-            }
+    if (elem->clip != std::nullopt) {
+        // Offset clip to position of the clipped element
+        SkPath offset_clip =
+            offset_path(&elem->clip.value(), elem->abs_position);
+        if (current_clip == std::nullopt) {
+            current_clip = offset_clip;
+        } else {
+            // Intersect prev clip with element's clip and make it new
+            // current clip
+            Op(current_clip.value(), offset_clip, kIntersect_SkPathOp,
+               &current_clip.value());
         }
-        // When element is repaint boundary, current clip is not needed while
-        // painting, instead it is applied while compositing.
-        if (elem->is_repaint_boundary && current_clip != std::nullopt) {
-            // Offset clip to the position of the layer
-            current_layer_tree->clip = offset_path(
-                &current_clip.value(),
-                Position{-elem->abs_position.left, -elem->abs_position.top});
-            current_clip = std::nullopt;
-        }
+    }
+    // When element is repaint boundary, current clip is not used while
+    // painting, instead it is stored in the layer tree and applied while
+    // compositing.
+    if (elem->is_repaint_boundary && current_clip != std::nullopt) {
+        // Offset clip to the position of the layer
+        current_layer_tree->clip = offset_path(
+            &current_clip.value(),
+            Position{-elem->abs_position.left, -elem->abs_position.top});
+        current_clip = std::nullopt;
     }
 
     auto prev_inside_changed = inside_changed;
@@ -205,7 +199,7 @@ void Document::paint_element(Element* elem, bool is_repaint_root) {
 
     current_clip = prev_clip;  // Restore clip
     if (elem->is_repaint_boundary) {
-        prev_layer_tree = nullptr;
+        prev_layers.clear();
         current_layer_tree = current_layer_tree->parent;
         current_layer = nullptr;
     }
@@ -241,23 +235,32 @@ void Document::setup_layer(Layer* layer, Element* elem) {
 // Creates layer and adds it to the current layer tree, reusing layers from
 // previous repaint if possible.
 Layer* Document::create_layer(Size size) {
-    std::shared_ptr<Layer> layer = prev_layer_tree != nullptr
-                                       ? prev_layer_tree->find_by_size(size)
-                                       : nullptr;
-    if (layer == nullptr) {
-        // Create new layer
+    auto it = prev_layers.begin();
+    while (it != prev_layers.end()) {
+        auto prev_layer =
+            std::get_if<std::shared_ptr<Layer>>(&*it /* lol ok */);
+        if (prev_layer != nullptr &&
+            Size::is_equal((*prev_layer)->size, size)) {
+            break;
+        }
+        it++;
+    }
+    std::shared_ptr<Layer> layer = nullptr;
+    if (it == prev_layers.end()) {
+        std::cout << "CREATE" << size.width << "," << size.height << std::endl;
         layer = Layer::make_offscreen_layer(gr_context, size);
     } else {
-        // Reuse layer
-        prev_layer_tree->remove_layer(layer);
+        std::cout << "REUSE" << size.width << "," << size.height << std::endl;
+        layer = std::get<std::shared_ptr<Layer>>(*it);
         layer->reset();
+        prev_layers.erase(it);
     }
     current_layer_tree->add(layer);
     current_layer = layer.get();
-    return layer.get();
+    return current_layer;
 }
 
-void Document::compose_layers() {
+void Document::compose() {
     need_recompose = false;
     screen->clear();
     paint_layer_tree(root->layer_tree.get());
@@ -280,10 +283,12 @@ void Document::paint_layer_tree(LayerTree* tree) {
     }
     for (auto item : tree->children) {
         if (std::holds_alternative<LayerTree*>(item)) {
+            std::cout << "PAINT TREE" << std::endl;
             auto child_tree = std::get<LayerTree*>(item);
             paint_layer_tree(child_tree);
         } else {
             auto child_layer = std::get<std::shared_ptr<Layer>>(item);
+            std::cout << "PAINT LAYER" << child_layer->size.width << std::endl;
             screen->paint_layer(child_layer.get(), Position{0, 0});
         }
     }

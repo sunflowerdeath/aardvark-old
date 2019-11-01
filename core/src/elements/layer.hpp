@@ -27,13 +27,24 @@ class Layer : public SingleChildElement {
 
     Layer(std::shared_ptr<Element> child, SkMatrix transform)
         : SingleChildElement(child, /* is_repaint_boundary */ true,
-                             /* size_depends_on_parent */ true),
-          transform(transform){};
+                             /* size_depends_on_parent */ true) {
+        set_transform(transform);
+    };
 
-    SkMatrix transform = SkMatrix::MakeScale(1);
     std::string get_debug_name() override { return "Layer"; };
+
     Size layout(BoxConstraints constraints) override;
-    void paint(bool is_changed) override;
+
+    void set_transform(const SkMatrix& new_transform) {
+        transform = new_transform;
+        layer_tree->transform = new_transform;
+        if (document != nullptr) document->need_recompose = true;
+    }
+
+    SkMatrix get_transform() { return transform; }
+
+  private:
+    SkMatrix transform = SkMatrix::MakeScale(1);
 };
 
 }  // namespace aardvark::elements

@@ -46,6 +46,8 @@ class DesktopApp {
 
     std::vector<std::shared_ptr<DesktopWindow>> windows;
 
+    void handle_event(DesktopWindow* window, Event event);
+
     // Dispatches event to the corresponding App instance
     static void dispatch_event(GLFWwindow* window, Event event);
 
@@ -53,7 +55,6 @@ class DesktopApp {
     std::shared_ptr<EventLoop> event_loop;
     bool should_stop;
     std::unordered_map<DesktopWindow*, std::shared_ptr<Document>> documents;
-    void handle_event(DesktopWindow* window, Event event);
 };
 
 }  // namespace aardvark
