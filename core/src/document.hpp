@@ -37,10 +37,12 @@ class Document {
     void set_root(std::shared_ptr<Element> new_root);
 
     // Notify document that element was changed
-    void change_element(Element* elem);
+    void change_element(std::shared_ptr<Element> elem);
 
     // Paints document
     bool render();
+
+    void relayout();
 
     // Elements should call this function to layout its children
     Size layout_element(Element* elem, BoxConstraints constraints);
@@ -74,7 +76,7 @@ class Document {
 
   private:
     sk_sp<GrContext> gr_context;
-    ElementsSet changed_elements;
+    std::unordered_set<std::shared_ptr<Element>> changed_elements;
     ElementsSet relayout_boundaries;
     ElementsSet repaint_boundaries;
     // Currently painted element
@@ -92,7 +94,6 @@ class Document {
 
     bool initial_render();
     bool rerender();
-    void relayout();
     void relayout_boundary_element(Element* elem);
     bool repaint();
     void compose();

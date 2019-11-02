@@ -8,7 +8,7 @@ Element::Element(bool is_repaint_boundary, bool size_depends_on_parent)
       layer_tree(std::make_shared<LayerTree>(this)){};
 
 void Element::change() {
-    if (document != nullptr) document->change_element(this);
+    if (document != nullptr) document->change_element(shared_from_this());
 }
 
 bool Element::hit_test(double left, double top) {
@@ -26,16 +26,23 @@ bool Element::is_parent_of(Element* elem) {
     return false;
 }
 
+void Element::set_document(Document* new_document) {
+    if (document != new_document) {
+        document = new_document;
+        visit_children([new_document](std::shared_ptr<Element> child) {
+            child->set_document(new_document);
+        });
+    }
+}
+
 Element* Element::find_closest_relayout_boundary() {
-    if (this->is_relayout_boundary) return this;
-    auto current = this->parent;
+    auto current = this;
     while (!current->is_relayout_boundary) current = current->parent;
     return current;
 }
 
 Element* Element::find_closest_repaint_boundary() {
-    if (this->is_repaint_boundary) return this;
-    auto current = this->parent;
+    auto current = this;
     while (!current->is_repaint_boundary) current = current->parent;
     return current;
 }
@@ -58,15 +65,17 @@ void SingleChildElement::paint(bool is_changed) {
 void SingleChildElement::remove_child(std::shared_ptr<Element> child) {
     if (this->child == child) {
         this->child->parent = nullptr;
-        this->child->document = nullptr;
+        this->child->set_document(nullptr);
         this->child = nullptr;
         change();
     }
 }
 
 void SingleChildElement::append_child(std::shared_ptr<Element> child) {
+    if (child->parent != nullptr) child->parent->remove_child(child);
     this->child = child;
-    child->parent = this;
+    this->child->set_document(this->document);
+    this->child->parent = this;
     change();
 }
 
@@ -105,23 +114,27 @@ void MultipleChildrenElement::remove_child(std::shared_ptr<Element> child) {
     auto it = std::find(children.begin(), children.end(), child);
     if (it != children.end()) {
         child->parent = nullptr;
-        child->document = nullptr;
+        child->set_document(nullptr);
         children.erase(it);
         change();
     }
 }
 
 void MultipleChildrenElement::append_child(std::shared_ptr<Element> child) {
+    if (child->parent != nullptr) child->parent->remove_child(child);
     child->parent = this;
+    child->set_document(this->document);
     children.push_back(child);
     change();
 }
 
 void MultipleChildrenElement::insert_before_child(
     std::shared_ptr<Element> child, std::shared_ptr<Element> before_child) {
+    if (child->parent != nullptr) child->parent->remove_child(child);
     auto it = std::find(children.begin(), children.end(), before_child);
     if (it == children.end()) return;
     child->parent = this;
+    child->set_document(this->document);
     children.insert(it, child);
     change();
 }

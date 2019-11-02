@@ -58,6 +58,7 @@ void PointerEventManager::handle_event(const PointerEvent& event) {
 }
 
 void PointerEventManager::call_responders_handlers(const PointerEvent& event) {
+    document->relayout();
     auto hit_elems = hit_tester->test(event.left, event.top);
 
     std::vector<std::weak_ptr<Element>>* pointer_prev_hit_elems;

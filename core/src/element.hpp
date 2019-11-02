@@ -37,7 +37,7 @@ enum class HitTestMode {
 using ChildrenVisitor = std::function<void(std::shared_ptr<Element>)>;
 
 // Base class for elements of the document
-class Element {
+class Element : public std::enable_shared_from_this<Element> {
     friend Document;
     friend HitTester;
 
@@ -115,6 +115,8 @@ class Element {
     // Checks whether the element is direct or indirect parent of another
     // element
     bool is_parent_of(Element* elem);
+
+    void set_document(Document* new_document);
 
     Element* find_closest_relayout_boundary();
     Element* find_closest_repaint_boundary();

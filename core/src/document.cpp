@@ -1,4 +1,5 @@
 #include "document.hpp"
+
 #include "SkPathOps.h"
 #include "elements/placeholder.hpp"
 
@@ -17,11 +18,11 @@ void add_only_parent(ElementsSet& set, Element* added) {
         if (elem->is_parent_of(added)) {  // Parent is already in the set
             return;
         }
-        if (added->is_parent_of(elem)) { // Child is already in the set
+        if (added->is_parent_of(elem)) {  // Child is already in the set
             children_of_added.push_back(elem);
         }
     }
-    for (auto elem : children_of_added) set.erase(elem);  
+    for (auto elem : children_of_added) set.erase(elem);
     set.insert(added);
 };
 
@@ -39,14 +40,18 @@ Document::Document(std::shared_ptr<Element> root) {
 void Document::set_root(std::shared_ptr<Element> new_root) {
     root = new_root;
     root->parent = nullptr;
-    root->document = this;
+    root->set_document(this);
+    root->is_relayout_boundary = true;
     root->is_repaint_boundary = true;
     root->rel_position = Position();
     root->size = screen->size;
     is_initial_render = true;
 }
 
-void Document::change_element(Element* elem) { changed_elements.insert(elem); }
+// weak ptrs
+void Document::change_element(std::shared_ptr<Element> elem) {
+    changed_elements.insert(elem);
+}
 
 bool Document::render() {
     if (is_initial_render) {
@@ -57,8 +62,8 @@ bool Document::render() {
 }
 
 bool Document::initial_render() {
-    layout_element(root.get(), BoxConstraints::from_size(screen->size,
-                                                         true /* tight */));
+    layout_element(root.get(),
+                   BoxConstraints::from_size(screen->size, true /* tight */));
     current_clip = std::nullopt;
     paint_element(root.get(), /* is_repaint_root */ true);
     compose();
@@ -78,26 +83,25 @@ bool Document::rerender() {
 }
 
 void Document::relayout() {
-	for (auto elem : changed_elements) {
-		add_only_parent(relayout_boundaries,
-						elem->find_closest_relayout_boundary());
-	}
-	changed_elements.clear();
-	for (auto elem : relayout_boundaries) {
-		relayout_boundary_element(elem);
-	}
-	relayout_boundaries.clear();
+    for (auto elem : changed_elements) {
+        if (elem->document != this) continue;
+        add_only_parent(relayout_boundaries,
+                        elem->find_closest_relayout_boundary());
+    }
+    changed_elements.clear();
+    for (auto elem : relayout_boundaries) {
+        relayout_boundary_element(elem);
+    }
+    relayout_boundaries.clear();
 }
 
 void Document::relayout_boundary_element(Element* elem) {
-	layout_element(elem, elem->prev_constraints);
-	add_only_parent(repaint_boundaries,
-					elem->find_closest_repaint_boundary());
-	elem->is_changed = true;
+    layout_element(elem, elem->prev_constraints);
+    add_only_parent(repaint_boundaries, elem->find_closest_repaint_boundary());
+    elem->is_changed = true;
 }
 
 Size Document::layout_element(Element* elem, BoxConstraints constraints) {
-    elem->document = this;
     elem->is_relayout_boundary =
         constraints.is_tight() || elem->size_depends_on_parent;
     auto size = elem->layout(constraints);
@@ -106,12 +110,12 @@ Size Document::layout_element(Element* elem, BoxConstraints constraints) {
 }
 
 bool Document::repaint() {
-	if (repaint_boundaries.empty()) return false;
-	for (auto elem : repaint_boundaries) {
+    if (repaint_boundaries.empty()) return false;
+    for (auto elem : repaint_boundaries) {
         paint_element(elem, /* is_repaint_root */ true);
     }
     repaint_boundaries.clear();
-	return true;
+    return true;
 }
 
 void Document::immediate_layout_element(Element* elem) {
@@ -135,7 +139,7 @@ void Document::paint_element(Element* elem, bool is_repaint_root) {
     // std::cout << "paint element: " << elem->get_debug_name() << std::endl;
     current_element = elem;
 
-    /* 
+    /*
     TODO
     if (elem->controls_layer_tree) {
         elem->paint(); // Sets elem's `layer_tree` property
@@ -148,15 +152,15 @@ void Document::paint_element(Element* elem, bool is_repaint_root) {
 
     // Layers from previous layer tree of the current repaint boundary element
     std::vector<LayerTreeNode> prev_layers_pool;
-	if (elem->is_repaint_boundary) {
+    if (elem->is_repaint_boundary) {
         if (!is_repaint_root && current_layer_tree != nullptr) {
             current_layer_tree->add(elem->layer_tree.get());
         }
-		current_layer_tree = elem->layer_tree.get();
+        current_layer_tree = elem->layer_tree.get();
         prev_layers_pool = std::move(layers_pool);
         layers_pool = std::move(current_layer_tree->children);
-		current_layer = nullptr;
-	}
+        current_layer = nullptr;
+    }
 
     elem->abs_position =
         elem->parent == nullptr
@@ -274,8 +278,7 @@ void Document::paint_layer_tree(LayerTree* tree) {
         tree->transform.invert(&inverted_transform);
         SkPath transformed_clip;
         tree->clip.value().transform(inverted_transform, &transformed_clip);
-        screen->canvas->clipPath(transformed_clip, SkClipOp::kIntersect,
-                                 true);
+        screen->canvas->clipPath(transformed_clip, SkClipOp::kIntersect, true);
     }
     for (auto item : tree->children) {
         if (std::holds_alternative<LayerTree*>(item)) {

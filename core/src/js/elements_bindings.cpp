@@ -95,6 +95,7 @@ JSValueRef element_append_child(JSContextRef ctx, JSObjectRef function,
                                 JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
 
+    /*
     static auto target = std::string("Element.appendChild()");
     auto checker =
         check_types::make_arguments({{"child", host->typedefs->element}});
@@ -102,6 +103,7 @@ JSValueRef element_append_child(JSContextRef ctx, JSObjectRef function,
     if (check_types::to_exception(result, ctx, exception)) {
         return JSValueMakeUndefined(ctx);
     }
+    */
 
     auto elem = host->element_index->get_native_object(object);
     auto child = host->element_index->get_native_object(
