@@ -59,7 +59,6 @@ class TapRecognizer {
 	}
 
 	press(event) {
-        log('PRESS')
 		this.stopTrackingPointer = this.document().startTrackingPointer(
 			event.pointerId,
 			this.onPointerEvent

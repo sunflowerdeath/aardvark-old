@@ -37,7 +37,7 @@ class Document {
     void set_root(std::shared_ptr<Element> new_root);
 
     // Notify document that element was changed
-    void change_element(std::shared_ptr<Element> elem);
+    void change_element(Element* elem);
 
     // Paints document
     bool render();
@@ -76,7 +76,7 @@ class Document {
 
   private:
     sk_sp<GrContext> gr_context;
-    std::unordered_set<std::shared_ptr<Element>> changed_elements;
+    ElementsSet changed_elements;
     ElementsSet relayout_boundaries;
     ElementsSet repaint_boundaries;
     // Currently painted element

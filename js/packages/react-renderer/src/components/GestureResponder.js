@@ -33,7 +33,6 @@ const GestureResponder = props => {
     const didUnmountRef = useRef(false)
     useEffect(() => {
         return () => {
-            log('UNMOUNT')
             recognizer.destroy()
             didUnmountRef.current = true
         }

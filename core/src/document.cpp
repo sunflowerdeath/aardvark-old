@@ -49,7 +49,7 @@ void Document::set_root(std::shared_ptr<Element> new_root) {
 }
 
 // weak ptrs
-void Document::change_element(std::shared_ptr<Element> elem) {
+void Document::change_element(Element* elem) {
     changed_elements.insert(elem);
 }
 

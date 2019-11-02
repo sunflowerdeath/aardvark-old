@@ -8,7 +8,7 @@ Element::Element(bool is_repaint_boundary, bool size_depends_on_parent)
       layer_tree(std::make_shared<LayerTree>(this)){};
 
 void Element::change() {
-    if (document != nullptr) document->change_element(shared_from_this());
+    if (document != nullptr) document->change_element(this);
 }
 
 bool Element::hit_test(double left, double top) {
@@ -64,10 +64,12 @@ void SingleChildElement::paint(bool is_changed) {
 
 void SingleChildElement::remove_child(std::shared_ptr<Element> child) {
     if (this->child == child) {
+        // Change must be called before removing element, so the parent will
+        // always replace the child in the `document->changed_elements`
+        change();
         this->child->parent = nullptr;
         this->child->set_document(nullptr);
         this->child = nullptr;
-        change();
     }
 }
 
@@ -113,10 +115,10 @@ void MultipleChildrenElement::paint(bool is_changed) {
 void MultipleChildrenElement::remove_child(std::shared_ptr<Element> child) {
     auto it = std::find(children.begin(), children.end(), child);
     if (it != children.end()) {
+        change();
         child->parent = nullptr;
         child->set_document(nullptr);
         children.erase(it);
-        change();
     }
 }
 
