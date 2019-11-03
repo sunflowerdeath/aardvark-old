@@ -3,6 +3,8 @@ import { registerNativeComponent } from './helpers.js'
 export const Align = registerNativeComponent(AlignElement)
 export const Background = registerNativeComponent(BackgroundElement)
 export const Center = registerNativeComponent(CenterElement)
+export const Clip = registerNativeComponent(ClipElement)
+export const CustomLayout = registerNativeComponent(CustomLayoutElement)
 export const IntrinsicHeight = registerNativeComponent(IntrinsicHeightElement)
 export const IntrinsicWidth = registerNativeComponent(IntrinsicWidthElement)
 export const Flex = registerNativeComponent(FlexElement)

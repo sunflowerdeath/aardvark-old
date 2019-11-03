@@ -165,13 +165,6 @@ JSValueRef element_set_layout_props(JSContextRef ctx, JSObjectRef function,
     return JSValueMakeUndefined(ctx);
 }
 
-JSValueRef element_immediate_layout(JSContextRef ctx, JSObjectRef function,
-                                    JSObjectRef object, size_t argument_count,
-                                    const JSValueRef arguments[],
-                                    JSValueRef* exception) {
-    get_elem(ctx, object)->immediate_layout();
-    return JSValueMakeUndefined(ctx);
-}
 
 void element_finalize(JSObjectRef object) {
     ObjectsIndex<Element>::remove(object);
@@ -184,7 +177,6 @@ JSClassRef element_create_class() {
         {"removeChild", element_remove_child, PROP_ATTR_STATIC},
         {"insertBeforeChild", element_insert_before_child, PROP_ATTR_STATIC},
         {"setLayoutProps", element_set_layout_props, PROP_ATTR_STATIC},
-        {"immediateLayout", element_immediate_layout, PROP_ATTR_STATIC},
         {0, 0, 0}};
     JSStaticValue static_values[] = {
         {"document", element_get_document, nullptr, PROP_ATTR_STATIC},

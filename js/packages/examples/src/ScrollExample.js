@@ -20,8 +20,8 @@ import ReactAardvark, {
     Flex,
     Text
 } from '@advk/react-renderer'
-
 import Scrollable from '@advk/react-renderer/src/components/Scrollable'
+import Scrolled from '@advk/react-renderer/src/components/Scrolled'
 import Button from './Button.js'
 
 const INITIAL_COLOR = { red: 179, green: 229, blue: 252, alpha: 255 }
@@ -101,38 +101,58 @@ const ContentWrapper = ({ children, elem }) => {
     )
 }
 
-const ScrollExample = () => (
-    <Padding padding={Padding1.symmetrical(20, 40)}>
-        <Flex direction={FlexDirection.column}>
-            <Padding padding={Padding1.only('bottom', 16)}>
-                <Panel>
+const ScrollExample = () => {
+    const [scrollTop, setScrollTop] = useState(0)
+    return (
+        <Padding padding={Padding1.symmetrical(20, 40)}>
+            <Flex>
+                <Flex direction={FlexDirection.column}>
                     <Padding padding={Padding1.only('bottom', 16)}>
-                        <Button onTap={() => log('Tap first button')}>
-                            <Text text="Button 1" />
-                        </Button>
+                        <Panel>
+                            <Padding padding={Padding1.only('bottom', 16)}>
+                                <Button onTap={() => setScrollTop(s => s - 10)}>
+                                    <Text text="UP" />
+                                </Button>
+                            </Padding>
+                            <Button onTap={() => setScrollTop(s => s + 10)}>
+                                <Text text="DOWN" />
+                            </Button>
+                        </Panel>
                     </Padding>
-                    <Button onTap={() => log('Tap second button')}>
-                        <Text text="Button 2" />
-                    </Button>
-                </Panel>
-            </Padding>
-            <Sized
-                sizeConstraints={{
-                    width: Value.abs(200),
-                    height: Value.abs(200)
-                }}
-            >
-                <Stack>
-                    <Background color={Color.LIGHTGREY} />
-                    <Scrollable contentWrapper={ContentWrapper}>
-                        {range(1, 20).map(i => (
-                            <ListItem>Item {i}</ListItem>
-                        ))}
-                    </Scrollable>
-                </Stack>
-            </Sized>
-        </Flex>
-    </Padding>
-)
+                    <Sized
+                        sizeConstraints={{
+                            width: Value.abs(200),
+                            height: Value.abs(200)
+                        }}
+                    >
+                        <Stack>
+                            <Background color={Color.LIGHTGREY} />
+                            <Scrollable contentWrapper={ContentWrapper}>
+                                {range(1, 20).map(i => (
+                                    <ListItem>Item {i}</ListItem>
+                                ))}
+                            </Scrollable>
+                        </Stack>
+                    </Sized>
+                </Flex>
+                <Sized
+                    sizeConstraints={{
+                        width: Value.abs(200),
+                        height: Value.abs(200)
+                    }}
+                >
+                    <Stack>
+                        <Background color={Color.LIGHTGREY} />
+                        <Scrolled scrollTop={scrollTop}>
+                            {range(1, 20).map(i => (
+                                <ListItem>Item {i}</ListItem>
+                            ))}
+                        </Scrolled>
+                    </Stack>
+                </Sized>
+            </Flex>
+        </Padding>
+    )
+}
 
 export default ScrollExample

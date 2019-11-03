@@ -118,7 +118,7 @@ bool Document::repaint() {
     return true;
 }
 
-void Document::immediate_layout_element(Element* elem) {
+void Document::partial_relayout(Element* elem) {
     // Check if element is changed or inside changed parent
     auto current = elem;
     auto changed_it = changed_elements.end();

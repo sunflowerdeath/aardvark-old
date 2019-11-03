@@ -72,7 +72,9 @@ class Document {
 
     bool need_recompose = false;
 
-    void immediate_layout_element(Element* elem);
+    // Makes the layout of the specified element up-to-date by performing
+    // partial relayout of the document.
+    void partial_relayout(Element* elem);
 
   private:
     sk_sp<GrContext> gr_context;

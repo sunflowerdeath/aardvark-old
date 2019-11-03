@@ -47,10 +47,6 @@ Element* Element::find_closest_repaint_boundary() {
     return current;
 }
 
-void Element::immediate_layout() {
-    if (document != nullptr) document->immediate_layout_element(this);
-}
-
 SingleChildElement::SingleChildElement(std::shared_ptr<Element> child,
                                        bool is_repaint_boundary,
                                        bool size_depends_on_parent)
