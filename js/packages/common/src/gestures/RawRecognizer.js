@@ -4,11 +4,20 @@ class RawRecognizer {
 	}
 
 	handler(event, eventType) {
+        if (this.isDisabled) return
         this.options.handler(event, eventType)
 	}
 
     destroy() {
         if (this.options.destroy) this.options.destroy()
+    }
+
+    enable() {
+        this.isDisabled = false
+    }
+
+    disable() {
+        this.isDisabled = true
     }
 }
 

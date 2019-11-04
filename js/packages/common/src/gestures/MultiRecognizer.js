@@ -14,6 +14,19 @@ class MultiRecognizer {
             this.recognizers[key].destroy()
         }
     }
+
+    enable() {
+        for (const key in this.recognizers) {
+            this.recognizers[key].enable()
+        }
+
+    }
+
+    disable() {
+        for (const key in this.recognizers) {
+            this.recognizers[key].disable()
+        }
+    }
 }
 
 export default MultiRecognizer

@@ -4,9 +4,11 @@ class HoverRecognizer {
     constructor({ onHoverStart, onHoverEnd }) {
         this.onHoverStart = onHoverStart
         this.onHoverEnd = onHoverEnd
+        this.isDisabled = false
     }
 
     handler(event, eventType) {
+        if (this.isDisabled) return
         if (event.tool !== PointerTool.MOUSE) return
         if (eventType === PointerEventType.ENTER) {
             this.onHoverStart && this.onHoverStart()
@@ -17,6 +19,14 @@ class HoverRecognizer {
 
     destroy() {
         // noop
+    }
+
+    enable() {
+        this.isDisabled = false
+    }
+
+    disable() {
+        this.isDisabled = true
     }
 }
 

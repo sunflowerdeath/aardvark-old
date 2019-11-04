@@ -6,7 +6,7 @@ module.exports = {
 		path: path.resolve(__dirname, 'build'),
 		filename: 'main.js'
 	},
-	mode: 'development',
+	mode: process.env.NODE_ENV == 'production' ? 'production' : 'development',
 	module: {
 		rules: [
 			{

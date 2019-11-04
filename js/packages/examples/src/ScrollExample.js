@@ -143,11 +143,6 @@ const ScrollExample = () => {
                 >
                     <Stack>
                         <Background color={Color.LIGHTGREY} />
-                        <Scrolled scrollTop={scrollTop}>
-                            {range(1, 20).map(i => (
-                                <ListItem>Item {i}</ListItem>
-                            ))}
-                        </Scrolled>
                     </Stack>
                 </Sized>
             </Flex>
