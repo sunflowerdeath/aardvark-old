@@ -215,10 +215,8 @@ const Scrollable = props => {
             })
         })
     })
-    // const [scrollTop, setScrollTop] = useState(0)
     useEffect(() => {
         ctx.scrollTopValue.addListener(({ value }) => {
-            // setScrollTop(Math.round(value))
             elemRef.current.scrollTop = Math.round(value)
             ctx.velocityTracker.addPoint(Date.now(), value)
         })
