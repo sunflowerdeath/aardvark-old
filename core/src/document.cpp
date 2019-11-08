@@ -13,14 +13,15 @@ SkPath offset_path(SkPath* path, Position offset) {
 
 // Add element to set ensuring that no element will be the children of another
 void add_only_parent(ElementsSet& set, Element* added) {
+    auto it = set.find(added);
+    // Already in the set
+    if (it != set.end()) return;
     auto children_of_added = std::vector<Element*>();
     for (auto elem : set) {
-        if (elem->is_parent_of(added)) {  // Parent is already in the set
-            return;
-        }
-        if (added->is_parent_of(elem)) {  // Child is already in the set
-            children_of_added.push_back(elem);
-        }
+        // Parent is in the set
+        if (elem->is_parent_of(added)) return;
+        // Child is in the set
+        if (added->is_parent_of(elem)) children_of_added.push_back(elem);
     }
     for (auto elem : children_of_added) set.erase(elem);
     set.insert(added);
@@ -51,9 +52,7 @@ void Document::set_root(std::shared_ptr<Element> new_root) {
 }
 
 // weak ptrs
-void Document::change_element(Element* elem) {
-    changed_elements.insert(elem);
-}
+void Document::change_element(Element* elem) { changed_elements.insert(elem); }
 
 bool Document::render() {
     if (is_initial_render) {

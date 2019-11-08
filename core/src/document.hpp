@@ -1,18 +1,17 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <optional>
 #include <unordered_set>
-#include <functional>
 
 #include "GrContext.h"
 #include "SkCanvas.h"
 #include "SkRegion.h"
-
 #include "base_types.hpp"
 #include "box_constraints.hpp"
-#include "element_observer.hpp"
 #include "element.hpp"
+#include "element_observer.hpp"
 #include "layer.hpp"
 #include "layer_tree.hpp"
 #include "pointer_events/pointer_event_manager.hpp"
@@ -101,7 +100,6 @@ class Document {
     // Whether the current element or some of its parent is changed since last
     // repaint
     bool inside_changed = false;
-
 };
 
 }  // namespace aardvark

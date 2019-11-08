@@ -2,17 +2,13 @@
 
 #include <functional>
 #include <memory>
+#include <nod/nod.hpp>
 #include <unordered_map>
 #include <vector>
-#include <nod/nod.hpp>
+
 #include "element.hpp"
 
 namespace aardvark {
-
-template <class K, class V>
-bool map_contains(const std::unordered_map<K, V>& map, const K& key) {
-    return map.find(key) != map.end();
-}
 
 class Connection {
     virtual void disconnect(){};
@@ -66,7 +62,8 @@ class ElementObserver
     // Start observing element
     ElementObserverConnection<T> observe(std::shared_ptr<Element> element,
                                          std::function<void(T)> handler) {
-        if (!map_contains(observed_elements, element)) {
+        auto it = observed_elements.find(element);
+        if (it == observed_elements.end()) {
             observed_elements.emplace(
                 element, ElementObserverEntry(get_prop_value(element)));
         }
@@ -80,16 +77,13 @@ class ElementObserver
     // Stop observing element (called when element is removed from the document)
     void unobserve_element(std::shared_ptr<Element> element) {
         auto it = observed_elements.find(element);
-        if (it != observed_elements.end()) {
-            observed_elements.remove(it);
-        }
+        if (it != observed_elements.end()) observed_elements.remove(it);
     }
 
     // Marks that value of the observed property of the element might change
     void trigger_element(std::shared_ptr<Element> element) {
-        if (map_contains(observed_elements, element)) {
-            triggered_elements.insert(element);
-        }
+        auto it = observed_elements.find(element);
+        if (it != observed_elements.end()) triggered_elements.insert(element);
     }
 
     // Checks values of the observed properties and call handlers if they are
@@ -101,18 +95,14 @@ class ElementObserver
 
     // Re-check values of the observed properties of all observed elements
     void check_all_elements() {
-        for (auto it : observed_elements) {
-            triggered_elements.insert(it->first);
-        }
+        for (auto it : observed_elements) triggered_elements.insert(it->first);
         check_triggered_elements();
     }
 
   private:
     std::function<T(std::shared_ptr<Element>)> get_prop_value;
-
     std::unordered_map<std::shared_ptr<Element>, ElementObserverEntry>
         observed_elements;
-
     std::unordered_set<std::shared_ptr<Element>> triggered_elements;
 
     void disconnect(const ElementObserverConnection<T>& connection) {
