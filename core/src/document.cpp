@@ -30,6 +30,8 @@ Document::Document(std::shared_ptr<Element> root) {
     gr_context = GrContext::MakeGL();
     screen = Layer::make_screen_layer(gr_context);
     pointer_event_manager = std::make_unique<PointerEventManager>(this);
+    size_observer = std::make_shared<ElementObserver<Size>>(
+        [](std::shared_ptr<Element> element) { return element->size; });
     if (root == nullptr) {
         set_root(std::make_shared<elements::Placeholder>());
     } else {
@@ -93,6 +95,9 @@ void Document::relayout() {
         relayout_boundary_element(elem);
     }
     relayout_boundaries.clear();
+
+    size_observer->check_triggered_elements();
+    if (!changed_elements.empty()) relayout();
 }
 
 void Document::relayout_boundary_element(Element* elem) {
@@ -102,6 +107,7 @@ void Document::relayout_boundary_element(Element* elem) {
 }
 
 Size Document::layout_element(Element* elem, BoxConstraints constraints) {
+    size_observer->trigger_element(elem->shared_from_this());
     elem->is_relayout_boundary =
         constraints.is_tight() || elem->size_depends_on_parent;
     auto size = elem->layout(constraints);

@@ -11,6 +11,7 @@
 
 #include "base_types.hpp"
 #include "box_constraints.hpp"
+#include "element_observer.hpp"
 #include "element.hpp"
 #include "layer.hpp"
 #include "layer_tree.hpp"
@@ -39,10 +40,14 @@ class Document {
     // Notify document that element was changed
     void change_element(Element* elem);
 
-    // Paints document
+    // Renders document
     bool render();
 
     void relayout();
+
+    // Makes the layout of the specified element up-to-date by performing
+    // partial relayout of the document.
+    void partial_relayout(Element* elem);
 
     // Elements should call this function to layout its children
     Size layout_element(Element* elem, BoxConstraints constraints);
@@ -60,24 +65,27 @@ class Document {
     // previous repaint if possible.
     Layer* create_layer(Size size);
 
+    ElementObserverConnection<Size> observe_element_size(
+        std::shared_ptr<Element>, std::function<void(Size)> handler);
+
     std::shared_ptr<Layer> screen;
-
+    std::shared_ptr<Element> root;
     bool is_initial_render;
-
     std::unique_ptr<PointerEventManager> pointer_event_manager;
     SignalEventSink<KeyEvent> key_event_sink;
     SignalEventSink<ScrollEvent> scroll_event_sink;
-
-    std::shared_ptr<Element> root;
-
     bool need_recompose = false;
 
-    // Makes the layout of the specified element up-to-date by performing
-    // partial relayout of the document.
-    void partial_relayout(Element* elem);
-
   private:
+    bool initial_render();
+    bool rerender();
+    void relayout_boundary_element(Element* elem);
+    bool repaint();
+    void compose();
+    void paint_layer_tree(LayerTree* tree);
+
     sk_sp<GrContext> gr_context;
+    std::shared_ptr<ElementObserver<Size>> size_observer;
     ElementsSet changed_elements;
     ElementsSet relayout_boundaries;
     ElementsSet repaint_boundaries;
@@ -94,12 +102,6 @@ class Document {
     // repaint
     bool inside_changed = false;
 
-    bool initial_render();
-    bool rerender();
-    void relayout_boundary_element(Element* elem);
-    bool repaint();
-    void compose();
-    void paint_layer_tree(LayerTree* tree);
 };
 
 }  // namespace aardvark
