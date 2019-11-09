@@ -65,7 +65,9 @@ class Document {
     Layer* create_layer(Size size);
 
     ElementObserverConnection<Size> observe_element_size(
-        std::shared_ptr<Element>, std::function<void(Size)> handler);
+        std::shared_ptr<Element> element, std::function<void(Size)> handler) {
+        return size_observer->observe(element, handler);
+    };
 
     std::shared_ptr<Layer> screen;
     std::shared_ptr<Element> root;

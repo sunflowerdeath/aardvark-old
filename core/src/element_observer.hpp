@@ -6,13 +6,10 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base_types.hpp"
 #include "element.hpp"
 
 namespace aardvark {
-
-class Connection {
-    virtual void disconnect(){};
-};
 
 class Element;
 
@@ -47,6 +44,8 @@ class ElementObserverConnection : public Connection {
 template <typename T>
 class ElementObserver
     : public std::enable_shared_from_this<ElementObserver<T>> {
+    friend ElementObserverConnection<T>;
+
   public:
     struct ElementObserverEntry {
         ElementObserverEntry(T prev_prop_value)
@@ -64,18 +63,18 @@ class ElementObserver
                                          std::function<void(T)> handler) {
         auto it = observed_elements.find(element);
         if (it == observed_elements.end()) {
-            observed_elements.emplace(
-                element, ElementObserverEntry(get_prop_value(element)));
+            it = observed_elements.emplace(
+                element, ElementObserverEntry(get_prop_value(element))).first;
         }
         return ElementObserverConnection(
-            this->weak_from_this(),                             // observer
-            element,                                            // element
-            observed_elements[element].signal.connect(handler)  // connection
+            this->weak_from_this(),              // observer
+            element,                             // element
+            it->second.signal.connect(handler)  // connection
         );
     }
 
     // Stop observing element (called when element is removed from the document)
-    void unobserve_element(std::shared_ptr<Element> element) {
+    void unobserve(std::shared_ptr<Element> element) {
         auto it = observed_elements.find(element);
         if (it != observed_elements.end()) observed_elements.remove(it);
     }
@@ -105,15 +104,16 @@ class ElementObserver
         observed_elements;
     std::unordered_set<std::shared_ptr<Element>> triggered_elements;
 
-    void disconnect(const ElementObserverConnection<T>& connection) {
+    void disconnect(ElementObserverConnection<T>* connection) {
         auto element = connection->element.lock();
         // If element is destroyed, then observing is already stopped
         if (element != nullptr) return;
         connection->connection.disconnect();
         auto it = observed_elements.find(element);
         // Remove the element if this was the last slot
-        if (it != observed_elements.end() && it->second.slot_count() == 0) {
-            observed_elements.remove(it);
+        if (it != observed_elements.end() &&
+            it->second.signal.slot_count() == 0) {
+            observed_elements.erase(it);
         }
     }
 

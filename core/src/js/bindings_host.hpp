@@ -80,6 +80,7 @@ class BindingsHost {
     std::optional<ObjectsIndex<Document>> document_index;
     std::optional<ObjectsIndex<Element>> element_index;
     std::optional<ObjectsIndex<nod::connection>> signal_connection_index;
+    std::optional<ObjectsIndex<Connection>> connection_index;
     std::optional<ObjectsIndex<Websocket>> websocket_index;
 
     static BindingsHost* get(JSContextRef ctx);

@@ -134,6 +134,7 @@ BindingsHost::BindingsHost() {
     document_index.emplace(ctx->get(), document_create_class());
     signal_connection_index.emplace(ctx->get(),
                                     signal_connection_create_class());
+    connection_index.emplace(ctx->get(), connection_create_class());
     auto websocket_class = websocket_create_class();
     websocket_index.emplace(ctx->get(), websocket_class);
     add_constructor("WebSocket", websocket_class,

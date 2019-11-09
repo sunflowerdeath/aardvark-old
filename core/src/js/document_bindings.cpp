@@ -1,11 +1,11 @@
 #include "document_bindings.hpp"
 
 #include "../document.hpp"
-#include "bindings_host.hpp"
-#include "signal_connection_bindings.hpp"
-#include "function_wrapper.hpp"
-#include "base_types_mappers.hpp"
 #include "../pointer_events/signal_event_sink.hpp"
+#include "base_types_mappers.hpp"
+#include "bindings_host.hpp"
+#include "function_wrapper.hpp"
+#include "signal_connection_bindings.hpp"
 
 namespace aardvark::js {
 
@@ -44,12 +44,13 @@ JSValueRef document_add_key_handler(JSContextRef ctx, JSObjectRef function,
 }
 
 JSValueRef document_add_scroll_handler(JSContextRef ctx, JSObjectRef function,
-                                    JSObjectRef object, size_t argument_count,
-                                    const JSValueRef arguments[],
-                                    JSValueRef* exception) {
+                                       JSObjectRef object,
+                                       size_t argument_count,
+                                       const JSValueRef arguments[],
+                                       JSValueRef* exception) {
     return signal_event_sink_add_handler<ScrollEvent>(
-        get_document(ctx, object)->scroll_event_sink, scroll_event_mapper,
-        ctx, arguments[0]);
+        get_document(ctx, object)->scroll_event_sink, scroll_event_mapper, ctx,
+        arguments[0]);
 }
 
 std::vector<JSValueRef> pointer_event_handler_args_to_js(JSContextRef ctx,
@@ -63,6 +64,20 @@ FunctionWrapper<void, PointerEvent> pointer_event_handler_from_js(
         BindingsHost::get(ctx)->ctx,      // ctx
         value,                            // function
         pointer_event_handler_args_to_js  // args_to_js
+    );
+};
+
+std::vector<JSValueRef> size_observer_handler_args_to_js(JSContextRef ctx,
+                                                         Size size) {
+    return std::vector<JSValueRef>{size_mapper->to_js(ctx, size)};
+}
+
+FunctionWrapper<void, Size> size_observer_handler_from_js(JSContextRef ctx,
+                                                          JSValueRef value) {
+    return FunctionWrapper<void, Size>(
+        BindingsHost::get(ctx)->ctx,      // ctx
+        value,                            // function
+        size_observer_handler_args_to_js  // args_to_js
     );
 };
 
@@ -118,9 +133,9 @@ JSValueRef document_layout_element(JSContextRef ctx, JSObjectRef function,
 }
 
 JSValueRef document_partial_relayout(JSContextRef ctx, JSObjectRef function,
-                                   JSObjectRef object, size_t argument_count,
-                                   const JSValueRef arguments[],
-                                   JSValueRef* exception) {
+                                     JSObjectRef object, size_t argument_count,
+                                     const JSValueRef arguments[],
+                                     JSValueRef* exception) {
     auto host = BindingsHost::get(ctx);
     auto document = host->document_index->get_native_object(object);
     auto elem = host->element_index->get_native_object(
@@ -144,6 +159,20 @@ JSValueRef document_start_tracking_pointer(JSContextRef ctx,
     return signal_connection_to_js(ctx, std::move(connection));
 }
 
+JSValueRef document_observe_element_size(JSContextRef ctx, JSObjectRef function,
+                                         JSObjectRef object,
+                                         size_t argument_count,
+                                         const JSValueRef arguments[],
+                                         JSValueRef* exception) {
+    auto host = BindingsHost::get(ctx);
+    auto document = host->document_index->get_native_object(object);
+    auto elem = host->element_index->get_native_object(
+        JSValueToObject(ctx, arguments[0], nullptr));
+    auto handler = size_observer_handler_from_js(ctx, arguments[1]);
+    auto connection = document->observe_element_size(elem, handler);
+    return connection_to_js(ctx, std::move(connection));
+}
+
 JSClassRef document_create_class() {
     auto definition = kJSClassDefinitionEmpty;
     JSStaticFunction static_functions[] = {
@@ -154,6 +183,7 @@ JSClassRef document_create_class() {
         {"partialRelayout", document_partial_relayout, PROP_ATTR_STATIC},
         {"startTrackingPointer", document_start_tracking_pointer,
          PROP_ATTR_STATIC},
+        {"observeElementSize", document_observe_element_size, PROP_ATTR_STATIC},
         {0, 0, 0}};
     JSStaticValue static_values[] = {
         {"root", document_get_root, document_set_root,
@@ -166,4 +196,4 @@ JSClassRef document_create_class() {
     return JSClassCreate(&definition);
 }
 
-}
+}  // namespace aardvark::js

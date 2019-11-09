@@ -2,6 +2,11 @@
 
 namespace aardvark {
 
+class Connection {
+  public:
+    virtual void disconnect(){};
+};
+
 struct Value {
     enum class ValueType { none, abs, rel };
 
