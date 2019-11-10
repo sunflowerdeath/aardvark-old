@@ -31,7 +31,8 @@ using LayerTreeNode = std::variant<LayerTree*, std::shared_ptr<Layer>>;
 
 class Document {
   public:
-    Document(std::shared_ptr<Element> root = nullptr);
+    Document(sk_sp<GrContext> gt_context, std::shared_ptr<Layer> screen,
+             std::shared_ptr<Element> root = nullptr);
 
     // Sets new root element
     void set_root(std::shared_ptr<Element> new_root);

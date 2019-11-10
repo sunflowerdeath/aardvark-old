@@ -81,7 +81,6 @@ std::shared_ptr<Layer> Layer::make_screen_layer(sk_sp<GrContext> gr_context) {
         nullptr, &props));
 	if (surface == nullptr) {
 		Log::error("[Layer] Cannot create screen layer surface");
-		std::exit(EXIT_FAILURE);
 	}
     return std::make_shared<Layer>(surface);
 };
@@ -90,8 +89,15 @@ std::shared_ptr<Layer> Layer::make_offscreen_layer(sk_sp<GrContext> gr_context,
                                                    Size size) {
     const SkImageInfo info =
         SkImageInfo::MakeN32Premul(size.width, size.height);
-    auto surface(
-        SkSurface::MakeRenderTarget(gr_context.get(), SkBudgeted::kNo, info));
+    auto target =
+        SkSurface::MakeRenderTarget(gr_context.get(), SkBudgeted::kNo, info);
+    if (target == nullptr) {
+		Log::error("[Layer] Cannot create offscreen layer render target");
+    }
+    auto surface(target);
+    if (surface == nullptr) {
+		Log::error("[Layer] Cannot create offscreen layer surface");
+    }
     return std::make_shared<Layer>(surface);
 };
 

@@ -27,9 +27,9 @@ void add_only_parent(ElementsSet& set, Element* added) {
     set.insert(added);
 };
 
-Document::Document(std::shared_ptr<Element> root) {
-    gr_context = GrContext::MakeGL();
-    screen = Layer::make_screen_layer(gr_context);
+Document::Document(sk_sp<GrContext> gr_context, std::shared_ptr<Layer> screen,
+                   std::shared_ptr<Element> root)
+    : gr_context(gr_context), screen(screen) {
     pointer_event_manager = std::make_unique<PointerEventManager>(this);
     size_observer = std::make_shared<ElementObserver<Size>>(
         [](std::shared_ptr<Element> element) { return element->size; });

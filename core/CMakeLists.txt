@@ -364,6 +364,7 @@ if(ADV_BUILD_TESTS)
         # src/tests/responder_test.cpp
         # src/tests/align_test.cpp
         src/tests/text_span_test.cpp
+        src/tests/element_observer_test.cpp
         src/tests/event_loop_test.cpp
     )
     if (ADV_ENABLE_JS)

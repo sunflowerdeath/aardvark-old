@@ -101,7 +101,9 @@ std::shared_ptr<DesktopWindow> DesktopApp::create_window(Size size) {
     glfwSetMouseButtonCallback(glfw_window, mouse_button_callback);
     // Keyboard events
     glfwSetKeyCallback(glfw_window, key_callback);
-    documents[window.get()] = std::make_shared<Document>();
+    auto gr_context = GrContext::MakeGL();
+    auto screen = Layer::make_screen_layer(gr_context);
+    documents[window.get()] = std::make_shared<Document>(gr_context, screen);
     return window;
 };
 
