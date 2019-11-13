@@ -10,6 +10,8 @@
   "author": "sunflowerdeath",
   "license": "Unlicense",
   "dependencies": {
+    "@babel/preset-env": "^7.7.1",
+    "core-js": "^3.4.0",
     "react": "^16.9.0"
   },
   "devDependencies": {

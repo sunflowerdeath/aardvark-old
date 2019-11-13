@@ -20,7 +20,7 @@ TEST_CASE("ModuleLoader", "[module_loader]" ) {
         REQUIRE(JSValueToNumber(ctx, result, nullptr) == 4);
     }
 
-    SECTION("load module and handle exception") {
+    SECTION("load module from source and handle exception") {
         auto loader = ModuleLoader(&event_loop, ctx_sptr, false);
         std::optional<JsError> error = std::nullopt;
         loader.exception_handler = [&error](JsError error_arg) {

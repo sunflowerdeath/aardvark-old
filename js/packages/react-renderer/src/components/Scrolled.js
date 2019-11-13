@@ -1,20 +1,15 @@
-import React, { useMemo, useCallback, useRef, useImperativeHandle } from 'react'
+import React, {
+    useRef,
+    useEffect,
+    useLayoutEffect,
+    useImperativeHandle
+} from 'react'
 import { TransformMatrix } from '@advk/common'
 import { Clip, Layer, CustomLayout } from '../nativeComponents'
 import useContext from '../hooks/useContext.js'
 
-const containerLayout = (ctx, elem, constraints) => {
-    const child = elem.children[0]
-    const size = elem.document.layoutElement(child, constraints)
-    child.setLayoutProps({ left: 0, top: 0 }, size)
-    if (ctx.heigth != size.height) {
-        ctx.height = size.height
-        ctx.props.onChangeSize()
-    }
-    return size
-}
-
-const contentLayout = (ctx, elem, constraints) => {
+const layout = (elem, constraints) => {
+    log('SCROLLED RELAYOUT')
     let scrollHeight = 0
     for (const child of elem.children) {
         const childConstraints = {
@@ -27,30 +22,51 @@ const contentLayout = (ctx, elem, constraints) => {
         child.setLayoutProps({ left: 0, top: scrollHeight }, childSize)
         scrollHeight += childSize.height
     }
-    if (ctx.scrollHeight != scrollHeight) {
-        ctx.scrollHeight = scrollHeight
-        ctx.props.onChangeSize()
-    }
     return { width: constraints.maxWidth, height: scrollHeight }
 }
 
 const Scrolled = React.forwardRef((props, ref) => {
-    const layerRef = useRef()
+    log('SCROLLED RERENDER')
+    const containerRef = useRef()
+    const contentRef = useRef()
     const ctx = useContext({
         props,
         initialCtx: {
-            layerRef
+            containerRef,
+            contentRef
         }
     })
-    const contentLayoutCb = useCallback((elem, constraints) =>
-        contentLayout(ctx, elem, constraints)
-    )
-    const containerLayoutCb = useCallback((elem, constraints) =>
-        containerLayout(ctx, elem, constraints)
-    )
+    useEffect(() => {
+        log('SUBSCRIBE')
+        const container = containerRef.current
+        const content = contentRef.current
+        const document = container.document
+        const unobserveContainer = document.observeElementSize(
+            container,
+            size => {
+                log('CONTAINER OBSERVER', size.height)
+                if (ctx.height != size.height) {
+                    ctx.height = size.height
+                    ctx.props.onChangeHeight?.()
+                }
+            }
+        )
+        const unobserveContent = document.observeElementSize(content, size => {
+            log('CONTENT OBSERVER', size.height)
+            if (ctx.scrollHeight != size.height) {
+                ctx.scrollHeight = size.height
+                ctx.props.onChangeScrollHeight?.()
+            }
+        })
+        return () => {
+            log('UNOBSERVE')
+            unobserveContainer()
+            unobserveContent()
+        }
+    }, [])
     useImperativeHandle(ref, () => ({
         get elem() {
-            return ctx.layerRef.current
+            return ctx.containerRef.current
         },
         get document() {
             return this.elem.document
@@ -60,7 +76,7 @@ const Scrolled = React.forwardRef((props, ref) => {
         },
         set scrollTop(scrollTop) {
             if (scrollTop == ctx.scrollTop) return
-            ctx.layerRef.current.transform = TransformMatrix.makeTranslate(
+            ctx.contentRef.current.transform = TransformMatrix.makeTranslate(
                 0,
                 -scrollTop
             )
@@ -74,18 +90,14 @@ const Scrolled = React.forwardRef((props, ref) => {
         }
     }))
     return (
-        <CustomLayout layout={containerLayoutCb}>
-            <Clip>
-                <Layer
-                    ref={layerRef}
-                    transform={TransformMatrix.makeTranslate(0, 0)}
-                >
-                    <CustomLayout layout={contentLayoutCb}>
-                        {props.children}
-                    </CustomLayout>
-                </Layer>
-            </Clip>
-        </CustomLayout>
+        <Clip ref={containerRef}>
+            <Layer
+                ref={contentRef}
+                transform={TransformMatrix.makeTranslate(0, 0)}
+            >
+                <CustomLayout layout={layout}>{props.children}</CustomLayout>
+            </Layer>
+        </Clip>
     )
 })
 

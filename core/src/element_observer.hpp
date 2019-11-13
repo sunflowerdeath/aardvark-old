@@ -94,7 +94,7 @@ class ElementObserver
 
     // Re-check values of the observed properties of all observed elements
     void check_all_elements() {
-        for (auto it : observed_elements) triggered_elements.insert(it->first);
+        for (auto& it : observed_elements) triggered_elements.insert(it.first);
         check_triggered_elements();
     }
 
@@ -107,7 +107,7 @@ class ElementObserver
     void disconnect(ElementObserverConnection<T>* connection) {
         auto element = connection->element.lock();
         // If element is destroyed, then observing is already stopped
-        if (element != nullptr) return;
+        if (element == nullptr) return;
         connection->connection.disconnect();
         auto it = observed_elements.find(element);
         // Remove the element if this was the last slot

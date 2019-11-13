@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@advk/common": "*",
-    "@advk/react-renderer": "*"
+    "@advk/react-renderer": "*",
+    "@babel/plugin-proposal-optional-chaining": "^7.6.0"
   },
   "author": "sunflowerdeath",
   "license": "Unlicense"

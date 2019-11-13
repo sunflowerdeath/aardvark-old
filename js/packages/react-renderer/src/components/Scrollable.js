@@ -27,7 +27,7 @@ const removeHandler = (object, key) => {
 
 const getMaxScrollTop = ctx => {
     const elem = ctx.elemRef.current
-    return elem.scrollHeight - elem.height
+    return Math.max(elem.scrollHeight - elem.height, 0)
 }
 
 const isScrollable = ctx => !ctx.props.isDisabled && getMaxScrollTop(ctx) > 0
@@ -58,11 +58,15 @@ const animateScroll = (ctx, nextScrollTop) => {
     }).start()
 }
 
-const onChangeScrollSize = ctx => {
-    const recognizer = ctx.state.recognizer
-    const ref = ctx.elemRef.current
-    const isDisabled = ctx.props.isDisabled || ref.scrollHeight <= ref.height
+const onChangeDimensions = ctx => {
+    const { recognizer } = ctx.state
+    const elem = ctx.elemRef.current
+    // todo - check scrolltop bounds
+    const isDisabled = ctx.props.isDisabled || elem.scrollHeight <= elem.height
     isDisabled ? recognizer.disable() : recognizer.enable()
+    const scrollTop = ctx.scrollTopValue.__getValue()
+    const maxScrollTop = getMaxScrollTop(ctx)
+    if (scrollTop > maxScrollTop) ctx.scrollTopValue.setValue(maxScrollTop)
 }
 
 // Keyboard
@@ -188,6 +192,7 @@ const unmount = ctx => {
 }
 
 const Scrollable = props => {
+    log('WILL RENDER')
     const elemRef = useRef()
     const ctx = useContext({
         props,
@@ -222,7 +227,6 @@ const Scrollable = props => {
         })
         return unmount.bind(null, ctx)
     }, [])
-
     return (
         <Responder
             handler={useCallback((event, eventType) => {
@@ -231,7 +235,12 @@ const Scrollable = props => {
         >
             <Scrolled
                 ref={ctx.elemRef}
-                onChangeSize={useCallback(onChangeScrollSize.bind(null, ctx))}
+                onChangeHeight={useCallback(() => {
+                    onChangeDimensions(ctx)
+                })}
+                onChangeScrollHeight={useCallback(() =>
+                    onChangeDimensions(ctx)
+                )}
             >
                 {ctx.props.children}
             </Scrolled>

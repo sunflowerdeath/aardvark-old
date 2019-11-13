@@ -105,8 +105,7 @@ void ModuleLoader::handle_exception(JSValueRef exception) {
     if (ctx_wptr.expired()) return;
     auto ctx = ctx_wptr.lock()->get();
 
-    // auto location = js_error_location_mapper->from_js(ctx, exception);
-    auto location = JsErrorLocation{};
+    auto location = js_error_location_mapper->from_js(ctx, exception);
     auto error = JsError{
         exception,                                  // value
         aardvark::js::str_from_js(ctx, exception),  // text

@@ -16,9 +16,10 @@ const ObserverExample = () => {
     const [width, setWidth] = useState(200)
     useEffect(() => {
         const elem = elemRef.current
-        return elem.document.observeElementSize(elem, size =>
+        const disconnect = elem.document.observeElementSize(elem, size =>
             log(JSON.stringify(size))
         )
+        return () => disconnect()
     }, [])
     return (
         <Stack>

@@ -4,21 +4,18 @@
 #include "../document.hpp"
 #include "../elements/elements.hpp"
 #include "../platforms/desktop/desktop_window.hpp"
-#include <iostream>
 
 using namespace aardvark;
 
 TEST_CASE("ElementObserver", "[element_observer]") {
-    SECTION("SizeObserver") {
-        // for some reason without creating invisible window gr_context is not
-        // created
-        glfwInit();
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        auto window =
-            std::make_shared<aardvark::DesktopWindow>(nullptr, Size{500, 500});
+    // Creating window is needed to have opengl context
+    glfwInit();
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    auto window =
+        std::make_shared<aardvark::DesktopWindow>(nullptr, Size{500, 500});
 
+    SECTION("SizeObserver") {
         auto gr_context = GrContext::MakeGL();
-        if (gr_context == nullptr) std::cout << "WTF" << std::endl;
         auto screen = Layer::make_offscreen_layer(gr_context, Size{500, 500});
         auto document =
             std::make_shared<aardvark::Document>(gr_context, screen);
@@ -41,6 +38,10 @@ TEST_CASE("ElementObserver", "[element_observer]") {
         // Handler called when element changed size
         auto handler_called = false;
         auto handler_arg = Size{0, 0};
+        auto reset = [&]() {
+            handler_called = false;
+            handler_arg = Size{0, 0};
+        };
         auto handler = [&](Size size) {
             handler_called = true;
             handler_arg = size;
@@ -49,32 +50,28 @@ TEST_CASE("ElementObserver", "[element_observer]") {
         child1->size_constraints = big;
         child1->change();
         document->render();
-        REQUIRE(handler_called);                 // called
-        REQUIRE(handler_arg == Size{200, 200});  // correct size
-
-        /*
-        // Handler is not called if element did not relayouted
-        child2->size_constraints = big;
-        child2->change();
-        document->render();
-        REQUIRE(); // not called
+        REQUIRE(handler_called);
+        REQUIRE(handler_arg == Size{200, 200});
+        reset();
 
         // Handler is not called if element did not changed size
         child1->size_constraints = big;
         child1->change();
+        child2->size_constraints = big;
+        child2->change();
         document->render();
-        REQUIRE(); // not called
+        REQUIRE(!handler_called);
+        reset();
 
         // Handler is not called after disconnecting
         connection.disconnect();
         child1->size_constraints = small;
         child1->change();
         document->render();
-        REQUIRE(); // not called
-        */
+        REQUIRE(!handler_called);
+        REQUIRE(child1->size == Size{100, 100});
+        reset();
     }
 
-    // bounding box observer
-    // same as element +
-    // called when parent layer transform updated
+    // TODO bounding box observer
 }

@@ -65,6 +65,9 @@ bool Document::render() {
 bool Document::initial_render() {
     layout_element(root.get(),
                    BoxConstraints::from_size(screen->size, true /* tight */));
+    size_observer->check_all_elements();
+    if (!changed_elements.empty()) relayout();
+
     current_clip = std::nullopt;
     paint_element(root.get(), /* is_repaint_root */ true);
     compose();

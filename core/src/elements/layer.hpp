@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <variant>
+
 #include "../base_types.hpp"
 #include "../box_constraints.hpp"
 #include "../element.hpp"
@@ -23,11 +24,11 @@ class Layer : public SingleChildElement {
     Layer()
         : SingleChildElement(/* child */ nullptr,
                              /* is_repaint_boundary */ true,
-                             /* size_depends_on_parent */ true){};
+                             /* size_depends_on_parent */ false){};
 
     Layer(std::shared_ptr<Element> child, SkMatrix transform)
         : SingleChildElement(child, /* is_repaint_boundary */ true,
-                             /* size_depends_on_parent */ true) {
+                             /* size_depends_on_parent */ false) {
         set_transform(transform);
     };
 
