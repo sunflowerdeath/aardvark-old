@@ -42,7 +42,7 @@ const animateOverscroll = ctx => {
     Animated.spring(ctx.scrollTopValue, {
         toValue,
         bounciness: ctx.props.dragOverscrollBounciness,
-        // Velocity is based on seconds instead of milliseconds
+        // Here velocity is based on seconds instead of milliseconds
         velocity: ctx.velocityTracker.getVelocity() * 1000
     }).start()
     return true
@@ -58,15 +58,18 @@ const animateScroll = (ctx, nextScrollTop) => {
     }).start()
 }
 
-const onChangeDimensions = ctx => {
-    const { recognizer } = ctx.state
-    const elem = ctx.elemRef.current
-    // todo - check scrolltop bounds
-    const isDisabled = ctx.props.isDisabled || elem.scrollHeight <= elem.height
-    isDisabled ? recognizer.disable() : recognizer.enable()
+const checkOverscroll = ctx => {
     const scrollTop = ctx.scrollTopValue.__getValue()
     const maxScrollTop = getMaxScrollTop(ctx)
     if (scrollTop > maxScrollTop) ctx.scrollTopValue.setValue(maxScrollTop)
+}
+
+const checkDisabled = ctx => {
+    const { state, props, elemRef } = ctx
+    const { recognizer, height, scrollHeight } = state
+    const elem = elemRef.current
+    const isDisabled = props.isDisabled || scrollHeight <= height
+    isDisabled ? recognizer.disable() : recognizer.enable()
 }
 
 // Keyboard
@@ -77,7 +80,7 @@ let currentKeyHandler
 const makeCurrentKeyHandler = ctx => {
     if (currentKeyHandler) currentKeyHandler.removeKeyHandler()
     const document = ctx.elemRef.current.document
-    ctx.removeKeyHandler = document.addKeyHandler(onKeyEvent.bind(null, ctx))
+    ctx.removeKeyHandler = document.addKeyHandler(onKeyEvent(ctx, ?))
     currentKeyHandler = ctx
 }
 
@@ -124,9 +127,7 @@ const onKeyEvent = (ctx, event) => {
 // Mouse wheel
 const onHoverStart = ctx => {
     const document = ctx.elemRef.current.document
-    ctx.removeScrollHandler = document.addScrollHandler(event =>
-        onScrollEvent(ctx, event)
-    )
+    ctx.removeScrollHandler = document.addScrollHandler(onScrollEvent(ctx, ?))
 }
 
 const onHoverEnd = ctx => removeHandler(ctx, 'removeScrollHandler')
@@ -192,7 +193,6 @@ const unmount = ctx => {
 }
 
 const Scrollable = props => {
-    log('WILL RENDER')
     const elemRef = useRef()
     const ctx = useContext({
         props,
@@ -205,17 +205,17 @@ const Scrollable = props => {
         initialState: ctx => ({
             recognizer: new MultiRecognizer({
                 hover: new HoverRecognizer({
-                    onHoverStart: onHoverStart.bind(null, ctx),
-                    onHoverEnd: onHoverEnd.bind(null, ctx)
+                    onHoverStart: onHoverStart(ctx, ?),
+                    onHoverEnd: onHoverEnd(ctx, ?)
                 }),
                 drag: new DragRecognizer({
                     document: () => ctx.elemRef.current.document,
-                    onDragStart: onDragStart.bind(null, ctx),
-                    onDragMove: onDragMove.bind(null, ctx),
-                    onDragEnd: onDragEnd.bind(null, ctx)
+                    onDragStart: onDragStart(ctx, ?),
+                    onDragMove: onDragMove(ctx, ?),
+                    onDragEnd: onDragEnd(ctx, ?)
                 }),
                 raw: new RawRecognizer({
-                    handler: onRawEvent.bind(null, ctx)
+                    handler: onRawEvent(ctx, ?)
                 })
             })
         })
@@ -227,19 +227,26 @@ const Scrollable = props => {
         })
         return unmount.bind(null, ctx)
     }, [])
+    useEffect(() => checkDisabled(ctx), [
+        ctx.state.height,
+        ctx.state.scrollHeight,
+        ctx.props.isDisabled
+    ])
+    useEffect(() => checkOverscroll(ctx), [
+        ctx.state.height,
+        ctx.state.scrollHeight
+    ])
     return (
-        <Responder
-            handler={useCallback((event, eventType) => {
-                ctx.state.recognizer.handler(event, eventType)
-            })}
-        >
+        <Responder handler={useCallback(ctx.state.recognizer.getHandler())}>
             <Scrolled
                 ref={ctx.elemRef}
-                onChangeHeight={useCallback(() => {
-                    onChangeDimensions(ctx)
-                })}
+                onChangeHeight={useCallback(() =>
+                    ctx.setState({ height: ctx.elemRef.current.height })
+                )}
                 onChangeScrollHeight={useCallback(() =>
-                    onChangeDimensions(ctx)
+                    ctx.setState({
+                        scrollHeight: ctx.elemRef.current.scrollHeight
+                    })
                 )}
             >
                 {ctx.props.children}

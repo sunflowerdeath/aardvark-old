@@ -15,7 +15,11 @@ module.exports = {
                 use: {
                     loader: 'babel-loader',
                     options: {
-                        plugins: ['@babel/plugin-proposal-optional-chaining'],
+                        plugins: [
+                            '@babel/plugin-proposal-optional-chaining',
+                            '@babel/plugin-proposal-function-bind',
+                            '@babel/plugin-proposal-partial-application'
+                        ],
                         presets: [
                             '@babel/preset-react',
                             [

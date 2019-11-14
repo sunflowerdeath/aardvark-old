@@ -9,6 +9,10 @@ class MultiRecognizer {
         }
     }
 
+    getHandler() {
+        return this.handler.bind(this)
+    }
+
     destroy() {
         for (const key in this.recognizers) {
             this.recognizers[key].destroy()

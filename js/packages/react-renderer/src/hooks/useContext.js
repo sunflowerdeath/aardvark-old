@@ -29,7 +29,6 @@ const useContext = ({ initialCtx, props, initialState }) => {
         Object.defineProperty(ctx, 'state', { get: getState })
         Object.defineProperty(ctx, 'setState', {
             value: newState => {
-                log('CALL SET STATE')
                 setState({ ...getState(), ...newState })
             }
         })

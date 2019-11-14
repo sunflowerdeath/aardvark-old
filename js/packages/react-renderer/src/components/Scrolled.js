@@ -9,7 +9,6 @@ import { Clip, Layer, CustomLayout } from '../nativeComponents'
 import useContext from '../hooks/useContext.js'
 
 const layout = (elem, constraints) => {
-    log('SCROLLED RELAYOUT')
     let scrollHeight = 0
     for (const child of elem.children) {
         const childConstraints = {
@@ -26,7 +25,6 @@ const layout = (elem, constraints) => {
 }
 
 const Scrolled = React.forwardRef((props, ref) => {
-    log('SCROLLED RERENDER')
     const containerRef = useRef()
     const contentRef = useRef()
     const ctx = useContext({
@@ -37,14 +35,12 @@ const Scrolled = React.forwardRef((props, ref) => {
         }
     })
     useEffect(() => {
-        log('SUBSCRIBE')
         const container = containerRef.current
         const content = contentRef.current
         const document = container.document
         const unobserveContainer = document.observeElementSize(
             container,
             size => {
-                log('CONTAINER OBSERVER', size.height)
                 if (ctx.height != size.height) {
                     ctx.height = size.height
                     ctx.props.onChangeHeight?.()
@@ -52,14 +48,12 @@ const Scrolled = React.forwardRef((props, ref) => {
             }
         )
         const unobserveContent = document.observeElementSize(content, size => {
-            log('CONTENT OBSERVER', size.height)
             if (ctx.scrollHeight != size.height) {
                 ctx.scrollHeight = size.height
                 ctx.props.onChangeScrollHeight?.()
             }
         })
         return () => {
-            log('UNOBSERVE')
             unobserveContainer()
             unobserveContent()
         }
