@@ -192,13 +192,26 @@ const unmount = ctx => {
     }
 }
 
+const renderContent = (ctx, content) => {
+    const { props, state, scrollTopValue } = ctx
+    const { isDisabled, wrapper } = props
+    if (!wrapper) return content
+    const { height, scrollHeight } = state
+    return React.createElement(wrapper, {
+        children: content,
+        isDisabled,
+        height,
+        scrollHeight,
+        scrollTopValue
+    })
+}
+
 const Scrollable = props => {
     const elemRef = useRef()
     const ctx = useContext({
         props,
         initialCtx: () => ({
             elemRef,
-            initialScrollTop: 0,
             scrollTopValue: new Animated.Value(0),
             velocityTracker: new VelocityTracker()
         }),
@@ -236,21 +249,24 @@ const Scrollable = props => {
         ctx.state.height,
         ctx.state.scrollHeight
     ])
+    const content = (
+        <Scrolled
+            ref={ctx.elemRef}
+            onChangeHeight={useCallback(() =>
+                ctx.setState({ height: ctx.elemRef.current.height })
+            )}
+            onChangeScrollHeight={useCallback(() =>
+                ctx.setState({
+                    scrollHeight: ctx.elemRef.current.scrollHeight
+                })
+            )}
+        >
+            {ctx.props.children}
+        </Scrolled>
+    )
     return (
         <Responder handler={useCallback(ctx.state.recognizer.getHandler())}>
-            <Scrolled
-                ref={ctx.elemRef}
-                onChangeHeight={useCallback(() =>
-                    ctx.setState({ height: ctx.elemRef.current.height })
-                )}
-                onChangeScrollHeight={useCallback(() =>
-                    ctx.setState({
-                        scrollHeight: ctx.elemRef.current.scrollHeight
-                    })
-                )}
-            >
-                {ctx.props.children}
-            </Scrolled>
+            {renderContent(ctx, content)}
         </Responder>
     )
 }

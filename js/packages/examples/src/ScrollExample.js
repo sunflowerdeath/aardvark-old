@@ -1,5 +1,6 @@
 import React, {
     useRef,
+    useEffect,
     useState,
     useCallback,
     useImperativeHandle
@@ -9,7 +10,8 @@ import {
     Value,
     Padding as Padding1,
     FlexDirection,
-    PointerEventType
+    PointerEventType,
+    TransformMatrix
 } from '@advk/common'
 import ReactAardvark, {
     Align,
@@ -18,6 +20,8 @@ import ReactAardvark, {
     Stack,
     Background,
     Center,
+    Clip,
+    Layer,
     Padding,
     Responder,
     IntrinsicWidth,
@@ -82,10 +86,19 @@ const ListItem = ({ children }) => {
     )
 }
 
-const ContentWrapper = ({ children, elem }) => {
+const FloatingScrollbar = props => {
+    const { children, height, scrollHeight, scrollTopValue } = props
+    const scrollbarHeight = (height * height) / scrollHeight
+    const layerRef = useRef()
+    useEffect(() => {
+        scrollTopValue.addListener(({ value }) => {
+            const top = (height * value) / scrollHeight
+            layerRef.current.transform = TransformMatrix.makeTranslate(0, top)
+        })
+    }, [height, scrollHeight])
     return (
         <Stack>
-            {children()}
+            {children}
             <Align alignment={{ top: Value.abs(0), right: Value.abs(0) }}>
                 <Sized
                     sizeConstraints={{
@@ -93,9 +106,28 @@ const ContentWrapper = ({ children, elem }) => {
                         width: Value.abs(10)
                     }}
                 >
-                    <Background
-                        color={{ red: 255, blue: 0, green: 0, alpha: 128 }}
-                    />
+                    <Clip>
+                        <Layer
+                            ref={layerRef}
+                            transform={TransformMatrix.makeTranslate(0, 0)}
+                        >
+                            <Sized
+                                sizeConstraints={{
+                                    height: Value.abs(scrollbarHeight),
+                                    width: Value.rel(1)
+                                }}
+                            >
+                                <Background
+                                    color={{
+                                        red: 0,
+                                        blue: 0,
+                                        green: 0,
+                                        alpha: 128
+                                    }}
+                                />
+                            </Sized>
+                        </Layer>
+                    </Clip>
                 </Sized>
             </Align>
         </Stack>
@@ -142,22 +174,39 @@ const ScrollExample = () => {
                         </Flex>
                     </Panel>
                 </Padding>
-                <Sized
-                    sizeConstraints={{
-                        width: Value.abs(200),
-                        height: Value.abs(200)
-                    }}
-                >
-                    <Stack>
-                        <Background color={Color.LIGHTGREY} />
-                        <Scrollable>
-                            <Expandable ref={expandRef} />
-                            {range(1, 2).map(i => (
-                                <ListItem>Item {i}</ListItem>
-                            ))}
-                        </Scrollable>
-                    </Stack>
-                </Sized>
+                <Flex>
+                    <Sized
+                        sizeConstraints={{
+                            width: Value.abs(200),
+                            height: Value.abs(200)
+                        }}
+                    >
+                        <Stack>
+                            <Background color={Color.LIGHTGREY} />
+                            <Scrollable>
+                                <Expandable ref={expandRef} />
+                                {range(1, 2).map(i => (
+                                    <ListItem>Item {i}</ListItem>
+                                ))}
+                            </Scrollable>
+                        </Stack>
+                    </Sized>
+                    <Sized
+                        sizeConstraints={{
+                            width: Value.abs(200),
+                            height: Value.abs(200)
+                        }}
+                    >
+                        <Stack>
+                            <Background color={Color.LIGHTGREY} />
+                            <Scrollable wrapper={FloatingScrollbar}>
+                                {range(1, 20).map(i => (
+                                    <ListItem>Item {i}</ListItem>
+                                ))}
+                            </Scrollable>
+                        </Stack>
+                    </Sized>
+                </Flex>
             </Flex>
         </Padding>
     )
