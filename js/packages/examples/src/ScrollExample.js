@@ -30,7 +30,7 @@ import ReactAardvark, {
     Text
 } from '@advk/react-renderer'
 import Scrollable from '@advk/react-renderer/src/components/Scrollable'
-import Scrolled from '@advk/react-renderer/src/components/Scrolled'
+import FloatingScrollbarWrapper from '@advk/react-renderer/src/components/FloatingScrollbarWrapper'
 import Button from './Button.js'
 
 const INITIAL_COLOR = { red: 179, green: 229, blue: 252, alpha: 255 }
@@ -83,54 +83,6 @@ const ListItem = ({ children }) => {
                 </Stack>
             </IntrinsicHeight>
         </Responder>
-    )
-}
-
-const FloatingScrollbar = props => {
-    const { children, height, scrollHeight, scrollTopValue } = props
-    const scrollbarHeight = (height * height) / scrollHeight
-    const layerRef = useRef()
-    useEffect(() => {
-        scrollTopValue.addListener(({ value }) => {
-            const top = (height * value) / scrollHeight
-            layerRef.current.transform = TransformMatrix.makeTranslate(0, top)
-        })
-    }, [height, scrollHeight])
-    return (
-        <Stack>
-            {children}
-            <Align alignment={{ top: Value.abs(0), right: Value.abs(0) }}>
-                <Sized
-                    sizeConstraints={{
-                        height: Value.rel(1),
-                        width: Value.abs(10)
-                    }}
-                >
-                    <Clip>
-                        <Layer
-                            ref={layerRef}
-                            transform={TransformMatrix.makeTranslate(0, 0)}
-                        >
-                            <Sized
-                                sizeConstraints={{
-                                    height: Value.abs(scrollbarHeight),
-                                    width: Value.rel(1)
-                                }}
-                            >
-                                <Background
-                                    color={{
-                                        red: 0,
-                                        blue: 0,
-                                        green: 0,
-                                        alpha: 128
-                                    }}
-                                />
-                            </Sized>
-                        </Layer>
-                    </Clip>
-                </Sized>
-            </Align>
-        </Stack>
     )
 }
 
@@ -199,7 +151,7 @@ const ScrollExample = () => {
                     >
                         <Stack>
                             <Background color={Color.LIGHTGREY} />
-                            <Scrollable wrapper={FloatingScrollbar}>
+                            <Scrollable wrapper={FloatingScrollbarWrapper}>
                                 {range(1, 20).map(i => (
                                     <ListItem>Item {i}</ListItem>
                                 ))}
