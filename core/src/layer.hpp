@@ -35,7 +35,7 @@ class Layer {
     sk_sp<SkImage> get_snapshot();
 
     // Paints layer on top of this layer
-    void paint_layer(Layer* layer, Position pos);
+    void paint_layer(Layer* layer, Position pos, float opacity = 1);
 
     static std::shared_ptr<Layer> make_screen_layer(
         sk_sp<GrContext> gr_context);

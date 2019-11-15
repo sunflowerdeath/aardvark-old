@@ -10,15 +10,6 @@
 
 namespace aardvark::elements {
 
-/*
-struct TransformOptions {
-    Position translate;
-    Scale scale;
-    float opacity = 1;
-    float rotation = 0;
-};
-*/
-
 class Layer : public SingleChildElement {
   public:
     Layer()
@@ -36,16 +27,29 @@ class Layer : public SingleChildElement {
 
     Size layout(BoxConstraints constraints) override;
 
+    void change_layer() {
+        if (document != nullptr) document->change_layer(this);
+    }
+
     void set_transform(const SkMatrix& new_transform) {
         transform = new_transform;
         layer_tree->transform = new_transform;
-        if (document != nullptr) document->need_recompose = true;
+        change_layer();
     }
 
     SkMatrix get_transform() { return transform; }
 
+    void set_opacity(float new_opacity) {
+        opacity = new_opacity;
+        layer_tree->opacity = opacity;
+        change_layer();
+    }
+
+    float get_opacity() { return opacity; }
+
   private:
     SkMatrix transform = SkMatrix::MakeScale(1);
+    float opacity = 1;
 };
 
 }  // namespace aardvark::elements

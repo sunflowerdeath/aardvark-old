@@ -507,6 +507,21 @@ JSClassRef flex_child_elem_create_class(JSClassRef parent_class) {
 // Layer
 //------------------------------------------------------------------------------
 
+JSValueRef layer_elem_get_opacity(JSContextRef ctx, JSObjectRef object,
+                                    JSStringRef property_name,
+                                    JSValueRef* exception) {
+    auto elem = get_elem<elements::Layer>(ctx, object);
+    return float_mapper->to_js(ctx, elem->get_opacity());
+}
+
+bool layer_elem_set_opacity(JSContextRef ctx, JSObjectRef object,
+                              JSStringRef property_name, JSValueRef value,
+                              JSValueRef* exception) {
+    auto elem = get_elem<elements::Layer>(ctx, object);
+    elem->set_opacity(float_mapper->from_js(ctx, value));
+    return true;
+}
+
 JSValueRef layer_elem_get_transform(JSContextRef ctx, JSObjectRef object,
                                     JSStringRef property_name,
                                     JSValueRef* exception) {
@@ -526,6 +541,8 @@ JSClassRef layer_elem_create_class(JSClassRef parent_class) {
     auto definition =
         create_elem_class_definition("LayerElement", parent_class);
     JSStaticValue static_values[] = {
+        {"opacity", layer_elem_get_opacity, layer_elem_set_opacity,
+         kJSPropertyAttributeNone},
         {"transform", layer_elem_get_transform, layer_elem_set_transform,
          kJSPropertyAttributeNone},
         {0, 0, 0, 0}};

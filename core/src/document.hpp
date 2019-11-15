@@ -37,8 +37,11 @@ class Document {
     // Sets new root element
     void set_root(std::shared_ptr<Element> new_root);
 
-    // Notify document that element was changed
+    // Notify document that element has been changed
     void change_element(Element* elem);
+
+    // Notify document that layer properties have beed changed
+    void change_layer(Element* elem) { need_recompose = true; };
 
     // Renders document
     bool render();
@@ -103,6 +106,7 @@ class Document {
     // Whether the current element or some of its parent is changed since last
     // repaint
     bool inside_changed = false;
+    float current_opacity = 1;
 };
 
 }  // namespace aardvark

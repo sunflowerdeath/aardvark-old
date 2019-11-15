@@ -37,9 +37,10 @@ sk_sp<SkImage> Layer::get_snapshot() {
     return snapshot;
 };
 
-void Layer::paint_layer(Layer* layer, Position pos) {
+void Layer::paint_layer(Layer* layer, Position pos, float opacity) {
     SkPaint paint;
     paint.setAntiAlias(true);
+    paint.setAlpha(opacity * 255);
     canvas->drawImage(layer->get_snapshot(), pos.left, pos.top, &paint);
 };
 

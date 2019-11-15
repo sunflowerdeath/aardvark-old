@@ -33,6 +33,8 @@ class LayerTree {
 
     SkMatrix transform;
 
+    float opacity = 1;
+
     // Adds new item to the tree
     void add(LayerTreeNode item);
 

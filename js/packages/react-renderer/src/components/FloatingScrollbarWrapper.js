@@ -1,4 +1,6 @@
 import React, { useRef, useEffect } from 'react'
+import PropTypes from 'prop-types'
+import Animated from 'animated'
 import { Value, TransformMatrix } from '@advk/common'
 import {
     Align,
@@ -8,10 +10,17 @@ import {
     Clip,
     Layer
 } from '../nativeComponents'
+import useContext from '../hooks/useContext.js'
 
 const DefaultFloatingScrollbar = () => (
     <Background color={{ red: 0, blue: 0, green: 0, alpha: 128 }} />
 )
+
+const animateOpacity = (ctx, opacity) =>
+    Animated.spring(ctx.opacityValue, {
+        toValue: opacity,
+        bounciness: 0
+    }).start()
 
 const FloatingScrollbarWrapper = props => {
     const {
@@ -19,16 +28,39 @@ const FloatingScrollbarWrapper = props => {
         height,
         scrollHeight,
         scrollTopValue,
-        scrollbarComponent
+        scrollbarComponent,
+        autoHide
     } = props
-    const scrollbarHeight = height * (height / scrollHeight)
     const layerRef = useRef()
+    const ctx = useContext({
+        props,
+        initialCtx: {
+            layerRef,
+            opacityValue: new Animated.Value(0)
+        }
+    })
     useEffect(() => {
         scrollTopValue.addListener(({ value }) => {
             const top = (height * value) / scrollHeight
             layerRef.current.transform = TransformMatrix.makeTranslate(0, top)
+            clearTimeout(ctx.hideTimer)
+            if (ctx.props.autoHide) {
+                log('SHOW')
+                animateOpacity(ctx, 1)
+                ctx.hideTimer = setTimeout(() => {
+                    animateOpacity(ctx, 0)
+                    log('HIDE')
+                }, ctx.props.hideTimeout)
+            }
         })
     }, [height, scrollHeight])
+    useEffect(() => {
+        ctx.opacityValue.addListener(({ value }) => {
+            ctx.layerRef.current.opacity = value
+        })
+        return () => ctx.opacityValue.stopAnimation()
+    }, [])
+    const scrollbarHeight = height * (height / scrollHeight)
     return (
         <Stack>
             {children}
@@ -43,6 +75,7 @@ const FloatingScrollbarWrapper = props => {
                         <Layer
                             ref={layerRef}
                             transform={TransformMatrix.makeTranslate(0, 0)}
+                            opacity={autoHide ? 0 : 1}
                         >
                             <Sized
                                 sizeConstraints={{
@@ -60,7 +93,17 @@ const FloatingScrollbarWrapper = props => {
     )
 }
 
+FloatingScrollbarWrapper.propTypes = {
+    scrollbarWidth: PropTypes.number.isReqiured,
+    autoHide: PropTypes.bool.isRequired,
+    hideTimeout: PropTypes.number.isRequired,
+    scrollbarComponent: PropTypes.elementType.isRequired
+}
+
 FloatingScrollbarWrapper.defaultProps = {
+    scrollbarWidth: 8,
+    autoHide: true,
+    hideTimeout: 1000,
     scrollbarComponent: DefaultFloatingScrollbar
 }
 

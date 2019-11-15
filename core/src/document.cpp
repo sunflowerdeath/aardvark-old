@@ -271,6 +271,7 @@ Layer* Document::create_layer(Size size) {
 void Document::compose() {
     need_recompose = false;
     screen->clear();
+    current_opacity = 1;
     paint_layer_tree(root->layer_tree.get());
     screen->canvas->flush();
 }
@@ -288,15 +289,19 @@ void Document::paint_layer_tree(LayerTree* tree) {
         tree->clip.value().transform(inverted_transform, &transformed_clip);
         screen->canvas->clipPath(transformed_clip, SkClipOp::kIntersect, true);
     }
+    auto prev_opacity = current_opacity;
+    current_opacity *= tree->opacity;
     for (auto item : tree->children) {
         if (std::holds_alternative<LayerTree*>(item)) {
             auto child_tree = std::get<LayerTree*>(item);
             paint_layer_tree(child_tree);
         } else {
             auto child_layer = std::get<std::shared_ptr<Layer>>(item);
-            screen->paint_layer(child_layer.get(), Position{0, 0});
+            screen->paint_layer(child_layer.get(), Position{0, 0},
+                                current_opacity);
         }
     }
+    auto current_opacity = prev_opacity;
     screen->canvas->restore();
 }
 

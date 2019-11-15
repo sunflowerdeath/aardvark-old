@@ -28,5 +28,4 @@ void LayerTree::set_parent(LayerTree* new_parent) {
 }
 */
 
-
 }  // namespace aardvark
