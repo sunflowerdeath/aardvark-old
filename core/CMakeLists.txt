@@ -370,6 +370,7 @@ if(ADV_BUILD_TESTS)
     if (ADV_ENABLE_JS)
         target_sources(tests PUBLIC
             src/tests/js/objects_index_test.cpp
+            src/tests/js/mappers_test.cpp
             src/tests/js/module_loader_test.cpp
             src/tests/js/check_types_test.cpp
         )

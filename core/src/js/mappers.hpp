@@ -5,6 +5,7 @@
 #include <vector>
 #include "JavaScriptCore/JavaScript.h"
 #include "../utils/log.hpp"
+#include "helpers.hpp"
 
 namespace aardvark::js {
 
@@ -126,6 +127,36 @@ class ObjectMapper : public Mapper<T> {
     std::vector<const char*> prop_names;
     std::function<JSValueRef(JSContextRef ctx, const T& value)> map_props_to_js;
     std::function<T(JSContextRef ctx, JSValueRef value)> map_props_from_js;
+};
+
+template <class RetValType, class... ArgsTypes>
+class FunctionMapper {
+  public:
+    FunctionMapper(JSContextRef ctx, JSValueRef function,
+                   Mapper<RetValType>* ret_val_mapper = nullptr,
+                   Mapper<ArgsTypes>*... args_mappers) {
+        args_to_js = [=](JSContextRef ctx, ArgsTypes... args) {
+            auto res = std::vector<JSValueRef>();
+            template_foreach(
+                [&](auto tuple) {
+                    auto& arg = std::get<0>(tuple);
+                    auto& mapper = std::get<1>(tuple);
+                    res.push_back(mapper->to_js(ctx, arg));
+                },
+                std::forward_as_tuple(args, args_mappers)...);
+            return res;
+        };
+
+        if (ret_val_mapper != nullptr) {
+            ret_val_from_js = [=](JSContextRef ctx, JSValueRef value) {
+                return ret_val_mapper->from_js(ctx, value);
+            };
+        }
+    }
+
+    std::function<std::vector<JSValueRef>(JSContextRef, ArgsTypes...)>
+        args_to_js;
+    std::function<RetValType(JSContextRef, JSValueRef)> ret_val_from_js;
 };
 
 }  // namespace aardvark::js
