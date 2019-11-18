@@ -1,11 +1,13 @@
 #pragma once
 
-#include <unordered_map>
-#include <string>
-#include <memory>
-#include "JavaScriptCore/JavaScript.h"
 #include <unicode/unistr.h>
+
+#include <memory>
+#include <string>
+#include <unordered_map>
+
 #include "../utils/log.hpp"
+#include "JavaScriptCore/JavaScript.h"
 
 namespace aardvark::js {
 
@@ -29,26 +31,34 @@ JSValueRef icu_str_to_js(JSContextRef ctx, const UnicodeString& str);
 
 // wrappers
 
-class JSGlobalContextWrapper {
+class JsGlobalContextWrapper
+    : public std::enable_shared_from_this<JsGlobalContextWrapper> {
   public:
-    JSGlobalContextWrapper(JSGlobalContextRef ctx) : ctx(ctx) {}
-
-    ~JSGlobalContextWrapper() { JSGlobalContextRelease(ctx); }
-
-    // copy
-    JSGlobalContextWrapper(const JSGlobalContextWrapper& other) {
-        ctx = other.ctx;
-        JSGlobalContextRetain(ctx);
+    JsGlobalContextWrapper() {
+        // Create empty dummy class because default object class does not
+        // allocate storage for private data
+        auto global_class = JSClassCreate(&kJSClassDefinitionEmpty);
+        ctx = JSGlobalContextCreate(global_class);
+        auto global_object = JSContextGetGlobalObject(ctx);
+        JSObjectSetPrivate(global_object, static_cast<void*>(this));
     }
 
-    // assign
-    JSGlobalContextWrapper& operator=(const JSGlobalContextWrapper& rhs) {
-        ctx = rhs.ctx;
-        JSGlobalContextRetain(ctx);
-        return *this;
+    ~JsGlobalContextWrapper() { JSGlobalContextRelease(ctx); };
+
+    JSGlobalContextRef get() { return ctx; };
+
+    void* data;
+
+    static std::shared_ptr<JsGlobalContextWrapper> make() {
+        return std::make_shared<JsGlobalContextWrapper>();
     }
 
-    JSGlobalContextRef get() { return ctx; }
+    static std::shared_ptr<JsGlobalContextWrapper> get(JSContextRef ctx) {
+        auto global_object = JSContextGetGlobalObject(ctx);
+        return static_cast<JsGlobalContextWrapper*>(
+                   JSObjectGetPrivate(global_object))
+            ->shared_from_this();
+    }
 
   private:
     JSGlobalContextRef ctx;
@@ -58,7 +68,7 @@ class JsValueWrapper {
   public:
     JsValueWrapper() {}
 
-    JsValueWrapper(std::weak_ptr<JSGlobalContextWrapper> ctx_wptr,
+    JsValueWrapper(std::weak_ptr<JsGlobalContextWrapper> ctx_wptr,
                    JSValueRef value)
         : ctx_wptr(ctx_wptr), value(value) {
         auto ctx_sptr = ctx_wptr.lock();
@@ -92,7 +102,7 @@ class JsValueWrapper {
     JSValueRef get() const { return value; }
 
   private:
-    std::weak_ptr<JSGlobalContextWrapper> ctx_wptr;
+    std::weak_ptr<JsGlobalContextWrapper> ctx_wptr;
     JSValueRef value;
 };
 
@@ -130,6 +140,7 @@ class JsStringWrapper {
 class JsStringCache {
   public:
     static JSStringRef get(const std::string& str);
+
   private:
     JSStringRef get_string(const std::string& str);
     std::unordered_map<std::string, JSStringRef> strings;
@@ -139,7 +150,7 @@ class JsStringCache {
 
 template <class T, T (*from_js)(JSContextRef, JSValueRef)>
 void map_prop_from_js(JSContextRef ctx, JSObjectRef object,
-                       const char* prop_name, T* out) {
+                      const char* prop_name, T* out) {
     auto js_prop_name = JsStringCache::get(prop_name);
     if (JSObjectHasProperty(ctx, object, js_prop_name)) {
         auto prop_value =
@@ -155,4 +166,4 @@ void map_prop_to_js(JSContextRef ctx, JSObjectRef object, const char* prop_name,
                         to_js(ctx, value), kJSPropertyAttributeNone, nullptr);
 }
 
-}
+}  // namespace aardvark::js

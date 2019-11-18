@@ -40,7 +40,7 @@ Checker object_of(Checker checker);
 Checker instance_of(JSObjectRef constructor);
 Checker make_union(std::vector<Checker> checkers);
 Checker make_enum(std::vector<JsValueWrapper> values);
-Checker make_enum_with_ctx(std::weak_ptr<JSGlobalContextWrapper> ctx,
+Checker make_enum_with_ctx(std::weak_ptr<JsGlobalContextWrapper> ctx,
                            std::vector<JSValueRef> values);
 Checker make_shape(std::unordered_map<std::string, Checker> shape,
                    bool loose = false);

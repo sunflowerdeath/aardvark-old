@@ -1,6 +1,5 @@
 #include "module_loader.hpp"
 
-#include <iostream>
 #include <experimental/filesystem>
 #include <regex>
 #include "../utils/log.hpp"
@@ -26,7 +25,7 @@ std::string get_source_map_url(const std::string& source) {
 }
 
 ModuleLoader::ModuleLoader(EventLoop* event_loop,
-                           std::weak_ptr<JSGlobalContextWrapper> ctx_wptr,
+                           std::weak_ptr<JsGlobalContextWrapper> ctx_wptr,
                            bool enable_source_maps)
     : event_loop(event_loop),
       ctx_wptr(ctx_wptr),
@@ -79,6 +78,7 @@ JSValueRef ModuleLoader::load_from_source(const std::string& source,
 }
 
 JSValueRef ModuleLoader::load_from_file(const std::string& filepath) {
+    if (ctx_wptr.expired()) return nullptr;
     // TODO check relative/absolute path
     auto full_filepath = fs::current_path().append(filepath);
     Log::info("[ModuleLoader] Load module from file {}", filepath);

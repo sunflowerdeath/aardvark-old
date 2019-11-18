@@ -10,8 +10,8 @@ using namespace aardvark::js;
 
 TEST_CASE("ModuleLoader", "[module_loader]" ) {
     auto event_loop = EventLoop();
-    auto ctx = JSGlobalContextCreate(nullptr);
-    auto ctx_sptr = std::make_shared<JSGlobalContextWrapper>(ctx);
+    auto ctx_sptr = JsGlobalContextWrapper::make();
+    auto ctx = ctx_sptr->get();
 
     SECTION("load module and get result") {
         auto loader = ModuleLoader(&event_loop, ctx_sptr, false);

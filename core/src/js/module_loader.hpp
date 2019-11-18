@@ -26,7 +26,7 @@ struct JsError {
 class ModuleLoader {
   public:
     ModuleLoader(EventLoop* event_loop,
-                 std::weak_ptr<JSGlobalContextWrapper> ctx_wptr,
+                 std::weak_ptr<JsGlobalContextWrapper> ctx_wptr,
                  bool enable_source_maps);
 
     JSValueRef load_from_source(const std::string& source,
@@ -44,7 +44,7 @@ class ModuleLoader {
 
   private:
     EventLoop* event_loop;
-    std::weak_ptr<JSGlobalContextWrapper> ctx_wptr;
+    std::weak_ptr<JsGlobalContextWrapper> ctx_wptr;
     bool enable_source_maps;
     std::unordered_map<std::string, JsValueWrapper> source_maps;
     JsValueWrapper js_get_original_location;

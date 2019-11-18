@@ -77,7 +77,7 @@ TEST_CASE("check_types", "[check_types]" ) {
     }
 
     SECTION("enum") {
-        auto ctx_sptr = std::make_shared<JSGlobalContextWrapper>(ctx);
+        auto ctx_sptr = JsGlobalContextWrapper::make();
         auto valid1 = JSValueMakeNumber(ctx, 42);
         auto valid2 = JSValueMakeNumber(ctx, true);
         auto checker =

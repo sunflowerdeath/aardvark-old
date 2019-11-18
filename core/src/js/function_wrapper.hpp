@@ -17,7 +17,7 @@ class FunctionWrapper {
         std::function<RetValType(JSContextRef, JSValueRef)>;
     using ExceptionHandler = std::function<void(JSContextRef, JSValueRef)>;
 
-    FunctionWrapper(std::weak_ptr<JSGlobalContextWrapper> ctx_wptr,
+    FunctionWrapper(std::weak_ptr<JsGlobalContextWrapper> ctx_wptr,
                     JSValueRef value, ArgsToJsType args_to_js = nullptr,
                     RetValFromJsType ret_val_from_js = nullptr,
                     ExceptionHandler exception_handler = nullptr)
@@ -56,7 +56,7 @@ class FunctionWrapper {
     }
 
   private:
-    std::weak_ptr<JSGlobalContextWrapper> ctx_wptr;
+    std::weak_ptr<JsGlobalContextWrapper> ctx_wptr;
     JsValueWrapper value;
     ArgsToJsType args_to_js;
     RetValFromJsType ret_val_from_js;

@@ -152,7 +152,7 @@ Checker make_enum(std::vector<JsValueWrapper> values) {
     };
 }
 
-Checker make_enum_with_ctx(std::weak_ptr<JSGlobalContextWrapper> ctx,
+Checker make_enum_with_ctx(std::weak_ptr<JsGlobalContextWrapper> ctx,
                            std::vector<JSValueRef> values) {
     auto protected_values = std::vector<JsValueWrapper>(values.size());
     for (auto value : values) protected_values.emplace_back(ctx, value);

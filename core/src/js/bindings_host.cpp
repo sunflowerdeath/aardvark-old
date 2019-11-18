@@ -95,12 +95,8 @@ void log_error(JsError error) {
 
 // BindingsHost
 
-BindingsHost::BindingsHost() {
-    // Create empty dummy class because default object class does not allocate
-    // storage for private data
-    auto global_class = JSClassCreate(&kJSClassDefinitionEmpty);
-    ctx = std::make_shared<JSGlobalContextWrapper>(
-        JSGlobalContextCreate(global_class));
+BindingsHost::BindingsHost() : ctx(JsGlobalContextWrapper::make()) {
+    ctx->data = static_cast<void*>(this);
 
     module_loader = std::make_unique<ModuleLoader>(event_loop.get(), ctx, true);
     module_loader->exception_handler = [this](JsError error) {
@@ -108,10 +104,7 @@ BindingsHost::BindingsHost() {
         stop();
     };
 
-    // Store pointer to the host in private data of the global object
     auto global_object = JSContextGetGlobalObject(ctx->get());
-    JSObjectSetPrivate(global_object, static_cast<void*>(this));
-
     add_object("window", global_object, PROP_ATTR_STATIC);
 
     app = std::make_shared<DesktopApp>(event_loop);
@@ -200,8 +193,7 @@ BindingsHost::~BindingsHost() {
 }
 
 BindingsHost* BindingsHost::get(JSContextRef ctx) {
-    auto global_object = JSContextGetGlobalObject(ctx);
-    return static_cast<BindingsHost*>(JSObjectGetPrivate(global_object));
+    return static_cast<BindingsHost*>(JsGlobalContextWrapper::get(ctx)->data);
 }
 
 void BindingsHost::run() {

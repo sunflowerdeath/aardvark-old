@@ -61,7 +61,7 @@ class BindingsHost {
     void run();
     void stop();
 
-    std::shared_ptr<JSGlobalContextWrapper> ctx;
+    std::shared_ptr<JsGlobalContextWrapper> ctx;
     // std::function<void(JSValueRef)> exception_handler;
     std::shared_ptr<EventLoop> event_loop = std::make_shared<EventLoop>();
     std::unique_ptr<Typedefs> typedefs;

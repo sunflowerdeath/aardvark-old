@@ -3,8 +3,9 @@
 #include <functional>
 #include <memory>
 #include <vector>
-#include "JavaScriptCore/JavaScript.h"
+
 #include "../utils/log.hpp"
+#include "JavaScriptCore/JavaScript.h"
 #include "helpers.hpp"
 
 namespace aardvark::js {
@@ -93,16 +94,18 @@ class ObjectMapper : public Mapper<T> {
             auto object = JSValueToObject(ctx, value, nullptr);
             // TODO check properties
             T result;
-            template_foreach([&](const auto& field){
-                // TODO check property type (call mapper->check)
-                auto [prop_name, member_ptr, mapper] = field;
-                auto js_prop_name = JsStringCache::get(prop_name);
-                if (JSObjectHasProperty(ctx, object, js_prop_name)) {
-                    auto prop_value = JSObjectGetProperty(
-                        ctx, object, js_prop_name, nullptr);
-                    result.*member_ptr = mapper->from_js(ctx, prop_value);
-                }
-            }, fields...);
+            template_foreach(
+                [&](const auto& field) {
+                    // TODO check property type (call mapper->check)
+                    auto [prop_name, member_ptr, mapper] = field;
+                    auto js_prop_name = JsStringCache::get(prop_name);
+                    if (JSObjectHasProperty(ctx, object, js_prop_name)) {
+                        auto prop_value = JSObjectGetProperty(
+                            ctx, object, js_prop_name, nullptr);
+                        result.*member_ptr = mapper->from_js(ctx, prop_value);
+                    }
+                },
+                fields...);
             return result;
         };
     }
@@ -130,10 +133,59 @@ class ObjectMapper : public Mapper<T> {
 };
 
 template <class RetValType, class... ArgsTypes>
-class FunctionMapper {
+class FunctionMapper;
+
+template <class RetValType, class... ArgsTypes>
+class WrappedFunction {
+    using ExceptionHandler = std::function<void(JSContextRef, JSValueRef)>;
+
   public:
-    FunctionMapper(JSContextRef ctx, JSValueRef function,
-                   Mapper<RetValType>* ret_val_mapper = nullptr,
+    WrappedFunction(FunctionMapper<RetValType, ArgsTypes...>* mapper,
+                    JSContextRef ctx, JSValueRef value,
+                    ExceptionHandler exception_handler = nullptr)
+        : mapper(mapper),
+          ctx_wptr(JsGlobalContextWrapper::get(ctx)),
+          value(JsValueWrapper(ctx_wptr, value)),
+          exception_handler(exception_handler){};
+
+    RetValType operator()(ArgsTypes... args) {
+        auto ctx_sptr = ctx_wptr.lock();
+        if (!ctx_sptr) return mapper->ret_val_from_js(nullptr, nullptr);
+        auto ctx = ctx_sptr->get();
+
+        auto object = JSValueToObject(ctx, value.get(), nullptr);
+        auto js_args = mapper->args_to_js(ctx, args...);
+        auto exception = JSValueRef();
+        auto js_ret_val =
+            JSObjectCallAsFunction(ctx,             // ctx
+                                   object,          // object
+                                   nullptr,         // thisObject
+                                   js_args.size(),  // argumentCount
+                                   js_args.data(),  // arguments[],
+                                   &exception       // exception
+            );
+        if (exception != nullptr && exception_handler) {
+            exception_handler(ctx, exception);
+        }
+        if (mapper->ret_val_from_js) {
+            return mapper->ret_val_from_js(
+                ctx, exception == nullptr ? js_ret_val : nullptr);
+        }  // else return type is void
+    }
+
+  private:
+    FunctionMapper<RetValType, ArgsTypes...>* mapper;
+    std::weak_ptr<JsGlobalContextWrapper> ctx_wptr;
+    JsValueWrapper value;
+    ExceptionHandler exception_handler;
+};
+
+template <class RetValType, class... ArgsTypes>
+class FunctionMapper : public Mapper<std::function<RetValType(ArgsTypes...)>> {
+    friend WrappedFunction<RetValType, ArgsTypes...>;
+
+  public:
+    FunctionMapper(Mapper<RetValType>* ret_val_mapper = nullptr,
                    Mapper<ArgsTypes>*... args_mappers) {
         args_to_js = [=](JSContextRef ctx, ArgsTypes... args) {
             auto res = std::vector<JSValueRef>();
@@ -154,6 +206,19 @@ class FunctionMapper {
         }
     }
 
+    JSValueRef to_js(
+        JSContextRef ctx,
+        const std::function<RetValType(ArgsTypes...)>& value) override {
+        // Not implemented
+        return JSValueMakeUndefined(ctx);
+    };
+
+    std::function<RetValType(ArgsTypes...)> from_js(JSContextRef ctx,
+                                                    JSValueRef value) override {
+        return WrappedFunction(this, ctx, value, nullptr);
+    };
+
+  private:
     std::function<std::vector<JSValueRef>(JSContextRef, ArgsTypes...)>
         args_to_js;
     std::function<RetValType(JSContextRef, JSValueRef)> ret_val_from_js;
