@@ -2,6 +2,8 @@
 
 #include <JavaScriptCore/JavaScript.h>
 
+#include <unordered_map>
+
 #include "jsi.hpp"
 
 namespace aardvark::jsi {
@@ -58,6 +60,10 @@ class Jsc_Context : public Context {
     Object object_make(const Class* js_class) override;
     Object object_make_function(const Function& function) override;
     Object object_make_constructor(const Class& js_class) override;
+    // TODO
+    // Object object_make_constructor(
+    // const Class& js_class, const Function* function) override;
+    Object object_make_array() override;
 
     void object_protect(void* ptr) override;
     void object_unprotect(void* ptr) override;
@@ -93,20 +99,33 @@ class Jsc_Context : public Context {
         const Object& object, const std::vector<Value> arguments) override;
 
     bool object_is_array(const Object& object) override;
-    Value object_get_value_at_index(
+    Value object_get_property_at_index(
         const Object& object, size_t index) override;
-    void object_set_value_at_index(
+    void object_set_property_at_index(
         const Object& object, size_t index, const Value& value) override;
 
     JSGlobalContextRef ctx;
 
+    struct ClassInstanceRecord {
+        Jsc_Context* ctx;
+        ClassDefinition* definition;
+    };
+
+    // When object is created using `object_make` with class, or by constructor
+    // created using `object_make_constructor`, this map stores what class
+    // it has and what context it belongs.
+    // This is needed to implement class properties and finalizers.
+    static std::unordered_map<JSObjectRef, ClassInstanceRecord> class_instances;
+
+    static ClassDefinition* get_class_definition(JSObjectRef object);
+    static void finalize_class_instance(JSObjectRef object);
+
   private:
-    std::vector<ClassDefinition> class_definitions;
+    std::unordered_map<JSClassRef, ClassDefinition> class_definitions;
 
     String string_from_jsc(JSStringRef ptr, bool should_protect = false);
     Value value_from_jsc(JSValueRef ptr, bool should_protect = false);
     Object object_from_jsc(JSObjectRef ptr, bool should_protect = false);
-
 };
 
 }  // namespace aardvark::jsi

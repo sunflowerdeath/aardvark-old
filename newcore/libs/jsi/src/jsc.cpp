@@ -2,6 +2,7 @@
 
 namespace aardvark::jsi {
 
+// TODO just a constructor? why not lazy: message(), location()
 struct JsErrorMapper {
     JsError from_js(const Context& ctx, const Value& value) {
         return JsError(
@@ -13,11 +14,6 @@ struct JsErrorMapper {
 };
 
 auto js_error_mapper = new JsErrorMapper();
-
-// Note about "Ownership follows the Create Rule" in JSC C API.
-// When pointer is obtained using function that has "copy" or "create" in its
-// name, the value should not be protected.
-// This applies to strings and classes, but not for values and objects.
 
 std::shared_ptr<Jsc_Context> Jsc_Context::create() {
     return std::make_shared<Jsc_Context>();
@@ -38,10 +34,15 @@ Jsc_Context::Jsc_Context() {
     JSClassRelease(global_class);
 }
 
-Jsc_Context::~Jsc_Context() { JSGlobalContextRelease(ctx); }
+Jsc_Context::~Jsc_Context() {
+    JSGlobalContextRelease(ctx);
+    for (auto& it : class_definitions) JSClassRelease(it.first);
+}
 
 Script Jsc_Context::create_script(
-    const std::string& source, const std::string& source_url) {}
+    const std::string& source, const std::string& source_url) {
+    // TODO
+}
 
 Value Jsc_Context::eval_script(
     const std::string& script, Object* jsi_this,
@@ -80,7 +81,9 @@ std::string jsc_string_to_utf8(JSContextRef ctx, JSStringRef jsc_str) {
 
 String Jsc_Context::string_make_from_utf8(const std::string& str) {
     auto jsc_str = JSStringCreateWithUTF8CString(str.c_str());
-    return String(weak_from_this(), (void*)jsc_str, false);
+    return String(
+        weak_from_this(), (void*)jsc_str, /* weak */ false,
+        /* owned */ true);
 }
 
 std::string Jsc_Context::string_to_utf8(const String& js_str) {
@@ -176,7 +179,9 @@ String Jsc_Context::value_to_string(const Value& value) {
     if (exception != nullptr) {
         throw js_error_mapper->from_js(*this, value_from_jsc(exception));
     }
-    return String(weak_from_this(), jsc_string, false);
+    return String(
+        weak_from_this(), jsc_string, /* weak */ false,
+        /* owned */ true);
 }
 
 Object Jsc_Context::value_to_object(const Value& value) {
@@ -196,11 +201,29 @@ bool Jsc_Context::value_strict_equal(const Value& a, const Value& b) {
 
 // Class
 
-ClassDefinition* get_class_definition(JSContextRef ctx, JSObjectRef object) {
-    auto proto =
-        JSValueToObject(ctx, JSObjectGetPrototype(ctx, object), nullptr);
-    auto definition = static_cast<ClassDefinition*>(JSObjectGetPrivate(proto));
-    return definition;
+std::unordered_map<JSObjectRef, Jsc_Context::ClassInstanceRecord>
+    Jsc_Context::class_instances;
+
+ClassDefinition* Jsc_Context::get_class_definition(JSObjectRef object) {
+    auto it = class_instances.find(object);
+    if (it == class_instances.end()) return nullptr;
+    return it->second.definition;
+}
+
+void Jsc_Context::finalize_class_instance(JSObjectRef object) {
+    auto it = Jsc_Context::class_instances.find(object);
+    if (it == Jsc_Context::class_instances.end()) return;
+    auto ctx = it->second.ctx;
+    auto definition = it->second.definition;
+    if (definition->finalizer) {
+        definition->finalizer(
+            Object(ctx->weak_from_this(), (void*)object, /* weak */ true));
+    }
+    Jsc_Context::class_instances.erase(it);
+}
+
+void class_finalize(JSObjectRef object) {
+    Jsc_Context::finalize_class_instance(object);
 }
 
 JSValueRef class_static_value_get(
@@ -208,16 +231,16 @@ JSValueRef class_static_value_get(
     JSValueRef* exception) {
     auto jsi_ctx = Jsc_Context::get(ctx);
     auto jsi_object = Value(jsi_ctx->weak_from_this(), (void*)object);
-    auto definition = get_class_definition(ctx, object);
+    auto definition = Jsc_Context::get_class_definition(object);
     auto name = jsc_string_to_utf8(ctx, prop_name);
-    auto jsi_ret_val = Value();
+    auto jsi_ret_val = std::optional<Value>();
     try {
-        jsi_ret_val = definition->properties[name].get(jsi_object);
+        jsi_ret_val.emplace(definition->properties[name].get(jsi_object));
     } catch (JsError& jsi_ex) {
         *exception = jsi_ex.value.get_ptr<JSValueRef>();
         return JSValueMakeUndefined(ctx);
     }
-    return jsi_ret_val.get_ptr<JSValueRef>();
+    return jsi_ret_val.value().get_ptr<JSValueRef>();
 }
 
 bool class_static_value_set(
@@ -226,7 +249,7 @@ bool class_static_value_set(
     auto jsi_ctx = Jsc_Context::get(ctx);
     auto jsi_object = Value(jsi_ctx->weak_from_this(), (void*)object);
     auto jsi_value = Value(jsi_ctx->weak_from_this(), (void*)value);
-    auto definition = get_class_definition(ctx, object);
+    auto definition = Jsc_Context::get_class_definition(object);
     auto name = jsc_string_to_utf8(ctx, prop_name);
     auto did_set = false;
     try {
@@ -239,19 +262,15 @@ bool class_static_value_set(
 }
 
 Class Jsc_Context::class_create(const ClassDefinition& definition) {
-    class_definitions.push_back(std::move(definition));
-    // There is no way to know when the class is no longer alive so class
-    // definitions are stored in the context until its destruction
-    auto stored_definition = &class_definitions.back();
-
     auto jsc_definition = kJSClassDefinitionEmpty;
-    jsc_definition.className = stored_definition->name.c_str();
+    jsc_definition.className = definition.name.c_str();
+    jsc_definition.finalize = class_finalize;
 
     // JSC C api has no Object.defineProperty so creating class relies on
     // automatically generated class prototype
-    JSStaticValue static_values[stored_definition->properties.size() + 1];
+    JSStaticValue static_values[definition.properties.size() + 1];
     auto i = 0;
-    for (auto& it : stored_definition->properties) {
+    for (auto& it : definition.properties) {
         static_values[i] = {it.first.c_str(), class_static_value_get,
                             class_static_value_set, kJSPropertyAttributeNone};
         i++;
@@ -260,32 +279,36 @@ Class Jsc_Context::class_create(const ClassDefinition& definition) {
     jsc_definition.staticValues = static_values;
 
     auto jsc_class = JSClassCreate(&jsc_definition);
-    auto jsi_class = Class(weak_from_this(), (void*)jsc_class, false);
+    auto jsi_class = Class(
+        weak_from_this(), (void*)jsc_class, /* weak */ false,
+        /* owned */ true);
 
     // Only way to get generated prototype is to create temporary object
     auto instance = JSObjectMake(ctx, jsc_class, nullptr);
     auto proto =
         JSValueToObject(ctx, JSObjectGetPrototype(ctx, instance), nullptr);
-    JSObjectSetPrivate(proto, (void*)stored_definition);
 
     // Add methods to the prototype as usual functions
-    if (!stored_definition->methods.empty()) {
+    if (!definition.methods.empty()) {
         auto jsi_proto = object_from_jsc(proto);
-        for (auto& it : stored_definition->methods) {
+        for (auto& it : definition.methods) {
             auto method_value = object_make_function(it.second).to_value();
             jsi_proto.set_property(it.first, method_value);
         }
     }
 
+    class_definitions[jsc_class] = std::move(definition);
+    auto stored_definition = &class_definitions[jsc_class];
+
     return jsi_class;
 }
 
 void Jsc_Context::class_protect(void* ptr) {
-    JSClassRetain(static_cast<JSClassRef>(ptr));
+    // do nothing
 }
 
 void Jsc_Context::class_unprotect(void* ptr) {
-    JSClassRelease(static_cast<JSClassRef>(ptr));
+    // do nothing
 }
 
 // Object
@@ -295,6 +318,12 @@ Object Jsc_Context::object_make(const Class* js_class) {
     auto jsc_object = JSObjectMake(
         ctx, js_class == nullptr ? nullptr : js_class->get_ptr<JSClassRef>(),
         &exception);
+    if (js_class != nullptr) {
+        auto definition =
+            &class_definitions.find(js_class->get_ptr<JSClassRef>())->second;
+        Jsc_Context::class_instances.emplace(
+            jsc_object, ClassInstanceRecord{this, definition});
+    }
     return object_from_jsc(jsc_object);
 }
 
@@ -311,14 +340,14 @@ JSValueRef native_function_call_as_function(
     for (auto i = 0; i < arg_count; i++) {
         jsi_args.emplace_back(jsi_ctx->weak_from_this(), (void*)args[i]);
     }
-    auto jsi_ret_val = Value();
+    auto jsi_ret_val = std::optional<Value>();
     try {
-        jsi_ret_val = (*jsi_function)(jsi_this, jsi_args);
+        jsi_ret_val.emplace((*jsi_function)(jsi_this, jsi_args));
     } catch (JsError& jsi_ex) {
         *exception = jsi_ex.value.get_ptr<JSValueRef>();
-        return JSValueMakeUndefined(ctx);
+        return nullptr;
     }
-    return jsi_ret_val.get_ptr<JSValueRef>();
+    return jsi_ret_val.value().get_ptr<JSValueRef>();
 }
 
 void native_function_finalize(JSObjectRef object) {
@@ -341,7 +370,19 @@ Object Jsc_Context::object_make_function(const Function& function) {
     return object_from_jsc(jsc_object);
 }
 
-Object Jsc_Context::object_make_constructor(const Class& js_class) {}
+Object Jsc_Context::object_make_constructor(const Class& js_class) {
+    // TODO
+}
+
+Object Jsc_Context::object_make_array() {
+    auto jsc_array = JSObjectMakeArray(
+        ctx,      // ctx
+        0,        // args_count
+        nullptr,  // args
+        nullptr   // exception
+    );
+    return object_from_jsc(static_cast<JSObjectRef>(jsc_array));
+}
 
 void Jsc_Context::object_protect(void* ptr) {
     JSValueProtect(ctx, static_cast<JSValueRef>(ptr));
@@ -456,18 +497,40 @@ Value Jsc_Context::object_call_as_function(
     return value_from_jsc(jsc_ret_val);
 }
 
-bool Jsc_Context::object_is_constructor(const Object& object) {}
+bool Jsc_Context::object_is_constructor(const Object& object) {
+    // TODO
+}
 
 Value Jsc_Context::object_call_as_constructor(
-    const Object& object, const std::vector<Value> arguments) {}
+    const Object& object, const std::vector<Value> arguments) {
+    // TODO
+}
 
-bool Jsc_Context::object_is_array(const Object& object) {}
+bool Jsc_Context::object_is_array(const Object& object) {
+    return JSValueIsArray(ctx, object.get_ptr<JSObjectRef>());
+}
 
-Value Jsc_Context::object_get_value_at_index(
-    const Object& object, size_t index) {}
+Value Jsc_Context::object_get_property_at_index(
+    const Object& object, size_t index) {
+    auto exception = JSValueRef();
+    auto res = JSObjectGetPropertyAtIndex(
+        ctx, object.get_ptr<JSObjectRef>(), index, &exception);
+    if (exception != nullptr) {
+        throw js_error_mapper->from_js(*this, value_from_jsc(exception));
+    }
+    return value_from_jsc(res);
+}
 
-void Jsc_Context::object_set_value_at_index(
-    const Object& object, size_t index, const Value& value) {}
+void Jsc_Context::object_set_property_at_index(
+    const Object& object, size_t index, const Value& value) {
+    auto exception = JSValueRef();
+    JSObjectSetPropertyAtIndex(
+        ctx, object.get_ptr<JSObjectRef>(), index, value.get_ptr<JSValueRef>(),
+        &exception);
+    if (exception != nullptr) {
+        throw js_error_mapper->from_js(*this, value_from_jsc(exception));
+    }
+}
 
 // Helpers
 

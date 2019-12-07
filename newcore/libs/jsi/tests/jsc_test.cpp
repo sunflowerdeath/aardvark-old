@@ -134,7 +134,7 @@ TEST_CASE("Context", "[Context]") {
         auto did_throw = false;
         try {
             obj.call_as_function(nullptr, {});
-        } catch(JsError& ex) {
+        } catch (JsError& ex) {
             did_throw = true;
         }
         REQUIRE(did_throw);
@@ -167,11 +167,14 @@ TEST_CASE("Context", "[Context]") {
             prop_value = args[0].to_number();
             return args[0];
         };
+        auto finalizer_called = false;
+        auto finalizer = [&](const Object& object) { finalizer_called = true; };
 
         auto definition = ClassDefinition();
         definition.name = "TestClass";
         definition.methods = {{"method", method}};
         definition.properties = {{"prop", ClassPropertyDefinition{get, set}}};
+        definition.finalizer = finalizer;
         auto cls = ctx->class_create(definition);
         auto instance = ctx->object_make(&cls);
 
@@ -185,6 +188,9 @@ TEST_CASE("Context", "[Context]") {
             ctx->eval_script("this.method(3)", &instance, "sourceurl");
         REQUIRE(prop_value == 3);
         REQUIRE(ret_val.to_number() == 3);
+
+        ctx.reset();
+        REQUIRE(finalizer_called == true);
     }
 
     SECTION("Object class exceptions") {
@@ -201,17 +207,18 @@ TEST_CASE("Context", "[Context]") {
             return ctx->eval_script("a/b", nullptr, "sourceurl");
         };
 
-        auto definition = ClassDefinition();
-        definition.name = "TestClass";
-        definition.methods = {{"method", method}};
-        definition.properties = {{"prop", ClassPropertyDefinition{get, set}}};
-        auto cls = ctx->class_create(definition);
+        auto definition = new ClassDefinition();
+        definition->name = "TestClass";
+        definition->methods = {{"method", method}};
+        definition->properties = {{"prop", ClassPropertyDefinition{get, set}}};
+        auto cls = ctx->class_create(*definition);
+        delete definition;  // Ensure that definition is not used
         auto instance = ctx->object_make(&cls);
 
         auto getter_did_throw = false;
         try {
             instance.get_property("prop");
-        } catch(JsError& ex) {
+        } catch (JsError& ex) {
             getter_did_throw = true;
         }
         REQUIRE(getter_did_throw);
@@ -219,7 +226,7 @@ TEST_CASE("Context", "[Context]") {
         auto setter_did_throw = false;
         try {
             instance.set_property("prop", ctx->value_make_number(1));
-        } catch(JsError& ex) {
+        } catch (JsError& ex) {
             setter_did_throw = true;
         }
         REQUIRE(setter_did_throw);
@@ -227,9 +234,25 @@ TEST_CASE("Context", "[Context]") {
         auto method_did_throw = false;
         try {
             ctx->eval_script("this.method()", &instance, "sourceurl");
-        } catch(JsError& ex) {
+        } catch (JsError& ex) {
             method_did_throw = true;
         }
         REQUIRE(method_did_throw);
+    }
+
+    SECTION("Object array") {
+        auto ctx = Jsc_Context::create();
+
+        auto not_arr = ctx->object_make(nullptr);
+        REQUIRE(not_arr.is_array() == false);
+
+        auto arr = ctx->object_make_array();
+        REQUIRE(arr.is_array() == true);
+
+        arr.set_property_at_index(0, ctx->value_make_number(1));
+        arr.set_property_at_index(1, ctx->value_make_number(2));
+        REQUIRE(arr.get_property("length").to_number() == 2);
+        REQUIRE(arr.get_property_at_index(1).to_number() == 2);
+        REQUIRE(arr.get_property("1").to_number() == 2);
     }
 }

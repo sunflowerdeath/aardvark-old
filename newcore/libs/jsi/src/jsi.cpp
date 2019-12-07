@@ -16,8 +16,8 @@ void object_unprotect(Context* ctx, void* ptr) { ctx->object_unprotect(ptr); }
 
 // String
 
-String::String(std::weak_ptr<Context> ctx, void* ptr, bool should_protect)
-    : PointerHolder(ctx, ptr, should_protect){};
+String::String(std::weak_ptr<Context> ctx, void* ptr, bool weak, bool owned)
+    : PointerHolder(ctx, ptr, weak, owned){};
 
 std::string String::to_utf8() {
     return get_ctx_or_throw()->string_to_utf8(*this);
@@ -25,10 +25,10 @@ std::string String::to_utf8() {
 
 // Value
 
-Value::Value() : PointerHolder(std::weak_ptr<Context>(), nullptr, false){};
+// Value::Value() : PointerHolder(std::weak_ptr<Context>(), nullptr, false){};
 
-Value::Value(std::weak_ptr<Context> ctx, void* ptr, bool should_protect)
-    : PointerHolder(ctx, ptr, should_protect){};
+Value::Value(std::weak_ptr<Context> ctx, void* ptr, bool weak, bool owned)
+    : PointerHolder(ctx, ptr, weak, owned){};
 
 ValueType Value::get_type() const {
     return get_ctx_or_throw()->value_get_type(*this);
@@ -54,13 +54,13 @@ bool Value::strict_equal_to(const Value& value) const {
 
 // Class
 
-Class::Class(std::weak_ptr<Context> ctx, void* ptr, bool should_protect)
-    : PointerHolder(ctx, ptr, should_protect) {}
+Class::Class(std::weak_ptr<Context> ctx, void* ptr, bool weak, bool owned)
+    : PointerHolder(ctx, ptr, weak, owned) {}
 
 // Object
 
-Object::Object(std::weak_ptr<Context> ctx, void* ptr, bool should_protect)
-    : PointerHolder(ctx, ptr, should_protect) {}
+Object::Object(std::weak_ptr<Context> ctx, void* ptr, bool weak, bool owned)
+    : PointerHolder(ctx, ptr, weak, owned) {}
 
 Value Object::to_value() { return get_ctx_or_throw()->object_to_value(*this); }
 
@@ -120,12 +120,12 @@ Value Object::call_as_constructor(const std::vector<Value>& arguments) {
 
 bool Object::is_array() { return get_ctx_or_throw()->object_is_array(*this); }
 
-Value Object::get_value_at_index(size_t index) {
-    return get_ctx_or_throw()->object_get_value_at_index(*this, index);
+Value Object::get_property_at_index(size_t index) {
+    return get_ctx_or_throw()->object_get_property_at_index(*this, index);
 }
 
-void Object::set_value_at_index(size_t index, const Value& value) {
-    get_ctx_or_throw()->object_set_value_at_index(*this, index, value);
+void Object::set_property_at_index(size_t index, const Value& value) {
+    get_ctx_or_throw()->object_set_property_at_index(*this, index, value);
 }
 
 }  // namespace aardvark::jsi
