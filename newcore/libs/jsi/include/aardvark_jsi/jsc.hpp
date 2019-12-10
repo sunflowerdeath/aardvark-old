@@ -16,6 +16,16 @@ class Jsc_Context : public Context {
     Jsc_Context();
     ~Jsc_Context();
 
+    Value value_from_jsc(JSValueRef ref);
+    Object object_from_jsc(JSObjectRef ref);
+    String string_from_jsc(JSStringRef ref);
+    Class class_from_jsc(JSClassRef ref);
+
+    JSValueRef value_ref(const Value& value);
+    JSObjectRef object_ref(const Object& object);
+    JSStringRef string_ref(const String& str);
+    JSClassRef class_ref(const Class& cls);
+
     Script create_script(
         const std::string& source, const std::string& source_url) override;
     Value eval_script(
@@ -28,9 +38,6 @@ class Jsc_Context : public Context {
     String string_make_from_utf8(const std::string& str) override;
     std::string string_to_utf8(const String&) override;
 
-    void string_protect(void* ptr) override;
-    void string_unprotect(void* ptr) override;
-
     // Value
     Value value_make_bool(bool value) override;
     Value value_make_number(double value) override;
@@ -38,9 +45,6 @@ class Jsc_Context : public Context {
     Value value_make_undefined() override;
     Value value_make_string(const String& str) override;
     Value value_make_object(const Object& object) override;
-
-    void value_protect(void* ptr) override;
-    void value_unprotect(void* ptr) override;
 
     ValueType value_get_type(const Value& value) override;
     bool value_to_bool(const Value& value) override;
@@ -53,9 +57,6 @@ class Jsc_Context : public Context {
     // Class
     Class class_create(const ClassDefinition& definition) override;
 
-    void class_protect(void* ptr) override;
-    void class_unprotect(void* ptr) override;
-
     // Object
     Object object_make(const Class* js_class) override;
     Object object_make_function(const Function& function) override;
@@ -64,9 +65,6 @@ class Jsc_Context : public Context {
     // Object object_make_constructor(
     // const Class& js_class, const Function* function) override;
     Object object_make_array() override;
-
-    void object_protect(void* ptr) override;
-    void object_unprotect(void* ptr) override;
 
     Value object_to_value(const Object& object) override;
 
@@ -96,7 +94,7 @@ class Jsc_Context : public Context {
 
     bool object_is_constructor(const Object& object) override;
     Value object_call_as_constructor(
-        const Object& object, const std::vector<Value> arguments) override;
+        const Object& object, const std::vector<Value>& arguments) override;
 
     bool object_is_array(const Object& object) override;
     Value object_get_property_at_index(
@@ -120,12 +118,8 @@ class Jsc_Context : public Context {
     static ClassDefinition* get_class_definition(JSObjectRef object);
     static void finalize_class_instance(JSObjectRef object);
 
-  private:
+    bool ctx_invalid = false;
     std::unordered_map<JSClassRef, ClassDefinition> class_definitions;
-
-    String string_from_jsc(JSStringRef ptr, bool should_protect = false);
-    Value value_from_jsc(JSValueRef ptr, bool should_protect = false);
-    Object object_from_jsc(JSObjectRef ptr, bool should_protect = false);
 };
 
 }  // namespace aardvark::jsi

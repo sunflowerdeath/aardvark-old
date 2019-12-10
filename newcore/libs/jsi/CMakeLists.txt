@@ -24,18 +24,25 @@ else()
     set(ADV_JSI_LIB_TYPE SHARED)
 endif()
 
-add_library(aardvark_jsi ${ADV_JSI_LIB_TYPE}
-    src/jsi.cpp
-    src/jsc.cpp
-)
+add_library(aardvark_jsi ${ADV_JSI_LIB_TYPE} src/jsi.cpp)
 
 target_include_directories(aardvark_jsi PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include/aardvark_jsi)
 
 target_include_directories(aardvark_jsi INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/include)
-    
-target_link_libraries(aardvark_jsi JavaScriptCore)
+
+if (ADV_JSI_JSC)
+    target_sources(aardvark_jsi PRIVATE src/jsc.cpp)
+    target_link_libraries(aardvark_jsi JavaScriptCore)
+    target_compile_definitions(aardvark_jsi INTERFACE ADV_JSI_JSC=1)
+endif()
+
+if (ADV_JSI_QJS)
+    target_sources(aardvark_jsi PRIVATE src/qjs.cpp)
+    target_link_libraries(aardvark_jsi quickjs)
+    target_compile_definitions(aardvark_jsi INTERFACE ADV_JSI_QJS=1)
+endif()
 
 # Tests
 if(ADV_JSI_BUILD_TESTS)

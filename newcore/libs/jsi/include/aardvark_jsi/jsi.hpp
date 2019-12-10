@@ -4,104 +4,46 @@
 #include <map>
 #include <memory>
 #include <vector>
+#include <iostream>
 
 namespace aardvark::jsi {
 
 class Context;
 class Object;
 
-void string_protect(Context* ctx, void* ptr);
-void string_unprotect(Context* ctx, void* ptr);
-
-void value_protect(Context* ctx, void* ptr);
-void value_unprotect(Context* ctx, void* ptr);
-
-void class_protect(Context* ctx, void* ptr);
-void class_unprotect(Context* ctx, void* ptr);
-
-void object_protect(Context* ctx, void* ptr);
-void object_unprotect(Context* ctx, void* ptr);
-
-class InvalidContextError : public std::exception {
+class PointerData {
   public:
-    const char* what() const noexcept override { return "Invalid js context"; };
+    virtual ~PointerData() {};
+    virtual PointerData* copy() = 0;
 };
 
-using PointerHolderManager = void (*)(Context* ctx, void* ptr);
-
-template <PointerHolderManager protect, PointerHolderManager unprotect>
-class PointerHolder {
+class Pointer {
   public:
-    // `weak` - pointer shoud not be protected and unprotected
-    // `owned` - pointer is already owned, so it shoud not be protected on
-    //    initialization
-    PointerHolder(
-        std::weak_ptr<Context> ctx, void* ptr, bool weak = false,
-        bool owned = false)
-        : ctx(ctx), ptr(ptr), weak(weak) {
-        if (weak || owned) return;
-        protect(ctx.lock().get(), ptr);
-    };
-
-    ~PointerHolder() {
-        if (weak) return;
-        if (auto ctx_sptr = get_ctx()) {
-            if (ptr != nullptr) unprotect(ctx_sptr.get(), ptr);
-        }
-    }
+    Pointer(Context* ctx, PointerData* ptr) : ctx(ctx), ptr(ptr){};
 
     // copy
-    PointerHolder(const PointerHolder<protect, unprotect>& other)
-        : ctx(other.ctx), ptr(other.ptr), weak(weak) {
-        if (weak) return;
-        if (auto ctx_sptr = get_ctx()) protect(ctx_sptr.get(), ptr);
-    }
+    Pointer(const Pointer& other) : ctx(ctx) { ptr = other.ptr->copy(); }
 
-    // copy assignment
-    PointerHolder<protect, unprotect>& operator=(
-        const PointerHolder<protect, unprotect>& other) {
-        return *this = PointerHolder<protect, unprotect>(other);
-    }
+    Pointer& operator=(const Pointer& other) { return *this = Pointer(other); }
 
     // move
-    PointerHolder(PointerHolder<protect, unprotect>&& other)
-        : ctx(other.ctx), ptr(std::exchange(other.ptr, nullptr)), weak(weak) {}
+    Pointer(Pointer&& other) : ctx(ctx), ptr(other.ptr) { other.ptr = nullptr; }
 
-    // move assignment
-    PointerHolder<protect, unprotect>& operator=(
-        PointerHolder<protect, unprotect>&& other) noexcept {
+    Pointer& operator=(Pointer&& other) noexcept {
         ctx = other.ctx;
         ptr = std::exchange(other.ptr, nullptr);
         return *this;
     }
 
-    std::shared_ptr<Context> get_ctx_or_throw() const {
-        auto ctx_sptr = ctx.lock();
-        if (ctx_sptr == nullptr) throw InvalidContextError();
-        return ctx_sptr;
-    }
+    ~Pointer() { delete ptr; }
 
-    inline std::shared_ptr<Context> get_ctx() const { return ctx.lock(); }
-
-    template <typename T>
-    inline T get_ptr() const {
-        return static_cast<T>(ptr);
-    }
-
-    void set_ptr(void* ptr) { this.ptr = ptr; }
-
-  private:
-    std::weak_ptr<Context> ctx;
-    bool weak;
-    void* ptr;
+    Context* ctx;
+    PointerData* ptr;
 };
 
-class String : public PointerHolder<string_protect, string_unprotect> {
+class String : public Pointer {
   public:
-    String(
-        std::weak_ptr<Context> ctx, void* ptr, bool weak = false,
-        bool owned = false);
-
+    using Pointer::Pointer;
     std::string to_utf8();
 };
 
@@ -115,12 +57,9 @@ enum class ValueType {
     symbol
 };
 
-class Value : public PointerHolder<value_protect, value_unprotect> {
+class Value : public Pointer {
   public:
-    // Value();
-    Value(
-        std::weak_ptr<Context> ctx, void* ptr, bool weak = false,
-        bool owned = false);
+    using Pointer::Pointer;
 
     ValueType get_type() const;
     bool to_bool() const;
@@ -130,11 +69,9 @@ class Value : public PointerHolder<value_protect, value_unprotect> {
     bool strict_equal_to(const Value& value) const;
 };
 
-class Object : public PointerHolder<object_protect, object_unprotect> {
+class Object : public Pointer {
   public:
-    Object(
-        std::weak_ptr<Context> ctx, void* ptr, bool weak = false,
-        bool owned = false);
+    using Pointer::Pointer;
 
     void set_private_data(void* data);
     void* get_private_data();
@@ -169,11 +106,9 @@ class Object : public PointerHolder<object_protect, object_unprotect> {
 
 using Function = std::function<Value(Value&, std::vector<Value>&)>;
 
-using ClassPropertyGetter = std::function<Value(Value&)>;
+using ClassPropertyGetter = std::function<Value(Object&)>;
 
-using ClassPropertySetter = std::function<bool(Value&, Value&)>;
-
-using ClassPropertySetter = std::function<bool(Value&, Value&)>;
+using ClassPropertySetter = std::function<bool(Object&, Value&)>;
 
 struct ClassPropertyDefinition {
     ClassPropertyGetter get;
@@ -189,11 +124,9 @@ struct ClassDefinition {
     ClassFinalizer finalizer;
 };
 
-class Class : public PointerHolder<class_protect, class_unprotect> {
+class Class : public Pointer {
   public:
-    Class(
-        std::weak_ptr<Context> ctx, void* ptr, bool weak = false,
-        bool owned = false);
+    using Pointer::Pointer;
 };
 
 class Script {
@@ -223,7 +156,7 @@ class JsError : public std::exception {
     JsErrorLocation location;
 };
 
-class Context : public std::enable_shared_from_this<Context> {
+class Context {
   public:
     virtual Script create_script(
         const std::string& source, const std::string& source_url) = 0;
@@ -237,9 +170,6 @@ class Context : public std::enable_shared_from_this<Context> {
     virtual String string_make_from_utf8(const std::string& str) = 0;
     virtual std::string string_to_utf8(const String&) = 0;
 
-    virtual void string_protect(void* ptr) = 0;
-    virtual void string_unprotect(void* ptr) = 0;
-
     // Value
     virtual Value value_make_bool(bool value) = 0;
     virtual Value value_make_number(double value) = 0;
@@ -247,9 +177,6 @@ class Context : public std::enable_shared_from_this<Context> {
     virtual Value value_make_undefined() = 0;
     virtual Value value_make_string(const String& str) = 0;
     virtual Value value_make_object(const Object& object) = 0;
-
-    virtual void value_protect(void* ptr) = 0;
-    virtual void value_unprotect(void* ptr) = 0;
 
     virtual ValueType value_get_type(const Value& value) = 0;
     virtual bool value_to_bool(const Value& value) = 0;
@@ -262,17 +189,11 @@ class Context : public std::enable_shared_from_this<Context> {
     // Class
     virtual Class class_create(const ClassDefinition& definition) = 0;
 
-    virtual void class_protect(void* ptr) = 0;
-    virtual void class_unprotect(void* ptr) = 0;
-
     // Object
     virtual Object object_make(const Class* js_class) = 0;
     virtual Object object_make_function(const Function& function) = 0;
     virtual Object object_make_constructor(const Class& js_class) = 0;
     virtual Object object_make_array() = 0;
-
-    virtual void object_protect(void* ptr) = 0;
-    virtual void object_unprotect(void* ptr) = 0;
 
     virtual Value object_to_value(const Object& object) = 0;
 
@@ -301,7 +222,7 @@ class Context : public std::enable_shared_from_this<Context> {
 
     virtual bool object_is_constructor(const Object& object) = 0;
     virtual Value object_call_as_constructor(
-        const Object& object, const std::vector<Value> arguments) = 0;
+        const Object& object, const std::vector<Value>& arguments) = 0;
 
     virtual bool object_is_array(const Object& object) = 0;
     virtual Value object_get_property_at_index(

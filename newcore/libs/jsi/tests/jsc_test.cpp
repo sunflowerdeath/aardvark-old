@@ -1,11 +1,35 @@
 #include <Catch2/catch.hpp>
+
+#ifdef ADV_JSI_JSC
 #include <aardvark_jsi/jsc.hpp>
+#endif
+
+#ifdef ADV_JSI_QJS
+#include <aardvark_jsi/qjs.hpp>
+#endif
 
 using namespace aardvark::jsi;
 
-TEST_CASE("Context", "[Context]") {
-    SECTION("Context eval") {
-        auto ctx = Jsc_Context::create();
+TEMPLATE_TEST_CASE(
+    "Context", "[Context]"
+#ifdef ADV_JSI_QJS
+    ,Qjs_Context
+#endif
+#ifdef ADV_JSI_JSC
+    ,Jsc_Context
+#endif
+) {
+    auto create_context = []() { return TestType::create(); };
+
+    SECTION("context eval") {
+        auto ctx = create_context();
+
+        auto res = ctx->eval_script("2 + 3", nullptr, "source_url");
+        REQUIRE(res.to_number() == 5);
+    }
+
+    SECTION("context eval this") {
+        auto ctx = create_context();
 
         auto this_obj = ctx->object_make(nullptr);
         this_obj.set_property("a", ctx->value_make_number(2));
@@ -13,41 +37,27 @@ TEST_CASE("Context", "[Context]") {
         REQUIRE(res.to_number() == 5);
     }
 
-    SECTION("Context eval exception") {
-        auto ctx = Jsc_Context::create();
+    SECTION("context eval exception") {
+        auto ctx = create_context();
 
         auto did_throw = false;
         try {
-            ctx->eval_script("a/b", nullptr, "source_url");
+            ctx->eval_script("a/b/", nullptr, "source_url");
         } catch (JsError& ex) {
             did_throw = true;
         }
         REQUIRE(did_throw);
     }
 
-    SECTION("InvalidContextException") {
-        auto ctx = Jsc_Context::create();
-
-        auto val = ctx->value_make_bool(true);
-        ctx.reset();
-        auto did_throw = false;
-        try {
-            val.to_bool();
-        } catch (InvalidContextError& ex) {
-            did_throw = true;
-        }
-        REQUIRE(did_throw);
-    }
-
-    SECTION("String") {
-        auto ctx = Jsc_Context::create();
+    SECTION("string") {
+        auto ctx = create_context();
 
         auto str = ctx->string_make_from_utf8("test");
         REQUIRE(str.to_utf8() == "test");
     }
 
-    SECTION("Value") {
-        auto ctx = Jsc_Context::create();
+    SECTION("value") {
+        auto ctx = create_context();
 
         auto null_val = ctx->value_make_null();
         REQUIRE(null_val.get_type() == ValueType::null);
@@ -69,8 +79,8 @@ TEST_CASE("Context", "[Context]") {
         REQUIRE(str_val.to_string().to_utf8() == "test");
     }
 
-    SECTION("Object properties") {
-        auto ctx = Jsc_Context::create();
+    SECTION("object props") {
+        auto ctx = create_context();
 
         auto obj = ctx->object_make(nullptr);
         auto val = ctx->value_make_number(1);
@@ -85,8 +95,8 @@ TEST_CASE("Context", "[Context]") {
         REQUIRE(obj.has_property("a") == false);
     }
 
-    SECTION("Object prototype") {
-        auto ctx = Jsc_Context::create();
+    SECTION("object proto") {
+        auto ctx = create_context();
 
         auto obj = ctx->object_make(nullptr);
         auto proto = ctx->object_make(nullptr);
@@ -98,8 +108,8 @@ TEST_CASE("Context", "[Context]") {
         REQUIRE(curr_proto.strict_equal_to(proto_val));
     }
 
-    SECTION("Object function") {
-        auto ctx = Jsc_Context::create();
+    SECTION("object function") {
+        auto ctx = create_context();
 
         auto is_called = false;
         auto out_this = std::optional<Value>();
@@ -123,8 +133,8 @@ TEST_CASE("Context", "[Context]") {
         REQUIRE(out_args[0].strict_equal_to(in_arg));
     }
 
-    SECTION("Object function exception") {
-        auto ctx = Jsc_Context::create();
+    SECTION("object function exception") {
+        auto ctx = create_context();
 
         auto func = [&](const Value& xthis, const std::vector<Value>& args) {
             return ctx->eval_script("a/b", nullptr, "sourceurl");
@@ -140,8 +150,8 @@ TEST_CASE("Context", "[Context]") {
         REQUIRE(did_throw);
     }
 
-    SECTION("Object private data") {
-        auto ctx = Jsc_Context::create();
+    SECTION("object private") {
+        auto ctx = create_context();
 
         auto definition = ClassDefinition();
         definition.name = "TestClass";
@@ -149,17 +159,18 @@ TEST_CASE("Context", "[Context]") {
         auto instance = ctx->object_make(&cls);
         auto data = 25;
         instance.set_private_data(static_cast<void*>(&data));
-        REQUIRE(instance.get_private_data<int>() == 25);
+        auto get_data = instance.template get_private_data<int>(); // WTF
+        REQUIRE(get_data == 25);
     }
 
-    SECTION("Object class") {
-        auto ctx = Jsc_Context::create();
+    SECTION("object class") {
+        auto ctx = create_context();
 
         auto prop_value = 1;
-        auto get = [&](Value js_this) {
+        auto get = [&](Object& object) {
             return ctx->value_make_number(prop_value);
         };
-        auto set = [&](Value js_this, Value& value) {
+        auto set = [&](Object& object, Value& value) {
             prop_value = value.to_number();
             return true;
         };
@@ -193,17 +204,17 @@ TEST_CASE("Context", "[Context]") {
         REQUIRE(finalizer_called == true);
     }
 
-    SECTION("Object class exceptions") {
-        auto ctx = Jsc_Context::create();
+    SECTION("object class exceptions") {
+        auto ctx = create_context();
 
-        auto get = [&](Value js_this) {
+        auto get = [&](Object& object) {
             return ctx->eval_script("a/b", nullptr, "sourceurl");
         };
-        auto set = [&](Value js_this, Value& value) {
+        auto set = [&](Object object, Value& value) {
             ctx->eval_script("a/b", nullptr, "sourceurl");
             return true;
         };
-        auto method = [&](Value js_this, std::vector<Value>& args) {
+        auto method = [&](Value& js_this, std::vector<Value>& args) {
             return ctx->eval_script("a/b", nullptr, "sourceurl");
         };
 
@@ -240,8 +251,8 @@ TEST_CASE("Context", "[Context]") {
         REQUIRE(method_did_throw);
     }
 
-    SECTION("Object array") {
-        auto ctx = Jsc_Context::create();
+    SECTION("object array") {
+        auto ctx = create_context();
 
         auto not_arr = ctx->object_make(nullptr);
         REQUIRE(not_arr.is_array() == false);
