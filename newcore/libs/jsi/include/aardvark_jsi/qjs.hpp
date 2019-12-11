@@ -14,6 +14,12 @@ class Qjs_Context : public Context {
     void init();
     ~Qjs_Context();
 
+    // Helpers
+    Value value_from_qjs(const JSValue& value);
+    Object object_from_qjs(const JSValue& value);
+
+    JSValue value_get(const Value& value);
+
     Script create_script(
         const std::string& source, const std::string& source_url) override;
     Value eval_script(
@@ -26,9 +32,6 @@ class Qjs_Context : public Context {
     String string_make_from_utf8(const std::string& str) override;
     std::string string_to_utf8(const String&) override;
 
-    void string_protect(void* ptr) override;
-    void string_unprotect(void* ptr) override;
-
     // Value
     Value value_make_bool(bool value) override;
     Value value_make_number(double value) override;
@@ -36,10 +39,6 @@ class Qjs_Context : public Context {
     Value value_make_undefined() override;
     Value value_make_string(const String& str) override;
     Value value_make_object(const Object& object) override;
-
-    void value_protect(void* ptr) override;
-    void value_unprotect(void* ptr) override;
-    void value_copy(void** this_ptr, void* const* other_ptr) override;
 
     ValueType value_get_type(const Value& value) override;
     bool value_to_bool(const Value& value) override;
@@ -52,17 +51,11 @@ class Qjs_Context : public Context {
     // Class
     Class class_create(const ClassDefinition& definition) override;
 
-    void class_protect(void* ptr) override;
-    void class_unprotect(void* ptr) override;
-
     // Object
     Object object_make(const Class* js_class) override;
     Object object_make_function(const Function& function) override;
     Object object_make_constructor(const Class& js_class) override;
     Object object_make_array() override;
-
-    void object_protect(void* ptr) override;
-    void object_unprotect(void* ptr) override;
 
     Value object_to_value(const Object& object) override;
 

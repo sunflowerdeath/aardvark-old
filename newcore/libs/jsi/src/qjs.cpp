@@ -4,6 +4,29 @@
 
 namespace aardvark::jsi {
 
+class QjsValue : public PointerData {
+  public:
+    QjsValue(JSContext* ctx, const JSValue& value) : ctx(ctx), value(value) {
+        protect();
+    }
+
+    ~QjsValue() override {
+        JS_FreeValue(ctx, value);
+    }
+
+    void protect() {
+        JS_DupValue(ctx, value);
+    }
+
+    PointerData* copy() override {
+        protect();
+        return new QjsValue(*this);
+    }
+
+    JSContext* ctx;
+    const JSValue value;
+};
+
 std::shared_ptr<Qjs_Context> Qjs_Context::create() {
     auto ctx = std::make_shared<Qjs_Context>();
     ctx->init();
@@ -20,9 +43,20 @@ void Qjs_Context::init() {
 }
 
 Qjs_Context::~Qjs_Context() {
-    std::cout << "DESTROY" << std::endl;
     JS_FreeContext(ctx);
     JS_FreeRuntime(rt);
+}
+
+Value Qjs_Context::value_from_qjs(const JSValue& value) {
+    return Value(this, new QjsValue(ctx, value));
+}
+
+Object Qjs_Context::object_from_qjs(const JSValue& value) {
+    return Object(this, new QjsValue(ctx, value));
+}
+
+JSValue Qjs_Context::value_get(const Value& value) {
+    return static_cast<QjsValue*>(value.ptr)->value;
 }
 
 Script Qjs_Context::create_script(
@@ -38,30 +72,25 @@ Value Qjs_Context::eval_script(
     auto is_error = JS_IsException(res);
     if (is_error) {
         JS_FreeValue(ctx, res);
-        auto ex = new JSValue(JS_GetException(ctx));
-        auto jsi_ex = Value(weak_from_this(), (void*)ex, false, true);
+        auto jsi_ex = value_from_qjs(JS_GetException(ctx));
         throw JsError(
             jsi_ex,                       // value
             "",                           // TODO message
             JsErrorLocation{"url", 0, 0}  // TODO location
         );
     }
-    return Value(weak_from_this(), (void*)(new JSValue(res)), false, true);
+    return value_from_qjs(res);
 }
 
 void Qjs_Context::garbage_collect() {}
 
 Object Qjs_Context::get_global_object() {
-    auto ptr = new JSValue(JS_GetGlobalObject(ctx));
-    return Object(weak_from_this(), (void*)ptr);
+    return object_from_qjs(JS_GetGlobalObject(ctx));
 }
 
 // String
 String Qjs_Context::string_make_from_utf8(const std::string& str) {}
 std::string Qjs_Context::string_to_utf8(const String&) {}
-
-void Qjs_Context::string_protect(void* ptr) {}
-void Qjs_Context::string_unprotect(void* ptr) {}
 
 // Value
 Value Qjs_Context::value_make_bool(bool value) {}
@@ -74,35 +103,18 @@ Value Qjs_Context::value_make_undefined() {}
 Value Qjs_Context::value_make_string(const String& str) {}
 Value Qjs_Context::value_make_object(const Object& object) {}
 
-void Qjs_Context::value_protect(void* ptr) {
-    std::cout << "protect" << std::endl;
-    JS_DupValue(ctx, *static_cast<JSValue*>(ptr));
-}
-
-void Qjs_Context::value_unprotect(void* ptr) {
-    std::cout << "unprotect" << std::endl;
-    auto val_ptr = static_cast<JSValue*>(ptr);
-    JS_FreeValue(ctx, *val_ptr);
-    delete val_ptr;
-}
-
-void Qjs_Context::value_copy(void** this_ptr, void* const* other_ptr) {
-    std::cout << "copy" << std::endl;
-    copy_value<JSValue>(this_ptr, other_ptr);
-}
-
 ValueType Qjs_Context::value_get_type(const Value& value) {
-    auto ptr = value.get_ptr<JSValueConst*>();
-    if (JS_IsBool(*ptr)) return ValueType::boolean;
-    if (JS_IsNumber(*ptr)) return ValueType::number;
-    if (JS_IsNull(*ptr)) return ValueType::null;
-    if (JS_IsUndefined(*ptr)) return ValueType::undefined;
-    if (JS_IsString(*ptr)) return ValueType::string;
-    if (JS_IsObject(*ptr)) return ValueType::object;
+    auto ptr = value_get(value);
+    if (JS_IsBool(ptr)) return ValueType::boolean;
+    if (JS_IsNumber(ptr)) return ValueType::number;
+    if (JS_IsNull(ptr)) return ValueType::null;
+    if (JS_IsUndefined(ptr)) return ValueType::undefined;
+    if (JS_IsString(ptr)) return ValueType::string;
+    if (JS_IsObject(ptr)) return ValueType::object;
 }
 
 bool Qjs_Context::value_to_bool(const Value& value) {
-    auto res = JS_ToBool(ctx, *value.get_ptr<JSValueConst*>());
+    auto res = JS_ToBool(ctx, value_get(value));
     if (res == -1) {
         // check error
     }
@@ -111,7 +123,7 @@ bool Qjs_Context::value_to_bool(const Value& value) {
 
 double Qjs_Context::value_to_number(const Value& value) {
     double number;
-    auto res = JS_ToFloat64(ctx, &number, *value.get_ptr<JSValueConst*>());
+    auto res = JS_ToFloat64(ctx, &number, value_get(value));
     if (res == -1) {
         // TODO check error
     }
@@ -126,17 +138,11 @@ bool Qjs_Context::value_strict_equal(const Value& a, const Value& b) {}
 // Class
 Class Qjs_Context::class_create(const ClassDefinition& definition) {}
 
-void Qjs_Context::class_protect(void* ptr) {}
-void Qjs_Context::class_unprotect(void* ptr) {}
-
 // Object
 Object Qjs_Context::object_make(const Class* js_class) {}
 Object Qjs_Context::object_make_function(const Function& function) {}
 Object Qjs_Context::object_make_constructor(const Class& js_class) {}
 Object Qjs_Context::object_make_array() {}
-
-void Qjs_Context::object_protect(void* ptr) {}
-void Qjs_Context::object_unprotect(void* ptr) {}
 
 Value Qjs_Context::object_to_value(const Object& object) {}
 
