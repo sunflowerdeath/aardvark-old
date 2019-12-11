@@ -164,43 +164,48 @@ TEMPLATE_TEST_CASE(
     }
 
     SECTION("object class") {
-        auto ctx = create_context();
-
-        auto prop_value = 1;
-        auto get = [&](Object& object) {
-            return ctx->value_make_number(prop_value);
-        };
-        auto set = [&](Object& object, Value& value) {
-            prop_value = value.to_number();
-            return true;
-        };
-        auto method = [&](Value js_this, std::vector<Value>& args) {
-            prop_value = args[0].to_number();
-            return args[0];
-        };
         auto finalizer_called = false;
-        auto finalizer = [&](const Object& object) { finalizer_called = true; };
 
-        auto definition = ClassDefinition();
-        definition.name = "TestClass";
-        definition.methods = {{"method", method}};
-        definition.properties = {{"prop", ClassPropertyDefinition{get, set}}};
-        definition.finalizer = finalizer;
-        auto cls = ctx->class_create(definition);
-        auto instance = ctx->object_make(&cls);
+        {
+            auto ctx = create_context();
 
-        auto getter_res = instance.get_property("prop");
-        REQUIRE(getter_res.to_number() == 1);
+            auto prop_value = 1;
+            auto get = [&](Object& object) {
+                return ctx->value_make_number(prop_value);
+            };
+            auto set = [&](Object& object, Value& value) {
+                prop_value = value.to_number();
+                return true;
+            };
+            auto method = [&](Value js_this, std::vector<Value>& args) {
+                prop_value = args[0].to_number();
+                return args[0];
+            };
+            auto finalizer = [&](const Object& object) {
+                finalizer_called = true;
+            };
 
-        instance.set_property("prop", ctx->value_make_number(2));
-        REQUIRE(prop_value == 2);
+            auto definition = ClassDefinition();
+            definition.name = "TestClass";
+            definition.methods = {{"method", method}};
+            definition.properties = {
+                {"prop", ClassPropertyDefinition{get, set}}};
+            definition.finalizer = finalizer;
+            auto cls = ctx->class_create(definition);
+            auto instance = ctx->object_make(&cls);
 
-        auto ret_val =
-            ctx->eval_script("this.method(3)", &instance, "sourceurl");
-        REQUIRE(prop_value == 3);
-        REQUIRE(ret_val.to_number() == 3);
+            auto getter_res = instance.get_property("prop");
+            REQUIRE(getter_res.to_number() == 1);
 
-        ctx.reset();
+            instance.set_property("prop", ctx->value_make_number(2));
+            REQUIRE(prop_value == 2);
+
+            auto ret_val =
+                ctx->eval_script("this.method(3)", &instance, "sourceurl");
+            REQUIRE(prop_value == 3);
+            REQUIRE(ret_val.to_number() == 3);
+        }
+
         REQUIRE(finalizer_called == true);
     }
 

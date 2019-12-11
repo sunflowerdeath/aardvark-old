@@ -22,12 +22,14 @@ class Pointer {
     Pointer(Context* ctx, PointerData* ptr) : ctx(ctx), ptr(ptr){};
 
     // copy
-    Pointer(const Pointer& other) : ctx(ctx) { ptr = other.ptr->copy(); }
+    Pointer(const Pointer& other) : ctx(other.ctx) { ptr = other.ptr->copy(); }
 
     Pointer& operator=(const Pointer& other) { return *this = Pointer(other); }
 
     // move
-    Pointer(Pointer&& other) : ctx(ctx), ptr(other.ptr) { other.ptr = nullptr; }
+    Pointer(Pointer&& other) : ctx(other.ctx), ptr(other.ptr) {
+        other.ptr = nullptr;
+    }
 
     Pointer& operator=(Pointer&& other) noexcept {
         ctx = other.ctx;

@@ -272,8 +272,9 @@ void Jsc_Context::finalize_class_instance(JSObjectRef object) {
     if (it == Jsc_Context::class_instances.end()) return;
     auto ctx = it->second.ctx;
     auto definition = it->second.definition;
-    // TODO
-    // if (definition->finalizer) definition->finalizer(object_from_jsc(object));
+    if (definition->finalizer) {
+        definition->finalizer(ctx->object_from_jsc(object));
+    }
     Jsc_Context::class_instances.erase(it);
 }
 
