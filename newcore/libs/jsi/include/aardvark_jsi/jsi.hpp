@@ -4,7 +4,6 @@
 #include <map>
 #include <memory>
 #include <vector>
-#include <iostream>
 
 namespace aardvark::jsi {
 

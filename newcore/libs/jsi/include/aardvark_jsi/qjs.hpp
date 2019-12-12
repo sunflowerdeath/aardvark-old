@@ -9,6 +9,8 @@ namespace aardvark::jsi {
 class Qjs_Context : public Context {
   public:
     static std::shared_ptr<Qjs_Context> create();
+    static Qjs_Context* get(JSContext* ctx);
+    static JSClassID function_class_id;
 
     Qjs_Context();
     void init();
@@ -19,6 +21,8 @@ class Qjs_Context : public Context {
     Object object_from_qjs(const JSValue& value);
 
     JSValue value_get(const Value& value);
+    JSValue object_get(const Object& object);
+    std::string string_get_str(const String& str);
 
     Script create_script(
         const std::string& source, const std::string& source_url) override;
@@ -95,6 +99,7 @@ class Qjs_Context : public Context {
 
     JSRuntime* rt;
     JSContext* ctx;
+    std::optional<Object> strict_equal_function;
 };
 
 }  // namespace aardvark::jsi

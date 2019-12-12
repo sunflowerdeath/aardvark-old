@@ -1,5 +1,7 @@
 #include <Catch2/catch.hpp>
 
+#include <iostream>
+
 #ifdef ADV_JSI_JSC
 #include <aardvark_jsi/jsc.hpp>
 #endif
@@ -79,6 +81,22 @@ TEMPLATE_TEST_CASE(
         REQUIRE(str_val.to_string().to_utf8() == "test");
     }
 
+    SECTION("strictequal") {
+        auto ctx = create_context();
+
+        auto a = ctx->value_make_number(1);
+        auto b = ctx->value_make_number(1);
+        auto c = ctx->value_make_number(2);
+        REQUIRE(a.strict_equal_to(a) == true);
+        REQUIRE(a.strict_equal_to(b) == true);
+        REQUIRE(a.strict_equal_to(c) == false);
+
+        auto d = ctx->object_make(nullptr).to_value();
+        auto e = ctx->object_make(nullptr).to_value();
+        REQUIRE(d.strict_equal_to(d) == true);
+        REQUIRE(d.strict_equal_to(e) == false);
+    }
+
     SECTION("object props") {
         auto ctx = create_context();
 
@@ -114,7 +132,7 @@ TEMPLATE_TEST_CASE(
         auto is_called = false;
         auto out_this = std::optional<Value>();
         auto out_args = std::vector<Value>();
-        auto in_ret_val = ctx->value_make_object(ctx->object_make(nullptr));
+        auto in_ret_val = ctx->value_make_number(5);
         auto func = [&](const Value& xthis, const std::vector<Value>& args) {
             is_called = true;
             out_this = xthis;
@@ -125,12 +143,13 @@ TEMPLATE_TEST_CASE(
 
         REQUIRE(obj.is_function() == true);
         auto in_this = ctx->value_make_object(ctx->object_make(nullptr));
-        auto in_arg = ctx->value_make_object(ctx->object_make(nullptr));
+        auto in_arg = ctx->value_make_number(2);
         auto out_ret_val = obj.call_as_function(&in_this, {in_arg});
         REQUIRE(is_called);
+        REQUIRE(out_ret_val.to_number() == 5);
         REQUIRE(out_this->strict_equal_to(in_this));
         REQUIRE(out_args.size() == 1);
-        REQUIRE(out_args[0].strict_equal_to(in_arg));
+        REQUIRE(out_args[0].to_number() == 2);
     }
 
     SECTION("object function exception") {
