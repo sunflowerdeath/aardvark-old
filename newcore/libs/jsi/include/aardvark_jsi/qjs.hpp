@@ -20,10 +20,14 @@ class Qjs_Context : public Context {
     Value value_from_qjs(const JSValue& value);
     Object object_from_qjs(const JSValue& value);
 
-    JSValue value_get(const Value& value);
-    JSValue object_get(const Object& object);
+    JSValue value_get_qjs(const Value& value);
+    JSValue object_get_qjs(const Object& object);
     std::string string_get_str(const String& str);
 
+    JsError get_error();
+    void check_error(const JSValue& value);
+
+    // Global
     Script create_script(
         const std::string& source, const std::string& source_url) override;
     Value eval_script(
