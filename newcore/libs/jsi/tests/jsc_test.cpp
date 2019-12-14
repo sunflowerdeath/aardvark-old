@@ -1,7 +1,5 @@
 #include <Catch2/catch.hpp>
 
-#include <iostream>
-
 #ifdef ADV_JSI_JSC
 #include <aardvark_jsi/jsc.hpp>
 #endif
@@ -23,14 +21,14 @@ TEMPLATE_TEST_CASE(
 ) {
     auto create_context = []() { return TestType::create(); };
 
-    SECTION("context eval") {
+    SECTION("eval") {
         auto ctx = create_context();
 
         auto res = ctx->eval_script("2 + 3", nullptr, "source_url");
         REQUIRE(res.to_number() == 5);
     }
 
-    SECTION("context eval this") {
+    SECTION("eval this") {
         auto ctx = create_context();
 
         auto this_obj = ctx->object_make(nullptr);
@@ -39,7 +37,7 @@ TEMPLATE_TEST_CASE(
         REQUIRE(res.to_number() == 5);
     }
 
-    SECTION("context eval exception") {
+    SECTION("eval exception") {
         auto ctx = create_context();
 
         auto did_throw = false;
@@ -126,7 +124,7 @@ TEMPLATE_TEST_CASE(
         REQUIRE(curr_proto.strict_equal_to(proto_val));
     }
 
-    SECTION("object function") {
+    SECTION("function") {
         auto ctx = create_context();
 
         auto is_called = false;
@@ -152,7 +150,7 @@ TEMPLATE_TEST_CASE(
         REQUIRE(out_args[0].to_number() == 2);
     }
 
-    SECTION("object function exception") {
+    SECTION("function exception") {
         auto ctx = create_context();
 
         auto func = [&](const Value& xthis, const std::vector<Value>& args) {
@@ -182,7 +180,7 @@ TEMPLATE_TEST_CASE(
         REQUIRE(get_data == 25);
     }
 
-    SECTION("object class") {
+    SECTION("class") {
         auto finalizer_called = false;
 
         {
@@ -210,6 +208,7 @@ TEMPLATE_TEST_CASE(
             definition.properties = {
                 {"prop", ClassPropertyDefinition{get, set}}};
             definition.finalizer = finalizer;
+
             auto cls = ctx->class_create(definition);
             auto instance = ctx->object_make(&cls);
 
@@ -219,8 +218,10 @@ TEMPLATE_TEST_CASE(
             instance.set_property("prop", ctx->value_make_number(2));
             REQUIRE(prop_value == 2);
 
+            ctx->get_global_object().set_property(
+                "instance", instance.to_value());
             auto ret_val =
-                ctx->eval_script("this.method(3)", &instance, "sourceurl");
+                ctx->eval_script("instance.method(3)", &instance, "sourceurl");
             REQUIRE(prop_value == 3);
             REQUIRE(ret_val.to_number() == 3);
         }
@@ -228,7 +229,7 @@ TEMPLATE_TEST_CASE(
         REQUIRE(finalizer_called == true);
     }
 
-    SECTION("object class exceptions") {
+    SECTION("class exceptions") {
         auto ctx = create_context();
 
         auto get = [&](Object& object) {
@@ -275,7 +276,7 @@ TEMPLATE_TEST_CASE(
         REQUIRE(method_did_throw);
     }
 
-    SECTION("object array") {
+    SECTION("array") {
         auto ctx = create_context();
 
         auto not_arr = ctx->object_make(nullptr);

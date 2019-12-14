@@ -37,6 +37,16 @@ class QjsString : public PointerData {
     std::string str;
 };
 
+// Classes have static lifetime and are destroyed by context destructor
+class QjsClass : public PointerData {
+  public:
+    QjsClass(JSClassID id) : id(id) {};
+
+    PointerData* copy() override { return new QjsClass(*this); }
+
+    JSClassID id;
+};
+
 //  Initialization
 
 std::shared_ptr<Qjs_Context> Qjs_Context::create() {
@@ -66,7 +76,7 @@ JSValue native_function_call(
     auto func = static_cast<Function*>(
         JS_GetOpaque(func_obj, Qjs_Context::function_class_id));
     auto jsi_ctx = Qjs_Context::get(ctx);
-    auto jsi_this = jsi_ctx->value_make_null();
+    auto jsi_this = jsi_ctx->value_from_qjs(this_val);
     auto jsi_args = std::vector<Value>();
     for (auto i = 0; i < argc; i++) {
         jsi_args.push_back(jsi_ctx->value_from_qjs(argv[i]));
@@ -81,7 +91,7 @@ void Qjs_Context::init() {
     ctx = JS_NewContext(rt);
     JS_SetContextOpaque(ctx, (void*)this);
 
-    JS_NewClassID(&Qjs_Context::function_class_id); // TODO make it not global
+    JS_NewClassID(&Qjs_Context::function_class_id);
     auto function_class_def = JSClassDef{
         "NativeFunction",           // class_name
         native_function_finalizer,  // finalizer
@@ -122,6 +132,11 @@ JSValue Qjs_Context::object_get_qjs(const Object& object) {
 std::string Qjs_Context::string_get_str(const String& str) {
     return static_cast<QjsString*>(str.ptr)->str;
 }
+
+JSClassID Qjs_Context::class_get_qjs(const Class& cls) {
+    return static_cast<QjsClass*>(cls.ptr)->id;
+}
+
 
 JsError Qjs_Context::get_error() {
     return JsError(
@@ -234,12 +249,53 @@ bool Qjs_Context::value_strict_equal(const Value& a, const Value& b) {
         .to_bool();
 }
 
+void class_finalizer(JSRuntime *rt, JSValue val) {
+    // class finalizer
+}
+
 // Class
-Class Qjs_Context::class_create(const ClassDefinition& definition) {}
+Class Qjs_Context::class_create(const ClassDefinition& definition) {
+    auto class_def = JSClassDef{
+        definition.name.c_str(),  // class_name
+        class_finalizer           // finalizer
+    };
+    JSClassID class_id = 0;
+    JS_NewClassID(&class_id);
+    JS_NewClass(rt, class_id, &class_def);
+    
+    auto proto = JS_NewObject(ctx);
+    /*
+    for (auto& it : definition.properties) {
+        auto& [name, prop] = it;
+        auto atom = JS_NewAtomLen(ctx, name.c_str(), name.size());
+        auto get = object_make_function(prop.get);
+        auto set = object_make_function(prop.set);
+        JS_DefinePropertyGetSet(
+            ctx, proto, atom, object_get_qjs(get), object_get_qjs(set),
+            JS_PROP_C_W_E);
+    }
+    */
+
+    for (auto it : definition.methods) {
+        auto& [name, method] = it;
+        auto value = object_make_function(method);
+        auto atom = JS_NewAtomLen(ctx, name.c_str(), name.size());
+        JS_DupValue(ctx, object_get_qjs(value));
+        JS_DefinePropertyValue(
+            ctx, proto, atom, object_get_qjs(value), JS_PROP_ENUMERABLE);
+        JS_FreeAtom(ctx, atom);
+    }
+
+    JS_SetClassProto(ctx, class_id, proto);
+
+    return Class(this, new QjsClass(class_id));
+}
 
 // Object
-Object Qjs_Context::object_make(const Class* js_class) {
-    return object_from_qjs(JS_NewObject(ctx));
+Object Qjs_Context::object_make(const Class* cls) {
+    auto obj = cls == nullptr ? JS_NewObject(ctx)
+                              : JS_NewObjectClass(ctx, class_get_qjs(*cls));
+    return object_from_qjs(obj);
 }
 
 Object Qjs_Context::object_make_function(const Function& function) {
