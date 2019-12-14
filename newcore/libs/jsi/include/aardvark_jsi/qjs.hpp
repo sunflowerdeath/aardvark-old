@@ -25,7 +25,8 @@ class Qjs_Context : public Context {
     std::string string_get_str(const String& str);
 
     JsError get_error();
-    void check_error(const JSValue& value);
+    void check_error_value(const JSValue& value);
+    void check_error_code(int res);
 
     // Global
     Script create_script(

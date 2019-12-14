@@ -131,11 +131,15 @@ JsError Qjs_Context::get_error() {
     );
 }
 
-void Qjs_Context::check_error(const JSValue& value) {
+void Qjs_Context::check_error_value(const JSValue& value) {
     if (JS_IsException(value)) {
         JS_FreeValue(ctx, value);
         throw get_error();
     }
+}
+
+void Qjs_Context::check_error_code(int res) {
+    if (res == -1) throw get_error();
 }
 
 Script Qjs_Context::create_script(
@@ -148,7 +152,7 @@ Value Qjs_Context::eval_script(
     auto res = JS_Eval(
         ctx, script.c_str(), script.size() + 1, source_url.c_str(),
         JS_EVAL_TYPE_GLOBAL);
-    check_error(res);
+    check_error_value(res);
     return value_from_qjs(res);
 }
 
@@ -209,7 +213,7 @@ bool Qjs_Context::value_to_bool(const Value& value) {
 double Qjs_Context::value_to_number(const Value& value) {
     double number;
     auto res = JS_ToFloat64(ctx, &number, value_get_qjs(value));
-    if (res == -1) throw get_error();
+    check_error_code(res);
     return number;
 }
 
@@ -269,20 +273,52 @@ void Qjs_Context::object_set_prototype(
 }
 
 std::vector<std::string> Qjs_Context::object_get_property_names(
-    const Object& object) {}
+    const Object& object) {
+    JSPropertyEnum* props;
+    auto prop_count = uint32_t(0);
+    auto res = JS_GetOwnPropertyNames(
+        ctx, &props, &prop_count, object_get_qjs(object), JS_GPN_STRING_MASK);
+    check_error_code(res);
+    auto jsi_props = std::vector<std::string>();
+    for (auto i = 0; i < prop_count; i++) {
+        auto prop_name = JS_AtomToCString(ctx, props[i].atom);
+        jsi_props.push_back(prop_name);
+    }
+    free(props);
+    return jsi_props;
+}
+
 bool Qjs_Context::object_has_property(
-    const Object& object, const std::string& name) {}
+    const Object& object, const std::string& name) {
+    auto prop = JS_NewAtomLen(ctx, name.c_str(), name.size());
+    auto res = JS_HasProperty(ctx, object_get_qjs(object), prop);
+    JS_FreeAtom(ctx, prop);
+    check_error_code(res);
+    return res == 1;
+}
 
 Value Qjs_Context::object_get_property(
     const Object& object, const std::string& name) {
-    return value_from_qjs(
-        JS_GetPropertyStr(ctx, object_get_qjs(object), name.c_str()));
+    auto res = JS_GetPropertyStr(ctx, object_get_qjs(object), name.c_str());
+    check_error_value(res);
+    return value_from_qjs(res);
 }
 
 void Qjs_Context::object_delete_property(
-    const Object& object, const std::string& name) {}
+    const Object& object, const std::string& name) {
+    auto prop = JS_NewAtomLen(ctx, name.c_str(), name.size());
+    auto res =
+        JS_DeleteProperty(ctx, object_get_qjs(object), prop, JS_PROP_THROW);
+    JS_FreeAtom(ctx, prop);
+    check_error_code(res);
+}
+
 void Qjs_Context::object_set_property(
-    const Object& object, const std::string& name, const Value& value) {}
+    const Object& object, const std::string& name, const Value& value) {
+    auto res = JS_SetPropertyStr(
+        ctx, object_get_qjs(object), name.c_str(), value_get_qjs(value));
+    check_error_code(res);
+}
 
 bool Qjs_Context::object_is_function(const Object& object) {
     return JS_IsFunction(ctx, object_get_qjs(object)) == 1;
@@ -299,7 +335,7 @@ Value Qjs_Context::object_call_as_function(
     }
     auto qjs_res =
         JS_Call(ctx, qjs_object, qjs_this, jsi_args.size(), qjs_args);
-    // TODO check exception
+    check_error_value(qjs_res);
     return value_from_qjs(qjs_res);
 }
 
@@ -314,14 +350,16 @@ bool Qjs_Context::object_is_array(const Object& object) {
 
 Value Qjs_Context::object_get_property_at_index(
     const Object& object, size_t index) {
-    return value_from_qjs(
-        JS_GetPropertyUint32(ctx, object_get_qjs(object), index));
+    auto res = JS_GetPropertyUint32(ctx, object_get_qjs(object), index);
+    check_error_value(res);
+    return value_from_qjs(res);
 }
 
 void Qjs_Context::object_set_property_at_index(
     const Object& object, size_t index, const Value& value) {
-    JS_SetPropertyUint32(
+    auto res = JS_SetPropertyUint32(
         ctx, object_get_qjs(object), index, value_get_qjs(value));
+    check_error_code(res);
 }
 
 }  // namespace aardvark::jsi
