@@ -1,4 +1,5 @@
 #include <Catch2/catch.hpp>
+#include <iostream>
 
 #ifdef ADV_JSI_JSC
 #include <aardvark_jsi/jsc.hpp>
@@ -28,6 +29,7 @@ TEMPLATE_TEST_CASE(
         REQUIRE(res.to_number() == 5);
     }
 
+#ifdef ADV_JSI_JSC
     SECTION("eval this") {
         auto ctx = create_context();
 
@@ -36,11 +38,21 @@ TEMPLATE_TEST_CASE(
         auto res = ctx->eval_script("this.a + 3", &this_obj, "source_url");
         REQUIRE(res.to_number() == 5);
     }
+#endif
 
     SECTION("eval exception") {
         auto ctx = create_context();
 
         auto did_throw = false;
+        try {
+            ctx->eval_script("a/b/", nullptr, "source_url");
+        } catch (JsError& ex) {
+            did_throw = true;
+        }
+        REQUIRE(did_throw);
+
+        // check again
+        did_throw = false;
         try {
             ctx->eval_script("a/b/", nullptr, "source_url");
         } catch (JsError& ex) {
@@ -165,8 +177,18 @@ TEMPLATE_TEST_CASE(
             did_throw = true;
         }
         REQUIRE(did_throw);
+
+        // check again
+        did_throw = false;
+        try {
+            obj.call_as_function(nullptr, {});
+        } catch (JsError& ex) {
+            did_throw = true;
+        }
+        REQUIRE(did_throw);
     }
 
+    /*
     SECTION("object private") {
         auto ctx = create_context();
 
@@ -179,6 +201,7 @@ TEMPLATE_TEST_CASE(
         auto get_data = instance.template get_private_data<int>(); // WTF
         REQUIRE(get_data == 25);
     }
+    */
 
     SECTION("class") {
         auto finalizer_called = false;
@@ -221,7 +244,7 @@ TEMPLATE_TEST_CASE(
             ctx->get_global_object().set_property(
                 "instance", instance.to_value());
             auto ret_val =
-                ctx->eval_script("instance.method(3)", &instance, "sourceurl");
+                ctx->eval_script("instance.method(3)", nullptr, "sourceurl");
             REQUIRE(prop_value == 3);
             REQUIRE(ret_val.to_number() == 3);
         }
@@ -229,7 +252,7 @@ TEMPLATE_TEST_CASE(
         REQUIRE(finalizer_called == true);
     }
 
-    SECTION("class exceptions") {
+    SECTION("class exception") {
         auto ctx = create_context();
 
         auto get = [&](Object& object) {

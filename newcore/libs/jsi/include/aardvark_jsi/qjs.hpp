@@ -17,8 +17,8 @@ class Qjs_Context : public Context {
     ~Qjs_Context();
 
     // Helpers
-    Value value_from_qjs(const JSValue& value);
-    Object object_from_qjs(const JSValue& value);
+    Value value_from_qjs(const JSValue& value, bool finalizing = false);
+    Object object_from_qjs(const JSValue& value, bool finalizing = false);
 
     JSValue value_get_qjs(const Value& value);
     JSValue object_get_qjs(const Object& object);
@@ -106,6 +106,15 @@ class Qjs_Context : public Context {
     JSRuntime* rt;
     JSContext* ctx;
     std::optional<Object> strict_equal_function;
+    std::unordered_map<JSClassID, ClassFinalizer> class_finalizers;
+
+    struct ClassInstanceRecord {
+        Qjs_Context* ctx;
+        JSClassID class_id;
+    };
+
+    // JSValue is tagged union it cannot be key, so need to use void pointer
+    static std::unordered_map<void*, ClassInstanceRecord> class_instances;
 };
 
 }  // namespace aardvark::jsi

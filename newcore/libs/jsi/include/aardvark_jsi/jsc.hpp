@@ -103,6 +103,8 @@ class Jsc_Context : public Context {
         const Object& object, size_t index, const Value& value) override;
 
     JSGlobalContextRef ctx;
+    bool ctx_invalid = false;
+    std::unordered_map<JSClassRef, ClassDefinition> class_definitions;
 
     struct ClassInstanceRecord {
         Jsc_Context* ctx;
@@ -117,9 +119,6 @@ class Jsc_Context : public Context {
 
     static ClassDefinition* get_class_definition(JSObjectRef object);
     static void finalize_class_instance(JSObjectRef object);
-
-    bool ctx_invalid = false;
-    std::unordered_map<JSClassRef, ClassDefinition> class_definitions;
 };
 
 }  // namespace aardvark::jsi

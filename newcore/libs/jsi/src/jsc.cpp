@@ -352,8 +352,6 @@ Class Jsc_Context::class_create(const ClassDefinition& definition) {
     }
 
     class_definitions[jsc_class] = std::move(definition);
-    auto stored_definition = &class_definitions[jsc_class];
-
     return jsi_class;
 }
 
