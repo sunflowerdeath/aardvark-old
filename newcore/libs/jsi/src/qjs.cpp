@@ -76,14 +76,18 @@ JSValue native_function_call(
     auto func = static_cast<Function*>(
         JS_GetOpaque(func_obj, Qjs_Context::function_class_id));
     auto jsi_ctx = Qjs_Context::get(ctx);
+    JS_DupValue(ctx, this_val);
     auto jsi_this = jsi_ctx->value_from_qjs(this_val);
     auto jsi_args = std::vector<Value>();
     for (auto i = 0; i < argc; i++) {
+        JS_DupValue(ctx, argv[i]);
         jsi_args.push_back(jsi_ctx->value_from_qjs(argv[i]));
     }
     auto res = (*func)(jsi_this, jsi_args);
     // TODO check error
-    return jsi_ctx->value_get_qjs(res);
+    auto qjs_res = jsi_ctx->value_get_qjs(res);
+    JS_DupValue(ctx, qjs_res);
+    return qjs_res;
 }
 
 void Qjs_Context::init() {
@@ -255,35 +259,42 @@ void class_finalizer(JSRuntime *rt, JSValue val) {
 
 // Class
 Class Qjs_Context::class_create(const ClassDefinition& definition) {
-    auto class_def = JSClassDef{
-        definition.name.c_str(),  // class_name
-        class_finalizer           // finalizer
-    };
+    auto class_def = JSClassDef{definition.name.c_str(),  // class_name
+                                class_finalizer,          // finalizer
+                                nullptr, nullptr, nullptr};
     JSClassID class_id = 0;
     JS_NewClassID(&class_id);
     JS_NewClass(rt, class_id, &class_def);
     
     auto proto = JS_NewObject(ctx);
-    /*
     for (auto& it : definition.properties) {
         auto& [name, prop] = it;
         auto atom = JS_NewAtomLen(ctx, name.c_str(), name.size());
-        auto get = object_make_function(prop.get);
-        auto set = object_make_function(prop.set);
+        auto get = object_make_function(
+            [&prop](Value& js_this, std::vector<Value>& args) {
+                auto obj = js_this.to_object();
+                return prop.get(obj);
+            });
+        auto set = object_make_function(
+            [this, &prop](Value& js_this, std::vector<Value>& args) {
+                auto obj = js_this.to_object();
+                prop.set(obj, args[0]);
+                return value_from_qjs(JS_UNDEFINED);
+            });
+        JS_DupValue(ctx, object_get_qjs(get));
+        JS_DupValue(ctx, object_get_qjs(set));
         JS_DefinePropertyGetSet(
-            ctx, proto, atom, object_get_qjs(get), object_get_qjs(set),
-            JS_PROP_C_W_E);
+            ctx, proto, atom, object_get_qjs(get), object_get_qjs(set), 0);
+        JS_FreeAtom(ctx, atom);
     }
-    */
 
     for (auto it : definition.methods) {
         auto& [name, method] = it;
         auto value = object_make_function(method);
-        auto atom = JS_NewAtomLen(ctx, name.c_str(), name.size());
         JS_DupValue(ctx, object_get_qjs(value));
-        JS_DefinePropertyValue(
-            ctx, proto, atom, object_get_qjs(value), JS_PROP_ENUMERABLE);
-        JS_FreeAtom(ctx, atom);
+        JS_DefinePropertyValueStr(
+            ctx, proto, name.c_str(), object_get_qjs(value),
+            JS_PROP_ENUMERABLE);
     }
 
     JS_SetClassProto(ctx, class_id, proto);

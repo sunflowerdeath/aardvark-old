@@ -23,6 +23,7 @@ class Qjs_Context : public Context {
     JSValue value_get_qjs(const Value& value);
     JSValue object_get_qjs(const Object& object);
     std::string string_get_str(const String& str);
+    JSClassID class_get_qjs(const Class& cls);
 
     JsError get_error();
     void check_error_value(const JSValue& value);
