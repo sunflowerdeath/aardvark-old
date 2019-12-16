@@ -12,7 +12,7 @@
 using namespace aardvark::jsi;
 
 TEMPLATE_TEST_CASE(
-    "Context", "[Context]"
+    "context", "[context]"
 #ifdef ADV_JSI_QJS
     ,Qjs_Context
 #endif
@@ -32,6 +32,9 @@ TEMPLATE_TEST_CASE(
 #ifdef ADV_JSI_JSC
     SECTION("eval this") {
         auto ctx = create_context();
+
+        // Qjs doest not supports this
+        if (typeid(ctx.get()) != typeid(Jsc_Context*)) return;
 
         auto this_obj = ctx->object_make(nullptr);
         this_obj.set_property("a", ctx->value_make_number(2));
@@ -188,8 +191,7 @@ TEMPLATE_TEST_CASE(
         REQUIRE(did_throw);
     }
 
-    /*
-    SECTION("object private") {
+    SECTION("private") {
         auto ctx = create_context();
 
         auto definition = ClassDefinition();
@@ -201,7 +203,6 @@ TEMPLATE_TEST_CASE(
         auto get_data = instance.template get_private_data<int>(); // WTF
         REQUIRE(get_data == 25);
     }
-    */
 
     SECTION("class") {
         auto finalizer_called = false;

@@ -1,9 +1,6 @@
 #include "qjs.hpp"
-#include <iostream>
 
 namespace aardvark::jsi {
-
-auto cnt = 0;
 
 class QjsValue : public PointerData {
   public:
@@ -44,7 +41,7 @@ class QjsString : public PointerData {
 
 class QjsClass : public PointerData {
   public:
-    QjsClass(JSClassID id) : id(id) {};
+    QjsClass(JSClassID id) : id(id){};
 
     PointerData* copy() override { return new QjsClass(*this); }
 
@@ -164,10 +161,7 @@ JsError Qjs_Context::get_error() {
 }
 
 void Qjs_Context::check_error_value(const JSValue& value) {
-    if (JS_IsException(value)) {
-        // JS_FreeValue(ctx, value);
-        throw get_error();
-    }
+    if (JS_IsException(value)) throw get_error();
 }
 
 void Qjs_Context::check_error_code(int res) {
@@ -266,7 +260,7 @@ bool Qjs_Context::value_strict_equal(const Value& a, const Value& b) {
         .to_bool();
 }
 
-void class_finalizer(JSRuntime *rt, JSValue value) {
+void class_finalizer(JSRuntime* rt, JSValue value) {
     auto it = Qjs_Context::class_instances.find(JS_VALUE_GET_PTR(value));
     if (it == Qjs_Context::class_instances.end()) return;
     auto ctx = it->second.ctx;
@@ -280,17 +274,17 @@ void class_finalizer(JSRuntime *rt, JSValue value) {
 Class Qjs_Context::class_create(const ClassDefinition& definition) {
     JSClassID class_id = 0;
     JS_NewClassID(&class_id);
-    auto class_def = JSClassDef{definition.name.c_str(),  // class_name
+    auto class_def = JSClassDef{definition.name.c_str(),  // name
                                 class_finalizer,          // finalizer
                                 nullptr, nullptr, nullptr};
     JS_NewClass(rt, class_id, &class_def);
-    
+
     auto proto = JS_NewObject(ctx);
     for (auto& it : definition.properties) {
         auto& [name, prop] = it;
         auto atom = JS_NewAtomLen(ctx, name.c_str(), name.size());
         auto get = object_make_function(
-            [getter=prop.get](Value& js_this, std::vector<Value>& args) {
+            [getter = prop.get](Value& js_this, std::vector<Value>& args) {
                 auto obj = js_this.to_object();
                 return getter(obj);
             });
@@ -324,8 +318,9 @@ Class Qjs_Context::class_create(const ClassDefinition& definition) {
 
 // Object
 Object Qjs_Context::object_make(const Class* cls) {
-    auto qjs_object = cls == nullptr ? JS_NewObject(ctx)
-                              : JS_NewObjectClass(ctx, class_get_qjs(*cls));
+    auto qjs_object = cls == nullptr
+                          ? JS_NewObject(ctx)
+                          : JS_NewObjectClass(ctx, class_get_qjs(*cls));
     if (cls != nullptr) {
         Qjs_Context::class_instances.emplace(
             JS_VALUE_GET_PTR(qjs_object),
@@ -351,9 +346,16 @@ Value Qjs_Context::object_to_value(const Object& object) {
     return Value(this, object.ptr->copy());
 }
 
-void Qjs_Context::object_set_private_data(const Object& object, void* data) {}
+void Qjs_Context::object_set_private_data(const Object& object, void* data) {
+    JS_SetOpaque(object_get_qjs(object), data);
+}
 
-void* Qjs_Context::object_get_private_data(const Object& object) {}
+void* Qjs_Context::object_get_private_data(const Object& object) {
+    auto qjs_value = object_get_qjs(object);
+    auto it = class_instances.find(JS_VALUE_GET_PTR(qjs_value));
+    if (it == class_instances.end()) return nullptr;
+    return JS_GetOpaque(qjs_value, it->second.class_id);
+}
 
 Value Qjs_Context::object_get_prototype(const Object& object) {
     auto qjs_proto = JS_GetPrototype(ctx, object_get_qjs(object));
