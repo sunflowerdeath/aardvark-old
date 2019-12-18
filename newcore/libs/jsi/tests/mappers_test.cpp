@@ -73,12 +73,38 @@ TEMPLATE_TEST_CASE(
             {"num", &TestStruct::num, int_mapper},
             {"str", &TestStruct::str, string_mapper});
 
-        auto val = TestStruct{2, "test"};
-        auto js_val = mapper.to_js(ctx_ref, val);
-        REQUIRE(js_val.to_object().get_property("num").to_number() == 2);
+        auto val1 = TestStruct{2, "test"};
+        auto res1 = mapper.to_js(ctx_ref, val1);
+        REQUIRE(res1.to_object().get_property("num").to_number() == 2);
         REQUIRE(
-            js_val.to_object().get_property("str").to_string().to_utf8() ==
+            res1.to_object().get_property("str").to_string().to_utf8() ==
             "test");
+
+        // invalid type
+        auto val2 = ctx->value_make_bool(true);
+        auto res2 = mapper.try_from_js(ctx_ref, val2, err_params);
+        REQUIRE(res2.has_value() == false);
+
+        // missing prop
+        auto val3 = ctx->object_make(nullptr);
+        auto res3 = mapper.try_from_js(ctx_ref, val3.to_value(), err_params);
+        REQUIRE(res3.has_value() == false);
+
+        // invalid prop type
+        auto val4 = ctx->object_make(nullptr);
+        val4.set_property("num", ctx->value_make_number(2));
+        val4.set_property("str", ctx->value_make_number(2));
+        auto res4 = mapper.try_from_js(ctx_ref, val4.to_value(), err_params);
+        REQUIRE(res4.has_value() == false);
+
+        // valid
+        auto val5 = ctx->object_make(nullptr);
+        val5.set_property("num", ctx->value_make_number(2));
+        auto str = ctx->value_make_string(ctx->string_make_from_utf8("test"));
+        val5.set_property("str", str);
+        auto res5 = mapper.try_from_js(ctx_ref, val5.to_value(), err_params);
+        REQUIRE(res5.has_value() == true);
+
     }
 }
 

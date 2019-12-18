@@ -99,8 +99,8 @@ class StructMapper : public Mapper<T> {
             [&](const auto& arg) { prop_names.push_back(std::get<0>(arg)); },
             fields...);
 
-        // Generated function that iterates over all property definitions and
-        // maps js properties with corresponding object members using mappers
+        // Create functions that iterate over all property definitions and map
+        // js properties with corresponding object members using mappers
         map_props_to_js = [=](Context& ctx, const T& value) {
             auto result = ctx.object_make(nullptr);
             template_foreach(
@@ -145,7 +145,7 @@ class StructMapper : public Mapper<T> {
                             mapped_struct.*member_ptr = res.value();
                         } else {
                             failed = true;
-                            error = res.value();
+                            error = res.error();
                         }
                     } else {
                         if (object.has_property(prop_name)) {
