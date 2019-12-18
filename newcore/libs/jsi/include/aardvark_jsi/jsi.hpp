@@ -12,7 +12,7 @@ class Object;
 
 class PointerData {
   public:
-    virtual ~PointerData() {};
+    virtual ~PointerData(){};
     virtual PointerData* copy() = 0;
 };
 
@@ -45,7 +45,7 @@ class Pointer {
 class String : public Pointer {
   public:
     using Pointer::Pointer;
-    std::string to_utf8();
+    std::string to_utf8() const;
 };
 
 enum class ValueType {
@@ -74,35 +74,35 @@ class Object : public Pointer {
   public:
     using Pointer::Pointer;
 
-    void set_private_data(void* data);
-    void* get_private_data();
+    void set_private_data(void* data) const;
+    void* get_private_data() const;
 
     template <typename T>
-    T get_private_data() {
+    T get_private_data() const {
         return *static_cast<T*>(get_private_data());
     }
 
-    Value to_value();
+    Value to_value() const;
 
-    Value get_prototype();
-    void set_prototype(const Value& prototype);
+    Value get_prototype() const;
+    void set_prototype(const Value& prototype) const;
 
-    std::vector<std::string> get_property_names();
-    bool has_property(const std::string& name);
-    Value get_property(const std::string& name);
-    void set_property(const std::string& name, const Value& value);
-    void delete_property(const std::string& name);
+    std::vector<std::string> get_property_names() const;
+    bool has_property(const std::string& name) const;
+    Value get_property(const std::string& name) const;
+    void set_property(const std::string& name, const Value& value) const;
+    void delete_property(const std::string& name) const;
 
-    bool is_function();
+    bool is_function() const;
     Value call_as_function(
-        const Value* jsi_this, const std::vector<Value>& jsi_args);
+        const Value* jsi_this, const std::vector<Value>& jsi_args) const;
 
-    bool is_constructor();
-    Value call_as_constructor(const std::vector<Value>& arguments);
+    bool is_constructor() const;
+    Value call_as_constructor(const std::vector<Value>& arguments) const;
 
-    bool is_array();
-    Value get_property_at_index(size_t index);
-    void set_property_at_index(size_t index, const Value& value);
+    bool is_array() const;
+    Value get_property_at_index(size_t index) const;
+    void set_property_at_index(size_t index, const Value& value) const;
 };
 
 using Function = std::function<Value(Value&, std::vector<Value>&)>;

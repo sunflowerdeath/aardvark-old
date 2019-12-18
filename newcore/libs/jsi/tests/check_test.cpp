@@ -37,6 +37,7 @@ TEMPLATE_TEST_CASE(
 
     SECTION("primitive") {
         auto ctx = create_context();
+
         require_valid(number_checker, *ctx.get(), ctx->value_make_number(21));
         require_error(number_checker, *ctx.get(), ctx->value_make_bool(true));
 
