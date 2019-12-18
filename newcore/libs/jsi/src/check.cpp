@@ -7,6 +7,12 @@ namespace aardvark::jsi {
 std::string get_type_name(const Value& value) {
     auto type = value.get_type();
     switch (type) {
+        case ValueType::null:
+            return "null";
+            break;
+        case ValueType::undefined:
+            return "undefined";
+            break;
         case ValueType::number:
             return "number";
             break;
