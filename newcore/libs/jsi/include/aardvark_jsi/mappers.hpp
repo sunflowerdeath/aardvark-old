@@ -1,11 +1,12 @@
 #pragma once
 
+#include <fmt/format.h>
+
 #include <string>
-#include <variant>
-#include <unordered_set>
-#include <unordered_map>
 #include <tl/expected.hpp>
-#include "fmt/format.h"
+#include <unordered_map>
+#include <unordered_set>
+#include <variant>
 
 #include "check.hpp"
 #include "jsi.hpp"
@@ -209,7 +210,7 @@ class WrappedFunction {
         auto js_res = function.call_as_function(nullptr /* this */, js_args);
         if (mapper->res_from_js) {
             return mapper->res_from_js(*ctx, js_res);
-        } // else return type is void
+        }  // else return type is void
     }
 #pragma GCC diagnostic pop
 
@@ -223,6 +224,7 @@ template <class ResType, class... ArgsTypes>
 class FunctionMapper : public Mapper<std::function<ResType(ArgsTypes...)>> {
     friend WrappedFunction<ResType, ArgsTypes...>;
     using FunctionType = std::function<ResType(ArgsTypes...)>;
+
   public:
     FunctionMapper(
         Mapper<ResType>* res_mapper = nullptr,
