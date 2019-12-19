@@ -1,7 +1,11 @@
 #pragma once
 
 #include <string>
+#include <variant>
+#include <unordered_set>
+#include <unordered_map>
 #include <tl/expected.hpp>
+#include "fmt/format.h"
 
 #include "check.hpp"
 #include "jsi.hpp"
@@ -197,14 +201,17 @@ class WrappedFunction {
         const Object& function)
         : mapper(mapper), ctx(ctx), function(function) {}
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
     ResType operator()(ArgsTypes... args) {
         auto object = ctx->object_make(nullptr);
         auto js_args = mapper->args_to_js(*ctx, args...);
         auto js_res = function.call_as_function(nullptr /* this */, js_args);
         if (mapper->res_from_js) {
             return mapper->res_from_js(*ctx, js_res);
-        }  // else return type is void
+        } // else return type is void
     }
+#pragma GCC diagnostic pop
 
   private:
     FunctionMapper<ResType, ArgsTypes...>* mapper;
@@ -231,9 +238,18 @@ class FunctionMapper : public Mapper<std::function<ResType(ArgsTypes...)>> {
             return res;
         };
         if (res_mapper != nullptr) {
-            // TODO try from js
+            // TODO error message
+            err_params = CheckErrorParams{"return value", "", "FunctionName"};
             res_from_js = [=](Context& ctx, const Value& value) {
-                return res_mapper->from_js(ctx, value);
+                auto res = res_mapper->try_from_js(ctx, value, err_params);
+                if (res.has_value()) return res.value();
+                // TODO value_make_error
+                throw JsError(
+                    ctx.value_make_string(
+                        ctx.string_make_from_utf8(res.error())),  // value
+                    res.error(),                                  // message
+                    JsErrorLocation{"url", 0, 0}                  // location
+                );
             };
         }
     }
@@ -250,13 +266,95 @@ class FunctionMapper : public Mapper<std::function<ResType(ArgsTypes...)>> {
     tl::expected<FunctionType, std::string> try_from_js(
         Context& ctx, const Value& value,
         const CheckErrorParams& err_params) override {
-        // TODO check is function
+        auto res = function_checker(ctx, value, err_params);
+        if (res.has_value()) return tl::make_unexpected(res.value());
         return WrappedFunction(this, &ctx, value.to_object());
     }
 
   private:
     std::function<std::vector<Value>(Context&, ArgsTypes...)> args_to_js;
     std::function<ResType(Context&, const Value&)> res_from_js;
+    CheckErrorParams err_params;
+};
+
+template <class T>
+class ObjectsMapper : Mapper<std::shared_ptr<T>> {
+    using ClassGetter = std::function<Class(T*)>;
+
+  public:
+    ObjectsMapper(
+        std::string type_name, std::variant<Class, ClassGetter> js_class)
+        : type_name(type_name), js_class(js_class){};
+
+    Value to_js(
+        Context& ctx, const std::shared_ptr<T>& native_object) override {
+        auto it = records_map.find(native_object.get());
+        if (it != records_map.end()) {
+            return it->second.js_value;
+        } else {
+            return create_js_value(ctx, native_object);
+        }
+    }
+
+    std::shared_ptr<T> from_js(Context& ctx, const Value& value) override {
+        auto record = get_record(value);
+        if (records_set.find(record) == records_set.end()) return nullptr;
+        return record->native_object;
+    }
+
+    tl::expected<std::shared_ptr<T>, std::string> try_from_js(
+        Context& ctx, const Value& value,
+        const CheckErrorParams& err_params) override {
+        auto native_object = from_js(ctx, value);
+        if (native_object == nullptr) {
+            auto error = fmt::format(
+                "Invalid {} `{}` supplied to `{}`, expected `{}`.",
+                err_params.kind, err_params.name, err_params.target, type_name);
+            return tl::make_unexpected(error);
+        } else {
+            return native_object;
+        }
+    }
+
+    static void finalize(const Value& value) {
+        auto record = get_record(value);
+        if (record == nullptr) return;
+        auto index = record->index;
+        index->records_map.erase(record->native_object.get());
+        index->records_set.erase(record);
+    }
+
+  private:
+    struct Record {
+        std::shared_ptr<T> native_object;
+        Value js_value;
+        ObjectsMapper<T>* index;
+    };
+
+    std::string type_name;
+    std::variant<Class, ClassGetter> js_class;
+    std::unordered_map<T*, Record> records_map;
+    std::unordered_set<Record*> records_set;
+
+    Value create_js_value(
+        Context& ctx, const std::shared_ptr<T>& native_object) {
+        auto ptr = native_object.get();
+        auto the_js_class = std::holds_alternative<Class>(js_class)
+                                ? std::get<Class>(js_class)
+                                : std::get<ClassGetter>(js_class)(ptr);
+        auto js_object = ctx.object_make(&the_js_class);
+        auto js_value = js_object.to_value();
+        auto res =
+            records_map.emplace(ptr, Record{native_object, js_value, this});
+        auto record_ptr = &(res.first->second);
+        records_set.insert(record_ptr);
+        js_object.set_private_data(static_cast<void*>(record_ptr));
+        return js_value;
+    }
+
+    static Record* get_record(const Value& value) {
+        return static_cast<Record*>(value.to_object().get_private_data());
+    }
 };
 
 }  // namespace aardvark::jsi

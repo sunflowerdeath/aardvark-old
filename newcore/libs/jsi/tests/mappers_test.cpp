@@ -20,9 +20,11 @@ struct TestStruct {
     std::string str;
 };
 
-int test_func(int a, std::string b) {
-    return a + b.size();
-}
+class TestClass {
+  public:
+    TestClass(int value) : value(value){};
+    int value;
+};
 
 TEMPLATE_TEST_CASE(
     "mappers", "[mappers]"
@@ -37,7 +39,6 @@ TEMPLATE_TEST_CASE(
 ) {
     auto err_params = CheckErrorParams{"kind", "name", "target"};
     auto ctx = TestType::create();
-    ;
     auto& ctx_ref = *ctx.get();
 
     SECTION("simple") {
@@ -114,11 +115,55 @@ TEMPLATE_TEST_CASE(
         auto mapper = FunctionMapper<int, int, std::string>(
             int_mapper, int_mapper, string_mapper);
 
-        auto js_func =
+        auto js_func1 =
             ctx->eval_script("func=(a,b)=>a+b.length", nullptr, "sourceurl");
-        auto func = mapper.from_js(ctx_ref, js_func);
+        auto func1 = mapper.from_js(ctx_ref, js_func1);
+        REQUIRE(func1(1, "test") == 5);
 
-        REQUIRE(func(1, "test") == 5);
+        auto invalid =
+            mapper.try_from_js(ctx_ref, ctx->value_make_bool(true), err_params);
+        REQUIRE(invalid.has_value() == false);
+
+        // invalid return value type
+        auto js_func2 =
+            ctx->eval_script("func=()=>'error'", nullptr, "sourceurl");
+        auto func2 = mapper.from_js(ctx_ref, js_func2);
+        auto did_throw = false;
+        try {
+            func2(1, "test");
+        } catch (JsError& err) {
+            did_throw = true;
+        }
+        REQUIRE(did_throw);
+
+    }
+
+    SECTION("object") {
+        auto def = ClassDefinition();
+        def.name = "TestClass";
+        auto js_class = ctx->class_create(def);
+        auto sptr = std::make_shared<TestClass>(1);
+
+        SECTION("to_js") {
+            auto mapper = ObjectsMapper<TestClass>("test", js_class);
+            auto object1 = mapper.to_js(ctx_ref, sptr);
+            auto object2 = mapper.to_js(ctx_ref, sptr);
+            REQUIRE(object1.strict_equal_to(object2));
+        }
+
+        SECTION("from_js") {
+            auto mapper = ObjectsMapper<TestClass>("test", js_class);
+            auto object1 = mapper.to_js(ctx_ref, sptr);
+            auto sptr2 = mapper.from_js(ctx_ref, object1);
+            REQUIRE(sptr == sptr2);
+        }
+
+        // SECTION("remove") {
+            // auto index = js::ObjectsIndex<TestClass>(ctx, jsclass);
+            // auto object1 = index.get_or_create_js_object(s_ptr);
+            // js::ObjectsIndex<TestClass>::remove(object1);
+            // auto object2 = index.get_or_create_js_object(s_ptr);
+            // REQUIRE(object1 != object2);
+        // }
     }
 }
-
