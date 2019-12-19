@@ -186,5 +186,78 @@ class StructMapper : public Mapper<T> {
         map_props_from_js;
 };
 
+template <class ResType, class... ArgsTypes>
+class FunctionMapper;
+
+template <class ResType, class... ArgsTypes>
+class WrappedFunction {
+  public:
+    WrappedFunction(
+        FunctionMapper<ResType, ArgsTypes...>* mapper, Context* ctx,
+        const Object& function)
+        : mapper(mapper), ctx(ctx), function(function) {}
+
+    ResType operator()(ArgsTypes... args) {
+        auto object = ctx->object_make(nullptr);
+        auto js_args = mapper->args_to_js(*ctx, args...);
+        auto js_res = function.call_as_function(nullptr /* this */, js_args);
+        if (mapper->res_from_js) {
+            return mapper->res_from_js(*ctx, js_res);
+        }  // else return type is void
+    }
+
+  private:
+    FunctionMapper<ResType, ArgsTypes...>* mapper;
+    Context* ctx;
+    Object function;
+};
+
+template <class ResType, class... ArgsTypes>
+class FunctionMapper : public Mapper<std::function<ResType(ArgsTypes...)>> {
+    friend WrappedFunction<ResType, ArgsTypes...>;
+    using FunctionType = std::function<ResType(ArgsTypes...)>;
+  public:
+    FunctionMapper(
+        Mapper<ResType>* res_mapper = nullptr,
+        Mapper<ArgsTypes>*... args_mappers) {
+        args_to_js = [=](Context& ctx, ArgsTypes... args) {
+            auto res = std::vector<Value>();
+            template_foreach(
+                [&](auto& tpl) {
+                    auto& [arg, arg_mapper] = tpl;
+                    res.push_back(arg_mapper->to_js(ctx, arg));
+                },
+                std::forward_as_tuple(args, args_mappers)...);
+            return res;
+        };
+        if (res_mapper != nullptr) {
+            // TODO try from js
+            res_from_js = [=](Context& ctx, const Value& value) {
+                return res_mapper->from_js(ctx, value);
+            };
+        }
+    }
+
+    Value to_js(Context& ctx, const std::function<ResType(ArgsTypes...)>& value)
+        override {
+        return ctx.value_make_undefined();
+    }
+
+    FunctionType from_js(Context& ctx, const Value& value) override {
+        return WrappedFunction(this, &ctx, value.to_object());
+    }
+
+    tl::expected<FunctionType, std::string> try_from_js(
+        Context& ctx, const Value& value,
+        const CheckErrorParams& err_params) override {
+        // TODO check is function
+        return WrappedFunction(this, &ctx, value.to_object());
+    }
+
+  private:
+    std::function<std::vector<Value>(Context&, ArgsTypes...)> args_to_js;
+    std::function<ResType(Context&, const Value&)> res_from_js;
+};
+
 }  // namespace aardvark::jsi
 

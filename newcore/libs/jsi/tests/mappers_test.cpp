@@ -20,6 +20,10 @@ struct TestStruct {
     std::string str;
 };
 
+int test_func(int a, std::string b) {
+    return a + b.size();
+}
+
 TEMPLATE_TEST_CASE(
     "mappers", "[mappers]"
 #ifdef ADV_JSI_QJS
@@ -104,7 +108,17 @@ TEMPLATE_TEST_CASE(
         val5.set_property("str", str);
         auto res5 = mapper.try_from_js(ctx_ref, val5.to_value(), err_params);
         REQUIRE(res5.has_value() == true);
+    }
 
+    SECTION("func") {
+        auto mapper = FunctionMapper<int, int, std::string>(
+            int_mapper, int_mapper, string_mapper);
+
+        auto js_func =
+            ctx->eval_script("func=(a,b)=>a+b.length", nullptr, "sourceurl");
+        auto func = mapper.from_js(ctx_ref, js_func);
+
+        REQUIRE(func(1, "test") == 5);
     }
 }
 
