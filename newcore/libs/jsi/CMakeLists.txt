@@ -28,9 +28,9 @@ else()
 endif()
 
 add_library(aardvark_jsi ${ADV_JSI_LIB_TYPE}
-    src/check.cpp
+    # src/check.cpp
     src/jsi.cpp
-    src/mappers.cpp
+    # src/mappers.cpp
 )
 
 target_include_directories(aardvark_jsi PRIVATE
@@ -57,9 +57,9 @@ endif()
 if(ADV_JSI_BUILD_TESTS)
     add_executable(tests
         tests/main.cpp
-        tests/check_test.cpp
+        # tests/check_test.cpp
         tests/jsi_test.cpp
-        tests/mappers_test.cpp
+        # tests/mappers_test.cpp
     )
     target_link_libraries(tests Catch2 aardvark_jsi)
 endif()

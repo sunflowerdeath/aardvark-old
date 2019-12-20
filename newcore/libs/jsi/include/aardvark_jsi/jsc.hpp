@@ -26,9 +26,12 @@ class Jsc_Context : public Context {
     JSStringRef string_ref(const String& str);
     JSClassRef class_ref(const Class& cls);
 
+    tl::unexpected<Error> error_from_jsc(JSValueRef ref);
+    void error_to_jsc(JSValueRef* exception, Error& error);
+
     Script create_script(
         const std::string& source, const std::string& source_url) override;
-    Value eval_script(
+    Result<Value> eval_script(
         const std::string& script, Object* js_this,
         const std::string& source_url) override;
     void garbage_collect() override;
@@ -47,10 +50,10 @@ class Jsc_Context : public Context {
     Value value_make_object(const Object& object) override;
 
     ValueType value_get_type(const Value& value) override;
-    bool value_to_bool(const Value& value) override;
-    double value_to_number(const Value& value) override;
-    String value_to_string(const Value& value) override;
-    Object value_to_object(const Value& value) override;
+    Result<bool> value_to_bool(const Value& value) override;
+    Result<double> value_to_number(const Value& value) override;
+    Result<String> value_to_string(const Value& value) override;
+    Result<Object> value_to_object(const Value& value) override;
 
     bool value_strict_equal(const Value& a, const Value& b) override;
 
@@ -71,35 +74,35 @@ class Jsc_Context : public Context {
     void object_set_private_data(const Object& object, void* data) override;
     void* object_get_private_data(const Object& object) override;
 
-    Value object_get_prototype(const Object& object) override;
-    void object_set_prototype(
+    Result<Value> object_get_prototype(const Object& object) override;
+    VoidResult object_set_prototype(
         const Object& object, const Value& prototype) override;
 
     std::vector<std::string> object_get_property_names(
         const Object& object) override;
     bool object_has_property(
         const Object& object, const std::string& name) override;
-    Value object_get_property(
+    Result<Value> object_get_property(
         const Object& object, const std::string& name) override;
-    void object_set_property(
+    VoidResult object_set_property(
         const Object& object, const std::string& name,
         const Value& value) override;
-    void object_delete_property(
+    VoidResult object_delete_property(
         const Object& object, const std::string& name) override;
 
     bool object_is_function(const Object& object) override;
-    Value object_call_as_function(
+    Result<Value> object_call_as_function(
         const Object& jsi_object, const Value* jsi_this,
         const std::vector<Value>& jsi_args) override;
 
     bool object_is_constructor(const Object& object) override;
-    Value object_call_as_constructor(
+    Result<Value> object_call_as_constructor(
         const Object& object, const std::vector<Value>& arguments) override;
 
     bool object_is_array(const Object& object) override;
-    Value object_get_property_at_index(
+    Result<Value> object_get_property_at_index(
         const Object& object, size_t index) override;
-    void object_set_property_at_index(
+    VoidResult object_set_property_at_index(
         const Object& object, size_t index, const Value& value) override;
 
     JSGlobalContextRef ctx;
