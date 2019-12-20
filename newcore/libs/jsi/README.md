@@ -4,6 +4,7 @@
 
 - Provides abstraction level over different JS-engines (currently supports JavaScriptCore and quickjs).
 - Automatic memory management.
+- Convenient error handling using `expected`.
 - Includes collection of useful helpers for creating bindings.
 
 ## Overview

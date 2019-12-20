@@ -2,6 +2,16 @@
 
 namespace aardvark::jsi {
 
+Error::Error(Value* value) {
+    value_ptr = std::make_shared<Value>(*value);
+}
+
+Value Error::value() { return *value_ptr.get(); }
+
+std::string Error::message() {
+    return value_ptr->to_string().value().to_utf8();
+}
+
 // String
 
 std::string String::to_utf8() const { return ctx->string_to_utf8(*this); };
@@ -10,13 +20,13 @@ std::string String::to_utf8() const { return ctx->string_to_utf8(*this); };
 
 ValueType Value::get_type() const { return ctx->value_get_type(*this); }
 
-bool Value::to_bool() const { return ctx->value_to_bool(*this); }
+Result<bool> Value::to_bool() const { return ctx->value_to_bool(*this); }
 
-double Value::to_number() const { return ctx->value_to_number(*this); }
+Result<double> Value::to_number() const { return ctx->value_to_number(*this); }
 
-String Value::to_string() const { return ctx->value_to_string(*this); }
+Result<String> Value::to_string() const { return ctx->value_to_string(*this); }
 
-Object Value::to_object() const { return ctx->value_to_object(*this); }
+Result<Object> Value::to_object() const { return ctx->value_to_object(*this); }
 
 bool Value::strict_equal_to(const Value& value) const {
     return ctx->value_strict_equal(*this, value);
@@ -34,10 +44,12 @@ void* Object::get_private_data() const {
     return ctx->object_get_private_data(*this);
 }
 
-Value Object::get_prototype() const { return ctx->object_get_prototype(*this); }
+Result<Value> Object::get_prototype() const {
+    return ctx->object_get_prototype(*this);
+}
 
-void Object::set_prototype(const Value& proto) const {
-    ctx->object_set_prototype(*this, proto);
+VoidResult Object::set_prototype(const Value& proto) const {
+    return ctx->object_set_prototype(*this, proto);
 }
 
 std::vector<std::string> Object::get_property_names() const {
@@ -48,21 +60,22 @@ bool Object::has_property(const std::string& name) const {
     return ctx->object_has_property(*this, name);
 }
 
-Value Object::get_property(const std::string& name) const {
+Result<Value> Object::get_property(const std::string& name) const {
     return ctx->object_get_property(*this, name);
 }
 
-void Object::set_property(const std::string& name, const Value& value) const {
-    ctx->object_set_property(*this, name, value);
+VoidResult Object::set_property(
+    const std::string& name, const Value& value) const {
+    return ctx->object_set_property(*this, name, value);
 }
 
-void Object::delete_property(const std::string& name) const {
-    ctx->object_delete_property(*this, name);
+VoidResult Object::delete_property(const std::string& name) const {
+    return ctx->object_delete_property(*this, name);
 }
 
 bool Object::is_function() const { return ctx->object_is_function(*this); }
 
-Value Object::call_as_function(
+Result<Value> Object::call_as_function(
     const Value* js_this, const std::vector<Value>& arguments) const {
     return ctx->object_call_as_function(*this, js_this, arguments);
 }
@@ -71,18 +84,20 @@ bool Object::is_constructor() const {
     return ctx->object_is_constructor(*this);
 }
 
-Value Object::call_as_constructor(const std::vector<Value>& arguments) const {
+Result<Value> Object::call_as_constructor(
+    const std::vector<Value>& arguments) const {
     return ctx->object_call_as_constructor(*this, arguments);
 }
 
 bool Object::is_array() const { return ctx->object_is_array(*this); }
 
-Value Object::get_property_at_index(size_t index) const {
+Result<Value> Object::get_property_at_index(size_t index) const {
     return ctx->object_get_property_at_index(*this, index);
 }
 
-void Object::set_property_at_index(size_t index, const Value& value) const {
-    ctx->object_set_property_at_index(*this, index, value);
+VoidResult Object::set_property_at_index(
+    size_t index, const Value& value) const {
+    return ctx->object_set_property_at_index(*this, index, value);
 }
 
 }  // namespace aardvark::jsi

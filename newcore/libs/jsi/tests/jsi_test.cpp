@@ -1,5 +1,4 @@
 #include <Catch2/catch.hpp>
-#include <iostream>
 
 #ifdef ADV_JSI_JSC
 #include <aardvark_jsi/jsc.hpp>
@@ -26,7 +25,7 @@ TEMPLATE_TEST_CASE(
         auto ctx = create_context();
 
         auto res = ctx->eval_script("2 + 3", nullptr, "source_url");
-        REQUIRE(res.to_number() == 5);
+        REQUIRE(res.value().to_number().value() == 5);
     }
 
 #ifdef ADV_JSI_JSC
@@ -39,29 +38,21 @@ TEMPLATE_TEST_CASE(
         auto this_obj = ctx->object_make(nullptr);
         this_obj.set_property("a", ctx->value_make_number(2));
         auto res = ctx->eval_script("this.a + 3", &this_obj, "source_url");
-        REQUIRE(res.to_number() == 5);
+        REQUIRE(res.value().to_number().value() == 5);
     }
 #endif
 
     SECTION("eval exception") {
         auto ctx = create_context();
 
-        auto did_throw = false;
-        try {
-            ctx->eval_script("a/b/", nullptr, "source_url");
-        } catch (JsError& ex) {
-            did_throw = true;
-        }
-        REQUIRE(did_throw);
+        auto res1 = ctx->eval_script("a/b/", nullptr, "source_url");
+        REQUIRE(res1.has_value() == false);
 
-        // check again
-        did_throw = false;
-        try {
-            ctx->eval_script("a/b/", nullptr, "source_url");
-        } catch (JsError& ex) {
-            did_throw = true;
-        }
-        REQUIRE(did_throw);
+        auto res2 = ctx->eval_script("2+2", nullptr, "source_url");
+        REQUIRE(res2.has_value() == true);
+
+        auto res3 = ctx->eval_script("a/b/", nullptr, "source_url");
+        REQUIRE(res3.has_value() == false);
     }
 
     SECTION("string") {
@@ -81,17 +72,17 @@ TEMPLATE_TEST_CASE(
         REQUIRE(undef_val.get_type() == ValueType::undefined);
 
         auto num_val = ctx->value_make_number(1.5);
-        REQUIRE(num_val.to_number() == 1.5);
+        REQUIRE(num_val.to_number().value() == 1.5);
         REQUIRE(num_val.get_type() == ValueType::number);
 
         auto bool_val = ctx->value_make_bool(true);
-        REQUIRE(bool_val.to_bool());
+        REQUIRE(bool_val.to_bool().value());
         REQUIRE(bool_val.get_type() == ValueType::boolean);
 
         auto str = ctx->string_make_from_utf8("test");
         auto str_val = ctx->value_make_string(str);
         REQUIRE(str_val.get_type() == ValueType::string);
-        REQUIRE(str_val.to_string().to_utf8() == "test");
+        REQUIRE(str_val.to_string().value().to_utf8() == "test");
     }
 
     SECTION("strictequal") {
@@ -121,7 +112,7 @@ TEMPLATE_TEST_CASE(
         auto prop_names = obj.get_property_names();
         REQUIRE(prop_names.size() == 1);
         REQUIRE(prop_names[0] == "a");
-        REQUIRE(obj.get_property("a").to_number() == 1);
+        REQUIRE(obj.get_property("a").value().to_number() == 1);
         obj.delete_property("a");
         REQUIRE(obj.has_property("a") == false);
     }
@@ -134,7 +125,7 @@ TEMPLATE_TEST_CASE(
         auto proto_val = ctx->value_make_object(proto);
 
         obj.set_prototype(proto_val);
-        auto curr_proto = obj.get_prototype();
+        auto curr_proto = obj.get_prototype().value();
         REQUIRE(curr_proto.get_type() == ValueType::object);
         REQUIRE(curr_proto.strict_equal_to(proto_val));
     }
@@ -157,12 +148,12 @@ TEMPLATE_TEST_CASE(
         REQUIRE(obj.is_function() == true);
         auto in_this = ctx->value_make_object(ctx->object_make(nullptr));
         auto in_arg = ctx->value_make_number(2);
-        auto out_ret_val = obj.call_as_function(&in_this, {in_arg});
+        auto out_ret_val = obj.call_as_function(&in_this, {in_arg}).value();
         REQUIRE(is_called);
-        REQUIRE(out_ret_val.to_number() == 5);
+        REQUIRE(out_ret_val.to_number().value() == 5);
         REQUIRE(out_this->strict_equal_to(in_this));
         REQUIRE(out_args.size() == 1);
-        REQUIRE(out_args[0].to_number() == 2);
+        REQUIRE(out_args[0].to_number().value() == 2);
     }
 
     SECTION("function exception") {
@@ -173,22 +164,8 @@ TEMPLATE_TEST_CASE(
         };
         auto obj = ctx->object_make_function(func);
 
-        auto did_throw = false;
-        try {
-            obj.call_as_function(nullptr, {});
-        } catch (JsError& ex) {
-            did_throw = true;
-        }
-        REQUIRE(did_throw);
-
-        // check again
-        did_throw = false;
-        try {
-            obj.call_as_function(nullptr, {});
-        } catch (JsError& ex) {
-            did_throw = true;
-        }
-        REQUIRE(did_throw);
+        auto res = obj.call_as_function(nullptr, {});
+        REQUIRE(res.has_value() == false);
     }
 
     SECTION("private") {
@@ -215,11 +192,11 @@ TEMPLATE_TEST_CASE(
                 return ctx->value_make_number(prop_value);
             };
             auto set = [&](Object& object, Value& value) {
-                prop_value = value.to_number();
+                prop_value = value.to_number().value();
                 return true;
             };
             auto method = [&](Value js_this, std::vector<Value>& args) {
-                prop_value = args[0].to_number();
+                prop_value = args[0].to_number().value();
                 return args[0];
             };
             auto finalizer = [&](const Object& object) {
@@ -236,8 +213,8 @@ TEMPLATE_TEST_CASE(
             auto cls = ctx->class_create(definition);
             auto instance = ctx->object_make(&cls);
 
-            auto getter_res = instance.get_property("prop");
-            REQUIRE(getter_res.to_number() == 1);
+            auto getter_res = instance.get_property("prop").value();
+            REQUIRE(getter_res.to_number().value() == 1);
 
             instance.set_property("prop", ctx->value_make_number(2));
             REQUIRE(prop_value == 2);
@@ -245,9 +222,10 @@ TEMPLATE_TEST_CASE(
             ctx->get_global_object().set_property(
                 "instance", instance.to_value());
             auto ret_val =
-                ctx->eval_script("instance.method(3)", nullptr, "sourceurl");
+                ctx->eval_script("instance.method(3)", nullptr, "sourceurl")
+                    .value();
             REQUIRE(prop_value == 3);
-            REQUIRE(ret_val.to_number() == 3);
+            REQUIRE(ret_val.to_number().value() == 3);
         }
 
         REQUIRE(finalizer_called == true);
@@ -259,8 +237,9 @@ TEMPLATE_TEST_CASE(
         auto get = [&](Object& object) {
             return ctx->eval_script("a/b", nullptr, "sourceurl");
         };
-        auto set = [&](Object object, Value& value) {
-            ctx->eval_script("a/b", nullptr, "sourceurl");
+        auto set = [&](Object object, Value& value) -> Result<bool> {
+            auto res = ctx->eval_script("a/b", nullptr, "sourceurl");
+            if (!res.has_value()) return tl::make_unexpected(res.error());
             return true;
         };
         auto method = [&](Value& js_this, std::vector<Value>& args) {
@@ -275,29 +254,16 @@ TEMPLATE_TEST_CASE(
         delete definition;  // Ensure that definition is not used
         auto instance = ctx->object_make(&cls);
 
-        auto getter_did_throw = false;
-        try {
-            instance.get_property("prop");
-        } catch (JsError& ex) {
-            getter_did_throw = true;
-        }
-        REQUIRE(getter_did_throw);
+        auto getter_res = instance.get_property("prop");
+        REQUIRE(getter_res.has_value() == false);
 
-        auto setter_did_throw = false;
-        try {
+        auto setter_res =
             instance.set_property("prop", ctx->value_make_number(1));
-        } catch (JsError& ex) {
-            setter_did_throw = true;
-        }
-        REQUIRE(setter_did_throw);
+        REQUIRE(setter_res.has_value() == false);
 
-        auto method_did_throw = false;
-        try {
+        auto method_res =
             ctx->eval_script("this.method()", &instance, "sourceurl");
-        } catch (JsError& ex) {
-            method_did_throw = true;
-        }
-        REQUIRE(method_did_throw);
+        REQUIRE(method_res.has_value() == false);
     }
 
     SECTION("array") {
@@ -311,8 +277,8 @@ TEMPLATE_TEST_CASE(
 
         arr.set_property_at_index(0, ctx->value_make_number(1));
         arr.set_property_at_index(1, ctx->value_make_number(2));
-        REQUIRE(arr.get_property("length").to_number() == 2);
-        REQUIRE(arr.get_property_at_index(1).to_number() == 2);
-        REQUIRE(arr.get_property("1").to_number() == 2);
+        REQUIRE(arr.get_property("length").value().to_number().value() == 2);
+        REQUIRE(arr.get_property_at_index(1).value().to_number().value() == 2);
+        REQUIRE(arr.get_property("1").value().to_number().value() == 2);
     }
 }

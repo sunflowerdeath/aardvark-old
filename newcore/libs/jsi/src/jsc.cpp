@@ -49,19 +49,6 @@ class JscClass : public PointerData {
     JSClassRef ref;
 };
 
-// TODO just a constructor? why not lazy: message(), location()
-struct JsErrorMapper {
-    JsError from_js(const Context& ctx, const Value& value) {
-        return JsError(
-            value,                        // value
-            value.to_string().to_utf8(),  // message
-            JsErrorLocation{"url", 0, 0}  // TODO location
-        );
-    }
-};
-
-auto js_error_mapper = new JsErrorMapper();
-
 std::shared_ptr<Jsc_Context> Jsc_Context::create() {
     return std::make_shared<Jsc_Context>();
 }
@@ -121,12 +108,23 @@ JSClassRef Jsc_Context::class_ref(const Class& cls) {
     return static_cast<JscClass*>(cls.ptr)->ref;
 }
 
+tl::unexpected<Error> Jsc_Context::error_from_jsc(JSValueRef ref) {
+    auto value = value_from_jsc(ref);
+    return tl::make_unexpected(Error(&value));
+}
+
+void Jsc_Context::error_to_jsc(JSValueRef* exception, Error& error) {
+    *exception = value_ref(error.value());
+}
+
+// Implementation
+
 Script Jsc_Context::create_script(
     const std::string& source, const std::string& source_url) {
     // TODO
 }
 
-Value Jsc_Context::eval_script(
+Result<Value> Jsc_Context::eval_script(
     const std::string& script, Object* jsi_this,
     const std::string& source_url) {
     auto jsi_script = string_make_from_utf8(script);
@@ -136,9 +134,7 @@ Value Jsc_Context::eval_script(
     auto jsc_res = JSEvaluateScript(
         ctx, string_ref(jsi_script), js_this, string_ref(jsi_source_url),
         0 /* starting_line_number */, &exception);
-    if (exception != nullptr) {
-        throw js_error_mapper->from_js(*this, value_from_jsc(exception));
-    }
+    if (exception != nullptr) return error_from_jsc(exception);
     return value_from_jsc(jsc_res);
 }
 
@@ -222,33 +218,28 @@ ValueType Jsc_Context::value_get_type(const Value& value) {
     }
 }
 
-bool Jsc_Context::value_to_bool(const Value& value) {
+Result<bool> Jsc_Context::value_to_bool(const Value& value) {
     return JSValueToBoolean(ctx, value_ref(value));
 }
 
-double Jsc_Context::value_to_number(const Value& value) {
+Result<double> Jsc_Context::value_to_number(const Value& value) {
     auto exception = JSValueRef();
-    if (exception != nullptr) {
-        throw js_error_mapper->from_js(*this, value_from_jsc(exception));
-    }
-    return JSValueToNumber(ctx, value_ref(value), &exception);
+    auto res = JSValueToNumber(ctx, value_ref(value), &exception);
+    if (exception != nullptr) return error_from_jsc(exception);
+    return res;
 }
 
-String Jsc_Context::value_to_string(const Value& value) {
+Result<String> Jsc_Context::value_to_string(const Value& value) {
     auto exception = JSValueRef();
     auto jsc_string = JSValueToStringCopy(ctx, value_ref(value), &exception);
-    if (exception != nullptr) {
-        throw js_error_mapper->from_js(*this, value_from_jsc(exception));
-    }
+    if (exception != nullptr) return error_from_jsc(exception);
     return string_from_jsc(jsc_string);
 }
 
-Object Jsc_Context::value_to_object(const Value& value) {
+Result<Object> Jsc_Context::value_to_object(const Value& value) {
     auto exception = JSValueRef();
     auto jsc_object = JSValueToObject(ctx, value_ref(value), &exception);
-    if (exception != nullptr) {
-        throw js_error_mapper->from_js(*this, value_from_jsc(exception));
-    }
+    if (exception != nullptr) return error_from_jsc(exception);
     return object_from_jsc(jsc_object);
 }
 
@@ -289,14 +280,14 @@ JSValueRef class_static_value_get(
     auto jsi_object = jsi_ctx->object_from_jsc(object);
     auto definition = Jsc_Context::get_class_definition(object);
     auto name = jsc_string_to_utf8(ctx, prop_name);
-    auto jsi_ret_val = std::optional<Value>();
-    try {
-        jsi_ret_val.emplace(definition->properties[name].get(jsi_object));
-    } catch (JsError& jsi_ex) {
-        *exception = jsi_ctx->value_ref(jsi_ex.value);
-        return JSValueMakeUndefined(ctx);
+    auto jsi_ret_val = definition->properties[name].get(jsi_object);
+    if (jsi_ret_val.has_value()) {
+        return jsi_ctx->value_ref(jsi_ret_val.value());
+    } else {
+        jsi_ctx->error_to_jsc(exception, jsi_ret_val.error());
+        return nullptr;
+        // *exception = jsi_ctx->value_ref(&jsi_ret_val.error().value());
     }
-    return jsi_ctx->value_ref(jsi_ret_val.value());
 }
 
 bool class_static_value_set(
@@ -307,14 +298,13 @@ bool class_static_value_set(
     auto jsi_value = jsi_ctx->value_from_jsc(value);
     auto definition = Jsc_Context::get_class_definition(object);
     auto name = jsc_string_to_utf8(ctx, prop_name);
-    auto did_set = false;
-    try {
-        did_set = definition->properties[name].set(jsi_object, jsi_value);
-    } catch (JsError& jsi_ex) {
-        *exception = jsi_ctx->value_ref(jsi_ex.value);
+    auto did_set_res = definition->properties[name].set(jsi_object, jsi_value);
+    if (did_set_res.has_value()) {
+        return did_set_res.value();
+    } else {
+        jsi_ctx->error_to_jsc(exception, did_set_res.error());
         return false;
     }
-    return did_set;
 }
 
 Class Jsc_Context::class_create(const ClassDefinition& definition) {
@@ -382,14 +372,14 @@ JSValueRef native_function_call_as_function(
     for (auto i = 0; i < arg_count; i++) {
         jsi_args.push_back(jsi_ctx->value_from_jsc(args[i]));
     }
-    auto jsi_ret_val = std::optional<Value>();
-    try {
-        jsi_ret_val.emplace((*jsi_function)(jsi_this, jsi_args));
-    } catch (JsError& jsi_ex) {
-        *exception = jsi_ctx->value_ref(jsi_ex.value);
+    auto jsi_ret_val = (*jsi_function)(jsi_this, jsi_args);
+    if (jsi_ret_val.has_value()) {
+        return jsi_ctx->value_ref(jsi_ret_val.value());
+    } else {
+        jsi_ctx->error_to_jsc(exception, jsi_ret_val.error());
+        // *exception = jsi_ctx->value_ref(jsi_ret_val.error().value());
         return nullptr;
     }
-    return jsi_ctx->value_ref(jsi_ret_val.value());
 }
 
 void native_function_finalize(JSObjectRef object) {
@@ -438,14 +428,15 @@ void* Jsc_Context::object_get_private_data(const Object& object) {
     return JSObjectGetPrivate(object_ref(object));
 }
 
-Value Jsc_Context::object_get_prototype(const Object& object) {
+Result<Value> Jsc_Context::object_get_prototype(const Object& object) {
     auto jsc_proto = JSObjectGetPrototype(ctx, object_ref(object));
     return value_from_jsc(jsc_proto);
 }
 
-void Jsc_Context::object_set_prototype(
+VoidResult Jsc_Context::object_set_prototype(
     const Object& object, const Value& proto) {
-    return JSObjectSetPrototype(ctx, object_ref(object), value_ref(proto));
+    JSObjectSetPrototype(ctx, object_ref(object), value_ref(proto));
+    return VoidResult();
 }
 
 std::vector<std::string> Jsc_Context::object_get_property_names(
@@ -468,46 +459,42 @@ bool Jsc_Context::object_has_property(
     return JSObjectHasProperty(ctx, object_ref(object), string_ref(jsc_name));
 }
 
-Value Jsc_Context::object_get_property(
+Result<Value> Jsc_Context::object_get_property(
     const Object& object, const std::string& name) {
     auto jsc_name = string_make_from_utf8(name);
     auto exception = JSValueRef();
     auto jsc_value = JSObjectGetProperty(
         ctx, object_ref(object), string_ref(jsc_name), &exception);
-    if (exception != nullptr) {
-        throw js_error_mapper->from_js(*this, value_from_jsc(exception));
-    }
+    if (exception != nullptr) return error_from_jsc(exception);
     return value_from_jsc(jsc_value);
 }
 
-void Jsc_Context::object_set_property(
+VoidResult Jsc_Context::object_set_property(
     const Object& object, const std::string& name, const Value& value) {
     auto jsc_name = string_make_from_utf8(name);
     auto exception = JSValueRef();
     JSObjectSetProperty(
         ctx, object_ref(object), string_ref(jsc_name), value_ref(value),
         kJSPropertyAttributeNone, &exception);
-    if (exception != nullptr) {
-        throw js_error_mapper->from_js(*this, value_from_jsc(exception));
-    }
+    if (exception != nullptr) return error_from_jsc(exception);
+    return VoidResult();
 }
 
-void Jsc_Context::object_delete_property(
+VoidResult Jsc_Context::object_delete_property(
     const Object& object, const std::string& name) {
     auto jsc_name = string_make_from_utf8(name);
     auto exception = JSValueRef();
     JSObjectDeleteProperty(
         ctx, object_ref(object), string_ref(jsc_name), &exception);
-    if (exception != nullptr) {
-        throw js_error_mapper->from_js(*this, value_from_jsc(exception));
-    }
+    if (exception != nullptr) return error_from_jsc(exception);
+    return VoidResult();
 }
 
 bool Jsc_Context::object_is_function(const Object& object) {
     return JSObjectIsFunction(ctx, object_ref(object));
 }
 
-Value Jsc_Context::object_call_as_function(
+Result<Value> Jsc_Context::object_call_as_function(
     const Object& jsi_object, const Value* jsi_this,
     const std::vector<Value>& jsi_args) {
     auto object = object_ref(jsi_object);
@@ -521,9 +508,7 @@ Value Jsc_Context::object_call_as_function(
     auto exception = JSValueRef();
     auto jsc_ret_val = JSObjectCallAsFunction(
         ctx, object, this_object, jsi_args.size(), args, &exception);
-    if (exception != nullptr) {
-        throw js_error_mapper->from_js(*this, value_from_jsc(exception));
-    }
+    if (exception != nullptr) return error_from_jsc(exception);
     return value_from_jsc(jsc_ret_val);
 }
 
@@ -531,7 +516,7 @@ bool Jsc_Context::object_is_constructor(const Object& object) {
     // TODO
 }
 
-Value Jsc_Context::object_call_as_constructor(
+Result<Value> Jsc_Context::object_call_as_constructor(
     const Object& object, const std::vector<Value>& arguments) {
     // TODO
 }
@@ -540,25 +525,22 @@ bool Jsc_Context::object_is_array(const Object& object) {
     return JSValueIsArray(ctx, object_ref(object));
 }
 
-Value Jsc_Context::object_get_property_at_index(
+Result<Value> Jsc_Context::object_get_property_at_index(
     const Object& object, size_t index) {
     auto exception = JSValueRef();
     auto res =
         JSObjectGetPropertyAtIndex(ctx, object_ref(object), index, &exception);
-    if (exception != nullptr) {
-        throw js_error_mapper->from_js(*this, value_from_jsc(exception));
-    }
+    if (exception != nullptr) return error_from_jsc(exception);
     return value_from_jsc(res);
 }
 
-void Jsc_Context::object_set_property_at_index(
+VoidResult Jsc_Context::object_set_property_at_index(
     const Object& object, size_t index, const Value& value) {
     auto exception = JSValueRef();
     JSObjectSetPropertyAtIndex(
         ctx, object_ref(object), index, value_ref(value), &exception);
-    if (exception != nullptr) {
-        throw js_error_mapper->from_js(*this, value_from_jsc(exception));
-    }
+    if (exception != nullptr) return error_from_jsc(exception);
+    return VoidResult();
 }
 
 }  // namespace aardvark::jsi
