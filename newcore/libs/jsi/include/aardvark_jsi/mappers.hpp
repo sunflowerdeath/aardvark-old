@@ -127,7 +127,7 @@ class StructMapper : public Mapper<T> {
                 auto err = object_checker(ctx, value, *err_params);
                 if (err.has_value()) return tl::make_unexpected(err.value());
             }
-            auto object = value.to_object();
+            auto object = value.to_object().value(); // XXX
 
             T mapped_struct;
             auto failed = false;
@@ -136,9 +136,10 @@ class StructMapper : public Mapper<T> {
                 [&](const auto& field) {
                     if (failed) return;
                     auto [prop_name, member_ptr, mapper] = field;
-                    auto prop_value = object.has_property(prop_name)
-                                          ? object.get_property(prop_name)
-                                          : ctx.value_make_undefined();
+                    auto prop_value =
+                        object.has_property(prop_name)
+                            ? object.get_property(prop_name).value()  // XXX
+                            : ctx.value_make_undefined();
                     if (should_check) {
                         auto prop_err_params =
                             CheckErrorParams{err_params->kind,
@@ -207,7 +208,8 @@ class WrappedFunction {
     ResType operator()(ArgsTypes... args) {
         auto object = ctx->object_make(nullptr);
         auto js_args = mapper->args_to_js(*ctx, args...);
-        auto js_res = function.call_as_function(nullptr /* this */, js_args);
+        auto js_res = function.call_as_function(nullptr /* this */, js_args)
+                          .value();  // XXX
         if (mapper->res_from_js) {
             return mapper->res_from_js(*ctx, js_res);
         }  // else return type is void
@@ -245,13 +247,15 @@ class FunctionMapper : public Mapper<std::function<ResType(ArgsTypes...)>> {
             res_from_js = [=](Context& ctx, const Value& value) {
                 auto res = res_mapper->try_from_js(ctx, value, err_params);
                 if (res.has_value()) return res.value();
-                // TODO value_make_error
+                // TODO value_make_error XXX
+                /*
                 throw JsError(
                     ctx.value_make_string(
                         ctx.string_make_from_utf8(res.error())),  // value
                     res.error(),                                  // message
                     JsErrorLocation{"url", 0, 0}                  // location
                 );
+                */
             };
         }
     }
@@ -262,7 +266,7 @@ class FunctionMapper : public Mapper<std::function<ResType(ArgsTypes...)>> {
     }
 
     FunctionType from_js(Context& ctx, const Value& value) override {
-        return WrappedFunction(this, &ctx, value.to_object());
+        return WrappedFunction(this, &ctx, value.to_object().value());
     }
 
     tl::expected<FunctionType, std::string> try_from_js(
@@ -270,7 +274,7 @@ class FunctionMapper : public Mapper<std::function<ResType(ArgsTypes...)>> {
         const CheckErrorParams& err_params) override {
         auto res = function_checker(ctx, value, err_params);
         if (res.has_value()) return tl::make_unexpected(res.value());
-        return WrappedFunction(this, &ctx, value.to_object());
+        return WrappedFunction(this, &ctx, value.to_object().value());
     }
 
   private:
@@ -355,7 +359,8 @@ class ObjectsMapper : Mapper<std::shared_ptr<T>> {
     }
 
     static Record* get_record(const Value& value) {
-        return static_cast<Record*>(value.to_object().get_private_data());
+        return static_cast<Record*>(
+            value.to_object().value().get_private_data());
     }
 };
 

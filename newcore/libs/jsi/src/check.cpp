@@ -26,7 +26,7 @@ std::string get_type_name(const Value& value) {
             return "symbol";
             break;
         case ValueType::object:
-            auto object = value.to_object();
+            auto object = value.to_object().value();
             if (object.is_array()) return "array";
             if (object.is_function()) return "function";
             return "object";

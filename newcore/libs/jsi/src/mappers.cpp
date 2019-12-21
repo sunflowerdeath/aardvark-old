@@ -4,7 +4,7 @@ namespace aardvark::jsi {
 
 Mapper<bool>* bool_mapper = new SimpleMapper<bool>(
     [](Context& ctx, const bool& value) { return ctx.value_make_bool(value); },
-    [](Context& ctx, const Value& value) { return value.to_bool(); },
+    [](Context& ctx, const Value& value) { return value.to_bool().value(); },
     &boolean_checker  // checker
 );
 
@@ -13,7 +13,7 @@ Mapper<double>* number_mapper = new SimpleMapper<double>(
         return ctx.value_make_number(value);
     },  // to_js
     [](Context& ctx, const Value& value) {
-        return value.to_number();
+        return value.to_number().value();
     },               // from_js
     &number_checker  // checker
 );
@@ -23,7 +23,7 @@ Mapper<int>* int_mapper = new SimpleMapper<int>(
         return ctx.value_make_number(value);
     },  // to_js
     [](Context& ctx, const Value& value) {
-        return static_cast<int>(value.to_number());
+        return static_cast<int>(value.to_number().value());
     },               // from_js
     &number_checker  // checker
 );
@@ -33,7 +33,7 @@ Mapper<std::string>* string_mapper = new SimpleMapper<std::string>(
         return ctx.value_make_string(ctx.string_make_from_utf8(value));
     },  // to_js
     [](Context& ctx, const Value& value) {
-        return value.to_string().to_utf8();
+        return value.to_string().value().to_utf8();
     },               // from_js
     &string_checker  // checker
 );
