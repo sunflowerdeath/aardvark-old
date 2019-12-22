@@ -123,11 +123,15 @@ class StructMapper : public Mapper<T> {
             -> tl::expected<T, std::string> {
             auto should_check = err_params != nullptr;
 
-            if (should_check) {
-                auto err = object_checker(ctx, value, *err_params);
-                if (err.has_value()) return tl::make_unexpected(err.value());
+            auto err = object_checker(ctx, value, *err_params);
+            if (err.has_value()) {
+                if (should_check) {
+                    return tl::make_unexpected(err.value());
+                } else {
+                    return T();
+                }
             }
-            auto object = value.to_object().value(); // XXX
+            auto object = value.to_object().value();
 
             T mapped_struct;
             auto failed = false;
@@ -136,17 +140,21 @@ class StructMapper : public Mapper<T> {
                 [&](const auto& field) {
                     if (failed) return;
                     auto [prop_name, member_ptr, mapper] = field;
-                    auto prop_value =
-                        object.has_property(prop_name)
-                            ? object.get_property(prop_name).value()  // XXX
-                            : ctx.value_make_undefined();
+                    auto prop_value = std::optional<Value>();
+                    if (object.has_property(prop_name)) {
+                        auto res = object.get_property(prop_name);
+                        if (res.has_value()) prop_value = res.value();
+                    }
+                    if (!prop_value.has_value()) {
+                        prop_value = ctx.value_make_undefined();
+                    }
                     if (should_check) {
                         auto prop_err_params =
                             CheckErrorParams{err_params->kind,
                                              err_params->name + "." + prop_name,
                                              err_params->target};
                         auto res = mapper->try_from_js(
-                            ctx, prop_value, prop_err_params);
+                            ctx, prop_value.value(), prop_err_params);
                         if (res.has_value()) {
                             mapped_struct.*member_ptr = res.value();
                         } else {
@@ -154,10 +162,8 @@ class StructMapper : public Mapper<T> {
                             error = res.error();
                         }
                     } else {
-                        if (object.has_property(prop_name)) {
-                            mapped_struct.*member_ptr =
-                                mapper->from_js(ctx, prop_value);
-                        }
+                        mapped_struct.*member_ptr =
+                            mapper->from_js(ctx, prop_value.value());
                     }
                 },
                 fields...);
@@ -208,10 +214,15 @@ class WrappedFunction {
     ResType operator()(ArgsTypes... args) {
         auto object = ctx->object_make(nullptr);
         auto js_args = mapper->args_to_js(*ctx, args...);
-        auto js_res = function.call_as_function(nullptr /* this */, js_args)
-                          .value();  // XXX
+        auto js_res = function.call_as_function(nullptr /* this */, js_args);
+        if (!js_res.has_value()) {
+            if (mapper->error_handler) {
+                mapper->error_handler(js_res.error().value());
+            }
+            return mapper->fallback();
+        }
         if (mapper->res_from_js) {
-            return mapper->res_from_js(*ctx, js_res);
+            return mapper->res_from_js(*ctx, js_res.value());
         }  // else return type is void
     }
 #pragma GCC diagnostic pop
@@ -230,7 +241,10 @@ class FunctionMapper : public Mapper<std::function<ResType(ArgsTypes...)>> {
   public:
     FunctionMapper(
         Mapper<ResType>* res_mapper = nullptr,
-        Mapper<ArgsTypes>*... args_mappers) {
+        Mapper<ArgsTypes>*... args_mappers,
+        std::function<void(Value)> error_handler = nullptr,
+        std::function<ResType()> fallback_value = nullptr)
+        : error_handler(error_handler), fallback_value(fallback_value) {
         args_to_js = [=](Context& ctx, ArgsTypes... args) {
             auto res = std::vector<Value>();
             template_foreach(
@@ -247,15 +261,10 @@ class FunctionMapper : public Mapper<std::function<ResType(ArgsTypes...)>> {
             res_from_js = [=](Context& ctx, const Value& value) {
                 auto res = res_mapper->try_from_js(ctx, value, err_params);
                 if (res.has_value()) return res.value();
-                // TODO value_make_error XXX
-                /*
-                throw JsError(
-                    ctx.value_make_string(
-                        ctx.string_make_from_utf8(res.error())),  // value
-                    res.error(),                                  // message
-                    JsErrorLocation{"url", 0, 0}                  // location
-                );
-                */
+                if (error_handler) {
+                    error_handler(ctx.value_make_error(res.error()));
+                }
+                return fallback();
             };
         }
     }
@@ -277,10 +286,22 @@ class FunctionMapper : public Mapper<std::function<ResType(ArgsTypes...)>> {
         return WrappedFunction(this, &ctx, value.to_object().value());
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
+    ResType fallback() {
+        if (fallback_value) return fallback_value();
+        if constexpr (std::is_default_constructible<ResType>::value) {
+            return ResType();
+        }
+    }
+#pragma GCC diagnostic pop
+
   private:
     std::function<std::vector<Value>(Context&, ArgsTypes...)> args_to_js;
     std::function<ResType(Context&, const Value&)> res_from_js;
     CheckErrorParams err_params;
+    std::function<void(Value)> error_handler;
+    std::function<ResType()> fallback_value;
 };
 
 template <class T>

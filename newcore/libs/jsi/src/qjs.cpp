@@ -210,6 +210,13 @@ Value Qjs_Context::value_make_object(const Object& object) {
     return Value(this, object.ptr->copy());
 }
 
+Value Qjs_Context::value_make_error(const std::string& message) {
+    auto error = object_from_qjs(JS_NewError(ctx));
+    error.set_property(
+        "message", value_make_string(string_make_from_utf8(message)));
+    return error.to_value();
+};
+
 ValueType Qjs_Context::value_get_type(const Value& value) {
     auto ptr = value_get_qjs(value);
     if (JS_IsBool(ptr)) return ValueType::boolean;

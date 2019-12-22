@@ -179,6 +179,7 @@ class Context {
     virtual Value value_make_undefined() = 0;
     virtual Value value_make_string(const String& str) = 0;
     virtual Value value_make_object(const Object& object) = 0;
+    virtual Value value_make_error(const std::string& message) = 0;
 
     virtual ValueType value_get_type(const Value& value) = 0;
     virtual Result<bool> value_to_bool(const Value& value) = 0;

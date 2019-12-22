@@ -47,6 +47,7 @@ class Qjs_Context : public Context {
     Value value_make_undefined() override;
     Value value_make_string(const String& str) override;
     Value value_make_object(const Object& object) override;
+    Value value_make_error(const std::string& message) override;
 
     ValueType value_get_type(const Value& value) override;
     Result<bool> value_to_bool(const Value& value) override;

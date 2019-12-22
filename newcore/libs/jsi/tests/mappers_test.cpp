@@ -175,6 +175,34 @@ TEMPLATE_TEST_CASE(
             REQUIRE(did_throw);
         }
         */
+
+        struct NotDefaultConstructible {
+          public:
+            NotDefaultConstructible(int a) : a(a) {};
+            int a;
+        };
+
+        auto ret_val_mapper = SimpleMapper<NotDefaultConstructible>(
+            [](Context& ctx, const NotDefaultConstructible& val) {
+                return ctx.value_make_number(val.a);
+            },
+            [](Context& ctx, const Value& val) {
+                return NotDefaultConstructible(
+                    static_cast<int>(val.to_number().value()));
+            },
+            &number_checker);
+
+        SECTION("fallback") {
+            auto mapper = FunctionMapper<NotDefaultConstructible>(
+                &ret_val_mapper,
+                nullptr,                                      // error_handler
+                []() { return NotDefaultConstructible(-1); }  // fallback
+            );
+            auto val =
+                ctx->eval_script("func=()=>a/a", nullptr, "sourceurl").value();
+            auto res = mapper.from_js(ctx_ref, val);
+            REQUIRE(res().a == -1);
+        }
     }
 
     SECTION("object") {
