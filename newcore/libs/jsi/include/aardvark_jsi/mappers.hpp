@@ -242,7 +242,7 @@ class FunctionMapper : public Mapper<std::function<ResType(ArgsTypes...)>> {
     FunctionMapper(
         Mapper<ResType>* res_mapper = nullptr,
         Mapper<ArgsTypes>*... args_mappers,
-        std::function<void(Value)> error_handler = nullptr,
+        std::function<void(const Value&)> error_handler = nullptr,
         std::function<ResType()> fallback_value = nullptr)
         : error_handler(error_handler), fallback_value(fallback_value) {
         args_to_js = [=](Context& ctx, ArgsTypes... args) {
@@ -257,7 +257,7 @@ class FunctionMapper : public Mapper<std::function<ResType(ArgsTypes...)>> {
         };
         if (res_mapper != nullptr) {
             // TODO error message
-            err_params = CheckErrorParams{"return value", "", "FunctionName"};
+            err_params = CheckErrorParams{"return value", "", "Function"};
             res_from_js = [=](Context& ctx, const Value& value) {
                 auto res = res_mapper->try_from_js(ctx, value, err_params);
                 if (res.has_value()) return res.value();
@@ -300,7 +300,7 @@ class FunctionMapper : public Mapper<std::function<ResType(ArgsTypes...)>> {
     std::function<std::vector<Value>(Context&, ArgsTypes...)> args_to_js;
     std::function<ResType(Context&, const Value&)> res_from_js;
     CheckErrorParams err_params;
-    std::function<void(Value)> error_handler;
+    std::function<void(const Value&)> error_handler;
     std::function<ResType()> fallback_value;
 };
 

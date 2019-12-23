@@ -13,19 +13,6 @@
 
 using namespace aardvark::jsi;
 
-enum class TestEnum { one, two, three };
-
-struct TestStruct {
-    int num;
-    std::string str;
-};
-
-class TestClass {
-  public:
-    TestClass(int value) : value(value){};
-    int value;
-};
-
 TEMPLATE_TEST_CASE(
     "mappers", "[mappers]"
 #ifdef ADV_JSI_QJS
@@ -66,6 +53,7 @@ TEMPLATE_TEST_CASE(
     }
 
     SECTION("enum") {
+        enum class TestEnum { one, two, three };
         auto mapper = EnumMapper<TestEnum>(int_mapper);
 
         SECTION("to_js") {
@@ -88,6 +76,11 @@ TEMPLATE_TEST_CASE(
     }
 
     SECTION("struct") {
+        struct TestStruct {
+            int num;
+            std::string str;
+        };
+
         auto mapper = StructMapper<TestStruct, int, std::string>(
             {"num", &TestStruct::num, int_mapper},
             {"str", &TestStruct::str, string_mapper});
@@ -161,20 +154,17 @@ TEMPLATE_TEST_CASE(
             REQUIRE(res.has_value() == false);
         }
 
-        /*
         SECTION("invalid return type") {
-            auto val =
-                ctx->eval_script("func=()=>'error'", nullptr, "sourceurl");
-            auto res = mapper.from_js(ctx_ref, val);
-            auto did_throw = false;
-            try {
-                res(1, "test");
-            } catch (JsError& err) {
-                did_throw = true;
-            }
-            REQUIRE(did_throw);
+            auto called_handler = false;
+            auto mapper = FunctionMapper<int>(
+                int_mapper, [&](const Value& error) { called_handler = true; });
+            auto val = ctx->eval_script("fn=()=>'error'", nullptr, "sourceurl")
+                           .value();
+            auto fn = mapper.from_js(ctx_ref, val);
+            auto res = fn();
+            REQUIRE(called_handler);
+            REQUIRE(res == 0);
         }
-        */
 
         struct NotDefaultConstructible {
           public:
@@ -182,7 +172,7 @@ TEMPLATE_TEST_CASE(
             int a;
         };
 
-        auto ret_val_mapper = SimpleMapper<NotDefaultConstructible>(
+        auto ndc_mapper = SimpleMapper<NotDefaultConstructible>(
             [](Context& ctx, const NotDefaultConstructible& val) {
                 return ctx.value_make_number(val.a);
             },
@@ -193,19 +183,30 @@ TEMPLATE_TEST_CASE(
             &number_checker);
 
         SECTION("fallback") {
+            auto called_handler = false;
             auto mapper = FunctionMapper<NotDefaultConstructible>(
-                &ret_val_mapper,
-                nullptr,                                      // error_handler
+                &ndc_mapper,  // res_mapper
+                [&](const Value& error) {
+                    called_handler = true;
+                },                                            // error_handler
                 []() { return NotDefaultConstructible(-1); }  // fallback
             );
             auto val =
-                ctx->eval_script("func=()=>a/a", nullptr, "sourceurl").value();
-            auto res = mapper.from_js(ctx_ref, val);
-            REQUIRE(res().a == -1);
+                ctx->eval_script("fn=()=>a/a", nullptr, "sourceurl").value();
+            auto fn = mapper.from_js(ctx_ref, val);
+            auto res = fn();
+            REQUIRE(called_handler);
+            REQUIRE(res.a == -1);
         }
     }
 
     SECTION("object") {
+        class TestClass {
+          public:
+            TestClass(int value) : value(value){};
+            int value;
+        };
+
         auto def = ClassDefinition();
         def.name = "TestClass";
         auto js_class = ctx->class_create(def);

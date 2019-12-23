@@ -210,13 +210,6 @@ Value Qjs_Context::value_make_object(const Object& object) {
     return Value(this, object.ptr->copy());
 }
 
-Value Qjs_Context::value_make_error(const std::string& message) {
-    auto error = object_from_qjs(JS_NewError(ctx));
-    error.set_property(
-        "message", value_make_string(string_make_from_utf8(message)));
-    return error.to_value();
-};
-
 ValueType Qjs_Context::value_get_type(const Value& value) {
     auto ptr = value_get_qjs(value);
     if (JS_IsBool(ptr)) return ValueType::boolean;
@@ -259,6 +252,19 @@ bool Qjs_Context::value_strict_equal(const Value& a, const Value& b) {
         .value();
 }
 
+Value Qjs_Context::value_make_error(const std::string& message) {
+    auto error = object_from_qjs(JS_NewError(ctx));
+    error.set_property(
+        "message", value_make_string(string_make_from_utf8(message)));
+    return error.to_value();
+};
+
+bool Qjs_Context::value_is_error(const Value& value) {
+    return JS_IsError(ctx, value_get_qjs(value));
+};
+
+// Class
+
 void class_finalizer(JSRuntime* rt, JSValue value) {
     auto it = Qjs_Context::class_instances.find(JS_VALUE_GET_PTR(value));
     if (it == Qjs_Context::class_instances.end()) return;
@@ -269,7 +275,6 @@ void class_finalizer(JSRuntime* rt, JSValue value) {
     Qjs_Context::class_instances.erase(it);
 }
 
-// Class
 Class Qjs_Context::class_create(const ClassDefinition& definition) {
     JSClassID class_id = 0;
     JS_NewClassID(&class_id);

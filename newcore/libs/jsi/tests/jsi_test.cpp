@@ -85,6 +85,23 @@ TEMPLATE_TEST_CASE(
         REQUIRE(str_val.to_string().value().to_utf8() == "test");
     }
 
+    SECTION("error") {
+        auto ctx = create_context();
+
+        auto not_err = ctx->value_make_number(1);
+        auto err = ctx->value_make_error("MESSAGE");
+        REQUIRE(not_err.is_error() == false);
+        REQUIRE(err.is_error() == true);
+        REQUIRE(
+            err.to_object()
+                .value()
+                .get_property("message")
+                .value()
+                .to_string()
+                .value()
+                .to_utf8() == "MESSAGE");
+    }
+
     SECTION("strictequal") {
         auto ctx = create_context();
 

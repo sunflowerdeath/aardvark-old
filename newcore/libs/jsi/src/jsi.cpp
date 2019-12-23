@@ -32,6 +32,8 @@ bool Value::strict_equal_to(const Value& value) const {
     return ctx->value_strict_equal(*this, value);
 }
 
+bool Value::is_error() const { return ctx->value_is_error(*this); }
+
 // Object
 
 Value Object::to_value() const { return ctx->object_to_value(*this); }

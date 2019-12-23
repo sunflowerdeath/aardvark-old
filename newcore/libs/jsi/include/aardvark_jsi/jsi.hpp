@@ -90,6 +90,7 @@ class Value : public Pointer {
     Result<String> to_string() const;
     Result<Object> to_object() const;
     bool strict_equal_to(const Value& value) const;
+    bool is_error() const;
 };
 
 class Object : public Pointer {
@@ -179,7 +180,6 @@ class Context {
     virtual Value value_make_undefined() = 0;
     virtual Value value_make_string(const String& str) = 0;
     virtual Value value_make_object(const Object& object) = 0;
-    virtual Value value_make_error(const std::string& message) = 0;
 
     virtual ValueType value_get_type(const Value& value) = 0;
     virtual Result<bool> value_to_bool(const Value& value) = 0;
@@ -188,6 +188,9 @@ class Context {
     virtual Result<Object> value_to_object(const Value& value) = 0;
 
     virtual bool value_strict_equal(const Value& a, const Value& b) = 0;
+
+    virtual bool value_is_error(const Value& value) = 0;
+    virtual Value value_make_error(const std::string& message) = 0;
 
     // Class
     virtual Class class_create(const ClassDefinition& definition) = 0;
