@@ -40,6 +40,17 @@ pub struct Pointer<'a> {
 }
 
 #[derive(Clone)]
+pub struct JsString<'a> {
+    pub(crate) ptr: Pointer<'a>,
+}
+
+impl<'a> JsString<'a> {
+    pub fn to_utf8(&self) -> String {
+        return self.ptr.ctx.string_to_utf8(self);
+    }
+}
+
+#[derive(Clone)]
 pub struct Value<'a> {
     pub(crate) ptr: Pointer<'a>,
 }
@@ -62,9 +73,8 @@ impl<'a> Value<'a> {
     }
 }
 
-pub type Hz<'a> = dyn Fn(Value<'a>, Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>>;
-
-pub type Function<'a> = Box<dyn Fn(Value<'a>, Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> + 'a>;
+pub type Function<'a> =
+    Box<dyn Fn(Value<'a>, Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> + 'a>;
 
 #[derive(Clone)]
 pub struct Object<'a> {
@@ -76,14 +86,24 @@ impl<'a> Object<'a> {
         self.ptr.ctx.object_get_prop(self, prop)
     }
 
-    pub fn call_as_function(&self, this: Option<&Value>, args: &Vec<Value>) 
-    -> Result<Value, Error> {
+    pub fn set_prop(&self, prop: &str, val: &Value) -> Result<(), Error> {
+        self.ptr.ctx.object_set_prop(self, prop, val)
+    }
+
+    pub fn call_as_function(
+        &self,
+        this: Option<&Value>,
+        args: &Vec<Value>,
+    ) -> Result<Value, Error> {
         self.ptr.ctx.object_call_as_function(self, this, args)
     }
 }
 
 pub trait Context {
-    fn eval(&self, source: &str) -> Value;
+    fn eval(&self, source: &str, sourceurl: &str) -> Result<Value, Error>;
+
+    fn string_make_from_utf8(&self, rs_str: &str) -> JsString;
+    fn string_to_utf8(&self, jsi_str: &JsString) -> String;
 
     // Value
     // fn value_make_null(&self) -> Value;
@@ -97,19 +117,25 @@ pub trait Context {
 
     fn value_to_bool(&self, val: &Value) -> Result<bool, Error>;
     fn value_to_number(&self, val: &Value) -> Result<f64, Error>;
+    // fn value_to_string(&self, val: &Value) -> Result<String, Error>;
     fn value_to_object<'a>(&self, val: &Value<'a>)
         -> Result<Object<'a>, Error>;
 
     // Object
     // object_make(const Class* js_class) -> Object;
-    fn object_make_func<'a>(&self, func: Function<'a>) -> Object;
+    fn object_make_func(&self, func: Function) -> Object;
     // object_make_constructor(const Class& js_class) -> Object;
     // object_make_array() -> Object;
 
     // fn object_to_value(&self, &Object obj) -> Result<Value, Error>;
 
+    // fn object_get_prop_names(&self, obj: &Object, prop: &str) 
+    //      -> Result<Vec<String>, Error>;
+    // fn object_has_prop(&self, obj: &Object, prop: &str) -> bool;
     fn object_get_prop(&self, obj: &Object, prop: &str)
         -> Result<Value, Error>;
+    fn object_set_prop(&self, obj: &Object, prop: &str, val: &Value)
+        -> Result<(), Error>;
 
     fn object_call_as_function<'a>(
         &self,

@@ -1,18 +1,18 @@
-pub mod jsi;
-pub mod qjs;
+extern crate aardvarkjsi;
 
-use crate::jsi::Context;
+use aardvarkjsi::Context;
+use aardvarkjsi as jsi;
 
 fn main() {
     println!("Hello World!");
 
-    let ctx = qjs::QjsContext::new();
-    let res = ctx.eval("2 + 3");
+    let ctx = jsi::QjsContext::new();
+    let res = ctx.eval("2 + 3", "").unwrap();
     if let Ok(num) = res.to_number() {
         println!("{}", num);
     }
 
-    let res2 = ctx.eval("2+3 == 5");
+    let res2 = ctx.eval("2+3 == 5", "").unwrap();
     let b = res2.to_bool();
     match b {
         Ok(val) => {
@@ -25,17 +25,15 @@ fn main() {
         _ => (),
     }
 
-    let res3 = ctx.eval("a={prop: 42}");
+    let res3 = ctx.eval("a={prop: 42}", "").unwrap();
     println!("Type: {:?}", res3.get_type());
-    let o = res3.to_object();
-    match o {
-        Ok(obj) => {
-            println!("object");
-            let num = obj.get_prop("prop").unwrap().to_number().unwrap();
-            println!("prop: {}", num);
-        }
-        _ => (),
-    }
+    let obj = res3.to_object().unwrap();
+    println!("object");
+    let num = obj.get_prop("prop").unwrap().to_number().unwrap();
+    println!("prop: {}", num);
+    let _ = obj.set_prop("test", &ctx.value_make_number(24.0));
+    let test = obj.get_prop("test").unwrap().to_number().unwrap();
+    println!("test: {}", test);
 
     let func = |this: jsi::Value, args: Vec<jsi::Value>| {
         println!("CALL FN");

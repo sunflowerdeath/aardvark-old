@@ -1,8 +1,16 @@
 [package]
-name = "aardvark-jsi"
+name = "aardvarkjsi"
 version = "0.0.1"
 authors = [ "Sunflowerdeath <sunflowerdeath@pm.me>" ]
 edition = "2018"
+
+[features]
+qjs = []
+jsc = []
+
+[lib]
+crate-type = ["lib"]
+path = "src/lib.rs"
 
 [dependencies]
 downcast-rs = "1.1.1"

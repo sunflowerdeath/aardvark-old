@@ -1,9 +1,28 @@
 pub mod ffi;
 
-use crate::jsi;
-use std::alloc::{dealloc, Layout};
+use crate::jsi::*;
 use std::ffi::CString;
-use std::ptr;
+
+// QjsString
+
+#[derive(Clone)]
+struct QjsString {
+    str: String,
+}
+
+impl PointerData for QjsString {
+    fn box_clone(&self) -> Box<dyn PointerData> {
+        return Box::new(self.clone());
+    }
+}
+
+impl QjsString {
+    fn new(rs_str: String) -> QjsString {
+        QjsString { str: rs_str }
+    }
+}
+
+// QjsValue
 
 struct QjsValue {
     ctx: *mut ffi::JSContext,
@@ -30,8 +49,8 @@ impl Drop for QjsValue {
     }
 }
 
-impl jsi::PointerData for QjsValue {
-    fn box_clone(&self) -> Box<dyn jsi::PointerData> {
+impl PointerData for QjsValue {
+    fn box_clone(&self) -> Box<dyn PointerData> {
         return Box::new(self.clone());
     }
 }
@@ -45,6 +64,8 @@ impl QjsValue {
     }
 }
 
+// Helpers
+
 fn qjs_null() -> ffi::JSValue {
     ffi::JSValue {
         u: ffi::JSValueUnion { int32: 0 },
@@ -52,49 +73,37 @@ fn qjs_null() -> ffi::JSValue {
     }
 }
 
-fn value_from_qjs(ctx: &QjsContext, qjs_val: ffi::JSValue) -> jsi::Value {
-    jsi::Value {
-        ptr: jsi::Pointer {
+fn value_from_qjs(ctx: &QjsContext, qjs_val: ffi::JSValue) -> Value {
+    Value {
+        ptr: Pointer {
             ctx,
             data: Box::new(QjsValue::new(ctx, qjs_val)),
         },
     }
 }
 
-fn object_from_qjs(ctx: &QjsContext, qjs_val: ffi::JSValue) -> jsi::Object {
-    jsi::Object {
-        ptr: jsi::Pointer {
+fn object_from_qjs(ctx: &QjsContext, qjs_val: ffi::JSValue) -> Object {
+    Object {
+        ptr: Pointer {
             ctx,
             data: Box::new(QjsValue::new(ctx, qjs_val)),
         },
     }
 }
 
-fn pointer_to_qjs(ptr: &jsi::Pointer) -> ffi::JSValue {
+fn pointer_to_qjs(ptr: &Pointer) -> ffi::JSValue {
     ptr.data.downcast_ref::<QjsValue>().unwrap().val
 }
 
-fn value_to_qjs(val: &jsi::Value) -> ffi::JSValue {
+fn value_to_qjs(val: &Value) -> ffi::JSValue {
     pointer_to_qjs(&val.ptr)
 }
 
-fn object_to_qjs(obj: &jsi::Object) -> ffi::JSValue {
+fn object_to_qjs(obj: &Object) -> ffi::JSValue {
     pointer_to_qjs(&obj.ptr)
 }
 
-pub struct QjsContext {
-    rt: *mut ffi::JSRuntime,
-    ctx: *mut ffi::JSContext,
-}
-
-impl Drop for QjsContext {
-    fn drop(&mut self) {
-        unsafe {
-            ffi::JS_FreeContext(self.ctx);
-            ffi::JS_FreeRuntime(self.rt);
-        }
-    }
-}
+// NativeFunction
 
 static mut FUNCTION_CLASS_ID: u32 = 0;
 
@@ -104,7 +113,10 @@ extern "C" fn native_function_finalizer(
 ) {
     unsafe {
         let ptr = ffi::JS_GetOpaque(val, 0);
-        let _ = Box::from_raw(ptr);
+        std::alloc::dealloc(
+            ptr as *mut u8,
+            std::alloc::Layout::new::<Function>(),
+        );
     }
 }
 
@@ -116,8 +128,8 @@ extern "C" fn native_function_call(
     argv: *mut ffi::JSValue,
 ) -> ffi::JSValue {
     unsafe {
-        let func = ffi::JS_GetOpaque(func_obj, FUNCTION_CLASS_ID)
-            as *mut jsi::Function;
+        let func =
+            ffi::JS_GetOpaque(func_obj, FUNCTION_CLASS_ID) as *mut Function;
         let jsi_ctx = QjsContext::get(ctx);
         ffi::JS_DupValue_noinl(ctx, this_val);
         let jsi_this = value_from_qjs(jsi_ctx, this_val);
@@ -139,6 +151,22 @@ extern "C" fn native_function_call(
                 ffi::JS_DupValue_noinl(ctx, qjs_ex);
                 return ffi::JS_Throw(ctx, qjs_ex);
             }
+        }
+    }
+}
+
+// QjsContext
+
+pub struct QjsContext {
+    rt: *mut ffi::JSRuntime,
+    ctx: *mut ffi::JSContext,
+}
+
+impl Drop for QjsContext {
+    fn drop(&mut self) {
+        unsafe {
+            ffi::JS_FreeContext(self.ctx);
+            ffi::JS_FreeRuntime(self.rt);
         }
     }
 }
@@ -172,77 +200,97 @@ impl QjsContext {
         }
     }
 
-    fn get_error(&self) -> jsi::Error {
+    fn get_error(&self) -> Error {
         let val;
         unsafe {
             val = ffi::JS_GetException(self.ctx);
         }
-        jsi::Error {
+        Error {
             val: Box::new(value_from_qjs(self, val)),
         }
     }
 }
 
-impl jsi::Context for QjsContext {
-    fn eval(&self, source: &str) -> jsi::Value {
+impl Context for QjsContext {
+    fn eval(&self, source: &str, sourceurl: &str) -> Result<Value, Error> {
         let source_size = source.len();
         let source = CString::new(source).unwrap();
-        let source_url = CString::new("SOURCEURL").unwrap(); // TODO arg
-        let val;
+        let source_url = CString::new(sourceurl).unwrap();
+        let res;
         unsafe {
-            val = ffi::JS_Eval(
+            res = ffi::JS_Eval(
                 self.ctx,
                 source.as_ptr(),
                 source_size,
                 source_url.as_ptr(),
                 ffi::JS_EVAL_TYPE_GLOBAL as i32,
             );
+            if ffi::JS_IsException_noinl(res) == 1 {
+                return Err(self.get_error());
+            }
         }
-        // TODO check err
-        value_from_qjs(&self, val)
+        Ok(value_from_qjs(&self, res))
+    }
+
+    // String
+
+    fn string_make_from_utf8(&self, rs_str: &str) -> JsString {
+        let qjs_str = Box::new(QjsString::new(rs_str.to_owned()));
+        JsString {
+            ptr: Pointer {
+                ctx: self,
+                data: qjs_str,
+            },
+        }
+    }
+
+    fn string_to_utf8(&self, jsi_str: &JsString) -> String {
+        let qjs_str = jsi_str.ptr.data.downcast_ref::<QjsString>().unwrap();
+        qjs_str.str.clone()
     }
 
     // Value
-    fn value_make_bool(&self, val: bool) -> jsi::Value {
+
+    fn value_make_bool(&self, val: bool) -> Value {
         unsafe {
             let qjs_val = ffi::JS_NewBool_noinl(self.ctx, val as i32);
             value_from_qjs(&self, qjs_val)
         }
     }
 
-    fn value_make_number(&self, val: f64) -> jsi::Value {
+    fn value_make_number(&self, val: f64) -> Value {
         unsafe {
             let qjs_val = ffi::JS_NewFloat64_noinl(self.ctx, val);
             value_from_qjs(&self, qjs_val)
         }
     }
 
-    fn value_get_type(&self, val: &jsi::Value) -> jsi::ValueType {
+    fn value_get_type(&self, val: &Value) -> ValueType {
         let qjs_val = value_to_qjs(val);
         unsafe {
             if ffi::JS_IsBool_noinl(qjs_val) == 1 {
-                return jsi::ValueType::Bool;
+                return ValueType::Bool;
             }
             if ffi::JS_IsNumber(qjs_val) == 1 {
-                return jsi::ValueType::Number;
+                return ValueType::Number;
             }
             if (ffi::JS_IsNull_noinl(qjs_val)) == 1 {
-                return jsi::ValueType::Null;
+                return ValueType::Null;
             }
             if (ffi::JS_IsUndefined_noinl(qjs_val)) == 1 {
-                return jsi::ValueType::Undefined;
+                return ValueType::Undefined;
             }
             if (ffi::JS_IsString_noinl(qjs_val)) == 1 {
-                return jsi::ValueType::String;
+                return ValueType::String;
             }
             if (ffi::JS_IsObject_noinl(qjs_val)) == 1 {
-                return jsi::ValueType::Object;
+                return ValueType::Object;
             }
         }
-        jsi::ValueType::Unknown
+        ValueType::Unknown
     }
 
-    fn value_to_bool(&self, val: &jsi::Value) -> Result<bool, jsi::Error> {
+    fn value_to_bool(&self, val: &Value) -> Result<bool, Error> {
         let res;
         unsafe {
             res = ffi::JS_ToBool(self.ctx, value_to_qjs(val));
@@ -250,7 +298,7 @@ impl jsi::Context for QjsContext {
         Ok(res == 1)
     }
 
-    fn value_to_number(&self, val: &jsi::Value) -> Result<f64, jsi::Error> {
+    fn value_to_number(&self, val: &Value) -> Result<f64, Error> {
         let mut num = 0.0_f64;
         let res;
         unsafe {
@@ -264,15 +312,16 @@ impl jsi::Context for QjsContext {
 
     fn value_to_object<'a>(
         &self,
-        val: &jsi::Value<'a>,
-    ) -> Result<jsi::Object<'a>, jsi::Error> {
-        Ok(jsi::Object {
+        val: &Value<'a>,
+    ) -> Result<Object<'a>, Error> {
+        Ok(Object {
             ptr: val.ptr.clone(),
         })
     }
 
     // Object
-    fn object_make_func<'a>(&self, func: jsi::Function<'a>) -> jsi::Object {
+
+    fn object_make_func<'a>(&self, func: Function<'a>) -> Object {
         let qjs_obj;
         let func_ptr = Box::into_raw(Box::new(func));
         unsafe {
@@ -285,9 +334,9 @@ impl jsi::Context for QjsContext {
 
     fn object_get_prop(
         &self,
-        obj: &jsi::Object,
+        obj: &Object,
         prop: &str,
-    ) -> Result<jsi::Value<'_>, jsi::Error> {
+    ) -> Result<Value<'_>, Error> {
         let cprop = CString::new(prop).unwrap();
         let res;
         unsafe {
@@ -303,12 +352,34 @@ impl jsi::Context for QjsContext {
         Ok(value_from_qjs(&self, res))
     }
 
+    fn object_set_prop(
+        &self,
+        obj: &Object,
+        prop: &str,
+        val: &Value,
+    ) -> Result<(), Error> {
+        let cprop = CString::new(prop).unwrap();
+        let res;
+        unsafe {
+            res = ffi::JS_SetPropertyStr(
+                self.ctx,
+                object_to_qjs(obj),
+                cprop.as_ptr(),
+                value_to_qjs(val),
+            );
+        }
+        if res == -1 {
+            return Err(self.get_error());
+        }
+        Ok(())
+    }
+
     fn object_call_as_function<'a>(
         &self,
-        object: &jsi::Object,
-        this: Option<&jsi::Value>,
-        args: &Vec<jsi::Value>,
-    ) -> Result<jsi::Value, jsi::Error> {
+        object: &Object,
+        this: Option<&Value>,
+        args: &Vec<Value>,
+    ) -> Result<Value, Error> {
         let qjs_object = object_to_qjs(object);
         let qjs_this = match this {
             Some(val) => value_to_qjs(val),
