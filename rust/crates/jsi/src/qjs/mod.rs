@@ -1,6 +1,7 @@
 pub mod ffi;
 
 use crate::jsi::*;
+use std::ffi::CStr;
 use std::ffi::CString;
 
 // QjsString
@@ -73,6 +74,13 @@ fn qjs_null() -> ffi::JSValue {
     }
 }
 
+fn qjs_undefined() -> ffi::JSValue {
+    ffi::JSValue {
+        u: ffi::JSValueUnion { int32: 0 },
+        tag: ffi::JS_TAG_UNDEFINED as i64,
+    }
+}
+
 fn value_from_qjs(ctx: &QjsContext, qjs_val: ffi::JSValue) -> Value {
     Value {
         ptr: Pointer {
@@ -101,6 +109,11 @@ fn value_to_qjs(val: &Value) -> ffi::JSValue {
 
 fn object_to_qjs(obj: &Object) -> ffi::JSValue {
     pointer_to_qjs(&obj.ptr)
+}
+
+fn string_to_utf8<'a>(jsi_str: &'a JsString<'a>) -> &'a str {
+    let qjs_str = jsi_str.ptr.data.downcast_ref::<QjsString>().unwrap();
+    &qjs_str.str
 }
 
 // NativeFunction
@@ -245,11 +258,18 @@ impl Context for QjsContext {
     }
 
     fn string_to_utf8(&self, jsi_str: &JsString) -> String {
-        let qjs_str = jsi_str.ptr.data.downcast_ref::<QjsString>().unwrap();
-        qjs_str.str.clone()
+        string_to_utf8(jsi_str).to_owned()
     }
 
     // Value
+
+    fn value_make_null(&self) -> Value {
+        value_from_qjs(&self, qjs_null())
+    }
+
+    fn value_make_undefined(&self) -> Value {
+        value_from_qjs(&self, qjs_undefined())
+    }
 
     fn value_make_bool(&self, val: bool) -> Value {
         unsafe {
@@ -262,6 +282,14 @@ impl Context for QjsContext {
         unsafe {
             let qjs_val = ffi::JS_NewFloat64_noinl(self.ctx, val);
             value_from_qjs(&self, qjs_val)
+        }
+    }
+
+    fn value_make_string(&self, str: &JsString) -> Value {
+        let c_str = CString::new(string_to_utf8(str)).unwrap();
+        unsafe {
+            let val = ffi::JS_NewString(self.ctx, c_str.as_ptr());
+            value_from_qjs(&self, val)
         }
     }
 
@@ -308,6 +336,21 @@ impl Context for QjsContext {
             return Err(self.get_error());
         }
         Ok(num)
+    }
+
+    fn value_to_string(&self, val: &Value) -> Result<JsString, Error> {
+        let res;
+        unsafe {
+            let c_str = ffi::JS_ToCString_noinl(self.ctx, value_to_qjs(val));
+            // TODO check error
+            res = CStr::from_ptr(c_str).to_str().unwrap().to_owned();
+        }
+        Ok(JsString {
+            ptr: Pointer {
+                ctx: self,
+                data: Box::new(QjsString::new(res)),
+            },
+        })
     }
 
     fn value_to_object<'a>(

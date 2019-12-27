@@ -68,6 +68,10 @@ impl<'a> Value<'a> {
         return self.ptr.ctx.value_to_number(self);
     }
 
+    pub fn to_string(&self) -> Result<JsString, Error> {
+        return self.ptr.ctx.value_to_string(self);
+    }
+
     pub fn to_object(&'a self) -> Result<Object, Error> {
         return self.ptr.ctx.value_to_object(self);
     }
@@ -106,18 +110,18 @@ pub trait Context {
     fn string_to_utf8(&self, jsi_str: &JsString) -> String;
 
     // Value
-    // fn value_make_null(&self) -> Value;
-    // fn value_make_undefined(&self) -> Value;
+    fn value_make_null(&self) -> Value;
+    fn value_make_undefined(&self) -> Value;
     fn value_make_bool(&self, val: bool) -> Value;
     fn value_make_number(&self, val: f64) -> Value;
-    // fn value_make_string(&self, str: &String) -> Value;
+    fn value_make_string(&self, str: &JsString) -> Value;
     // fn value_make_object(&self, obj: &Object) -> Value;
 
     fn value_get_type(&self, val: &Value) -> ValueType;
 
     fn value_to_bool(&self, val: &Value) -> Result<bool, Error>;
     fn value_to_number(&self, val: &Value) -> Result<f64, Error>;
-    // fn value_to_string(&self, val: &Value) -> Result<String, Error>;
+    fn value_to_string(&self, val: &Value) -> Result<JsString, Error>;
     fn value_to_object<'a>(&self, val: &Value<'a>)
         -> Result<Object<'a>, Error>;
 
