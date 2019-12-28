@@ -1,8 +1,10 @@
 pub mod ffi;
 
 use crate::jsi::*;
+use std::collections::HashMap;
 use std::ffi::CStr;
 use std::ffi::CString;
+use std::rc::{Rc, Weak};
 
 // QjsString
 
@@ -18,8 +20,27 @@ impl PointerData for QjsString {
 }
 
 impl QjsString {
-    fn new(rs_str: String) -> QjsString {
-        QjsString { str: rs_str }
+    fn new(str: String) -> QjsString {
+        QjsString { str }
+    }
+}
+
+// QjsClass
+
+#[derive(Clone)]
+struct QjsClass {
+    id: u32,
+}
+
+impl PointerData for QjsClass {
+    fn box_clone(&self) -> Box<dyn PointerData> {
+        return Box::new(self.clone());
+    }
+}
+
+impl QjsClass {
+    fn new(id: u32) -> QjsClass {
+        QjsClass { id }
     }
 }
 
@@ -84,16 +105,19 @@ fn qjs_undefined() -> ffi::JSValue {
 fn value_from_qjs(ctx: &QjsContext, qjs_val: ffi::JSValue) -> Value {
     Value {
         ptr: Pointer {
-            ctx,
+            ctx: ctx.weak.clone(),
             data: Box::new(QjsValue::new(ctx, qjs_val)),
         },
     }
 }
 
-fn object_from_qjs(ctx: &QjsContext, qjs_val: ffi::JSValue) -> Object {
+fn object_from_qjs(
+    ctx: &QjsContext,
+    qjs_val: ffi::JSValue,
+) -> Object {
     Object {
         ptr: Pointer {
-            ctx,
+            ctx: ctx.weak.clone(),
             data: Box::new(QjsValue::new(ctx, qjs_val)),
         },
     }
@@ -111,7 +135,7 @@ fn object_to_qjs(obj: &Object) -> ffi::JSValue {
     pointer_to_qjs(&obj.ptr)
 }
 
-fn string_to_utf8<'a>(jsi_str: &'a JsString<'a>) -> &'a str {
+fn string_to_utf8(jsi_str: &JsString) -> &str {
     let qjs_str = jsi_str.ptr.data.downcast_ref::<QjsString>().unwrap();
     &qjs_str.str
 }
@@ -168,11 +192,28 @@ extern "C" fn native_function_call(
     }
 }
 
+// Class
+
+extern "C" fn class_finalizer(rt: *mut ffi::JSRuntime, val: ffi::JSValue) {
+    /*
+    auto it = Qjs_Context::class_instances.find(JS_VALUE_GET_PTR(value));
+    if (it == Qjs_Context::class_instances.end()) return;
+    auto ctx = it->second.ctx;
+    auto class_id = it->second.class_id;
+    auto finalizer = ctx->class_finalizers[class_id];
+    if (finalizer) finalizer(ctx->object_from_qjs(value, true));
+    Qjs_Context::class_instances.erase(it);
+    */
+}
+
 // QjsContext
 
 pub struct QjsContext {
     rt: *mut ffi::JSRuntime,
     ctx: *mut ffi::JSContext,
+    weak: Weak<QjsContext>,
+    class_finalizers: HashMap<u32, Option<ClassFinalizer>>,
+    class_defs: HashMap<u32, Option<ClassDefinition>>,
 }
 
 impl Drop for QjsContext {
@@ -185,7 +226,7 @@ impl Drop for QjsContext {
 }
 
 impl QjsContext {
-    pub fn new() -> QjsContext {
+    pub fn new() -> Rc<QjsContext> {
         unsafe {
             let rt = ffi::JS_NewRuntime();
             let ctx = ffi::JS_NewContext(rt);
@@ -202,7 +243,15 @@ impl QjsContext {
             };
             ffi::JS_NewClass(rt, FUNCTION_CLASS_ID, &function_class_def);
 
-            return QjsContext { rt, ctx };
+            let ctx = Rc::new(QjsContext {
+                rt,
+                ctx,
+                class_finalizers: HashMap::new(),
+                class_defs: HashMap::new(),
+                weak: Default::default()
+            });
+            // ctx.weak = Rc::downgrade(&ctx);
+            ctx
         }
     }
 
@@ -251,7 +300,7 @@ impl Context for QjsContext {
         let qjs_str = Box::new(QjsString::new(rs_str.to_owned()));
         JsString {
             ptr: Pointer {
-                ctx: self,
+                ctx: self.weak.clone(),
                 data: qjs_str,
             },
         }
@@ -264,24 +313,24 @@ impl Context for QjsContext {
     // Value
 
     fn value_make_null(&self) -> Value {
-        value_from_qjs(&self, qjs_null())
+        value_from_qjs(self, qjs_null())
     }
 
     fn value_make_undefined(&self) -> Value {
-        value_from_qjs(&self, qjs_undefined())
+        value_from_qjs(self, qjs_undefined())
     }
 
     fn value_make_bool(&self, val: bool) -> Value {
         unsafe {
             let qjs_val = ffi::JS_NewBool_noinl(self.ctx, val as i32);
-            value_from_qjs(&self, qjs_val)
+            value_from_qjs(self, qjs_val)
         }
     }
 
     fn value_make_number(&self, val: f64) -> Value {
         unsafe {
             let qjs_val = ffi::JS_NewFloat64_noinl(self.ctx, val);
-            value_from_qjs(&self, qjs_val)
+            value_from_qjs(self, qjs_val)
         }
     }
 
@@ -289,7 +338,7 @@ impl Context for QjsContext {
         let c_str = CString::new(string_to_utf8(str)).unwrap();
         unsafe {
             let val = ffi::JS_NewString(self.ctx, c_str.as_ptr());
-            value_from_qjs(&self, val)
+            value_from_qjs(self, val)
         }
     }
 
@@ -347,24 +396,128 @@ impl Context for QjsContext {
         }
         Ok(JsString {
             ptr: Pointer {
-                ctx: self,
+                ctx: self.weak.clone(),
                 data: Box::new(QjsString::new(res)),
             },
         })
     }
 
-    fn value_to_object<'a>(
+    fn value_to_object(
         &self,
-        val: &Value<'a>,
-    ) -> Result<Object<'a>, Error> {
+        val: &Value,
+    ) -> Result<Object, Error> {
         Ok(Object {
             ptr: val.ptr.clone(),
         })
     }
 
+    // Class
+
+    fn class_make( &mut self, def: &ClassDefinition,) -> Class {
+        let mut class_id = 0;
+        unsafe {
+            ffi::JS_NewClassID(&mut class_id);
+        }
+        let c_name = CString::new(def.name.clone()).unwrap();
+        let class_def = ffi::JSClassDef {
+            class_name: c_name.as_ptr(),
+            finalizer: Some(class_finalizer),
+            call: None,
+            gc_mark: None,
+            exotic: std::ptr::null_mut(),
+        };
+        unsafe {
+            ffi::JS_NewClass(self.rt, class_id, &class_def);
+        }
+
+        self.class_finalizers
+            .insert(class_id, def.finalizer.clone());
+
+        let proto;
+        unsafe {
+            proto = ffi::JS_NewObject(self.ctx);
+        }
+        for (name, prop) in &def.props {
+            let c_name = CString::new(name.clone()).unwrap();
+            let atom;
+            unsafe {
+                atom =
+                    ffi::JS_NewAtomLen(self.ctx, c_name.as_ptr(), name.len());
+            }
+            let get_val = match prop.get.as_ref() {
+                Some(get) => {
+                    let get_clone = get.clone();
+                    let func = self.object_make_func(Rc::new(
+                        move |this: Value, _args: Vec<Value>| {
+                            let obj = this.to_object().unwrap();
+                            get_clone(obj)
+                        },
+                    ));
+                    let val = object_to_qjs(&func);
+                    unsafe {
+                        ffi::JS_DupValue_noinl(self.ctx, val);
+                    }
+                    val
+                }
+                None => qjs_null(),
+            };
+            /*
+            let set_val = match prop.set.as_ref() {
+                Some(set) => {
+                    let set_clone = set.clone();
+                    let func = self.object_make_func(Rc::new(
+                        move |this: Value, args: Vec<Value>| {
+                            let obj = this.to_object().unwrap();
+                            set_clone(obj, args[0]);
+                            Ok(self.value_make_undefined())
+                        },
+                    ));
+                    let val = object_to_qjs(&func);
+                    unsafe {
+                        ffi::JS_DupValue_noinl(self.ctx, val);
+                    }
+                    val
+                }
+                None => qjs_null(),
+            };
+            */
+            unsafe {
+                ffi::JS_DefinePropertyGetSet(
+                    self.ctx, proto, atom, get_val, get_val, 0,
+                );
+                ffi::JS_FreeAtom(self.ctx, atom);
+            }
+        }
+
+        for (name, method) in &def.methods {
+            let val = self.object_make_func(method.clone());
+            let c_name = CString::new(name.clone()).unwrap();
+            unsafe {
+                ffi::JS_DupValue_noinl(self.ctx, object_to_qjs(&val));
+                ffi::JS_DefinePropertyValueStr(
+                    self.ctx,
+                    proto,
+                    c_name.as_ptr(),
+                    object_to_qjs(&val),
+                    ffi::JS_PROP_ENUMERABLE as i32,
+                );
+            }
+        }
+        unsafe {
+            ffi::JS_SetClassProto(self.ctx, class_id, proto);
+        }
+
+        return Class {
+            ptr: Pointer {
+                ctx: self.weak.clone(),
+                data: Box::new(QjsClass::new(class_id)),
+            },
+        };
+    }
+
     // Object
 
-    fn object_make_func<'a>(&self, func: Function<'a>) -> Object {
+    fn object_make_func(&self, func: Function) -> Object {
         let qjs_obj;
         let func_ptr = Box::into_raw(Box::new(func));
         unsafe {
@@ -379,7 +532,7 @@ impl Context for QjsContext {
         &self,
         obj: &Object,
         prop: &str,
-    ) -> Result<Value<'_>, Error> {
+    ) -> Result<Value, Error> {
         let cprop = CString::new(prop).unwrap();
         let res;
         unsafe {
@@ -417,7 +570,7 @@ impl Context for QjsContext {
         Ok(())
     }
 
-    fn object_call_as_function<'a>(
+    fn object_call_as_function(
         &self,
         object: &Object,
         this: Option<&Value>,

@@ -41,7 +41,7 @@ fn main() {
             args[0].to_number().unwrap() + args[1].to_number().unwrap(),
         ))
     };
-    let jsfn = ctx.object_make_func(Box::new(func));
+    let jsfn = ctx.object_make_func(std::rc::Rc::new(func));
     let res = jsfn.call_as_function(
         None,
         &vec![ctx.value_make_number(5.0), ctx.value_make_number(6.0)],

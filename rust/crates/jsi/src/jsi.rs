@@ -1,5 +1,7 @@
 use downcast_rs;
+use std::collections::HashMap;
 use std::fmt;
+use std::rc::{Rc, Weak};
 
 #[derive(PartialEq, Debug)]
 pub enum ValueType {
@@ -23,75 +25,131 @@ impl Clone for Box<dyn PointerData> {
     }
 }
 
-pub struct Error<'a> {
-    pub val: Box<Value<'a>>,
+pub struct Error {
+    pub val: Box<Value>,
 }
 
-impl<'a> fmt::Debug for Error<'a> {
+impl fmt::Debug for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Unhadled JavaScript exception")
     }
 }
 
 #[derive(Clone)]
-pub struct Pointer<'a> {
-    pub(crate) ctx: &'a dyn Context,
+pub struct Pointer {
+    pub(crate) ctx: Weak<dyn Context>,
     pub(crate) data: Box<dyn PointerData>,
 }
 
-#[derive(Clone)]
-pub struct JsString<'a> {
-    pub(crate) ptr: Pointer<'a>,
-}
-
-impl<'a> JsString<'a> {
-    pub fn to_utf8(&self) -> String {
-        return self.ptr.ctx.string_to_utf8(self);
+impl Pointer {
+    fn get_ctx(&self) -> Rc<dyn Context> {
+        self.ctx.upgrade().unwrap()
     }
 }
 
 #[derive(Clone)]
-pub struct Value<'a> {
-    pub(crate) ptr: Pointer<'a>,
+pub struct JsString {
+    pub(crate) ptr: Pointer,
 }
 
-impl<'a> Value<'a> {
+impl<'a> JsString {
+    pub fn to_utf8(&self) -> String {
+        return self.ptr.ctx.upgrade().unwrap().string_to_utf8(self);
+    }
+}
+
+#[derive(Clone)]
+pub struct Value {
+    pub(crate) ptr: Pointer,
+}
+
+impl Value {
     pub fn get_type(&self) -> ValueType {
-        return self.ptr.ctx.value_get_type(self);
+        self.ptr.get_ctx().value_get_type(self)
     }
 
     pub fn to_bool(&self) -> Result<bool, Error> {
-        return self.ptr.ctx.value_to_bool(self);
+        self.ptr.get_ctx().value_to_bool(self)
     }
 
     pub fn to_number(&self) -> Result<f64, Error> {
-        return self.ptr.ctx.value_to_number(self);
+        self.ptr.get_ctx().value_to_number(self)
     }
 
     pub fn to_string(&self) -> Result<JsString, Error> {
-        return self.ptr.ctx.value_to_string(self);
+        self.ptr.get_ctx().value_to_string(self)
     }
 
-    pub fn to_object(&'a self) -> Result<Object, Error> {
-        return self.ptr.ctx.value_to_object(self);
+    pub fn to_object(&self) -> Result<Object, Error> {
+        self.ptr.get_ctx().value_to_object(self)
     }
 }
 
-pub type Function<'a> =
-    Box<dyn Fn(Value<'a>, Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> + 'a>;
+pub type Function =
+    Rc<dyn Fn(Value, Vec<Value>) -> Result<Value, Error>>;
+
+pub type ClassFinalizer = Rc<dyn Fn(Object)>;
+
+pub type ClassPropertyGetter =
+    Rc<dyn Fn(Object) -> Result<Value, Error>>;
+
+pub type ClassPropertySetter =
+    Rc<dyn Fn(Object, Value) -> Result<(), Error>>;
+
+pub struct ClassPropertyDefinition {
+    pub get: Option<ClassPropertyGetter>,
+    pub set: Option<ClassPropertySetter>,
+}
+
+pub struct ClassDefinition {
+    pub name: String,
+    pub methods: HashMap<String, Function>,
+    pub props: HashMap<String, ClassPropertyDefinition>,
+    pub finalizer: Option<ClassFinalizer>,
+}
 
 #[derive(Clone)]
-pub struct Object<'a> {
-    pub(crate) ptr: Pointer<'a>,
+pub struct Class {
+    pub(crate) ptr: Pointer,
 }
 
-impl<'a> Object<'a> {
-    pub fn get_prop(&self, prop: &str) -> Result<Value, Error> {
-        self.ptr.ctx.object_get_prop(self, prop)
+#[derive(Clone)]
+pub struct Object {
+    pub(crate) ptr: Pointer,
+}
+
+impl Object{
+    /*
+    pub fn object_to_value(&self) -> Result<Value, Error> {
+        self.ptr.ctx.object_to_value(self)
     }
 
-    pub fn set_prop(&self, prop: &str, val: &Value) -> Result<(), Error> {
-        self.ptr.ctx.object_set_prop(self, prop, val)
+    pub fn object_set_pivate_data(&self, data: std::ffi::c_void) {
+        self.ptr.ctx.object_set_pivate_data(self)
+    }
+
+    pub fn object_get_pivate_data(&self) -> std::ffi::c_void {
+        self.ptr.ctx.object_set_pivate_data(self)
+    }
+
+    pub fn object_get_prop_names(&self) -> Result<Vec<String>, Error> {
+        self.ptr.ctx.object_get_prop_names(self)
+    }
+    pub fn object_has_prop(&self, prop: &str) -> bool {
+        self.ptr.ctx.object_has_prop(self, prop)
+    }
+    */
+
+    pub fn get_prop(&self, prop: &str) -> Result<Value, Error> {
+        self.ptr.get_ctx().object_get_prop(self, prop)
+    }
+
+    pub fn set_prop(
+        &self,
+        prop: &str,
+        val: &Value,
+    ) -> Result<(), Error> {
+        self.ptr.get_ctx().object_set_prop(self, prop, val)
     }
 
     pub fn call_as_function(
@@ -99,12 +157,14 @@ impl<'a> Object<'a> {
         this: Option<&Value>,
         args: &Vec<Value>,
     ) -> Result<Value, Error> {
-        self.ptr.ctx.object_call_as_function(self, this, args)
+        self.ptr.get_ctx().object_call_as_function(self, this, args)
     }
 }
 
 pub trait Context {
     fn eval(&self, source: &str, sourceurl: &str) -> Result<Value, Error>;
+    // fn garbage_collect(&self);
+    // fn get_global_object(&self) -> Object;
 
     fn string_make_from_utf8(&self, rs_str: &str) -> JsString;
     fn string_to_utf8(&self, jsi_str: &JsString) -> String;
@@ -122,8 +182,12 @@ pub trait Context {
     fn value_to_bool(&self, val: &Value) -> Result<bool, Error>;
     fn value_to_number(&self, val: &Value) -> Result<f64, Error>;
     fn value_to_string(&self, val: &Value) -> Result<JsString, Error>;
-    fn value_to_object<'a>(&self, val: &Value<'a>)
-        -> Result<Object<'a>, Error>;
+    fn value_to_object(&self, val: &Value) -> Result<Object, Error>;
+
+    // fn value_strict_equal_to(&self, a: &Value, b: &Value) -> bool;
+
+    // Class
+    fn class_make(&mut self, def: &ClassDefinition) -> Class;
 
     // Object
     // object_make(const Class* js_class) -> Object;
@@ -133,18 +197,45 @@ pub trait Context {
 
     // fn object_to_value(&self, &Object obj) -> Result<Value, Error>;
 
-    // fn object_get_prop_names(&self, obj: &Object, prop: &str) 
+    // fn object_set_pivate_data(&self, &Object obj, data: std::ffi:c_void);
+    // fn object_get_pivate_data(&self, &Object obj) -> std::ffi:c_void;
+
+    // fn object_get_prop_names(&self, obj: &Object, prop: &str)
     //      -> Result<Vec<String>, Error>;
     // fn object_has_prop(&self, obj: &Object, prop: &str) -> bool;
     fn object_get_prop(&self, obj: &Object, prop: &str)
         -> Result<Value, Error>;
-    fn object_set_prop(&self, obj: &Object, prop: &str, val: &Value)
-        -> Result<(), Error>;
+    fn object_set_prop(
+        &self,
+        obj: &Object,
+        prop: &str,
+        val: &Value,
+    ) -> Result<(), Error>;
+    // fn object_delete_prop(&self, obj: &Object, prop: &str)
+    // -> Result<(), Error>;
 
-    fn object_call_as_function<'a>(
+    // fn object_is_function(&self, obj: &Object) -> bool;
+    fn object_call_as_function(
         &self,
         func: &Object,
         this: Option<&Value>,
         args: &Vec<Value>,
     ) -> Result<Value, Error>;
+
+    // fn object_is_constructor(&self, obj: &Object) -> bool;
+    // fn object_call_as_constructor(
+    // &self,
+    // func: &Object,
+    // args: &Vec<Value>,
+    // ) -> Result<Value, Error>;
+
+    // fn object_is_array(&self, obj: &Object) -> bool;
+    // fn object_get_prop_at_index(&self, obj: &Object, idx: u32)
+    // -> Result<Value, Error>;
+    // fn object_set_prop(
+    // &self,
+    // obj: &Object,
+    // idx: u32,
+    // val: &Value,
+    // ) -> Result<(), Error>;
 }
