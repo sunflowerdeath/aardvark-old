@@ -27,7 +27,7 @@ TEMPLATE_TEST_CASE(
     SECTION("eval") {
         auto ctx = create_context();
 
-        auto res = ctx->eval_script("2 + 3", nullptr, "source_url");
+        auto res = ctx->eval("2 + 3", nullptr, "source_url");
         REQUIRE(res.value().to_number().value() == 5);
     }
 
@@ -40,7 +40,7 @@ TEMPLATE_TEST_CASE(
 
         auto this_obj = ctx->object_make(nullptr);
         this_obj.set_property("a", ctx->value_make_number(2));
-        auto res = ctx->eval_script("this.a + 3", &this_obj, "source_url");
+        auto res = ctx->eval("this.a + 3", &this_obj, "source_url");
         REQUIRE(res.value().to_number().value() == 5);
     }
 #endif
@@ -48,13 +48,13 @@ TEMPLATE_TEST_CASE(
     SECTION("eval exception") {
         auto ctx = create_context();
 
-        auto res1 = ctx->eval_script("a/b/", nullptr, "source_url");
+        auto res1 = ctx->eval("a/b/", nullptr, "source_url");
         REQUIRE(res1.has_value() == false);
 
-        auto res2 = ctx->eval_script("2+2", nullptr, "source_url");
+        auto res2 = ctx->eval("2+2", nullptr, "source_url");
         REQUIRE(res2.has_value() == true);
 
-        auto res3 = ctx->eval_script("a/b/", nullptr, "source_url");
+        auto res3 = ctx->eval("a/b/", nullptr, "source_url");
         REQUIRE(res3.has_value() == false);
     }
 
@@ -180,7 +180,7 @@ TEMPLATE_TEST_CASE(
         auto ctx = create_context();
 
         auto func = [&](const Value& xthis, const std::vector<Value>& args) {
-            return ctx->eval_script("a/b", nullptr, "sourceurl");
+            return ctx->eval("a/b", nullptr, "sourceurl");
         };
         auto obj = ctx->object_make_function(func);
 
@@ -244,8 +244,7 @@ TEMPLATE_TEST_CASE(
             ctx->get_global_object().set_property(
                 "instance", instance.to_value());
             auto ret_val =
-                ctx->eval_script("instance.method(3)", nullptr, "sourceurl")
-                    .value();
+                ctx->eval("instance.method(3)", nullptr, "sourceurl").value();
             REQUIRE(prop_value == 3);
             REQUIRE(ret_val.to_number().value() == 3);
         }
@@ -257,15 +256,15 @@ TEMPLATE_TEST_CASE(
         auto ctx = create_context();
 
         auto get = [&](Object& object) {
-            return ctx->eval_script("a/b", nullptr, "sourceurl");
+            return ctx->eval("a/b", nullptr, "sourceurl");
         };
         auto set = [&](Object object, Value& value) -> Result<bool> {
-            auto res = ctx->eval_script("a/b", nullptr, "sourceurl");
+            auto res = ctx->eval("a/b", nullptr, "sourceurl");
             if (!res.has_value()) return tl::make_unexpected(res.error());
             return true;
         };
         auto method = [&](Value& js_this, std::vector<Value>& args) {
-            return ctx->eval_script("a/b", nullptr, "sourceurl");
+            return ctx->eval("a/b", nullptr, "sourceurl");
         };
 
         auto definition = new ClassDefinition();
@@ -283,20 +282,17 @@ TEMPLATE_TEST_CASE(
             instance.set_property("prop", ctx->value_make_number(1));
         REQUIRE(setter_res.has_value() == false);
 
-        auto method_res =
-            ctx->eval_script("this.method()", &instance, "sourceurl");
+        auto method_res = ctx->eval("this.method()", &instance, "sourceurl");
         REQUIRE(method_res.has_value() == false);
     }
 
     SECTION("constructor") {
         auto ctx = create_context();
 
-        ctx->eval_script(
+        ctx->eval(
             "class A{constructor(a) { this.a = a }};", nullptr, "sourceurl");
-        auto ctor = ctx->eval_script("A", nullptr, "sourceurl")
-                        .value()
-                        .to_object()
-                        .value();
+        auto ctor =
+            ctx->eval("A", nullptr, "sourceurl").value().to_object().value();
         REQUIRE(ctor.is_constructor() == true);
         auto args = std::vector<Value>{ctx->value_make_number(5)};
         auto res = ctor.call_as_constructor(args).value();

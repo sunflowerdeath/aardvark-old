@@ -163,9 +163,9 @@ class Context {
   public:
     virtual Script create_script(
         const std::string& source, const std::string& source_url) = 0;
-    virtual Result<Value> eval_script(
-        const std::string& script,
-        Object* js_this,
+    virtual Result<Value> eval(
+        const std::string& source,
+        Object* this_obj,
         const std::string& source_url) = 0;
     virtual void garbage_collect() = 0;
     virtual Object get_global_object() = 0;

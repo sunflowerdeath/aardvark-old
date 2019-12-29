@@ -31,9 +31,9 @@ class Jsc_Context : public Context {
 
     Script create_script(
         const std::string& source, const std::string& source_url) override;
-    Result<Value> eval_script(
-        const std::string& script,
-        Object* js_this,
+    Result<Value> eval(
+        const std::string& source,
+        Object* this_obj,
         const std::string& source_url) override;
     void garbage_collect() override;
     Object get_global_object() override;

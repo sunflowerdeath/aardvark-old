@@ -142,9 +142,8 @@ TEMPLATE_TEST_CASE(
             int_mapper, int_mapper, string_mapper);
 
         SECTION("valid") {
-            auto val =
-                ctx->eval_script("func=(a,b)=>a+b.length", nullptr, "sourceurl")
-                    .value();
+            auto val = ctx->eval("func=(a,b)=>a+b.length", nullptr, "sourceurl")
+                           .value();
             auto res = mapper.from_js(ctx_ref, val);
             REQUIRE(res(1, "test") == 5);
         }
@@ -159,8 +158,8 @@ TEMPLATE_TEST_CASE(
             auto called_handler = false;
             auto mapper = FunctionMapper<int>(
                 int_mapper, [&](const Value& error) { called_handler = true; });
-            auto val = ctx->eval_script("fn=()=>'error'", nullptr, "sourceurl")
-                           .value();
+            auto val =
+                ctx->eval("fn=()=>'error'", nullptr, "sourceurl").value();
             auto fn = mapper.from_js(ctx_ref, val);
             auto res = fn();
             REQUIRE(called_handler);
@@ -192,8 +191,7 @@ TEMPLATE_TEST_CASE(
                 },                                            // error_handler
                 []() { return NotDefaultConstructible(-1); }  // fallback
             );
-            auto val =
-                ctx->eval_script("fn=()=>a/a", nullptr, "sourceurl").value();
+            auto val = ctx->eval("fn=()=>a/a", nullptr, "sourceurl").value();
             auto fn = mapper.from_js(ctx_ref, val);
             auto res = fn();
             REQUIRE(called_handler);

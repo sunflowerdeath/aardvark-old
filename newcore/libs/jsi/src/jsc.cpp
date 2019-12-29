@@ -124,13 +124,13 @@ Script Jsc_Context::create_script(
     // TODO
 }
 
-Result<Value> Jsc_Context::eval_script(
-    const std::string& script,
-    Object* jsi_this,
+Result<Value> Jsc_Context::eval(
+    const std::string& source,
+    Object* this_obj,
     const std::string& source_url) {
-    auto jsi_script = string_make_from_utf8(script);
-    auto js_this = jsi_this == nullptr ? nullptr : object_ref(*jsi_this);
-    auto jsi_source_url = string_make_from_utf8(script);
+    auto jsi_source = string_make_from_utf8(source);
+    auto jsc_this = jsi_this == nullptr ? nullptr : object_ref(*jsi_this);
+    auto jsi_source_url = string_make_from_utf8(source_url);
     auto exception = JSValueRef();
     auto jsc_res = JSEvaluateScript(
         ctx,
@@ -293,7 +293,6 @@ JSValueRef class_static_value_get(
     } else {
         jsi_ctx->error_to_jsc(exception, jsi_ret_val.error());
         return nullptr;
-        // *exception = jsi_ctx->value_ref(&jsi_ret_val.error().value());
     }
 }
 
@@ -393,7 +392,6 @@ JSValueRef native_function_call_as_function(
         return jsi_ctx->value_ref(jsi_ret_val.value());
     } else {
         jsi_ctx->error_to_jsc(exception, jsi_ret_val.error());
-        // *exception = jsi_ctx->value_ref(jsi_ret_val.error().value());
         return nullptr;
     }
 }
