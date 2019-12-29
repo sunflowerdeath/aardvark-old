@@ -307,7 +307,7 @@ bool class_static_value_set(
     }
 }
 
-Class Jsc_Context::class_create(const ClassDefinition& definition) {
+Class Jsc_Context::class_make(const ClassDefinition& definition) {
     auto jsc_definition = kJSClassDefinitionEmpty;
     jsc_definition.className = definition.name.c_str();
     jsc_definition.finalize = class_finalize;

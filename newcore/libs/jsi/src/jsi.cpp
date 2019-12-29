@@ -86,7 +86,7 @@ bool Object::is_constructor() const {
     return ctx->object_is_constructor(*this);
 }
 
-Result<Value> Object::call_as_constructor(
+Result<Object> Object::call_as_constructor(
     const std::vector<Value>& arguments) const {
     return ctx->object_call_as_constructor(*this, arguments);
 }

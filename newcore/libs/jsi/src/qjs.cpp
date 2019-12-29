@@ -275,7 +275,7 @@ void class_finalizer(JSRuntime* rt, JSValue value) {
     Qjs_Context::class_instances.erase(it);
 }
 
-Class Qjs_Context::class_create(const ClassDefinition& definition) {
+Class Qjs_Context::class_make(const ClassDefinition& definition) {
     JSClassID class_id = 0;
     JS_NewClassID(&class_id);
     auto class_def = JSClassDef{definition.name.c_str(),  // name
@@ -287,23 +287,35 @@ Class Qjs_Context::class_create(const ClassDefinition& definition) {
     for (auto& it : definition.properties) {
         auto& [name, prop] = it;
         auto atom = JS_NewAtomLen(ctx, name.c_str(), name.size());
-        auto get = object_make_function(
-            [getter = prop.get](Value& js_this, std::vector<Value>& args) {
-                auto obj = js_this.to_object().value();
-                return getter(obj);
-            });
-        auto set = object_make_function(
-            [this, setter = prop.set](
-                Value& js_this, std::vector<Value>& args) -> Result<Value> {
-                auto obj = js_this.to_object().value();
-                auto res = setter(obj, args[0]);
-                if (res.has_value()) return value_from_qjs(JS_UNDEFINED);
-                return tl::make_unexpected(res.error());
-            });
-        JS_DupValue(ctx, object_get_qjs(get));
-        JS_DupValue(ctx, object_get_qjs(set));
-        JS_DefinePropertyGetSet(
-            ctx, proto, atom, object_get_qjs(get), object_get_qjs(set), 0);
+
+        auto get = JSValue();
+        if (prop.get) {
+            auto func = object_make_function(
+                [getter = prop.get](Value& js_this, std::vector<Value>& args) {
+                    auto obj = js_this.to_object().value();
+                    return getter(obj);
+                });
+            get = object_get_qjs(func);
+            JS_DupValue(ctx, get);
+        } else {
+            get = JS_NULL;
+        }
+
+        auto set = JSValue();
+        if (prop.set) {
+            auto func = object_make_function(
+                [this, setter = prop.set](
+                    Value& js_this, std::vector<Value>& args) -> Result<Value> {
+                    auto obj = js_this.to_object().value();
+                    auto res = setter(obj, args[0]);
+                    if (res.has_value()) return value_from_qjs(JS_UNDEFINED);
+                    return tl::make_unexpected(res.error());
+                });
+            set = object_get_qjs(func);
+            JS_DupValue(ctx, set);
+        }
+
+        JS_DefinePropertyGetSet(ctx, proto, atom, get, set, 0);
         JS_FreeAtom(ctx, atom);
     }
 
@@ -335,13 +347,32 @@ Object Qjs_Context::object_make(const Class* cls) {
 }
 
 Object Qjs_Context::object_make_function(const Function& function) {
-    auto function_ptr = new Function(function);
-    auto qjs_object = JS_NewObjectClass(ctx, Qjs_Context::function_class_id);
-    JS_SetOpaque(qjs_object, (void*)function_ptr);
-    return object_from_qjs(qjs_object);
+    auto func_ptr = new Function(function);
+    auto qjs_obj = JS_NewObjectClass(ctx, Qjs_Context::function_class_id);
+    JS_SetOpaque(qjs_obj, (void*)func_ptr);
+    return object_from_qjs(qjs_obj);
 }
 
-Object Qjs_Context::object_make_constructor(const Class& js_class) {}
+JSValue constructor(
+    JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv,
+    int magic) {
+    auto proto = JS_GetClassProto(ctx, magic);
+    JS_SetPrototype(ctx, this_val, proto);
+    JS_FreeValue(ctx, proto);
+    return this_val;
+}
+
+Object Qjs_Context::object_make_constructor(const Class& cls){
+    auto func = JS_NewCFunctionMagic(
+        ctx,                         // ctx
+        constructor,                 // func
+        "name",                      // name
+        0,                           // length
+        JS_CFUNC_constructor_magic,  // enum
+        class_get_qjs(cls)           // magic
+    );
+    return object_from_qjs(func);
+}
 
 Object Qjs_Context::object_make_array() {
     return object_from_qjs(JS_NewArray(ctx));
@@ -445,10 +476,22 @@ Result<Value> Qjs_Context::object_call_as_function(
     return value_from_qjs(qjs_res);
 }
 
-bool Qjs_Context::object_is_constructor(const Object& object) {}
+bool Qjs_Context::object_is_constructor(const Object& object) {
+    return JS_IsConstructor(ctx, object_get_qjs(object));
+}
 
-Result<Value> Qjs_Context::object_call_as_constructor(
-    const Object& object, const std::vector<Value>& arguments) {}
+Result<Object> Qjs_Context::object_call_as_constructor(
+    const Object& object, const std::vector<Value>& jsi_args) {
+    auto qjs_object = object_get_qjs(object);
+    JSValue qjs_args[jsi_args.size()];
+    for (auto i = 0; i < jsi_args.size(); i++) {
+        qjs_args[i] = value_get_qjs(jsi_args[i]);
+    }
+    auto qjs_res =
+        JS_CallConstructor(ctx, qjs_object, jsi_args.size(), qjs_args);
+    if (JS_IsException(qjs_res)) return get_error();
+    return object_from_qjs(qjs_res);
+}
 
 bool Qjs_Context::object_is_array(const Object& object) {
     return JS_IsArray(ctx, object_get_qjs(object));

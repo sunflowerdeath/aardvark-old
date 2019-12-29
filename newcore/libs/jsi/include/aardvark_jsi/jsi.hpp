@@ -121,7 +121,7 @@ class Object : public Pointer {
         const Value* jsi_this, const std::vector<Value>& jsi_args) const;
 
     bool is_constructor() const;
-    Result<Value> call_as_constructor(
+    Result<Object> call_as_constructor(
         const std::vector<Value>& arguments) const;
 
     bool is_array() const;
@@ -193,7 +193,7 @@ class Context {
     virtual Value value_make_error(const std::string& message) = 0;
 
     // Class
-    virtual Class class_create(const ClassDefinition& definition) = 0;
+    virtual Class class_make(const ClassDefinition& definition) = 0;
 
     // Object
     virtual Object object_make(const Class* js_class) = 0;
@@ -227,7 +227,7 @@ class Context {
         const std::vector<Value>& jsi_args) = 0;
 
     virtual bool object_is_constructor(const Object& object) = 0;
-    virtual Result<Value> object_call_as_constructor(
+    virtual Result<Object> object_call_as_constructor(
         const Object& object, const std::vector<Value>& arguments) = 0;
 
     virtual bool object_is_array(const Object& object) = 0;

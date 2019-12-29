@@ -85,6 +85,22 @@ TEMPLATE_TEST_CASE(
         REQUIRE(str_val.to_string().value().to_utf8() == "test");
     }
 
+    SECTION("strictequal") {
+        auto ctx = create_context();
+
+        auto a = ctx->value_make_number(1);
+        auto b = ctx->value_make_number(1);
+        auto c = ctx->value_make_number(2);
+        REQUIRE(a.strict_equal_to(a) == true);
+        REQUIRE(a.strict_equal_to(b) == true);
+        REQUIRE(a.strict_equal_to(c) == false);
+
+        auto d = ctx->object_make(nullptr).to_value();
+        auto e = ctx->object_make(nullptr).to_value();
+        REQUIRE(d.strict_equal_to(d) == true);
+        REQUIRE(d.strict_equal_to(e) == false);
+    }
+
     SECTION("error") {
         auto ctx = create_context();
 
@@ -100,22 +116,6 @@ TEMPLATE_TEST_CASE(
                 .to_string()
                 .value()
                 .to_utf8() == "MESSAGE");
-    }
-
-    SECTION("strictequal") {
-        auto ctx = create_context();
-
-        auto a = ctx->value_make_number(1);
-        auto b = ctx->value_make_number(1);
-        auto c = ctx->value_make_number(2);
-        REQUIRE(a.strict_equal_to(a) == true);
-        REQUIRE(a.strict_equal_to(b) == true);
-        REQUIRE(a.strict_equal_to(c) == false);
-
-        auto d = ctx->object_make(nullptr).to_value();
-        auto e = ctx->object_make(nullptr).to_value();
-        REQUIRE(d.strict_equal_to(d) == true);
-        REQUIRE(d.strict_equal_to(e) == false);
     }
 
     SECTION("object props") {
@@ -190,7 +190,7 @@ TEMPLATE_TEST_CASE(
 
         auto definition = ClassDefinition();
         definition.name = "TestClass";
-        auto cls = ctx->class_create(definition);
+        auto cls = ctx->class_make(definition);
         auto instance = ctx->object_make(&cls);
         auto data = 25;
         instance.set_private_data(static_cast<void*>(&data));
@@ -227,8 +227,10 @@ TEMPLATE_TEST_CASE(
                 {"prop", ClassPropertyDefinition{get, set}}};
             definition.finalizer = finalizer;
 
-            auto cls = ctx->class_create(definition);
+            auto cls = ctx->class_make(definition);
             auto instance = ctx->object_make(&cls);
+
+            REQUIRE(instance.has_property("prop"));
 
             auto getter_res = instance.get_property("prop").value();
             REQUIRE(getter_res.to_number().value() == 1);
@@ -267,7 +269,7 @@ TEMPLATE_TEST_CASE(
         definition->name = "TestClass";
         definition->methods = {{"method", method}};
         definition->properties = {{"prop", ClassPropertyDefinition{get, set}}};
-        auto cls = ctx->class_create(*definition);
+        auto cls = ctx->class_make(*definition);
         delete definition;  // Ensure that definition is not used
         auto instance = ctx->object_make(&cls);
 
@@ -281,6 +283,32 @@ TEMPLATE_TEST_CASE(
         auto method_res =
             ctx->eval_script("this.method()", &instance, "sourceurl");
         REQUIRE(method_res.has_value() == false);
+    }
+
+    SECTION("constructor") {
+        auto ctx = create_context();
+
+        ctx->eval_script(
+            "class A{constructor(a) { this.a = a }};", nullptr, "sourceurl");
+        auto ctor = ctx->eval_script("A", nullptr, "sourceurl")
+                        .value()
+                        .to_object()
+                        .value();
+        REQUIRE(ctor.is_constructor() == true);
+        auto args = std::vector<Value>{ctx->value_make_number(5)};
+        auto res = ctor.call_as_constructor(args).value();
+        REQUIRE(res.get_property("a").value().to_number().value() == 5);
+
+        auto val = ctx->value_make_number(55);
+        auto get = [&](Object& object) { return val; };
+        auto def = new ClassDefinition();
+        def->name = "TestClass";
+        def->properties = {{"prop", ClassPropertyDefinition{get, nullptr}}};
+        auto cls = ctx->class_make(*def);
+        auto native_ctor = ctx->object_make_constructor(cls);
+        REQUIRE(native_ctor.is_constructor());
+        auto inst = native_ctor.call_as_constructor({}).value();
+        REQUIRE(inst.has_property("prop"));
     }
 
     SECTION("array") {

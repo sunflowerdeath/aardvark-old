@@ -60,7 +60,7 @@ class Qjs_Context : public Context {
     bool value_is_error(const Value& value) override;
 
     // Class
-    Class class_create(const ClassDefinition& definition) override;
+    Class class_make(const ClassDefinition& definition) override;
 
     // Object
     Object object_make(const Class* js_class) override;
@@ -95,7 +95,7 @@ class Qjs_Context : public Context {
         const std::vector<Value>& jsi_args) override;
 
     bool object_is_constructor(const Object& object) override;
-    Result<Value> object_call_as_constructor(
+    Result<Object> object_call_as_constructor(
         const Object& object, const std::vector<Value>& arguments) override;
 
     bool object_is_array(const Object& object) override;

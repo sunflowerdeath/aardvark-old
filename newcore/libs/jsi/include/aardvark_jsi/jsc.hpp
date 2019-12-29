@@ -58,7 +58,7 @@ class Jsc_Context : public Context {
     bool value_strict_equal(const Value& a, const Value& b) override;
 
     // Class
-    Class class_create(const ClassDefinition& definition) override;
+    Class class_make(const ClassDefinition& definition) override;
 
     // Object
     Object object_make(const Class* js_class) override;

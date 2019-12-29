@@ -209,7 +209,7 @@ TEMPLATE_TEST_CASE(
 
         auto def = ClassDefinition();
         def.name = "TestClass";
-        auto js_class = ctx->class_create(def);
+        auto js_class = ctx->class_make(def);
         auto sptr = std::make_shared<TestClass>(1);
 
         SECTION("to_js") {
