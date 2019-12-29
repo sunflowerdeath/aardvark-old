@@ -86,7 +86,7 @@ impl Value {
 }
 
 pub type Function =
-    Rc<dyn Fn(Value, Vec<Value>) -> Result<Value, Error>>;
+    Rc<dyn Fn(&dyn Context, Value, Vec<Value>) -> Result<Value, Error>>;
 
 pub type ClassFinalizer = Rc<dyn Fn(Object)>;
 

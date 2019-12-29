@@ -105,19 +105,16 @@ fn qjs_undefined() -> ffi::JSValue {
 fn value_from_qjs(ctx: &QjsContext, qjs_val: ffi::JSValue) -> Value {
     Value {
         ptr: Pointer {
-            ctx: ctx.weak.clone(),
+            ctx: ctx.get_weak(),
             data: Box::new(QjsValue::new(ctx, qjs_val)),
         },
     }
 }
 
-fn object_from_qjs(
-    ctx: &QjsContext,
-    qjs_val: ffi::JSValue,
-) -> Object {
+fn object_from_qjs(ctx: &QjsContext, qjs_val: ffi::JSValue) -> Object {
     Object {
         ptr: Pointer {
-            ctx: ctx.weak.clone(),
+            ctx: ctx.get_weak(),
             data: Box::new(QjsValue::new(ctx, qjs_val)),
         },
     }
@@ -176,7 +173,7 @@ extern "C" fn native_function_call(
             ffi::JS_DupValue_noinl(ctx, qjs_arg);
             jsi_args.push(value_from_qjs(jsi_ctx, qjs_arg));
         }
-        let res = (*func)(jsi_this, jsi_args);
+        let res = (*func)(jsi_ctx, jsi_this, jsi_args);
         match res {
             Ok(val) => {
                 let qjs_res = value_to_qjs(&val);
@@ -211,7 +208,7 @@ extern "C" fn class_finalizer(rt: *mut ffi::JSRuntime, val: ffi::JSValue) {
 pub struct QjsContext {
     rt: *mut ffi::JSRuntime,
     ctx: *mut ffi::JSContext,
-    weak: Weak<QjsContext>,
+    weak: std::cell::RefCell<Weak<QjsContext>>,
     class_finalizers: HashMap<u32, Option<ClassFinalizer>>,
     class_defs: HashMap<u32, Option<ClassDefinition>>,
 }
@@ -248,9 +245,9 @@ impl QjsContext {
                 ctx,
                 class_finalizers: HashMap::new(),
                 class_defs: HashMap::new(),
-                weak: Default::default()
+                weak: Default::default(),
             });
-            // ctx.weak = Rc::downgrade(&ctx);
+            ctx.weak.replace(Rc::downgrade(&ctx));
             ctx
         }
     }
@@ -270,6 +267,10 @@ impl QjsContext {
         Error {
             val: Box::new(value_from_qjs(self, val)),
         }
+    }
+
+    fn get_weak(&self) -> Weak<QjsContext> {
+        self.weak.borrow().clone()
     }
 }
 
@@ -300,7 +301,7 @@ impl Context for QjsContext {
         let qjs_str = Box::new(QjsString::new(rs_str.to_owned()));
         JsString {
             ptr: Pointer {
-                ctx: self.weak.clone(),
+                ctx: self.get_weak(),
                 data: qjs_str,
             },
         }
@@ -396,16 +397,13 @@ impl Context for QjsContext {
         }
         Ok(JsString {
             ptr: Pointer {
-                ctx: self.weak.clone(),
+                ctx: self.get_weak(),
                 data: Box::new(QjsString::new(res)),
             },
         })
     }
 
-    fn value_to_object(
-        &self,
-        val: &Value,
-    ) -> Result<Object, Error> {
+    fn value_to_object(&self, val: &Value) -> Result<Object, Error> {
         Ok(Object {
             ptr: val.ptr.clone(),
         })
@@ -413,7 +411,7 @@ impl Context for QjsContext {
 
     // Class
 
-    fn class_make( &mut self, def: &ClassDefinition,) -> Class {
+    fn class_make(&mut self, def: &ClassDefinition) -> Class {
         let mut class_id = 0;
         unsafe {
             ffi::JS_NewClassID(&mut class_id);
@@ -448,7 +446,9 @@ impl Context for QjsContext {
                 Some(get) => {
                     let get_clone = get.clone();
                     let func = self.object_make_func(Rc::new(
-                        move |this: Value, _args: Vec<Value>| {
+                        move |_ctx: &dyn Context,
+                              this: Value,
+                              _args: Vec<Value>| {
                             let obj = this.to_object().unwrap();
                             get_clone(obj)
                         },
@@ -509,7 +509,7 @@ impl Context for QjsContext {
 
         return Class {
             ptr: Pointer {
-                ctx: self.weak.clone(),
+                ctx: self.get_weak(),
                 data: Box::new(QjsClass::new(class_id)),
             },
         };

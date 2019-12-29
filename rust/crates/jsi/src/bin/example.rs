@@ -1,7 +1,7 @@
 extern crate aardvarkjsi;
 
-use aardvarkjsi::Context;
 use aardvarkjsi as jsi;
+use aardvarkjsi::Context;
 
 fn main() {
     println!("Hello World!");
@@ -35,16 +35,18 @@ fn main() {
     let test = obj.get_prop("test").unwrap().to_number().unwrap();
     println!("test: {}", test);
 
-    let func = |this: jsi::Value, args: Vec<jsi::Value>| {
+    let func = |ctx: &dyn Context, _this: jsi::Value, args: Vec<jsi::Value>| {
         println!("CALL FN");
         Ok(ctx.value_make_number(
             args[0].to_number().unwrap() + args[1].to_number().unwrap(),
         ))
     };
     let jsfn = ctx.object_make_func(std::rc::Rc::new(func));
-    let res = jsfn.call_as_function(
-        None,
-        &vec![ctx.value_make_number(5.0), ctx.value_make_number(6.0)],
-    ).unwrap();
+    let res = jsfn
+        .call_as_function(
+            None,
+            &vec![ctx.value_make_number(5.0), ctx.value_make_number(6.0)],
+        )
+        .unwrap();
     println!("CALL RESULT: {}", res.to_number().unwrap());
 }
