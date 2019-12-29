@@ -25,12 +25,15 @@ void require_valid(
 }
 
 TEMPLATE_TEST_CASE(
-    "check", "[check]"
+    "check",
+    "[check]"
 #ifdef ADV_JSI_QJS
-    ,Qjs_Context
+    ,
+    Qjs_Context
 #endif
 #ifdef ADV_JSI_JSC
-    ,Jsc_Context
+    ,
+    Jsc_Context
 #endif
 ) {
     auto create_context = []() { return TestType::create(); };

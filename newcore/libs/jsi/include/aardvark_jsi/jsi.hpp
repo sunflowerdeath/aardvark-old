@@ -164,7 +164,8 @@ class Context {
     virtual Script create_script(
         const std::string& source, const std::string& source_url) = 0;
     virtual Result<Value> eval_script(
-        const std::string& script, Object* js_this,
+        const std::string& script,
+        Object* js_this,
         const std::string& source_url) = 0;
     virtual void garbage_collect() = 0;
     virtual Object get_global_object() = 0;
@@ -223,7 +224,8 @@ class Context {
 
     virtual bool object_is_function(const Object& object) = 0;
     virtual Result<Value> object_call_as_function(
-        const Object& object, const Value* jsi_this,
+        const Object& object,
+        const Value* jsi_this,
         const std::vector<Value>& jsi_args) = 0;
 
     virtual bool object_is_constructor(const Object& object) = 0;

@@ -97,7 +97,7 @@ JSValueRef Jsc_Context::value_ref(const Value& value) {
 }
 
 JSObjectRef Jsc_Context::object_ref(const Object& object) {
-    return (JSObjectRef)static_cast<JscValue*>(object.ptr)->ref;
+    return (JSObjectRef) static_cast<JscValue*>(object.ptr)->ref;
 }
 
 JSStringRef Jsc_Context::string_ref(const String& str) {
@@ -125,15 +125,20 @@ Script Jsc_Context::create_script(
 }
 
 Result<Value> Jsc_Context::eval_script(
-    const std::string& script, Object* jsi_this,
+    const std::string& script,
+    Object* jsi_this,
     const std::string& source_url) {
     auto jsi_script = string_make_from_utf8(script);
     auto js_this = jsi_this == nullptr ? nullptr : object_ref(*jsi_this);
     auto jsi_source_url = string_make_from_utf8(script);
     auto exception = JSValueRef();
     auto jsc_res = JSEvaluateScript(
-        ctx, string_ref(jsi_script), js_this, string_ref(jsi_source_url),
-        0 /* starting_line_number */, &exception);
+        ctx,
+        string_ref(jsi_script),
+        js_this,
+        string_ref(jsi_source_url),
+        0 /* starting_line_number */,
+        &exception);
     if (exception != nullptr) return error_from_jsc(exception);
     return value_from_jsc(jsc_res);
 }
@@ -274,7 +279,9 @@ void class_finalize(JSObjectRef object) {
 }
 
 JSValueRef class_static_value_get(
-    JSContextRef ctx, JSObjectRef object, JSStringRef prop_name,
+    JSContextRef ctx,
+    JSObjectRef object,
+    JSStringRef prop_name,
     JSValueRef* exception) {
     auto jsi_ctx = Jsc_Context::get(ctx);
     auto jsi_object = jsi_ctx->object_from_jsc(object);
@@ -291,8 +298,11 @@ JSValueRef class_static_value_get(
 }
 
 bool class_static_value_set(
-    JSContextRef ctx, JSObjectRef object, JSStringRef prop_name,
-    JSValueRef value, JSValueRef* exception) {
+    JSContextRef ctx,
+    JSObjectRef object,
+    JSStringRef prop_name,
+    JSValueRef value,
+    JSValueRef* exception) {
     auto jsi_ctx = Jsc_Context::get(ctx);
     auto jsi_object = jsi_ctx->object_from_jsc(object);
     auto jsi_value = jsi_ctx->value_from_jsc(value);
@@ -317,8 +327,10 @@ Class Jsc_Context::class_make(const ClassDefinition& definition) {
     JSStaticValue static_values[definition.properties.size() + 1];
     auto i = 0;
     for (auto& it : definition.properties) {
-        static_values[i] = {it.first.c_str(), class_static_value_get,
-                            class_static_value_set, kJSPropertyAttributeNone};
+        static_values[i] = {it.first.c_str(),
+                            class_static_value_get,
+                            class_static_value_set,
+                            kJSPropertyAttributeNone};
         i++;
     }
     static_values[i] = {0, 0, 0};
@@ -360,8 +372,12 @@ Object Jsc_Context::object_make(const Class* js_class) {
 }
 
 JSValueRef native_function_call_as_function(
-    JSContextRef ctx, JSObjectRef function, JSObjectRef this_object,
-    size_t arg_count, const JSValueRef args[], JSValueRef* exception) {
+    JSContextRef ctx,
+    JSObjectRef function,
+    JSObjectRef this_object,
+    size_t arg_count,
+    const JSValueRef args[],
+    JSValueRef* exception) {
     auto jsi_ctx = Jsc_Context::get(ctx);
     auto jsi_function = static_cast<Function*>(JSObjectGetPrivate(function));
     auto jsi_this = this_object == nullptr
@@ -474,8 +490,12 @@ VoidResult Jsc_Context::object_set_property(
     auto jsc_name = string_make_from_utf8(name);
     auto exception = JSValueRef();
     JSObjectSetProperty(
-        ctx, object_ref(object), string_ref(jsc_name), value_ref(value),
-        kJSPropertyAttributeNone, &exception);
+        ctx,
+        object_ref(object),
+        string_ref(jsc_name),
+        value_ref(value),
+        kJSPropertyAttributeNone,
+        &exception);
     if (exception != nullptr) return error_from_jsc(exception);
     return VoidResult();
 }
@@ -495,7 +515,8 @@ bool Jsc_Context::object_is_function(const Object& object) {
 }
 
 Result<Value> Jsc_Context::object_call_as_function(
-    const Object& jsi_object, const Value* jsi_this,
+    const Object& jsi_object,
+    const Value* jsi_this,
     const std::vector<Value>& jsi_args) {
     auto object = object_ref(jsi_object);
     auto this_object = jsi_this == nullptr

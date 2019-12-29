@@ -56,7 +56,10 @@ void native_function_finalizer(JSRuntime* rt, JSValue val) {
 }
 
 JSValue native_function_call(
-    JSContext* ctx, JSValueConst func_obj, JSValueConst this_val, int argc,
+    JSContext* ctx,
+    JSValueConst func_obj,
+    JSValueConst this_val,
+    int argc,
     JSValueConst* argv) {
     auto func = static_cast<Function*>(
         JS_GetOpaque(func_obj, Qjs_Context::function_class_id));
@@ -166,7 +169,10 @@ Script Qjs_Context::create_script(
 Result<Value> Qjs_Context::eval_script(
     const std::string& script, Object* js_this, const std::string& source_url) {
     auto res = JS_Eval(
-        ctx, script.c_str(), script.size() + 1, source_url.c_str(),
+        ctx,
+        script.c_str(),
+        script.size() + 1,
+        source_url.c_str(),
         JS_EVAL_TYPE_GLOBAL);
     if (JS_IsException(res)) return get_error();
     return value_from_qjs(res);
@@ -280,7 +286,9 @@ Class Qjs_Context::class_make(const ClassDefinition& definition) {
     JS_NewClassID(&class_id);
     auto class_def = JSClassDef{definition.name.c_str(),  // name
                                 class_finalizer,          // finalizer
-                                nullptr, nullptr, nullptr};
+                                nullptr,
+                                nullptr,
+                                nullptr};
     JS_NewClass(rt, class_id, &class_def);
 
     auto proto = JS_NewObject(ctx);
@@ -324,7 +332,10 @@ Class Qjs_Context::class_make(const ClassDefinition& definition) {
         auto value = object_make_function(method);
         JS_DupValue(ctx, object_get_qjs(value));
         JS_DefinePropertyValueStr(
-            ctx, proto, name.c_str(), object_get_qjs(value),
+            ctx,
+            proto,
+            name.c_str(),
+            object_get_qjs(value),
             JS_PROP_ENUMERABLE);
     }
 
@@ -354,7 +365,10 @@ Object Qjs_Context::object_make_function(const Function& function) {
 }
 
 JSValue constructor(
-    JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv,
+    JSContext* ctx,
+    JSValueConst this_val,
+    int argc,
+    JSValueConst* argv,
     int magic) {
     auto proto = JS_GetClassProto(ctx, magic);
     JS_SetPrototype(ctx, this_val, proto);
@@ -362,7 +376,7 @@ JSValue constructor(
     return this_val;
 }
 
-Object Qjs_Context::object_make_constructor(const Class& cls){
+Object Qjs_Context::object_make_constructor(const Class& cls) {
     auto func = JS_NewCFunctionMagic(
         ctx,                         // ctx
         constructor,                 // func
@@ -462,7 +476,8 @@ bool Qjs_Context::object_is_function(const Object& object) {
 }
 
 Result<Value> Qjs_Context::object_call_as_function(
-    const Object& object, const Value* jsi_this,
+    const Object& object,
+    const Value* jsi_this,
     const std::vector<Value>& jsi_args) {
     auto qjs_object = object_get_qjs(object);
     auto qjs_this = jsi_this == nullptr ? JS_NULL : value_get_qjs(*jsi_this);

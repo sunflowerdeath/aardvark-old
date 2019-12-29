@@ -19,7 +19,8 @@ class Mapper {
     virtual Value to_js(Context& ctx, const T& value) = 0;
     virtual T from_js(Context& ctx, const Value& value) = 0;
     virtual tl::expected<T, std::string> try_from_js(
-        Context& ctx, const Value& value,
+        Context& ctx,
+        const Value& value,
         const CheckErrorParams& err_params) = 0;
 };
 
@@ -33,7 +34,8 @@ template <typename T>
 class SimpleMapper : public Mapper<T> {
   public:
     SimpleMapper(
-        ToJsCallback<T> to_js_cb, FromJsCallback<T> from_js_cb,
+        ToJsCallback<T> to_js_cb,
+        FromJsCallback<T> from_js_cb,
         Checker* checker)
         : to_js_cb(to_js_cb), from_js_cb(from_js_cb), checker(checker){};
 
@@ -46,7 +48,8 @@ class SimpleMapper : public Mapper<T> {
     }
 
     tl::expected<T, std::string> try_from_js(
-        Context& ctx, const Value& value,
+        Context& ctx,
+        const Value& value,
         const CheckErrorParams& err_params) override {
         auto err = (*checker)(ctx, value, err_params);
         if (err.has_value()) return tl::make_unexpected(err.value());
@@ -81,7 +84,8 @@ class EnumMapper : public Mapper<T> {
     }
 
     tl::expected<T, std::string> try_from_js(
-        Context& ctx, const Value& value,
+        Context& ctx,
+        const Value& value,
         const CheckErrorParams& err_params) override {
         auto res = mapper->try_from_js(ctx, value, err_params);
         return res.map([](auto value) { return static_cast<T>(value); });
@@ -118,7 +122,8 @@ class StructMapper : public Mapper<T> {
             return result.to_value();
         };
 
-        map_props_from_js = [=](Context& ctx, const Value& value,
+        map_props_from_js = [=](Context& ctx,
+                                const Value& value,
                                 const CheckErrorParams* err_params)
             -> tl::expected<T, std::string> {
             auto should_check = err_params != nullptr;
@@ -185,7 +190,8 @@ class StructMapper : public Mapper<T> {
     }
 
     tl::expected<T, std::string> try_from_js(
-        Context& ctx, const Value& value,
+        Context& ctx,
+        const Value& value,
         const CheckErrorParams& err_params) override {
         return map_props_from_js(ctx, value, &err_params);
     };
@@ -205,7 +211,8 @@ template <class ResType, class... ArgsTypes>
 class WrappedFunction {
   public:
     WrappedFunction(
-        FunctionMapper<ResType, ArgsTypes...>* mapper, Context* ctx,
+        FunctionMapper<ResType, ArgsTypes...>* mapper,
+        Context* ctx,
         const Object& function)
         : mapper(mapper), ctx(ctx), function(function) {}
 
@@ -279,7 +286,8 @@ class FunctionMapper : public Mapper<std::function<ResType(ArgsTypes...)>> {
     }
 
     tl::expected<FunctionType, std::string> try_from_js(
-        Context& ctx, const Value& value,
+        Context& ctx,
+        const Value& value,
         const CheckErrorParams& err_params) override {
         auto res = function_checker(ctx, value, err_params);
         if (res.has_value()) return tl::make_unexpected(res.value());
@@ -330,13 +338,17 @@ class ObjectsMapper : Mapper<std::shared_ptr<T>> {
     }
 
     tl::expected<std::shared_ptr<T>, std::string> try_from_js(
-        Context& ctx, const Value& value,
+        Context& ctx,
+        const Value& value,
         const CheckErrorParams& err_params) override {
         auto native_object = from_js(ctx, value);
         if (native_object == nullptr) {
             auto error = fmt::format(
                 "Invalid {} `{}` supplied to `{}`, expected `{}`.",
-                err_params.kind, err_params.name, err_params.target, type_name);
+                err_params.kind,
+                err_params.name,
+                err_params.target,
+                type_name);
             return tl::make_unexpected(error);
         } else {
             return native_object;
@@ -386,4 +398,3 @@ class ObjectsMapper : Mapper<std::shared_ptr<T>> {
 };
 
 }  // namespace aardvark::jsi
-

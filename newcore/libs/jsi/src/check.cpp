@@ -36,7 +36,8 @@ std::string get_type_name(const Value& value) {
 
 Checker make_primitive(const std::string& expected_type) {
     return [expected_type](
-               const Context& ctx, const Value& value,
+               const Context& ctx,
+               const Value& value,
                const CheckErrorParams& params) -> CheckResult {
         auto type = get_type_name(value);
         if (type == expected_type) return std::nullopt;
@@ -46,7 +47,11 @@ Checker make_primitive(const std::string& expected_type) {
         }
         return fmt::format(
             "Invalid {} `{}` of type `{}` supplied to `{}`, expected `{}`.",
-            params.kind, params.name, type, params.target, expected_type);
+            params.kind,
+            params.name,
+            type,
+            params.target,
+            expected_type);
     };
 }
 

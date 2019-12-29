@@ -11,12 +11,15 @@
 using namespace aardvark::jsi;
 
 TEMPLATE_TEST_CASE(
-    "context", "[context]"
+    "context",
+    "[context]"
 #ifdef ADV_JSI_QJS
-    ,Qjs_Context
+    ,
+    Qjs_Context
 #endif
 #ifdef ADV_JSI_JSC
-    ,Jsc_Context
+    ,
+    Jsc_Context
 #endif
 ) {
     auto create_context = []() { return TestType::create(); };
@@ -194,7 +197,7 @@ TEMPLATE_TEST_CASE(
         auto instance = ctx->object_make(&cls);
         auto data = 25;
         instance.set_private_data(static_cast<void*>(&data));
-        auto get_data = instance.template get_private_data<int>(); // WTF
+        auto get_data = instance.template get_private_data<int>();  // WTF
         REQUIRE(get_data == 25);
     }
 

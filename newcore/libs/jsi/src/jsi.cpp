@@ -2,9 +2,7 @@
 
 namespace aardvark::jsi {
 
-Error::Error(Value* value) {
-    value_ptr = std::make_shared<Value>(*value);
-}
+Error::Error(Value* value) { value_ptr = std::make_shared<Value>(*value); }
 
 Value Error::value() { return *value_ptr.get(); }
 

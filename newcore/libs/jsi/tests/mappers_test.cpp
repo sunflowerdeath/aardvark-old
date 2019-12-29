@@ -14,7 +14,8 @@
 using namespace aardvark::jsi;
 
 TEMPLATE_TEST_CASE(
-    "mappers", "[mappers]"
+    "mappers",
+    "[mappers]"
 #ifdef ADV_JSI_QJS
     ,
     Qjs_Context
@@ -168,7 +169,7 @@ TEMPLATE_TEST_CASE(
 
         struct NotDefaultConstructible {
           public:
-            NotDefaultConstructible(int a) : a(a) {};
+            NotDefaultConstructible(int a) : a(a){};
             int a;
         };
 

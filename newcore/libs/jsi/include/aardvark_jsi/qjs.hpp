@@ -31,7 +31,8 @@ class Qjs_Context : public Context {
     Script create_script(
         const std::string& source, const std::string& source_url) override;
     Result<Value> eval_script(
-        const std::string& script, Object* js_this,
+        const std::string& script,
+        Object* js_this,
         const std::string& source_url) override;
     void garbage_collect() override;
     Object get_global_object() override;
@@ -86,12 +87,14 @@ class Qjs_Context : public Context {
     VoidResult object_delete_property(
         const Object& object, const std::string& name) override;
     VoidResult object_set_property(
-        const Object& object, const std::string& name,
+        const Object& object,
+        const std::string& name,
         const Value& value) override;
 
     bool object_is_function(const Object& object) override;
     Result<Value> object_call_as_function(
-        const Object& object, const Value* jsi_this,
+        const Object& object,
+        const Value* jsi_this,
         const std::vector<Value>& jsi_args) override;
 
     bool object_is_constructor(const Object& object) override;
