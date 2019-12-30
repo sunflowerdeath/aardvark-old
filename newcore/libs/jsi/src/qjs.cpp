@@ -117,7 +117,7 @@ void Qjs_Context::init() {
     JS_NewClass(rt, Qjs_Context::function_class_id, &function_class_def);
 
     strict_equal_function.emplace(
-        eval("eq=(a,b)=>a===b", nullptr, "").value().to_object().value());
+        eval("(a,b)=>a===b", nullptr, "").value().to_object().value());
 }
 
 Qjs_Context::~Qjs_Context() {
@@ -365,28 +365,13 @@ Object Qjs_Context::object_make_function(const Function& function) {
     return object_from_qjs(qjs_obj);
 }
 
-JSValue constructor(
-    JSContext* ctx,
-    JSValueConst this_val,
-    int argc,
-    JSValueConst* argv,
-    int magic) {
-    auto proto = JS_GetClassProto(ctx, magic);
-    JS_SetPrototype(ctx, this_val, proto);
-    JS_FreeValue(ctx, proto);
-    return this_val;
-}
-
 Object Qjs_Context::object_make_constructor(const Class& cls) {
-    auto func = JS_NewCFunctionMagic(
-        ctx,                         // ctx
-        constructor,                 // func
-        "name",                      // name
-        0,                           // length
-        JS_CFUNC_constructor_magic,  // enum
-        class_get_qjs(cls)           // magic
-    );
-    return object_from_qjs(func, true); // Error happens if free this value
+    auto ctor = object_make_function(
+        [this, cls](Value& this_val, std::vector<Value>& args) {
+            return object_make(&cls).to_value();
+        });
+    JS_SetConstructorBit(ctx, object_get_qjs(ctor), 1);
+    return ctor;
 }
 
 Object Qjs_Context::object_make_array() {

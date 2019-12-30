@@ -12,6 +12,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release")
+endif()
+
 if(NOT ADV_PLATFORM)
     set(ADV_PLATFORM "linux")
 endif()
@@ -20,19 +24,19 @@ if(NOT ADV_ARCH)
     set(ADV_ARCH "x86_64")
 endif()
 
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Release")
-endif()
-
-# Export compile commands to 'compile_commands.json'
+# compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# configure_file(
+    # "${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json"
+    # "${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json"
+    # COPYONLY)
 
 #-------------------------------------------------------------------------------
 # COMPILATION SETTINGS
 #-------------------------------------------------------------------------------
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+# set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_FLAGS_DEBUG "-g -fno-omit-frame-pointer")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Os -g -fno-omit-frame-pointer")
 
@@ -55,8 +59,10 @@ endif()
 # LIBS
 #-------------------------------------------------------------------------------
 
+include("${CMAKE_CURRENT_SOURCE_DIR}/externals/find.cmake")
+
 # jsi
-set(ADV_JSI_STATIC_LIB ON CACHE BOOL "" FORCE)
-set(ADV_JSI_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(ADV_JSI_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+# set(ADV_JSI_STATIC ON)
+# set(ADV_JSI_EXAMPLES OFF)
+# set(ADV_JSI_TESTS OFF)
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/libs/jsi")

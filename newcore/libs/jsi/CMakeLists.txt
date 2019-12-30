@@ -1,30 +1,15 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(CMAKE_C_COMPILER "/usr/bin/clang")
-set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
-
 project(ADV_JSI LANGUAGES C CXX)
-
-#-------------------------------------------------------------------------------
-# COMPILATION SETTINGS
-#-------------------------------------------------------------------------------
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_CXX_FLAGS_DEBUG "-g -fno-omit-frame-pointer")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Os -g -fno-omit-frame-pointer")
-set(CMAKE_CXX_FLAGS_RELEASE "-Os -ffunction-sections -fdata-sections")
 
 #-------------------------------------------------------------------------------
 # TARGETS
 #-------------------------------------------------------------------------------
-include("${CMAKE_CURRENT_SOURCE_DIR}/../../externals/find.cmake")
-
 # Library
-if (ADV_JSI_STATIC_LIB)
-    set(ADV_JSI_LIB_TYPE STATIC)
-else()
+if (ADV_JSI_SHARED)
     set(ADV_JSI_LIB_TYPE SHARED)
+else()
+    set(ADV_JSI_LIB_TYPE STATIC)
 endif()
 
 add_library(aardvark_jsi ${ADV_JSI_LIB_TYPE}
@@ -54,12 +39,12 @@ if (ADV_JSI_QJS)
 endif()
 
 # Tests
-if(ADV_JSI_BUILD_TESTS)
-    add_executable(tests
+if(ADV_JSI_TESTS)
+    add_executable(aadrvark_jsi_tests
         tests/main.cpp
         tests/check_test.cpp
         tests/jsi_test.cpp
         tests/mappers_test.cpp
     )
-    target_link_libraries(tests Catch2 aardvark_jsi)
+    target_link_libraries(aadrvark_jsi_tests Catch2 aardvark_jsi)
 endif()
