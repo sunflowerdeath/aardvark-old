@@ -147,6 +147,8 @@ pub const JS_EVAL_TYPE_MASK: u32 = 3;
 pub const JS_EVAL_FLAG_STRICT: u32 = 8;
 pub const JS_EVAL_FLAG_STRIP: u32 = 16;
 pub const JS_EVAL_FLAG_COMPILE_ONLY: u32 = 32;
+pub const JS_EVAL_FLAG_BACKTRACE_BARRIER: u32 = 64;
+pub const JS_CALL_FLAG_CONSTRUCTOR: u32 = 1;
 pub const JS_GPN_STRING_MASK: u32 = 1;
 pub const JS_GPN_SYMBOL_MASK: u32 = 2;
 pub const JS_GPN_PRIVATE_MASK: u32 = 4;
@@ -1412,9 +1414,6 @@ pub const JS_TAG_BIG_INT: _bindgen_ty_1 = -10;
 pub const JS_TAG_BIG_FLOAT: _bindgen_ty_1 = -9;
 pub const JS_TAG_SYMBOL: _bindgen_ty_1 = -8;
 pub const JS_TAG_STRING: _bindgen_ty_1 = -7;
-pub const JS_TAG_SHAPE: _bindgen_ty_1 = -6;
-pub const JS_TAG_ASYNC_FUNCTION: _bindgen_ty_1 = -5;
-pub const JS_TAG_VAR_REF: _bindgen_ty_1 = -4;
 pub const JS_TAG_MODULE: _bindgen_ty_1 = -3;
 pub const JS_TAG_FUNCTION_BYTECODE: _bindgen_ty_1 = -2;
 pub const JS_TAG_OBJECT: _bindgen_ty_1 = -1;
@@ -1746,6 +1745,11 @@ fn bindgen_test_layout_JSMallocFunctions() {
         )
     );
 }
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct JSGCObjectHeader {
+    _unused: [u8; 0],
+}
 extern "C" {
     pub fn JS_NewRuntime() -> *mut JSRuntime;
 }
@@ -1771,7 +1775,7 @@ extern "C" {
     pub fn JS_FreeRuntime(rt: *mut JSRuntime);
 }
 pub type JS_MarkFunc = ::std::option::Option<
-    unsafe extern "C" fn(rt: *mut JSRuntime, val: JSValue),
+    unsafe extern "C" fn(rt: *mut JSRuntime, gp: *mut JSGCObjectHeader),
 >;
 extern "C" {
     pub fn JS_MarkValue(
@@ -1788,9 +1792,6 @@ extern "C" {
         rt: *mut JSRuntime,
         obj: JSValue,
     ) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    pub fn JS_IsInGCSweep(rt: *mut JSRuntime) -> ::std::os::raw::c_int;
 }
 extern "C" {
     pub fn JS_NewContext(rt: *mut JSRuntime) -> *mut JSContext;
@@ -2681,6 +2682,7 @@ pub type JSClassCall = ::std::option::Option<
         this_val: JSValue,
         argc: ::std::os::raw::c_int,
         argv: *mut JSValue,
+        flags: ::std::os::raw::c_int,
     ) -> JSValue,
 >;
 #[repr(C)]
@@ -2806,12 +2808,6 @@ extern "C" {
         ctx: *mut JSContext,
         val: JSValue,
     ) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    pub fn JS_EnableIsErrorProperty(
-        ctx: *mut JSContext,
-        enable: ::std::os::raw::c_int,
-    );
 }
 extern "C" {
     pub fn JS_ResetUncatchableError(ctx: *mut JSContext);
@@ -2975,6 +2971,13 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
+    pub fn JS_SetConstructorBit(
+        ctx: *mut JSContext,
+        func_obj: JSValue,
+        val: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
     pub fn JS_NewArray(ctx: *mut JSContext) -> JSValue;
 }
 extern "C" {
@@ -3092,14 +3095,6 @@ extern "C" {
         obj: JSValue,
         prop: JSAtom,
     ) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    pub fn JS_ParseJSON(
-        ctx: *mut JSContext,
-        buf: *const ::std::os::raw::c_char,
-        buf_len: usize,
-        filename: *const ::std::os::raw::c_char,
-    ) -> JSValue;
 }
 extern "C" {
     pub fn JS_Call(
@@ -3228,6 +3223,22 @@ extern "C" {
         class_id: JSClassID,
     ) -> *mut ::std::os::raw::c_void;
 }
+extern "C" {
+    pub fn JS_ParseJSON(
+        ctx: *mut JSContext,
+        buf: *const ::std::os::raw::c_char,
+        buf_len: usize,
+        filename: *const ::std::os::raw::c_char,
+    ) -> JSValue;
+}
+extern "C" {
+    pub fn JS_JSONStringify(
+        ctx: *mut JSContext,
+        obj: JSValue,
+        replacer: JSValue,
+        space0: JSValue,
+    ) -> JSValue;
+}
 pub type JSFreeArrayBufferDataFunc = ::std::option::Option<
     unsafe extern "C" fn(
         rt: *mut JSRuntime,
@@ -3276,6 +3287,22 @@ extern "C" {
         ctx: *mut JSContext,
         resolving_funcs: *mut JSValue,
     ) -> JSValue;
+}
+pub type JSHostPromiseRejectionTracker = ::std::option::Option<
+    unsafe extern "C" fn(
+        ctx: *mut JSContext,
+        promise: JSValue,
+        reason: JSValue,
+        is_handled: ::std::os::raw::c_int,
+        opaque: *mut ::std::os::raw::c_void,
+    ),
+>;
+extern "C" {
+    pub fn JS_SetHostPromiseRejectionTracker(
+        rt: *mut JSRuntime,
+        cb: JSHostPromiseRejectionTracker,
+        opaque: *mut ::std::os::raw::c_void,
+    );
 }
 pub type JSInterruptHandler = ::std::option::Option<
     unsafe extern "C" fn(
@@ -4169,53 +4196,49 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    pub fn JS_DupValue_noinl(ctx: *mut JSContext, v: JSValue) -> JSValue;
+    pub fn JS_DupValue_NOINL(ctx: *mut JSContext, v: JSValue) -> JSValue;
 }
 extern "C" {
-    pub fn JS_FreeValue_noinl(ctx: *mut JSContext, v: JSValue);
+    pub fn JS_FreeValue_NOINL(ctx: *mut JSContext, v: JSValue);
 }
 extern "C" {
-    pub fn JS_IsBool_noinl(v: JSValue) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    pub fn JS_IsNull_noinl(v: JSValue) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    pub fn JS_IsUndefined_noinl(v: JSValue) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    pub fn JS_IsException_noinl(v: JSValue) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    pub fn JS_IsString_noinl(v: JSValue) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    pub fn JS_IsSymbol_noinl(v: JSValue) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    pub fn JS_IsObject_noinl(v: JSValue) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    pub fn JS_NewBool_noinl(
+    pub fn JS_NewBool_NOINL(
         ctx: *mut JSContext,
         val: ::std::os::raw::c_int,
     ) -> JSValue;
 }
 extern "C" {
-    pub fn JS_NewFloat64_noinl(ctx: *mut JSContext, d: f64) -> JSValue;
+    pub fn JS_NewFloat64_NOINL(ctx: *mut JSContext, d: f64) -> JSValue;
 }
 extern "C" {
-    pub fn JS_ToCString_noinl(
+    pub fn JS_IsBool_NOINL(v: JSValue) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn JS_IsNull_NOINL(v: JSValue) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn JS_IsUndefined_NOINL(v: JSValue) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn JS_IsException_NOINL(v: JSValue) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn JS_IsString_NOINL(v: JSValue) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn JS_IsSymbol_NOINL(v: JSValue) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn JS_IsObject_NOINL(v: JSValue) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn JS_ToCString_NOINL(
         ctx: *mut JSContext,
-        val: JSValue,
+        val1: JSValue,
     ) -> *const ::std::os::raw::c_char;
 }
 extern "C" {
-    pub fn JS_GetProperty_noinl(
-        ctx: *mut JSContext,
-        this_obj: JSValue,
-        prop: JSAtom,
-    ) -> JSValue;
+    pub fn JS_ValueGetPtr(v: JSValue) -> *mut ::std::os::raw::c_void;
 }
 pub type __builtin_va_list = [__va_list_tag; 1usize];
 #[repr(C)]

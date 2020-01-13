@@ -1,7 +1,7 @@
 use downcast_rs;
 use std::collections::HashMap;
 use std::fmt;
-use std::rc::{Rc, Weak};
+use std::rc::Rc;
 
 #[derive(PartialEq, Debug)]
 pub enum ValueType {
@@ -31,19 +31,19 @@ pub struct Error {
 
 impl fmt::Debug for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Unhadled JavaScript exception")
+        write!(f, "Unhandled JavaScript exception")
     }
 }
 
 #[derive(Clone)]
 pub struct Pointer {
-    pub(crate) ctx: Weak<dyn Context>,
+    pub(crate) ctx: *const dyn Context,
     pub(crate) data: Box<dyn PointerData>,
 }
 
 impl Pointer {
-    fn get_ctx(&self) -> Rc<dyn Context> {
-        self.ctx.upgrade().unwrap()
+    fn get_ctx(&self) -> &dyn Context {
+        unsafe { &*self.ctx }
     }
 }
 
@@ -54,7 +54,7 @@ pub struct JsString {
 
 impl<'a> JsString {
     pub fn to_utf8(&self) -> String {
-        return self.ptr.ctx.upgrade().unwrap().string_to_utf8(self);
+        return self.ptr.get_ctx().string_to_utf8(self);
     }
 }
 
@@ -91,16 +91,17 @@ pub type Function =
 pub type ClassFinalizer = Rc<dyn Fn(Object)>;
 
 pub type ClassPropertyGetter =
-    Rc<dyn Fn(Object) -> Result<Value, Error>>;
+    Rc<dyn Fn(&dyn Context, Object) -> Result<Value, Error>>;
 
 pub type ClassPropertySetter =
-    Rc<dyn Fn(Object, Value) -> Result<(), Error>>;
+    Rc<dyn Fn(&dyn Context, Object, Value) -> Result<(), Error>>;
 
 pub struct ClassPropertyDefinition {
     pub get: Option<ClassPropertyGetter>,
     pub set: Option<ClassPropertySetter>,
 }
 
+#[derive(Default)]
 pub struct ClassDefinition {
     pub name: String,
     pub methods: HashMap<String, Function>,
@@ -118,44 +119,43 @@ pub struct Object {
     pub(crate) ptr: Pointer,
 }
 
-impl Object{
+impl Object {
+    pub fn to_value(&self) -> Value {
+        self.ptr.get_ctx().object_to_value(self)
+    }
+
+    pub fn set_private_data(&self, data: *mut std::ffi::c_void) {
+        self.ptr.get_ctx().object_set_private_data(self, data)
+    }
+
+    pub fn get_private_data(&self) -> *mut std::ffi::c_void {
+        self.ptr.get_ctx().object_get_private_data(self)
+    }
+
     /*
-    pub fn object_to_value(&self) -> Result<Value, Error> {
-        self.ptr.ctx.object_to_value(self)
-    }
-
-    pub fn object_set_pivate_data(&self, data: std::ffi::c_void) {
-        self.ptr.ctx.object_set_pivate_data(self)
-    }
-
-    pub fn object_get_pivate_data(&self) -> std::ffi::c_void {
-        self.ptr.ctx.object_set_pivate_data(self)
-    }
-
     pub fn object_get_prop_names(&self) -> Result<Vec<String>, Error> {
         self.ptr.ctx.object_get_prop_names(self)
     }
-    pub fn object_has_prop(&self, prop: &str) -> bool {
-        self.ptr.ctx.object_has_prop(self, prop)
-    }
     */
+
+    pub fn object_has_prop(&self, prop: &str) -> bool {
+        self.ptr.get_ctx().object_has_prop(self, prop)
+    }
 
     pub fn get_prop(&self, prop: &str) -> Result<Value, Error> {
         self.ptr.get_ctx().object_get_prop(self, prop)
     }
 
-    pub fn set_prop(
-        &self,
-        prop: &str,
-        val: &Value,
-    ) -> Result<(), Error> {
+    pub fn set_prop(&self, prop: &str, val: &Value) -> Result<(), Error> {
         self.ptr.get_ctx().object_set_prop(self, prop, val)
     }
 
+    pub fn is_function(&self) -> bool {
+        self.ptr.get_ctx().object_is_function(self)
+    }
+
     pub fn call_as_function(
-        &self,
-        this: Option<&Value>,
-        args: &Vec<Value>,
+        &self, this: Option<&Value>, args: &Vec<Value>,
     ) -> Result<Value, Error> {
         self.ptr.get_ctx().object_call_as_function(self, this, args)
     }
@@ -164,7 +164,7 @@ impl Object{
 pub trait Context {
     fn eval(&self, source: &str, sourceurl: &str) -> Result<Value, Error>;
     // fn garbage_collect(&self);
-    // fn get_global_object(&self) -> Object;
+    fn get_global_object(&self) -> Object;
 
     fn string_make_from_utf8(&self, rs_str: &str) -> JsString;
     fn string_to_utf8(&self, jsi_str: &JsString) -> String;
@@ -187,42 +187,38 @@ pub trait Context {
     // fn value_strict_equal_to(&self, a: &Value, b: &Value) -> bool;
 
     // Class
-    fn class_make(&mut self, def: &ClassDefinition) -> Class;
+    fn class_make(&self, def: &ClassDefinition) -> Class;
 
     // Object
-    // object_make(const Class* js_class) -> Object;
+    fn object_make(&self, class: Option<&Class>) -> Object;
     fn object_make_func(&self, func: Function) -> Object;
     // object_make_constructor(const Class& js_class) -> Object;
-    // object_make_array() -> Object;
+    object_make_array() -> Object;
 
-    // fn object_to_value(&self, &Object obj) -> Result<Value, Error>;
+    fn object_to_value(&self, obj: &Object) -> Value;
 
-    // fn object_set_pivate_data(&self, &Object obj, data: std::ffi:c_void);
-    // fn object_get_pivate_data(&self, &Object obj) -> std::ffi:c_void;
+    fn object_set_private_data(
+        &self, obj: &Object, data: *mut std::ffi::c_void,
+    );
+    fn object_get_private_data(&self, obj: &Object) -> *mut std::ffi::c_void;
 
-    // fn object_get_prop_names(&self, obj: &Object, prop: &str)
+    // fn object_get_own_prop_names(&self, obj: &Object, prop: &str)
     //      -> Result<Vec<String>, Error>;
-    // fn object_has_prop(&self, obj: &Object, prop: &str) -> bool;
+    fn object_has_prop(&self, obj: &Object, prop: &str) -> bool;
     fn object_get_prop(&self, obj: &Object, prop: &str)
         -> Result<Value, Error>;
     fn object_set_prop(
-        &self,
-        obj: &Object,
-        prop: &str,
-        val: &Value,
+        &self, obj: &Object, prop: &str, val: &Value,
     ) -> Result<(), Error>;
-    // fn object_delete_prop(&self, obj: &Object, prop: &str)
-    // -> Result<(), Error>;
+    fn object_delete_prop(&self, obj: &Object, prop: &str)
+        -> Result<(), Error>;
 
-    // fn object_is_function(&self, obj: &Object) -> bool;
+    fn object_is_function(&self, obj: &Object) -> bool;
     fn object_call_as_function(
-        &self,
-        func: &Object,
-        this: Option<&Value>,
-        args: &Vec<Value>,
+        &self, func: &Object, this: Option<&Value>, args: &Vec<Value>,
     ) -> Result<Value, Error>;
 
-    // fn object_is_constructor(&self, obj: &Object) -> bool;
+    fn object_is_constructor(&self, obj: &Object) -> bool;
     // fn object_call_as_constructor(
     // &self,
     // func: &Object,

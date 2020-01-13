@@ -1,3 +1,9 @@
+#[macro_use]
+extern crate paste;
+
+#[macro_use]
+extern crate lazy_static;
+
 mod jsi;
 pub use jsi::*;
 
@@ -5,3 +11,8 @@ pub use jsi::*;
 mod qjs;
 #[cfg(feature = "qjs")]
 pub use qjs::*;
+
+mod check;
+pub use check::*;
+
+mod mappers;

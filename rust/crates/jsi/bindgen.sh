@@ -1,5 +1,5 @@
 bindgen \
-    ../../../newcore/externals/quickjs/quickjs.h \
+    ../../externals/quickjs/quickjs.h \
     --raw-line "\
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
@@ -7,4 +7,3 @@ bindgen \
 #![allow(dead_code)]\
 "\
     -o ./src/qjs/ffi.rs \
-    -- -DBINDGEN=1

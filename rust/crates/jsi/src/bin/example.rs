@@ -1,7 +1,7 @@
-extern crate aardvarkjsi;
+extern crate aardvark_jsi;
 
-use aardvarkjsi as jsi;
-use aardvarkjsi::Context;
+use aardvark_jsi as jsi;
+use aardvark_jsi::Context;
 
 fn main() {
     println!("Hello World!");
