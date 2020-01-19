@@ -138,7 +138,7 @@ impl Object {
     }
     */
 
-    pub fn object_has_prop(&self, prop: &str) -> bool {
+    pub fn has_prop(&self, prop: &str) -> bool {
         self.ptr.get_ctx().object_has_prop(self, prop)
     }
 
@@ -158,6 +158,10 @@ impl Object {
         &self, this: Option<&Value>, args: &Vec<Value>,
     ) -> Result<Value, Error> {
         self.ptr.get_ctx().object_call_as_function(self, this, args)
+    }
+
+    pub fn is_array(&self) -> bool {
+        self.ptr.get_ctx().object_is_array(self)
     }
 }
 
@@ -193,7 +197,7 @@ pub trait Context {
     fn object_make(&self, class: Option<&Class>) -> Object;
     fn object_make_func(&self, func: Function) -> Object;
     // object_make_constructor(const Class& js_class) -> Object;
-    object_make_array() -> Object;
+    fn object_make_array(&self) -> Object;
 
     fn object_to_value(&self, obj: &Object) -> Value;
 
@@ -225,7 +229,7 @@ pub trait Context {
     // args: &Vec<Value>,
     // ) -> Result<Value, Error>;
 
-    // fn object_is_array(&self, obj: &Object) -> bool;
+    fn object_is_array(&self, obj: &Object) -> bool;
     // fn object_get_prop_at_index(&self, obj: &Object, idx: u32)
     // -> Result<Value, Error>;
     // fn object_set_prop(

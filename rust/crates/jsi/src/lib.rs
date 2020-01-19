@@ -1,8 +1,8 @@
-#[macro_use]
-extern crate paste;
+// #[macro_use]
+// extern crate paste;
 
-#[macro_use]
-extern crate lazy_static;
+// #[macro_use]
+// extern crate lazy_static;
 
 mod jsi;
 pub use jsi::*;
@@ -15,4 +15,5 @@ pub use qjs::*;
 mod check;
 pub use check::*;
 
-mod mappers;
+mod map;
+pub use map::*;

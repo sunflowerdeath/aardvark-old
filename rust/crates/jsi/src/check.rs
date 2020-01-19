@@ -1,4 +1,5 @@
 use crate::jsi::*;
+use lazy_static::*;
 use std::sync::Arc;
 
 pub struct CheckErrorParams {
@@ -25,9 +26,9 @@ fn get_type_name(value: &Value) -> String {
         // ValueType::Symbol => "symbol",
         ValueType::Object => {
             let object = value.to_object().unwrap();
-            // if object.is_array() {
-            // return "array";
-            // }
+            if object.is_array() {
+                return "array".to_owned();
+            }
             if object.is_function() {
                 return "function".to_owned();
             }
@@ -62,6 +63,11 @@ fn make_primitive_checker(expected_type: &str) -> Arc<FnChecker> {
         if val_type == expected_type {
             return Ok(());
         }
+        if expected_type == "object"
+            && (val_type == "function" || val_type == "array")
+        {
+            return Ok(());
+        }
         Err(format!(
             "Invalid {} `{}` of type `{}` supplied to `{}`, expected `{}`.",
             err_params.kind,
@@ -81,6 +87,8 @@ lazy_static! {
         make_primitive_checker("boolean");
     pub static ref NUMBER_CHECKER: Arc<dyn Checker + Send + Sync> =
         make_primitive_checker("number");
+    pub static ref STRING_CHECKER: Arc<dyn Checker + Send + Sync> =
+        make_primitive_checker("string");
     pub static ref OBJECT_CHECKER: Arc<dyn Checker + Send + Sync> =
         make_primitive_checker("object");
     pub static ref ARRAY_CHECKER: Arc<dyn Checker + Send + Sync> =

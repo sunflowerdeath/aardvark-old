@@ -51,10 +51,12 @@ fn objects() {
     let obj = ctx.object_make(None).to_value();
 
     require_ok(jsi::OBJECT_CHECKER.as_ref(), ctx.as_ref(), &obj);
+    // object is not array
     require_err(jsi::ARRAY_CHECKER.as_ref(), ctx.as_ref(), &obj);
-    /*
-    auto arr = ctx->object_make_array().to_value();
-    require_valid(object_checker, *ctx.get(), arr);
-    require_valid(array_checker, *ctx.get(), arr);
-    require_error(number_checker, *ctx.get(), arr); */
+
+    let arr = ctx.object_make_array().to_value();
+    require_ok(jsi::OBJECT_CHECKER.as_ref(), ctx.as_ref(), &arr);
+    // but array is an object
+    require_ok(jsi::ARRAY_CHECKER.as_ref(), ctx.as_ref(), &arr);
+    require_err(jsi::NUMBER_CHECKER.as_ref(), ctx.as_ref(), &arr);
 }

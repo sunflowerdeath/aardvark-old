@@ -550,6 +550,11 @@ impl Context for QjsContext {
         object_from_qjs(self, qjs_obj)
     }
 
+    fn object_make_array(&self) -> Object {
+        let qjs_arr = unsafe { ffi::JS_NewArray(self.ctx) };
+        object_from_qjs(self, qjs_arr)
+    }
+
     fn object_to_value(&self, obj: &Object) -> Value {
         Value {
             ptr: obj.ptr.clone(),
@@ -669,5 +674,11 @@ impl Context for QjsContext {
 
     fn object_is_constructor(&self, obj: &Object) -> bool {
         unsafe { ffi::JS_IsConstructor(self.ctx, object_to_qjs(obj)) == 1 }
+    }
+
+    fn object_is_array(&self, obj: &Object) -> bool {
+        unsafe {
+            ffi::JS_IsArray(self.ctx, object_to_qjs(obj)) == 1
+        }
     }
 }
