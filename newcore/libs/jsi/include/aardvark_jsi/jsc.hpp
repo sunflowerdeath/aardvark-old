@@ -21,16 +21,14 @@ class Jsc_Context : public Context {
     String string_from_jsc(JSStringRef ref);
     Class class_from_jsc(JSClassRef ref);
 
-    JSValueRef value_ref(const Value& value);
-    JSObjectRef object_ref(const Object& object);
-    JSStringRef string_ref(const String& str);
-    JSClassRef class_ref(const Class& cls);
+    JSValueRef value_to_jsc(const Value& value);
+    JSObjectRef object_to_jsc(const Object& object);
+    JSStringRef string_to_jsc(const String& str);
+    JSClassRef class_to_jsc(const Class& cls);
 
     tl::unexpected<Error> error_from_jsc(JSValueRef ref);
-    void error_to_jsc(JSValueRef* exception, Error& error);
+    void error_to_jsc(Error& error, JSValueRef* exception);
 
-    Script create_script(
-        const std::string& source, const std::string& source_url) override;
     Result<Value> eval(
         const std::string& source,
         Object* this_obj,
@@ -56,18 +54,18 @@ class Jsc_Context : public Context {
     Result<String> value_to_string(const Value& value) override;
     Result<Object> value_to_object(const Value& value) override;
 
+    bool value_is_error(const Value& value) override;
+    Value value_make_error(const std::string& message) override;
+
     bool value_strict_equal(const Value& a, const Value& b) override;
 
     // Class
     Class class_make(const ClassDefinition& definition) override;
 
     // Object
-    Object object_make(const Class* js_class) override;
+    Object object_make(const Class* cls) override;
     Object object_make_function(const Function& function) override;
-    Object object_make_constructor(const Class& js_class) override;
-    // TODO
-    // Object object_make_constructor(
-    // const Class& js_class, const Function* function) override;
+    Object object_make_constructor(const Class& cls) override;
     Object object_make_array() override;
 
     Value object_to_value(const Object& object) override;
@@ -92,15 +90,15 @@ class Jsc_Context : public Context {
     VoidResult object_delete_property(
         const Object& object, const std::string& name) override;
 
-    bool object_is_function(const Object& object) override;
+    bool object_is_function(const Object& obj) override;
     Result<Value> object_call_as_function(
-        const Object& jsi_object,
-        const Value* jsi_this,
-        const std::vector<Value>& jsi_args) override;
+        const Object& object,
+        const Value* this_val,
+        const std::vector<Value>& args) override;
 
     bool object_is_constructor(const Object& object) override;
-    Result<Value> object_call_as_constructor(
-        const Object& object, const std::vector<Value>& arguments) override;
+    Result<Object> object_call_as_constructor(
+        const Object& object, const std::vector<Value>& args) override;
 
     bool object_is_array(const Object& object) override;
     Result<Value> object_get_property_at_index(
@@ -109,6 +107,7 @@ class Jsc_Context : public Context {
         const Object& object, size_t index, const Value& value) override;
 
     JSGlobalContextRef ctx;
+    std::optional<Object> error_constructor;
     bool ctx_invalid = false;
     std::unordered_map<JSClassRef, ClassDefinition> class_definitions;
 
@@ -117,10 +116,10 @@ class Jsc_Context : public Context {
         ClassDefinition* definition;
     };
 
-    // When object is created using `object_make` with class, or by constructor
-    // created using `object_make_constructor`, this map stores what class
-    // it has and what context it belongs.
-    // This is needed to implement class properties and finalizers.
+    // When object is created using `object_make`, or constructor created
+    // using `object_make_constructor`, this map stores what class it has and
+    // what context it belongs. This is needed to implement class properties and
+    // finalizers.
     static std::unordered_map<JSObjectRef, ClassInstanceRecord> class_instances;
 
     static ClassDefinition* get_class_definition(JSObjectRef object);

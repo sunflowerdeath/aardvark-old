@@ -154,15 +154,8 @@ class Class : public Pointer {
     using Pointer::Pointer;
 };
 
-class Script {
-    Script();
-    ~Script();
-};
-
 class Context {
   public:
-    virtual Script create_script(
-        const std::string& source, const std::string& source_url) = 0;
     virtual Result<Value> eval(
         const std::string& source,
         Object* this_obj,

@@ -27,7 +27,6 @@ class QjsValue : public PointerData {
 
 class QjsString : public PointerData {
   public:
-    // Qjs string copied to std::string
     QjsString(JSContext* ctx, const char* qjs_str) : str(qjs_str) {
         JS_FreeCString(ctx, qjs_str);
     }
@@ -36,6 +35,7 @@ class QjsString : public PointerData {
 
     PointerData* copy() override { return new QjsString(*this); }
 
+    // String stored as usual std::string
     std::string str;
 };
 
@@ -115,9 +115,6 @@ void Qjs_Context::init() {
         nullptr                     // exotic
     };
     JS_NewClass(rt, Qjs_Context::function_class_id, &function_class_def);
-
-    strict_equal_function.emplace(
-        eval("(a,b)=>a===b", nullptr, "").value().to_object().value());
 }
 
 Qjs_Context::~Qjs_Context() {
@@ -158,11 +155,7 @@ tl::unexpected<Error> Qjs_Context::get_error() {
     return tl::make_unexpected<Error>(&value);
 }
 
-Script Qjs_Context::create_script(
-    const std::string& source, const std::string& source_url) {}
-
 // Global
-
 Result<Value> Qjs_Context::eval(
     const std::string& source,
     Object* this_obj,
@@ -223,6 +216,7 @@ ValueType Qjs_Context::value_get_type(const Value& value) {
     if (JS_IsUndefined(ptr)) return ValueType::undefined;
     if (JS_IsString(ptr)) return ValueType::string;
     if (JS_IsObject(ptr)) return ValueType::object;
+    // TODO unknown
 }
 
 Result<bool> Qjs_Context::value_to_bool(const Value& value) {
@@ -250,6 +244,10 @@ Result<Object> Qjs_Context::value_to_object(const Value& value) {
 }
 
 bool Qjs_Context::value_strict_equal(const Value& a, const Value& b) {
+    if (!strict_equal_function.has_value()) {
+        strict_equal_function.emplace(
+            eval("(a,b)=>a===b", nullptr, "").value().to_object().value());
+    }
     return strict_equal_function.value()
         .call_as_function(nullptr, {a, b})
         .value()

@@ -28,8 +28,6 @@ class Qjs_Context : public Context {
     tl::unexpected<Error> get_error();
 
     // Global
-    Script create_script(
-        const std::string& source, const std::string& source_url) override;
     Result<Value> eval(
         const std::string& source,
         Object* this_obj,

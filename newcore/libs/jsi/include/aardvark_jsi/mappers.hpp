@@ -95,10 +95,25 @@ class EnumMapper : public Mapper<T> {
     UnderlyingMapper* mapper;
 };
 
+
 template <typename F, typename... Ts>
 inline void template_foreach(F f, const Ts&... args) {
-    [](...) {}((f(args), 0)...);
+    // initializer_list allows to expand template parameter pack `args` to
+    // multiple statements. Each expansion does call provided lambda function
+    // with one item from `args`.
+    (void)std::initializer_list<int>{[&f](const auto& arg) {
+        f(arg);
+        return 0;
+    }(args)...};
 }
+
+// This looks better but is incorrect. It evaluates in correct order in clang,
+// but in reverse order in GCC. C++ is full of insane surprizes... ¯\_(ツ)_/¯
+//
+// template <typename F, typename... Ts>
+// inline void template_foreach(F f, const Ts&... args) {
+//     [](...) {}((f(args), 0)...);
+// }
 
 template <typename T, typename... F>
 class StructMapper : public Mapper<T> {
@@ -313,7 +328,7 @@ class FunctionMapper : public Mapper<std::function<ResType(ArgsTypes...)>> {
 };
 
 template <class T>
-class ObjectsMapper : Mapper<std::shared_ptr<T>> {
+class ObjectsMapper : public Mapper<std::shared_ptr<T>> {
     using ClassGetter = std::function<Class(T*)>;
 
   public:

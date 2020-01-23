@@ -16,6 +16,7 @@ add_library(aardvark_jsi ${ADV_JSI_LIB_TYPE}
     src/check.cpp
     src/jsi.cpp
     src/mappers.cpp
+    # src/native.cpp
 )
 
 target_include_directories(aardvark_jsi PRIVATE
@@ -45,6 +46,7 @@ if(ADV_JSI_TESTS)
         tests/check_test.cpp
         tests/jsi_test.cpp
         tests/mappers_test.cpp
+        tests/native_test.cpp
     )
     target_link_libraries(aadrvark_jsi_tests Catch2 aardvark_jsi)
 endif()
