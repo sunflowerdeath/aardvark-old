@@ -8,34 +8,54 @@ let mkdirp = require('mkdirp')
 
 let compileTmpl = tmpl => Handlebars.compile(tmpl, { noEscape: true })
 
-Handlebars.registerHelper("snakecase", snakeCase)
+Handlebars.registerHelper("snakeCase", snakeCase)
 
 const structDefTmpl = compileTmpl(`
-    std::optional<SimpleMapper<{{originalName}}>> {{name}}_mapper;
+    std::optional<SimpleMapper2<{{originalName}}>> {{name}}_mapper;
 `)
 
 const structInitTmpl = compileTmpl(`
-    auto to_js = [](Context* ctx, const {{name}}& val) {
-        let res = ctx->make_object();
+    auto to_js = [](Context& ctx, const {{name}}& val) {
+        auto res = ctx.object_make(nullptr);
         {{#each props}}
-        res.set_property("{{name}}", {{type}}_mapper->to_js(val.{{snakecase name}}));
+        res.set_property("{{name}}", {{type}}_mapper->to_js(
+            ctx, val.{{snakeCase name}}));
         {{/each}}
         return res.to_value();
     };
 
-    auto from_js = [](Context* ctx, Value& val) {
-        auto res = {{name}}();
-        auto obj = val.to_object();
+    auto try_from_js = [](
+        Context& ctx, const Value& val, const CheckErrorParams& err_params
+    ) -> tl::expected<{{name}}, std::string> {
+        auto err = object_checker(ctx, val, err_params);
+        if (err.has_value()) return tl::make_unexpected(err.value());
+        auto obj = val.to_object().value();
+        auto mapped_struct = {{name}}();
         {{#each props}}
         {
-            auto prop_val = obj.get_property("{{name}}");
-            res.{{snakecase name}} = {{type}}_mapper->from_js(prop_val));
+            auto prop_val = std::optional<Value>();
+            if (obj.has_property("{{name}}")) {
+                auto res = obj.get_property("{{name}}");
+                if (res.has_value()) prop_val = res.value();
+            }
+            if (!prop_val.has_value()) prop_val = ctx.value_make_undefined();
+            auto prop_err_params = CheckErrorParams{
+                err_params.kind,
+                err_params.name + ".{{name}}",
+                err_params.target};
+            auto mapped_prop_val = {{type}}_mapper->try_from_js(
+                ctx, prop_val.value(), prop_err_params);
+            if (mapped_prop_val.has_value()) {
+                mapped_struct.{{snakeCase name}} = mapped_prop_val.value();
+            } else {
+                return tl::make_unexpected(mapped_prop_val.error());
+            }
         }
         {{/each}}
-        return res;
+        return mapped_struct;
     };
 
-    {{name}}_mapper = SimpleMapper(to_js, from_js);
+    {{name}}_mapper = SimpleMapper2<{{typename}}>(to_js, try_from_js);
 `)
 
 const enumDefTmpl = compileTmpl(`
@@ -63,7 +83,7 @@ const classInitTmpl = compileTmpl(`
     {{#each props}}
     auto {{name}}_getter = [this](Value& this_val) {
         auto mapped_this = {{../name}}_mapper->from_js(ctx, this_val);
-        return {{type}}_mapper->to_js(ctx, mapped_this.{{snakecase name}});
+        return {{type}}_mapper->to_js(ctx, mapped_this.{{snakeCase name}});
     };
     {{#unless readonly}}
     auto {{name}}_setter = [this](Value& this_val, Value& val) {
@@ -71,7 +91,7 @@ const classInitTmpl = compileTmpl(`
         auto err_params = CheckErrorParams{"property", "{{name}}", "{{../name}}"};
         auto mapped_val = {{type}}_mapper->try_from_js(ctx, val, err_params);
         if (!mapped_val.has_value()) return make_error(mapped_val);
-        mapped_this.{{snakecase name}} = mapped_val;
+        mapped_this.{{snakeCase name}} = mapped_val;
         return true;
     };
     {{/unless}}
@@ -87,7 +107,7 @@ const classInitTmpl = compileTmpl(`
             ctx, args[{{@index}}], err_params);
         if (!mapped_arg_{{name}}.has_value()) return make_error(mapped_arg_{{name}});
         {{/each}}
-        auto res = mapped_this->{{snakecase name}}(
+        auto res = mapped_this->{{snakeCase name}}(
             {{#each args}}mapped_arg_{{name}}.value(){{#unless @last}}, {{/unless}}{{/each}}
         );
         {{#if return}}
@@ -132,7 +152,7 @@ const callbackDefTmpl = compileTmpl(`
 
 const callbackInitTmpl = compileTmpl(`
     auto from_js = [](Context* ctx, Value& val) {
-        auto fn = val.to_object().unwrap();
+        auto fn = val.to_object().value();
         return [fn](
             {{#each args}}{{getTypename type}} {{name}}{{#unless @last}},{{/unless}}{{/each}}
         ){
@@ -202,7 +222,7 @@ using namespace aardvark::jsi;
 class {{classname}} {
   public:
     {{classname}}(Context* ctx);
-  private:
+  // private:
     {{#each types}}
     {{def}}
     {{/each}}

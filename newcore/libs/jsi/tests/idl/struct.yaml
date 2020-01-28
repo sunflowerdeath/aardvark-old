@@ -1,0 +1,8 @@
+kind: struct
+name: TestStruct
+include: ../tests/idl/struct.hpp
+props:
+    - name: intProp
+      type: int
+    - name: strProp
+      type: string

@@ -6,5 +6,13 @@ gen({
     outputDir: path.resolve(__dirname, '../generated'),
     filename: 'enum',
     namespace: 'test',
-    classname: 'EnumTestApi'
+    classname: 'TestEnumApi'
+})
+
+gen({
+    src: path.resolve(__dirname, '../tests/idl/struct.yaml'),
+    outputDir: path.resolve(__dirname, '../generated'),
+    filename: 'struct',
+    namespace: 'test',
+    classname: 'TestStructApi'
 })

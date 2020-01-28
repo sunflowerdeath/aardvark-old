@@ -48,6 +48,7 @@ if(ADV_JSI_TESTS)
         
         tests/idl_test.cpp
         generated/enum.cpp
+        generated/struct.cpp
     )
     target_link_libraries(aadrvark_jsi_tests Catch2 aardvark_jsi)
 endif()
