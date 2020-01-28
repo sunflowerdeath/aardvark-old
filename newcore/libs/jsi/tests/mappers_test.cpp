@@ -137,8 +137,8 @@ TEMPLATE_TEST_CASE(
         }
     }
 
-    SECTION("func") {
-        auto mapper = FunctionMapper<int, int, std::string>(
+    SECTION("callback") {
+        auto mapper = CallbackMapper<int, int, std::string>(
             int_mapper, int_mapper, string_mapper);
 
         SECTION("valid") {
@@ -156,7 +156,7 @@ TEMPLATE_TEST_CASE(
 
         SECTION("invalid return type") {
             auto called_handler = false;
-            auto mapper = FunctionMapper<int>(
+            auto mapper = CallbackMapper<int>(
                 int_mapper, [&](const Value& error) { called_handler = true; });
             auto val = ctx->eval("()=>'error'", nullptr, "sourceurl").value();
             auto fn = mapper.from_js(ctx_ref, val);
@@ -183,7 +183,7 @@ TEMPLATE_TEST_CASE(
 
         SECTION("fallback") {
             auto called_handler = false;
-            auto mapper = FunctionMapper<NotDefaultConstructible>(
+            auto mapper = CallbackMapper<NotDefaultConstructible>(
                 &ndc_mapper,  // res_mapper
                 [&](const Value& error) {
                     called_handler = true;

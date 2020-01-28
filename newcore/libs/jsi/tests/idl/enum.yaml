@@ -1,0 +1,6 @@
+kind: enum
+name: TestEnum
+include: ../tests/idl/enum.hpp
+values:
+    - valueA
+    - valueB

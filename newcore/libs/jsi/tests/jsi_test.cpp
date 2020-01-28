@@ -26,6 +26,7 @@ TEMPLATE_TEST_CASE(
 
     SECTION("eval") {
         auto ctx = create_context();
+        // ctx->init();
 
         auto res = ctx->eval("2 + 3", nullptr, "source_url");
         REQUIRE(res.value().to_number().value() == 5);

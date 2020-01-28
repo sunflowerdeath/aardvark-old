@@ -34,6 +34,10 @@ std::string get_type_name(const Value& value) {
     }
 }
 
+std::string format_name(const std::string& name) {
+    return name.empty() ? "" : fmt::format(" `{}`", name);
+}
+
 Checker make_primitive(const std::string& expected_type) {
     return [expected_type](
                const Context& ctx,
@@ -46,9 +50,9 @@ Checker make_primitive(const std::string& expected_type) {
             return std::nullopt;
         }
         return fmt::format(
-            "Invalid {} `{}` of type `{}` supplied to `{}`, expected `{}`.",
+            "Invalid {}{} of type `{}` supplied to `{}`, expected `{}`.",
             params.kind,
-            params.name,
+            format_name(params.name),
             type,
             params.target,
             expected_type);

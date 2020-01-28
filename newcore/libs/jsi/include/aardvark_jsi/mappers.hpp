@@ -95,7 +95,6 @@ class EnumMapper : public Mapper<T> {
     UnderlyingMapper* mapper;
 };
 
-
 template <typename F, typename... Ts>
 inline void template_foreach(F f, const Ts&... args) {
     // initializer_list allows to expand template parameter pack `args` to
@@ -115,10 +114,10 @@ inline void template_foreach(F f, const Ts&... args) {
 //     [](...) {}((f(args), 0)...);
 // }
 
-template <typename T, typename... F>
+template <typename T, typename... Fs>
 class StructMapper : public Mapper<T> {
   public:
-    StructMapper(std::tuple<const char*, F T::*, Mapper<F>*>... fields) {
+    StructMapper(std::tuple<const char*, Fs T::*, Mapper<Fs>*>... fields) {
         template_foreach(
             [&](const auto& arg) { prop_names.push_back(std::get<0>(arg)); },
             fields...);
@@ -219,21 +218,21 @@ class StructMapper : public Mapper<T> {
         map_props_from_js;
 };
 
-template <class ResType, class... ArgsTypes>
-class FunctionMapper;
+template <class ResT, class... ArgTs>
+class CallbackMapper;
 
-template <class ResType, class... ArgsTypes>
-class WrappedFunction {
+template <class ResT, class... ArgTs>
+class Callback {
   public:
-    WrappedFunction(
-        FunctionMapper<ResType, ArgsTypes...>* mapper,
+    Callback(
+        CallbackMapper<ResT, ArgTs...>* mapper,
         Context* ctx,
         const Object& function)
-        : mapper(mapper), ctx(ctx), function(function) {}
+        : mapper(mapper), ctx(ctx), function(function){};
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreturn-type"
-    ResType operator()(ArgsTypes... args) {
+    ResT operator()(ArgTs... args) {
         auto object = ctx->object_make(nullptr);
         auto js_args = mapper->args_to_js(*ctx, args...);
         auto js_res = function.call_as_function(nullptr /* this */, js_args);
@@ -250,24 +249,23 @@ class WrappedFunction {
 #pragma GCC diagnostic pop
 
   private:
-    FunctionMapper<ResType, ArgsTypes...>* mapper;
+    CallbackMapper<ResT, ArgTs...>* mapper;
     Context* ctx;
     Object function;
 };
 
-template <class ResType, class... ArgsTypes>
-class FunctionMapper : public Mapper<std::function<ResType(ArgsTypes...)>> {
-    friend WrappedFunction<ResType, ArgsTypes...>;
-    using FunctionType = std::function<ResType(ArgsTypes...)>;
+template <class ResT, class... ArgTs>
+class CallbackMapper : public Mapper<Callback<ResT, ArgTs...>> {
+    friend Callback<ResT, ArgTs...>;
 
   public:
-    FunctionMapper(
-        Mapper<ResType>* res_mapper = nullptr,
-        Mapper<ArgsTypes>*... args_mappers,
+    CallbackMapper(
+        Mapper<ResT>* res_mapper = nullptr,
+        Mapper<ArgTs>*... args_mappers,
         std::function<void(const Value&)> error_handler = nullptr,
-        std::function<ResType()> fallback_value = nullptr)
+        std::function<ResT()> fallback_value = nullptr)
         : error_handler(error_handler), fallback_value(fallback_value) {
-        args_to_js = [=](Context& ctx, ArgsTypes... args) {
+        args_to_js = [=](Context& ctx, ArgTs... args) {
             auto res = std::vector<Value>();
             template_foreach(
                 [&](auto& tpl) {
@@ -291,40 +289,38 @@ class FunctionMapper : public Mapper<std::function<ResType(ArgsTypes...)>> {
         }
     }
 
-    Value to_js(Context& ctx, const std::function<ResType(ArgsTypes...)>& value)
-        override {
+    Value to_js(Context& ctx, const Callback<ResT, ArgTs...>& value) override {
         return ctx.value_make_undefined();
     }
 
-    FunctionType from_js(Context& ctx, const Value& value) override {
-        return WrappedFunction(this, &ctx, value.to_object().value());
+    Callback<ResT, ArgTs...> from_js(
+        Context& ctx, const Value& value) override {
+        return Callback(this, &ctx, value.to_object().value());
     }
 
-    tl::expected<FunctionType, std::string> try_from_js(
+    tl::expected<Callback<ResT, ArgTs...>, std::string> try_from_js(
         Context& ctx,
         const Value& value,
         const CheckErrorParams& err_params) override {
         auto res = function_checker(ctx, value, err_params);
         if (res.has_value()) return tl::make_unexpected(res.value());
-        return WrappedFunction(this, &ctx, value.to_object().value());
+        return Callback(this, &ctx, value.to_object().value());
     }
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreturn-type"
-    ResType fallback() {
+    ResT fallback() {
         if (fallback_value) return fallback_value();
-        if constexpr (std::is_default_constructible<ResType>::value) {
-            return ResType();
-        }
+        if constexpr (std::is_default_constructible<ResT>::value) return ResT();
     }
 #pragma GCC diagnostic pop
 
   private:
-    std::function<std::vector<Value>(Context&, ArgsTypes...)> args_to_js;
-    std::function<ResType(Context&, const Value&)> res_from_js;
+    std::function<std::vector<Value>(Context&, ArgTs...)> args_to_js;
+    std::function<ResT(Context&, const Value&)> res_from_js;
     CheckErrorParams err_params;
     std::function<void(const Value&)> error_handler;
-    std::function<ResType()> fallback_value;
+    std::function<ResT()> fallback_value;
 };
 
 template <class T>
