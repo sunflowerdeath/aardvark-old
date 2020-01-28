@@ -10,8 +10,15 @@
 
 #include "../generated/enum.hpp"
 #include "../generated/struct.hpp"
+#include "../generated/class.hpp"
+
+// #include "../generated/test_enum_api.hpp"
+// #include "../generated/test_struct_api.hpp"
+// #include "../generated/test_class_api.hpp"
 
 using namespace aardvark::jsi;
+
+auto err_params = CheckErrorParams{"kind", "name", "target"};
 
 TEST_CASE("idl", "[idl]") {
     auto create_context = []() { return Qjs_Context::create(); };
@@ -52,11 +59,39 @@ TEST_CASE("idl", "[idl]") {
             REQUIRE(res.int_prop == 5);
             REQUIRE(res.str_prop == "test");
         }
+        
+        SECTION("try_from_js error") {
+            auto val = ctx->value_make_bool(true);
+            auto res =
+                api.TestStruct_mapper->try_from_js(ctx_ref, val, err_params);
+            REQUIRE(res.has_value() == false);
+        }
+
+        SECTION("try_from_js missing prop") {
+            auto val = ctx->eval("({intProp: 5})", nullptr, "").value();
+            auto res =
+                api.TestStruct_mapper->try_from_js(ctx_ref, val, err_params);
+            REQUIRE(res.has_value() == false);
+        }
+
+        SECTION("try_from_js invalid prop type") {
+            auto val =
+                ctx->eval("({intProp: 5, strProp: 10})", nullptr, "").value();
+            auto res =
+                api.TestStruct_mapper->try_from_js(ctx_ref, val, err_params);
+            REQUIRE(res.has_value() == false);
+        }
     }
 
     SECTION("class") {
+        auto ctx = create_context();
+        auto& ctx_ref = *ctx.get();
+        auto api = test::TestClassApi(ctx.get());
     }
 
     SECTION("function") {
+    }
+
+    SECTION("callback") {
     }
 }

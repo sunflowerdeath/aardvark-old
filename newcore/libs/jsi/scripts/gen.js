@@ -1,18 +1,13 @@
 let path = require('path')
+let { capitalize } = require('../idl/node_modules/lodash')
 let gen = require('../idl/index.js')
 
-gen({
-    src: path.resolve(__dirname, '../tests/idl/enum.yaml'),
-    outputDir: path.resolve(__dirname, '../generated'),
-    filename: 'enum',
-    namespace: 'test',
-    classname: 'TestEnumApi'
-})
+let items = ['enum', 'struct', 'class']
 
-gen({
-    src: path.resolve(__dirname, '../tests/idl/struct.yaml'),
-    outputDir: path.resolve(__dirname, '../generated'),
-    filename: 'struct',
+items.map(item => gen({
+    src: path.resolve(__dirname, `../tests/idl/${item}.yaml`),
     namespace: 'test',
-    classname: 'TestStructApi'
-})
+    classname: `Test${capitalize(item)}Api`,
+    outputDir: path.resolve(__dirname, '../generated'),
+    filename: item
+}))

@@ -28,44 +28,35 @@ template <typename T>
 using ToJsCallback = std::function<Value(Context&, const T&)>;
 
 template <typename T>
-using FromJsCallback = std::function<T(Context&, const Value&)>;
+using TryFromJsCallback = std::function<tl::expected<T, std::string>(
+    Context&, const Value&, const CheckErrorParams& err_params)>;
 
 template <typename T>
 class SimpleMapper : public Mapper<T> {
   public:
-    SimpleMapper(
-        ToJsCallback<T> to_js_cb,
-        FromJsCallback<T> from_js_cb,
-        Checker* checker)
-        : to_js_cb(to_js_cb), from_js_cb(from_js_cb), checker(checker){};
+    SimpleMapper(ToJsCallback<T> to_js_cb, TryFromJsCallback<T> try_from_js_cb)
+        : to_js_cb(to_js_cb), try_from_js_cb(try_from_js_cb){};
 
     Value to_js(Context& ctx, const T& value) override {
         return to_js_cb(ctx, value);
     }
 
     T from_js(Context& ctx, const Value& value) override {
-        return from_js_cb(ctx, value);
+        auto err_params = CheckErrorParams{};
+        return try_from_js_cb(ctx, value, err_params).value();
     }
 
     tl::expected<T, std::string> try_from_js(
         Context& ctx,
-        const Value& value,
+        const Value& val,
         const CheckErrorParams& err_params) override {
-        auto err = (*checker)(ctx, value, err_params);
-        if (err.has_value()) return tl::make_unexpected(err.value());
-        return from_js(ctx, value);
+        return try_from_js_cb(ctx, val, err_params);
     }
 
   private:
     ToJsCallback<T> to_js_cb;
-    FromJsCallback<T> from_js_cb;
-    Checker* checker;
+    TryFromJsCallback<T> try_from_js_cb;
 };
-
-extern Mapper<bool>* bool_mapper;
-extern Mapper<double>* number_mapper;
-extern Mapper<int>* int_mapper;
-extern Mapper<std::string>* string_mapper;
 
 template <typename T>
 class EnumMapper : public Mapper<T> {
@@ -93,234 +84,6 @@ class EnumMapper : public Mapper<T> {
 
   private:
     UnderlyingMapper* mapper;
-};
-
-template <typename F, typename... Ts>
-inline void template_foreach(F f, const Ts&... args) {
-    // initializer_list allows to expand template parameter pack `args` to
-    // multiple statements. Each expansion does call provided lambda function
-    // with one item from `args`.
-    (void)std::initializer_list<int>{[&f](const auto& arg) {
-        f(arg);
-        return 0;
-    }(args)...};
-}
-
-// This looks better but is incorrect. It evaluates in correct order in clang,
-// but in reverse order in GCC. C++ is full of insane surprizes... ¯\_(ツ)_/¯
-//
-// template <typename F, typename... Ts>
-// inline void template_foreach(F f, const Ts&... args) {
-//     [](...) {}((f(args), 0)...);
-// }
-
-template <typename T, typename... Fs>
-class StructMapper : public Mapper<T> {
-  public:
-    StructMapper(std::tuple<const char*, Fs T::*, Mapper<Fs>*>... fields) {
-        template_foreach(
-            [&](const auto& arg) { prop_names.push_back(std::get<0>(arg)); },
-            fields...);
-
-        // Create functions that iterate over all property definitions and map
-        // js properties with corresponding object members using mappers
-        map_props_to_js = [=](Context& ctx, const T& value) {
-            auto result = ctx.object_make(nullptr);
-            template_foreach(
-                [&](const auto& field) {
-                    auto [prop_name, member_ptr, mapper] = field;
-                    auto prop_value = mapper->to_js(ctx, value.*member_ptr);
-                    result.set_property(prop_name, prop_value);
-                },
-                fields...);
-            return result.to_value();
-        };
-
-        map_props_from_js = [=](Context& ctx,
-                                const Value& value,
-                                const CheckErrorParams* err_params)
-            -> tl::expected<T, std::string> {
-            auto should_check = err_params != nullptr;
-
-            auto err = object_checker(ctx, value, *err_params);
-            if (err.has_value()) {
-                if (should_check) {
-                    return tl::make_unexpected(err.value());
-                } else {
-                    return T();
-                }
-            }
-            auto object = value.to_object().value();
-
-            T mapped_struct;
-            auto failed = false;
-            auto error = std::string();
-            template_foreach(
-                [&](const auto& field) {
-                    if (failed) return;
-                    auto [prop_name, member_ptr, mapper] = field;
-                    auto prop_value = std::optional<Value>();
-                    if (object.has_property(prop_name)) {
-                        auto res = object.get_property(prop_name);
-                        if (res.has_value()) prop_value = res.value();
-                    }
-                    if (!prop_value.has_value()) {
-                        prop_value = ctx.value_make_undefined();
-                    }
-                    if (should_check) {
-                        auto prop_err_params =
-                            CheckErrorParams{err_params->kind,
-                                             err_params->name + "." + prop_name,
-                                             err_params->target};
-                        auto res = mapper->try_from_js(
-                            ctx, prop_value.value(), prop_err_params);
-                        if (res.has_value()) {
-                            mapped_struct.*member_ptr = res.value();
-                        } else {
-                            failed = true;
-                            error = res.error();
-                        }
-                    } else {
-                        mapped_struct.*member_ptr =
-                            mapper->from_js(ctx, prop_value.value());
-                    }
-                },
-                fields...);
-
-            if (failed) {
-                return tl::make_unexpected(error);
-            } else {
-                return mapped_struct;
-            }
-        };
-    }
-
-    Value to_js(Context& ctx, const T& value) override {
-        return map_props_to_js(ctx, value);
-    }
-
-    T from_js(Context& ctx, const Value& value) override {
-        return map_props_from_js(ctx, value, nullptr).value();
-    }
-
-    tl::expected<T, std::string> try_from_js(
-        Context& ctx,
-        const Value& value,
-        const CheckErrorParams& err_params) override {
-        return map_props_from_js(ctx, value, &err_params);
-    };
-
-  private:
-    std::vector<const char*> prop_names;
-    std::function<Value(Context& ctx, const T& value)> map_props_to_js;
-    std::function<tl::expected<T, std::string>(
-        Context& ctx, const Value& value, const CheckErrorParams* err_params)>
-        map_props_from_js;
-};
-
-template <class ResT, class... ArgTs>
-class CallbackMapper;
-
-template <class ResT, class... ArgTs>
-class Callback {
-  public:
-    Callback(
-        CallbackMapper<ResT, ArgTs...>* mapper,
-        Context* ctx,
-        const Object& function)
-        : mapper(mapper), ctx(ctx), function(function){};
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wreturn-type"
-    ResT operator()(ArgTs... args) {
-        auto object = ctx->object_make(nullptr);
-        auto js_args = mapper->args_to_js(*ctx, args...);
-        auto js_res = function.call_as_function(nullptr /* this */, js_args);
-        if (!js_res.has_value()) {
-            if (mapper->error_handler) {
-                mapper->error_handler(js_res.error().value());
-            }
-            return mapper->fallback();
-        }
-        if (mapper->res_from_js) {
-            return mapper->res_from_js(*ctx, js_res.value());
-        }  // else return type is void
-    }
-#pragma GCC diagnostic pop
-
-  private:
-    CallbackMapper<ResT, ArgTs...>* mapper;
-    Context* ctx;
-    Object function;
-};
-
-template <class ResT, class... ArgTs>
-class CallbackMapper : public Mapper<Callback<ResT, ArgTs...>> {
-    friend Callback<ResT, ArgTs...>;
-
-  public:
-    CallbackMapper(
-        Mapper<ResT>* res_mapper = nullptr,
-        Mapper<ArgTs>*... args_mappers,
-        std::function<void(const Value&)> error_handler = nullptr,
-        std::function<ResT()> fallback_value = nullptr)
-        : error_handler(error_handler), fallback_value(fallback_value) {
-        args_to_js = [=](Context& ctx, ArgTs... args) {
-            auto res = std::vector<Value>();
-            template_foreach(
-                [&](auto& tpl) {
-                    auto& [arg, arg_mapper] = tpl;
-                    res.push_back(arg_mapper->to_js(ctx, arg));
-                },
-                std::forward_as_tuple(args, args_mappers)...);
-            return res;
-        };
-        if (res_mapper != nullptr) {
-            // TODO error message
-            err_params = CheckErrorParams{"return value", "", "Function"};
-            res_from_js = [=](Context& ctx, const Value& value) {
-                auto res = res_mapper->try_from_js(ctx, value, err_params);
-                if (res.has_value()) return res.value();
-                if (error_handler) {
-                    error_handler(ctx.value_make_error(res.error()));
-                }
-                return fallback();
-            };
-        }
-    }
-
-    Value to_js(Context& ctx, const Callback<ResT, ArgTs...>& value) override {
-        return ctx.value_make_undefined();
-    }
-
-    Callback<ResT, ArgTs...> from_js(
-        Context& ctx, const Value& value) override {
-        return Callback(this, &ctx, value.to_object().value());
-    }
-
-    tl::expected<Callback<ResT, ArgTs...>, std::string> try_from_js(
-        Context& ctx,
-        const Value& value,
-        const CheckErrorParams& err_params) override {
-        auto res = function_checker(ctx, value, err_params);
-        if (res.has_value()) return tl::make_unexpected(res.value());
-        return Callback(this, &ctx, value.to_object().value());
-    }
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wreturn-type"
-    ResT fallback() {
-        if (fallback_value) return fallback_value();
-        if constexpr (std::is_default_constructible<ResT>::value) return ResT();
-    }
-#pragma GCC diagnostic pop
-
-  private:
-    std::function<std::vector<Value>(Context&, ArgTs...)> args_to_js;
-    std::function<ResT(Context&, const Value&)> res_from_js;
-    CheckErrorParams err_params;
-    std::function<void(const Value&)> error_handler;
-    std::function<ResT()> fallback_value;
 };
 
 template <class T>
@@ -407,5 +170,10 @@ class ObjectsMapper : public Mapper<std::shared_ptr<T>> {
             value.to_object().value().get_private_data());
     }
 };
+
+extern Mapper<bool>* bool_mapper;
+extern Mapper<double>* double_mapper;
+extern Mapper<int>* int_mapper;
+extern Mapper<std::string>* string_mapper;
 
 }  // namespace aardvark::jsi

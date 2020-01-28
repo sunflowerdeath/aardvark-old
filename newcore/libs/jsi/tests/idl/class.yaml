@@ -1,0 +1,14 @@
+kind: class
+name: TestClass
+include: ../tests/idl/class.hpp
+props:
+    - name: intProp
+      type: int
+    - name: readonlyProp
+      type: bool
+methods:
+    - name: methodName
+      args:
+        - name: argName
+          type: int
+      return: string

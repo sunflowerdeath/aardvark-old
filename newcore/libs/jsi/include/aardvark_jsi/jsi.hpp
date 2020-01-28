@@ -65,6 +65,8 @@ class Error {
     std::shared_ptr<Value> value_ptr;
 };
 
+tl::unexpected<Error> make_error_result(Context& ctx, std::string message);
+
 template <typename T>
 using Result = tl::expected<T, Error>;
 

@@ -100,4 +100,9 @@ VoidResult Object::set_property_at_index(
     return ctx->object_set_property_at_index(*this, index, value);
 }
 
+tl::unexpected<Error> make_error_result(Context& ctx, std::string message) {
+    auto err_val = ctx.value_make_error(message);
+    return tl::make_unexpected(Error(&err_val));
+}
+
 }  // namespace aardvark::jsi

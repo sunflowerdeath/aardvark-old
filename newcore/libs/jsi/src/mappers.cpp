@@ -2,40 +2,51 @@
 
 namespace aardvark::jsi {
 
-Mapper<bool>* bool_mapper = new SimpleMapper<bool>(
-    [](Context& ctx, const bool& value) { return ctx.value_make_bool(value); },
-    [](Context& ctx, const Value& value) { return value.to_bool().value(); },
-    &boolean_checker  // checker
-);
+template <typename T>
+using FromJsResult = tl::expected<T, std::string>;
 
-Mapper<double>* number_mapper = new SimpleMapper<double>(
+Mapper<bool>* bool_mapper = new SimpleMapper<bool>(
+    [](Context& ctx, const bool& val) { return ctx.value_make_bool(val); },
+    [](Context& ctx,
+       const Value& val,
+       const CheckErrorParams& err_params) -> FromJsResult<bool> {
+        auto err = check_type(ctx, val, "bool", err_params);
+        if (err.has_value()) return tl::make_unexpected(err.value());
+        return val.to_bool().value();
+    });
+
+Mapper<double>* double_mapper = new SimpleMapper<double>(
     [](Context& ctx, const double& value) {
         return ctx.value_make_number(value);
-    },  // to_js
-    [](Context& ctx, const Value& value) {
-        return value.to_number().value();
-    },               // from_js
-    &number_checker  // checker
-);
+    },
+    [](Context& ctx,
+       const Value& val,
+       const CheckErrorParams& err_params) -> FromJsResult<double> {
+        auto err = check_type(ctx, val, "number", err_params);
+        if (err.has_value()) return tl::make_unexpected(err.value());
+        return val.to_number().value();
+    });
 
 Mapper<int>* int_mapper = new SimpleMapper<int>(
-    [](Context& ctx, const int& value) {
-        return ctx.value_make_number(value);
-    },  // to_js
-    [](Context& ctx, const Value& value) {
-        return static_cast<int>(value.to_number().value());
-    },               // from_js
-    &number_checker  // checker
-);
+    [](Context& ctx, const int& value) { return ctx.value_make_number(value); },
+    [](Context& ctx,
+       const Value& val,
+       const CheckErrorParams& err_params) -> FromJsResult<int> {
+        auto err = check_type(ctx, val, "number", err_params);
+        if (err.has_value()) return tl::make_unexpected(err.value());
+        return static_cast<int>(val.to_number().value());
+    });
 
 Mapper<std::string>* string_mapper = new SimpleMapper<std::string>(
     [](Context& ctx, const std::string& value) {
         return ctx.value_make_string(ctx.string_make_from_utf8(value));
-    },  // to_js
-    [](Context& ctx, const Value& value) {
-        return value.to_string().value().to_utf8();
-    },               // from_js
-    &string_checker  // checker
-);
+    },
+    [](Context& ctx,
+       const Value& val,
+       const CheckErrorParams& err_params) -> FromJsResult<std::string> {
+        auto err = check_type(ctx, val, "string", err_params);
+        if (err.has_value()) return tl::make_unexpected(err.value());
+        return val.to_string().value().to_utf8();
+    });
 
 }  // namespace aardvark::jsi

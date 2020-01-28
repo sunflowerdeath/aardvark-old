@@ -15,15 +15,10 @@ struct CheckErrorParams {
 
 using CheckResult = std::optional<std::string>;
 
-using Checker = std::function<CheckResult(
-    const Context& ctx, const Value& value, const CheckErrorParams&)>;
-
-extern Checker boolean_checker;
-extern Checker number_checker;
-extern Checker string_checker;
-extern Checker symbol_checker;
-extern Checker object_checker;
-extern Checker array_checker;
-extern Checker function_checker;
+CheckResult check_type(
+    const Context& ctx,
+    const Value& value,
+    const std::string& expected_type,
+    const CheckErrorParams& err_params);
 
 }  // namespace aardvark::jsi

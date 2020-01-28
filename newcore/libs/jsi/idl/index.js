@@ -11,7 +11,7 @@ let compileTmpl = tmpl => Handlebars.compile(tmpl, { noEscape: true })
 Handlebars.registerHelper("snakeCase", snakeCase)
 
 const structDefTmpl = compileTmpl(`
-    std::optional<SimpleMapper2<{{originalName}}>> {{name}}_mapper;
+    std::optional<SimpleMapper<{{originalName}}>> {{name}}_mapper;
 `)
 
 const structInitTmpl = compileTmpl(`
@@ -27,7 +27,7 @@ const structInitTmpl = compileTmpl(`
     auto try_from_js = [](
         Context& ctx, const Value& val, const CheckErrorParams& err_params
     ) -> tl::expected<{{name}}, std::string> {
-        auto err = object_checker(ctx, val, err_params);
+        auto err = check_type(ctx, val, "object", err_params);
         if (err.has_value()) return tl::make_unexpected(err.value());
         auto obj = val.to_object().value();
         auto mapped_struct = {{name}}();
@@ -55,7 +55,7 @@ const structInitTmpl = compileTmpl(`
         return mapped_struct;
     };
 
-    {{name}}_mapper = SimpleMapper2<{{typename}}>(to_js, try_from_js);
+    {{name}}_mapper = SimpleMapper<{{typename}}>(to_js, try_from_js);
 `)
 
 const enumDefTmpl = compileTmpl(`
@@ -72,7 +72,7 @@ const enumInitTmpl = compileTmpl(`
 `)
 
 const classDefTmpl = compileTmpl(`
-    std::optional<ObjectMapper<{{originalName}}>> {{name}}_mapper;
+    std::optional<ObjectsMapper<{{originalName}}>> {{name}}_mapper;
     std::optional<Class> {{name}}_js_class;
 `)
 
@@ -81,42 +81,47 @@ const classInitTmpl = compileTmpl(`
     def.name = "{{name}}";
 
     {{#each props}}
-    auto {{name}}_getter = [this](Value& this_val) {
-        auto mapped_this = {{../name}}_mapper->from_js(ctx, this_val);
-        return {{type}}_mapper->to_js(ctx, mapped_this.{{snakeCase name}});
+    auto {{name}}_getter = [this](Object& this_obj) -> Result<Value> {
+        auto mapped_this = {{../name}}_mapper->from_js(*ctx, this_obj.to_value());
+        return {{type}}_mapper->to_js(*ctx, mapped_this->{{snakeCase name}});
     };
     {{#unless readonly}}
-    auto {{name}}_setter = [this](Value& this_val, Value& val) {
-        auto mapped_this = {{../name}}_mapper->from_js(ctx, this_val);
+    auto {{name}}_setter = [this](Object& this_obj, Value& val) -> Result<bool> {
+        auto mapped_this = {{../name}}_mapper->from_js(*ctx, this_obj.to_value());
         auto err_params = CheckErrorParams{"property", "{{name}}", "{{../name}}"};
-        auto mapped_val = {{type}}_mapper->try_from_js(ctx, val, err_params);
-        if (!mapped_val.has_value()) return make_error(mapped_val);
-        mapped_this.{{snakeCase name}} = mapped_val;
+        auto mapped_val = {{type}}_mapper->try_from_js(*ctx, val, err_params);
+        if (!mapped_val.has_value()) {
+            return make_error_result(*ctx, mapped_val.error());
+        }
+        mapped_this->{{snakeCase name}} = mapped_val.value();
         return true;
     };
     {{/unless}}
     {{/each}}
 
     {{#each methods}}
-    auto {{name}}_method = [this](Value& this_val, std::vector<Value>& args) {
-        auto mapped_this = {{name}}_mapper->from_js(ctx, this_val);
+    auto {{name}}_method = [this](Value& this_val, std::vector<Value>& args) 
+    -> Result<Value> {
+        auto mapped_this = {{../name}}_mapper->from_js(*ctx, this_val);
         {{#each args}}
         auto err_params = CheckErrorParams{
             "argument", "{{name}}", "{{../../name}}.{{../name}}"};
         auto mapped_arg_{{name}} = {{type}}_mapper->try_from_js(
-            ctx, args[{{@index}}], err_params);
-        if (!mapped_arg_{{name}}.has_value()) return make_error(mapped_arg_{{name}});
+            *ctx, args[{{@index}}], err_params);
+        if (!mapped_arg_{{name}}.has_value()) {
+            return make_error_result(*ctx, mapped_arg_{{name}}.error());
+        }
         {{/each}}
         auto res = mapped_this->{{snakeCase name}}(
             {{#each args}}mapped_arg_{{name}}.value(){{#unless @last}}, {{/unless}}{{/each}}
         );
         {{#if return}}
-        return {{return}}_mapper->to_js(ctx, res);
+        return {{return}}_mapper->to_js(*ctx, res);
         {{/if}}
     };
     {{/each}}
 
-    def.props = {
+    def.properties = {
         {{#each props}}
         {
             "{{name}}", 
@@ -134,12 +139,12 @@ const classInitTmpl = compileTmpl(`
         {{/each}}
     };
     
-    def.finalize = [](const Object& object) {
-        ObjectsMapper<{{name}}>::finalize(object);
+    def.finalizer = [](const Object& object) {
+        ObjectsMapper<{{name}}>::finalize(object.to_value());
     };
 
     {{name}}_js_class = ctx->class_make(def);
-    {{name}}_mapper = ObjectMapper({{name}}, {{name}}_js_class);
+    {{name}}_mapper = ObjectsMapper<{{name}}>("{{name}}", {{name}}_js_class.value());
     
     {{#if constructor}}
     global_object.set_property("{{name}}", ctor);
@@ -163,7 +168,9 @@ const callbackInitTmpl = compileTmpl(`
             auto res = fn.call_as_function(nullptr, js_args);
             {{#if return}}
             auto js_res = {{return}}_mapper->try_from_js(ctx, res);
-            if (!js_res.has_value()) return make_error(js_res);
+            if (!js_res.has_value()) {
+                return make_error_result(*ctx, js_res.error());
+            }
             return js_res.value();
             {{/if}}
         }
@@ -184,7 +191,9 @@ const functionInitTmpl = compileTmpl(`
         auto err_params = CheckErrorParams{"argument", "{{name}}", "{{../name}}"};
         auto mapped_arg_{{name}} = {{type}}_mapper->try_from_js(
             ctx, args[{{@index}}], err_params);
-        if (!mapped_arg_{{name}}.has_value()) return make_error(mapped_arg_{{name}});
+        if (!mapped_arg_{{name}}.has_value()) {
+            return make_error_result(*ctx, mapped_arg_{{name}}.value());
+        }
         {{/each}}
         {{originalName}}(
             {{#each args}}mapped_arg_{{name}}.value(){{#unless @last}}, {{/unless}}{{/each}}
@@ -223,6 +232,7 @@ class {{classname}} {
   public:
     {{classname}}(Context* ctx);
   // private:
+    Context* ctx;
     {{#each types}}
     {{def}}
     {{/each}}
@@ -236,7 +246,7 @@ const implTmpl = compileTmpl(
 
 namespace {{namespace}} {
 
-{{classname}}::{{classname}}(Context* ctx) {
+{{classname}}::{{classname}}(Context* ctx_arg) : ctx(ctx_arg) {
     {{#each types}}
     
     // {{kind}} {{name}}

@@ -45,10 +45,10 @@ if(ADV_JSI_TESTS)
         tests/check_test.cpp
         tests/jsi_test.cpp
         tests/mappers_test.cpp
-        
         tests/idl_test.cpp
         generated/enum.cpp
         generated/struct.cpp
+        generated/class.cpp
     )
     target_link_libraries(aadrvark_jsi_tests Catch2 aardvark_jsi)
 endif()
