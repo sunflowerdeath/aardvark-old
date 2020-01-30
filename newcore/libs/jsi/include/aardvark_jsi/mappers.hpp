@@ -97,17 +97,31 @@ class ObjectsMapper : public Mapper<std::shared_ptr<T>> {
 
     Value to_js(
         Context& ctx, const std::shared_ptr<T>& native_object) override {
-        auto it = records_map.find(native_object.get());
-        if (it != records_map.end()) {
-            return it->second.js_value;
+        auto it = records.find(native_object.get());
+        if (it != records.end()) {
+            return it->second.js_value.lock();
         } else {
             return create_js_value(ctx, native_object);
         }
     }
 
+    Value create_js_value(
+        Context& ctx, const std::shared_ptr<T>& native_object) {
+        auto ptr = native_object.get();
+        auto the_js_class = std::holds_alternative<Class>(js_class)
+                                ? std::get<Class>(js_class)
+                                : std::get<ClassGetter>(js_class)(ptr);
+        auto js_obj = ctx.object_make(&the_js_class);
+        auto js_val = js_obj.to_value();
+        auto res = records.emplace(
+            ptr, Record{native_object, js_val.make_weak(), this});
+        auto record_ptr = &(res.first->second);
+        js_obj.set_private_data(static_cast<void*>(record_ptr));
+        return js_val;
+    }
+
     std::shared_ptr<T> from_js(Context& ctx, const Value& value) override {
         auto record = get_record(value);
-        if (records_set.find(record) == records_set.end()) return nullptr;
         return record->native_object;
     }
 
@@ -133,41 +147,23 @@ class ObjectsMapper : public Mapper<std::shared_ptr<T>> {
         auto record = get_record(value);
         if (record == nullptr) return;
         auto index = record->index;
-        index->records_map.erase(record->native_object.get());
-        index->records_set.erase(record);
+        index->records.erase(record->native_object.get());
     }
 
   private:
     struct Record {
         std::shared_ptr<T> native_object;
-        Value js_value;
+        WeakValue js_value;
         ObjectsMapper<T>* index;
     };
 
     std::string type_name;
     std::variant<Class, ClassGetter> js_class;
-    std::unordered_map<T*, Record> records_map;
-    std::unordered_set<Record*> records_set;
-
-    Value create_js_value(
-        Context& ctx, const std::shared_ptr<T>& native_object) {
-        auto ptr = native_object.get();
-        auto the_js_class = std::holds_alternative<Class>(js_class)
-                                ? std::get<Class>(js_class)
-                                : std::get<ClassGetter>(js_class)(ptr);
-        auto js_object = ctx.object_make(&the_js_class);
-        auto js_value = js_object.to_value();
-        auto res =
-            records_map.emplace(ptr, Record{native_object, js_value, this});
-        auto record_ptr = &(res.first->second);
-        records_set.insert(record_ptr);
-        js_object.set_private_data(static_cast<void*>(record_ptr));
-        return js_value;
-    }
+    std::unordered_map<T*, Record> records;
 
     static Record* get_record(const Value& value) {
-        return static_cast<Record*>(
-            value.to_object().value().get_private_data());
+        auto ptr = value.to_object().value().get_private_data();
+        return static_cast<Record*>(ptr);
     }
 };
 

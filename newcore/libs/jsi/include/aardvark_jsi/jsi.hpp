@@ -82,10 +82,11 @@ enum class ValueType {
     symbol
 };
 
+class WeakValue;
+
 class Value : public Pointer {
   public:
     using Pointer::Pointer;
-
     ValueType get_type() const;
     Result<bool> to_bool() const;
     Result<double> to_number() const;
@@ -93,6 +94,13 @@ class Value : public Pointer {
     Result<Object> to_object() const;
     bool strict_equal_to(const Value& value) const;
     bool is_error() const;
+    WeakValue make_weak() const;
+};
+
+class WeakValue : public Pointer {
+  public:
+    using Pointer::Pointer;
+    Value lock() const;
 };
 
 class Object : public Pointer {
@@ -176,6 +184,9 @@ class Context {
     virtual Value value_make_undefined() = 0;
     virtual Value value_make_string(const String& str) = 0;
     virtual Value value_make_object(const Object& object) = 0;
+    
+    virtual WeakValue value_make_weak(const Value& value) = 0;
+    virtual Value weak_value_lock(const WeakValue& value) = 0;
 
     virtual ValueType value_get_type(const Value& value) = 0;
     virtual Result<bool> value_to_bool(const Value& value) = 0;
@@ -195,6 +206,8 @@ class Context {
     virtual Object object_make(const Class* js_class) = 0;
     virtual Object object_make_function(const Function& function) = 0;
     virtual Object object_make_constructor(const Class& js_class) = 0;
+    virtual Object object_make_constructor2(
+        const Class& js_class, const Function& function) = 0;
     virtual Object object_make_array() = 0;
 
     virtual Value object_to_value(const Object& object) = 0;

@@ -104,16 +104,16 @@ const classInitTmpl = compileTmpl(`
     -> Result<Value> {
         auto mapped_this = {{../name}}_mapper->from_js(*ctx, this_val);
         {{#each args}}
-        auto err_params = CheckErrorParams{
+        auto {{name}}_err_params = CheckErrorParams{
             "argument", "{{name}}", "{{../../name}}.{{../name}}"};
-        auto mapped_arg_{{name}} = {{type}}_mapper->try_from_js(
-            *ctx, args[{{@index}}], err_params);
-        if (!mapped_arg_{{name}}.has_value()) {
-            return make_error_result(*ctx, mapped_arg_{{name}}.error());
+        auto {{name}}_arg = {{type}}_mapper->try_from_js(
+            *ctx, args[{{@index}}], {{name}}_err_params);
+        if (!{{name}}_arg.has_value()) {
+            return make_error_result(*ctx, {{name}}_arg.error());
         }
         {{/each}}
         auto res = mapped_this->{{snakeCase name}}(
-            {{#each args}}mapped_arg_{{name}}.value(){{#unless @last}}, {{/unless}}{{/each}}
+            {{#each args}}{{name}}_arg.value(){{#unless @last}}, {{/unless}}{{/each}}
         );
         {{#if return}}
         return {{return}}_mapper->to_js(*ctx, res);
@@ -146,9 +146,27 @@ const classInitTmpl = compileTmpl(`
     {{name}}_js_class = ctx->class_make(def);
     {{name}}_mapper = ObjectsMapper<{{name}}>("{{name}}", {{name}}_js_class.value());
     
+    auto ctor = [this](Value& this_val, std::vector<Value>& args) -> Result<Value> {
     {{#if constructor}}
-    global_object.set_property("{{name}}", ctor);
+        {{#each constructor.args}}
+        auto {{name}}_err_params = CheckErrorParams{
+            "argument", "{{name}}", "new {{../name}}()"};
+        auto {{name}}_arg = {{type}}_mapper->try_from_js(
+            *ctx, args[{{@index}}], {{name}}_err_params);
+        if (!{{name}}_arg.has_value()) {
+            return make_error_result(*ctx, {{name}}_arg.error());
+        }
+        {{/each}}
+        auto res = std::make_shared<{{name}}>(
+            {{#each constructor.args}}{{name}}_arg.value(){{#unless @last}},{{/unless}}{{/each}}
+        );
+        return {{name}}_mapper->to_js(*ctx, res);
+    {{else}}
+        return make_error_result("Class '{{name}}' doesn't provide a constructor.")
     {{/if}}
+    };
+    auto ctor_obj = ctx->object_make_constructor2({{name}}_js_class.value(), ctor);
+    ctx->get_global_object().set_property("{{name}}", ctor_obj.to_value());
 `)
 
 const callbackDefTmpl = compileTmpl(`

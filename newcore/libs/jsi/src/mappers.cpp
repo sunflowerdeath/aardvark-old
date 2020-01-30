@@ -10,7 +10,7 @@ Mapper<bool>* bool_mapper = new SimpleMapper<bool>(
     [](Context& ctx,
        const Value& val,
        const CheckErrorParams& err_params) -> FromJsResult<bool> {
-        auto err = check_type(ctx, val, "bool", err_params);
+        auto err = check_type(ctx, val, "boolean", err_params);
         if (err.has_value()) return tl::make_unexpected(err.value());
         return val.to_bool().value();
     });

@@ -32,6 +32,12 @@ bool Value::strict_equal_to(const Value& value) const {
 
 bool Value::is_error() const { return ctx->value_is_error(*this); }
 
+WeakValue Value::make_weak() const { return ctx->value_make_weak(*this); }
+
+// WeakValue
+
+Value WeakValue::lock() const { return ctx->weak_value_lock(*this); }
+
 // Object
 
 Value Object::to_value() const { return ctx->object_to_value(*this); }

@@ -4,25 +4,38 @@ namespace aardvark::jsi {
 
 class QjsValue : public PointerData {
   public:
-    QjsValue(JSContext* ctx, const JSValue& value, bool finalizing = false)
-        : ctx(ctx), value(value), finalizing(finalizing) {}
+    QjsValue(JSContext* ctx, const JSValue& value, bool finalizing = false, bool weak = false)
+        : ctx(ctx), value(value), finalizing(finalizing), weak(weak) {}
 
     ~QjsValue() override {
-        if (!finalizing) JS_FreeValue(ctx, value);
+        if (!finalizing && !weak) JS_FreeValue(ctx, value);
     }
 
     void protect() {
-        if (!finalizing) JS_DupValue(ctx, value);
+        if (!finalizing && !weak) JS_DupValue(ctx, value);
     }
 
     PointerData* copy() override {
         protect();
         return new QjsValue(*this);
     }
+    
+    PointerData* make_weak() {
+        auto copied = new QjsValue(*this);
+        copied->weak = true;
+        return copied;
+    }
+        
+    PointerData* lock() {
+        auto copied = new QjsValue(*this);
+        copied->weak = false;
+        return copied;
+    }
 
     JSContext* ctx;
     const JSValue value;
     bool finalizing;
+    bool weak;
 };
 
 class QjsString : public PointerData {
@@ -208,6 +221,14 @@ Value Qjs_Context::value_make_object(const Object& object) {
     return Value(this, object.ptr->copy());
 }
 
+WeakValue Qjs_Context::value_make_weak(const Value& val) {
+    return WeakValue(this, static_cast<QjsValue*>(val.ptr)->make_weak());
+}
+
+Value Qjs_Context::weak_value_lock(const WeakValue& weak_val) {
+    return Value(this, static_cast<QjsValue*>(weak_val.ptr)->lock());
+}
+
 ValueType Qjs_Context::value_get_type(const Value& value) {
     auto ptr = value_get_qjs(value);
     if (JS_IsBool(ptr)) return ValueType::boolean;
@@ -368,6 +389,13 @@ Object Qjs_Context::object_make_constructor(const Class& cls) {
         [this, cls](Value& this_val, std::vector<Value>& args) {
             return object_make(&cls).to_value();
         });
+    JS_SetConstructorBit(ctx, object_get_qjs(ctor), 1);
+    return ctor;
+}
+
+Object Qjs_Context::object_make_constructor2(
+    const Class& cls, const Function& function) {
+    auto ctor = object_make_function(function);
     JS_SetConstructorBit(ctx, object_get_qjs(ctor), 1);
     return ctor;
 }

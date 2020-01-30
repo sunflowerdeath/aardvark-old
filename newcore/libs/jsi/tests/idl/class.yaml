@@ -1,11 +1,18 @@
 kind: class
 name: TestClass
 include: ../tests/idl/class.hpp
+constructor:
+    args:
+        - name: intArg
+          type: int
+        - name: boolArg
+          type: bool
 props:
     - name: intProp
       type: int
     - name: readonlyProp
       type: bool
+      readonly: true
 methods:
     - name: methodName
       args:

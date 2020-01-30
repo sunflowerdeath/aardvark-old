@@ -12,10 +12,6 @@
 #include "../generated/struct.hpp"
 #include "../generated/class.hpp"
 
-// #include "../generated/test_enum_api.hpp"
-// #include "../generated/test_struct_api.hpp"
-// #include "../generated/test_class_api.hpp"
-
 using namespace aardvark::jsi;
 
 auto err_params = CheckErrorParams{"kind", "name", "target"};
@@ -87,6 +83,39 @@ TEST_CASE("idl", "[idl]") {
         auto ctx = create_context();
         auto& ctx_ref = *ctx.get();
         auto api = test::TestClassApi(ctx.get());
+
+        SECTION("to_js") {
+            auto val = std::make_shared<TestClass>(5, true);
+            auto js_val = api.TestClass_mapper->to_js(ctx_ref, val);
+            auto js_obj = js_val.to_object().value();
+            // getter
+            REQUIRE(
+                js_obj.get_property("intProp").value().to_number().value() ==
+                5);
+            // setter
+            js_obj.set_property("intProp", ctx->value_make_number(6));
+            REQUIRE(val->int_prop == 6);
+            // method
+            // TODO
+        }
+
+        SECTION("constructor") {
+            auto js_val =
+                ctx->eval("(new TestClass(5, true))", nullptr, "url").value();
+            auto js_obj = js_val.to_object().value();
+            REQUIRE(
+                js_obj.get_property("intProp").value().to_number().value() ==
+                5);
+        }
+
+        SECTION("from_js") {
+            auto val = std::make_shared<TestClass>(5, true);
+            auto js_val = api.TestClass_mapper->to_js(ctx_ref, val);
+            auto from_js_val = api.TestClass_mapper->from_js(ctx_ref, js_val);
+            REQUIRE(val == from_js_val);
+        }
+
+        ctx.reset();
     }
 
     SECTION("function") {
