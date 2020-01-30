@@ -174,31 +174,38 @@ const callbackDefTmpl = compileTmpl(`
 `)
 
 const callbackInitTmpl = compileTmpl(`
-    auto from_js = [](Context* ctx, Value& val) {
+    auto to_js = [](Context& ctx, const {{typename}}& val) {
+        return ctx.value_make_null();
+    };
+
+    auto try_from_js = [](
+        Context& ctx, const Value& val, const CheckErrorParams& err_params
+    )  -> tl::expected<{{typename}}, std::string> {
+        // TODO check type
         auto fn = val.to_object().value();
-        return [fn](
+        return [fn, &ctx](
             {{#each args}}{{getTypename type}} {{name}}{{#unless @last}},{{/unless}}{{/each}}
-        ){
+        ) {
             auto js_args = std::vector<Value>();
             {{#each args}}
             js_args.push_back({{type}}_mapper->to_js(ctx, {{name}}));
             {{/each}}
             auto res = fn.call_as_function(nullptr, js_args);
+            // TODO check return value error
             {{#if return}}
-            auto js_res = {{return}}_mapper->try_from_js(ctx, res);
-            if (!js_res.has_value()) {
-                return make_error_result(*ctx, js_res.error());
-            }
+            auto err_params = CheckErrorParams{"return value", "", "{{name}}"};
+            auto js_res = {{return}}_mapper->try_from_js(
+                ctx, res.value(), err_params);
+            // TODO handle error
+            // if (!js_res.has_value()) {
+                // return make_error_result(ctx, js_res.error());
+            // }
             return js_res.value();
             {{/if}}
-        }
+        };
     };
     
-    auto to_js = [](Context* ctx, const {{name}}& val) {
-        return ctx->value_make_null();
-    };
-    
-    {{name}}_mapper = SimpleMapper(from_js, to_js);
+    {{name}}_mapper = SimpleMapper<{{typename}}>(to_js, try_from_js);
 `)
 
 const functionDefTmpl = compileTmpl(``)

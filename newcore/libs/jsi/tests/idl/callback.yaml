@@ -1,0 +1,8 @@
+kind: callback
+name: TestCallback
+args:
+    - name: firstArg
+      type: int
+    - name: secondArg
+      type: int
+return: int

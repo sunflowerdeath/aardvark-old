@@ -12,6 +12,7 @@
 #include "../generated/struct.hpp"
 #include "../generated/class.hpp"
 #include "../generated/function.hpp"
+#include "../generated/callback.hpp"
 
 using namespace aardvark::jsi;
 
@@ -128,13 +129,17 @@ TEST_CASE("idl", "[idl]") {
 
     SECTION("function") {
         auto ctx = create_context();
-        auto& ctx_ref = *ctx.get();
         auto api = test::TestFunctionApi(ctx.get());
-
         auto res = ctx->eval("testFunction(20, true)", nullptr, "url").value();
         REQUIRE(res.to_string().value().to_utf8() == "21");
     }
 
     SECTION("callback") {
+        auto ctx = create_context();
+        auto& ctx_ref = *ctx.get();
+        auto api = test::TestCallbackApi(ctx.get());
+        auto js_val = ctx->eval("((a, b) => a + b)", nullptr, "url").value();
+        auto val = api.TestCallback_mapper->from_js(ctx_ref, js_val);
+        REQUIRE(val(2, 3) == 5);
     }
 }
