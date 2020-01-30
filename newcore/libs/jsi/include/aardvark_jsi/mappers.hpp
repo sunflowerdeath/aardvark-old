@@ -129,6 +129,8 @@ class ObjectsMapper : public Mapper<std::shared_ptr<T>> {
         Context& ctx,
         const Value& value,
         const CheckErrorParams& err_params) override {
+        auto err = check_type(ctx, value, "object", err_params);
+        if (err.has_value()) return tl::make_unexpected(err.value());
         auto native_object = from_js(ctx, value);
         if (native_object == nullptr) {
             auto error = fmt::format(

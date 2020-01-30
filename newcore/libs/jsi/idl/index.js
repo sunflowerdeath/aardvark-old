@@ -204,20 +204,20 @@ const callbackInitTmpl = compileTmpl(`
 const functionDefTmpl = compileTmpl(``)
 
 const functionInitTmpl = compileTmpl(`
-    auto func = [this](Value& this_val, std::vector<Value>&) {
+    auto func = [this](Value& this_val, std::vector<Value>& args) -> Result<Value> {
         {{#each args}}
-        auto err_params = CheckErrorParams{"argument", "{{name}}", "{{../name}}"};
-        auto mapped_arg_{{name}} = {{type}}_mapper->try_from_js(
-            ctx, args[{{@index}}], err_params);
-        if (!mapped_arg_{{name}}.has_value()) {
-            return make_error_result(*ctx, mapped_arg_{{name}}.value());
+        auto {{name}}_err_params = CheckErrorParams{"argument", "{{name}}", "{{../name}}"};
+        auto {{name}}_arg = {{type}}_mapper->try_from_js(
+            *ctx, args[{{@index}}], {{name}}_err_params);
+        if (!{{name}}_arg.has_value()) {
+            return make_error_result(*ctx, {{name}}_arg.error());
         }
         {{/each}}
-        {{originalName}}(
-            {{#each args}}mapped_arg_{{name}}.value(){{#unless @last}}, {{/unless}}{{/each}}
+        auto res = {{originalName}}(
+            {{#each args}}{{name}}_arg.value(){{#unless @last}}, {{/unless}}{{/each}}
         );
         {{#if return}}
-        return {{return}}_mapper->to_js(ctx, res);
+        return {{return}}_mapper->to_js(*ctx, res);
         {{/if}}
     };
     auto obj = ctx->object_make_function(func);

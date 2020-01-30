@@ -11,6 +11,7 @@
 #include "../generated/enum.hpp"
 #include "../generated/struct.hpp"
 #include "../generated/class.hpp"
+#include "../generated/function.hpp"
 
 using namespace aardvark::jsi;
 
@@ -115,10 +116,23 @@ TEST_CASE("idl", "[idl]") {
             REQUIRE(val == from_js_val);
         }
 
+        SECTION("try_from_js error") {
+            auto js_val = ctx->value_make_number(2);
+            auto res =
+                api.TestClass_mapper->try_from_js(ctx_ref, js_val, err_params);
+            REQUIRE(res.has_value() == false);
+        }
+
         ctx.reset();
     }
 
     SECTION("function") {
+        auto ctx = create_context();
+        auto& ctx_ref = *ctx.get();
+        auto api = test::TestFunctionApi(ctx.get());
+
+        auto res = ctx->eval("testFunction(20, true)", nullptr, "url").value();
+        REQUIRE(res.to_string().value().to_utf8() == "21");
     }
 
     SECTION("callback") {

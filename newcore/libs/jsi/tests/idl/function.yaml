@@ -1,0 +1,9 @@
+kind: function
+name: testFunction
+include: ../tests/idl/function.hpp
+args:
+    - name: intArg
+      type: int
+    - name: boolArg
+      type: bool
+return: string

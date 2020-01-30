@@ -6,9 +6,11 @@
 - Automatic memory management.
 - Convenient error handling using `expected`.
 
-In addition to that it includes automatic bindings generator
-It allows to describe API in YAML format and automatically generate mappers for types and expose your API
-The format supports structs, enums, callbacks, functions, and classes with properties and methods.
+In addition to that it includes automatic bindings generator.
+It allows to describe API in YAML format and the generate code for mapping types
+between native and JS and expose your API.
+The format supports structs, enums, callbacks, functions, and classes with 
+properties and methods.
 
 ## Overview
 
