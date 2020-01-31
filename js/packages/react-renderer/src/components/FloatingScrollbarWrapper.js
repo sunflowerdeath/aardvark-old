@@ -43,18 +43,18 @@ const FloatingScrollbarWrapper = props => {
         scrollTopValue.addListener(({ value }) => {
             const top = (height * value) / scrollHeight
             layerRef.current.transform = TransformMatrix.makeTranslate(0, top)
-            clearTimeout(ctx.hideTimer)
             if (ctx.props.autoHide) {
-                log('SHOW')
+                clearTimeout(ctx.hideTimer)
                 animateOpacity(ctx, 1)
-                ctx.hideTimer = setTimeout(() => {
-                    animateOpacity(ctx, 0)
-                    log('HIDE')
-                }, ctx.props.hideTimeout)
+                ctx.hideTimer = setTimeout(
+                    () => animateOpacity(ctx, 0),
+                    ctx.props.hideTimeout
+                )
             }
         })
     }, [height, scrollHeight])
     useEffect(() => {
+        if (ctx.props.autoHide) ctx.layerRef.current.opacity = 0
         ctx.opacityValue.addListener(({ value }) => {
             ctx.layerRef.current.opacity = value
         })
@@ -72,11 +72,7 @@ const FloatingScrollbarWrapper = props => {
                     }}
                 >
                     <Clip>
-                        <Layer
-                            ref={layerRef}
-                            transform={TransformMatrix.makeTranslate(0, 0)}
-                            opacity={autoHide ? 0 : 1}
-                        >
+                        <Layer ref={layerRef}>
                             <Sized
                                 sizeConstraints={{
                                     height: Value.abs(scrollbarHeight),

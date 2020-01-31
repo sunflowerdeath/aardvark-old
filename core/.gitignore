@@ -1,6 +1,7 @@
 build/
 downloads/
 externals/
-include/
+libs/*/build/
 compile_commands.json
 CMakeCache.txt
+

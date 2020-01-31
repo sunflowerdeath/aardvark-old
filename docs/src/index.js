@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import React from 'react'
 import MiniBook from 'minibook'
 import 'minibook/lib/styles.css'
+import './fonts/FantasqueSansMono.css'
 
 import DesignSection from './design'
 import CppApiSection from './cpp-api'

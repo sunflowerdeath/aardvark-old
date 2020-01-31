@@ -1,6 +1,0 @@
-build/
-downloads/
-externals/
-libs/*/build/
-compile_commands.json
-CMakeCache.txt

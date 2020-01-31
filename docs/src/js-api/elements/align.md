@@ -3,7 +3,7 @@
 Element that aligns its child inside the parent on absolute position or 
 relative to the parent's size.
 
-**Extends**: `Element`
+**Extends:** `Element`
 
 ## Example
 

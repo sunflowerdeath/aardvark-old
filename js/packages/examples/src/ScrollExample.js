@@ -33,30 +33,6 @@ import Scrollable from '@advk/react-renderer/src/components/Scrollable'
 import FloatingScrollbarWrapper from '@advk/react-renderer/src/components/FloatingScrollbarWrapper'
 import Button from './Button.js'
 
-const INITIAL_COLOR = { red: 179, green: 229, blue: 252, alpha: 255 }
-const HOVERED_COLOR = { red: 79, green: 195, blue: 247, alpha: 255 }
-
-const Panel = ({ children }) => {
-    const [isHovered, setIsHovered] = useState(false)
-    return (
-        <GestureResponder
-            onHoverStart={useCallback(() => setIsHovered(true))}
-            onHoverEnd={useCallback(() => setIsHovered(false))}
-        >
-            <IntrinsicHeight>
-                <Stack>
-                    <Background
-                        color={isHovered ? HOVERED_COLOR : INITIAL_COLOR}
-                    />
-                    <Padding padding={Padding1.all(16)}>
-                        <Flex direction={FlexDirection.column}>{children}</Flex>
-                    </Padding>
-                </Stack>
-            </IntrinsicHeight>
-        </GestureResponder>
-    )
-}
-
 const range = (from, to) => {
     const res = []
     for (let i = from; i <= to; i++) res.push(i)
@@ -102,63 +78,86 @@ const Expandable = React.forwardRef((props, ref) => {
     )
 })
 
-const ScrollExample = () => {
-    const [scrollTop, setScrollTop] = useState(0)
+const BasicScrollExample = () => {
     const expandRef = useRef()
+    return (
+        <>
+            <Flex>
+                <Button onTap={() => expandRef.current.toggle()}>
+                    <Text text="Expand" />
+                </Button>
+                <Button onTap={() => expandRef.current.toggle()}>
+                    <Text text="Disable" />
+                </Button>
+            </Flex>
+            <Sized
+                sizeConstraints={{
+                    width: Value.abs(200),
+                    height: Value.abs(200)
+                }}
+            >
+                <Stack>
+                    <Background color={Color.LIGHTGREY} />
+                    <Scrollable>
+                        <Expandable ref={expandRef} />
+                        {range(1, 2).map(i => (
+                            <ListItem>Item {i}</ListItem>
+                        ))}
+                    </Scrollable>
+                </Stack>
+            </Sized>
+        </>
+    )
+}
+
+const FloatingScrollbarExample = () => {
+    const expandRef = useRef()
+    return (
+        <>
+            <Button onTap={() => expandRef.current.toggle()}>
+                <Text text="Expand" />
+            </Button>
+            <Sized
+                sizeConstraints={{
+                    width: Value.abs(200),
+                    height: Value.abs(200)
+                }}
+            >
+                <Stack>
+                    <Background color={Color.LIGHTGREY} />
+                    <Scrollable wrapper={FloatingScrollbarWrapper}>
+                        {range(1, 20).map(i => (
+                            <ListItem>Item {i}</ListItem>
+                        ))}
+                    </Scrollable>
+                </Stack>
+            </Sized>
+        </>
+    )
+}
+
+const examples = [
+    { name: 'Basic', component: BasicScrollExample },
+    { name: 'Floating scrollbar', component: FloatingScrollbarExample }
+]
+
+const ScrollExample = () => {
+    const [selected, setSelected] = useState()
     return (
         <Padding padding={Padding1.all(16)}>
             <Flex direction={FlexDirection.column}>
                 <Padding padding={Padding1.only('bottom', 16)}>
-                    <Panel>
-                        <Button onTap={() => setScrollTop(s => s - 10)}>
-                            <Text text="UP" />
-                        </Button>
-                        <Button onTap={() => setScrollTop(s => s + 10)}>
-                            <Text text="DOWN" />
-                        </Button>
-                        <Flex>
-                            <Button onTap={() => expandRef.current.toggle()}>
-                                <Text text="Expand container" />
-                            </Button>
-                            <Button onTap={() => expandRef.current.toggle()}>
-                                <Text text="Expand child" />
-                            </Button>
-                        </Flex>
-                    </Panel>
+                    <Flex>
+                        {examples.map(item => (
+                            <Padding padding={Padding1.only('right', 8)}>
+                                <Button onTap={() => setSelected(item)}>
+                                    <Text text={item.name} />
+                                </Button>
+                            </Padding>
+                        ))}
+                    </Flex>
                 </Padding>
-                <Flex>
-                    <Sized
-                        sizeConstraints={{
-                            width: Value.abs(200),
-                            height: Value.abs(200)
-                        }}
-                    >
-                        <Stack>
-                            <Background color={Color.LIGHTGREY} />
-                            <Scrollable>
-                                <Expandable ref={expandRef} />
-                                {range(1, 2).map(i => (
-                                    <ListItem>Item {i}</ListItem>
-                                ))}
-                            </Scrollable>
-                        </Stack>
-                    </Sized>
-                    <Sized
-                        sizeConstraints={{
-                            width: Value.abs(200),
-                            height: Value.abs(200)
-                        }}
-                    >
-                        <Stack>
-                            <Background color={Color.LIGHTGREY} />
-                            <Scrollable wrapper={FloatingScrollbarWrapper}>
-                                {range(1, 20).map(i => (
-                                    <ListItem>Item {i}</ListItem>
-                                ))}
-                            </Scrollable>
-                        </Stack>
-                    </Sized>
-                </Flex>
+                {selected ? React.createElement(selected.component) : null}
             </Flex>
         </Padding>
     )
