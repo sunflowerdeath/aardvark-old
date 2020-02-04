@@ -4,7 +4,11 @@ namespace aardvark::jsi {
 
 class QjsValue : public PointerData {
   public:
-    QjsValue(JSContext* ctx, const JSValue& value, bool finalizing = false, bool weak = false)
+    QjsValue(
+        JSContext* ctx,
+        const JSValue& value,
+        bool finalizing = false,
+        bool weak = false)
         : ctx(ctx), value(value), finalizing(finalizing), weak(weak) {}
 
     ~QjsValue() override {
@@ -19,16 +23,17 @@ class QjsValue : public PointerData {
         protect();
         return new QjsValue(*this);
     }
-    
+
     PointerData* make_weak() {
         auto copied = new QjsValue(*this);
         copied->weak = true;
         return copied;
     }
-        
+
     PointerData* lock() {
         auto copied = new QjsValue(*this);
         copied->weak = false;
+        copied->protect();
         return copied;
     }
 

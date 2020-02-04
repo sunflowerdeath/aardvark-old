@@ -3,7 +3,7 @@ let path = require('path')
 let yaml = require('js-yaml')
 let Handlebars = require('handlebars')
 let { snakeCase } = require('change-case')
-let { groupBy, partition } = require('lodash')
+let { groupBy, partition, uniq } = require('lodash')
 let mkdirp = require('mkdirp')
 
 let compileTmpl = tmpl => Handlebars.compile(tmpl, { noEscape: true })
@@ -72,7 +72,7 @@ const enumInitTmpl = compileTmpl(`
 `)
 
 const classDefTmpl = compileTmpl(`
-    std::optional<ObjectsMapper<{{originalName}}>> {{name}}_mapper;
+    std::optional<ObjectsMapper2<{{originalName}}, {{baseClass}}>> {{name}}_mapper;
     std::optional<Class> {{name}}_js_class;
 `)
 
@@ -140,11 +140,13 @@ const classInitTmpl = compileTmpl(`
     };
     
     def.finalizer = [](const Object& object) {
-        ObjectsMapper<{{name}}>::finalize(object.to_value());
+        ObjectsIndex<{{baseClass}}>::finalize(object.to_value());
     };
 
     {{name}}_js_class = ctx->class_make(def);
-    {{name}}_mapper = ObjectsMapper<{{name}}>("{{name}}", {{name}}_js_class.value());
+    js_class_map.emplace(std::type_index(typeid({{name}})), {{name}}_js_class.value());
+    {{name}}_mapper = ObjectsMapper2<{{name}}, {{baseClass}}>(
+        &{{baseClass}}_objects_index.value());
     
     auto ctor = [this](Value& this_val, std::vector<Value>& args) -> Result<Value> {
     {{#if constructor}}
@@ -258,6 +260,13 @@ class {{classname}} {
     {{classname}}(Context* ctx);
   // private:
     Context* ctx;
+    
+    std::unordered_map<std::type_index, Class> js_class_map = {};
+
+    {{#each baseClasses}}
+    std::optional<ObjectsIndex<{{name}}>> {{name}}_objects_index;
+    {{/each}}
+
     {{#each types}}
     {{def}}
     {{/each}}
@@ -272,13 +281,15 @@ const implTmpl = compileTmpl(
 namespace {{namespace}} {
 
 {{classname}}::{{classname}}(Context* ctx_arg) : ctx(ctx_arg) {
-    {{#each types}}
+    {{#each baseClasses}}
+    {{name}}_objects_index = ObjectsIndex<{{name}}>("{{name}}", &js_class_map);
+    {{/each}}
     
+    {{#each types}}
     // {{kind}} {{name}}
     {
     {{init}}
     }
-    
     {{/each}}
 }
 
@@ -300,7 +311,7 @@ let getTypename = (name, defs) => {
 
 let setTypenames = defs => {
     let [callbacks, rest] = partition(defs, def => def.kind === 'callback') 
-    rest.map(def => {
+    rest.forEach(def => {
         if (!('originalName' in def)) {
             def.originalName = def.kind === 'function'
                 ? snakeCase(def.name)
@@ -310,7 +321,7 @@ let setTypenames = defs => {
             ? `std::shared_ptr<${def.originalName}>`
             : def.originalName
     })
-    callbacks.map(def => {
+    callbacks.forEach(def => {
         let returnTypename = 'return' in def
             ? getTypename(def['return'], defs)
             : 'void'
@@ -321,16 +332,41 @@ let setTypenames = defs => {
     })
 }
 
-let genCode = (options, defs) => {
+let getBaseClass = (name, defs) => {
+    if (defs[name]['extends'] === undefined) return name
+    return getBaseClass(defs[name]['extends'].name, defs)
+}
+
+let setBaseClasses = data => {
+    data.baseClasses = [];
+    for (let name in data.defs) {
+        let def = data.defs[name];
+        if (def.kind != 'class') break;
+        if (def['extends'] === undefined) {
+            data.baseClasses.push(def)
+            def.superClasses = []
+        }
+        def.baseClass = getBaseClass(def.name, data.defs)
+    }
+    for (let name in data.defs) {
+        let def = data.defs[name];
+        if (def.kind != 'class') break;
+        if (def['extends'] !== undefined) {
+            def[def.baseClass].superClasses.push(def.name)
+        }
+    }
+}
+
+let genCode = (options, data) => {
     let tmplOptions = {
         helpers: {
-            getTypename: name => getTypename(name, defs)
+            getTypename: name => getTypename(name, data.defs)
         }
     }
     let chunks = []
     let includes = []
-    for (let name in defs) {
-        let def = defs[name]
+    for (let name in data.defs) {
+        let def = data.defs[name]
         if ('include' in def) includes.push(def.include)
         let t = templates[def.kind];
         chunks.push({
@@ -340,10 +376,11 @@ let genCode = (options, defs) => {
             init: t.init(def, tmplOptions)
         })
     }
-    let ctx = { ...options, types: chunks, includes }
+    includes = uniq(includes)
+    let tmplData = { ...options, types: chunks, includes, baseClasses: data.baseClasses }
     return {
-        header: headerTmpl(ctx, tmplOptions),
-        impl: implTmpl(ctx, tmplOptions)
+        header: headerTmpl(tmplData, tmplOptions),
+        impl: implTmpl(tmplData, tmplOptions)
     }
 }
 
@@ -360,9 +397,10 @@ let gen = options => {
     let defs = []
     yaml.loadAll(input, def => { if (def) defs.push(def) })
     setTypenames(defs)
-    let defsByName = {}
-    for (let def of defs) defsByName[def.name] = def
-    let code = genCode(options, defsByName)
+    let data = { defs: {} };
+    for (let def of defs) data.defs[def.name] = def
+    setBaseClasses(data)
+    let code = genCode(options, data)
     output(options, code)
 }
 

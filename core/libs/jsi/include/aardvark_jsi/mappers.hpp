@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <variant>
+#include <typeindex>
 
 #include "check.hpp"
 #include "jsi.hpp"
@@ -173,5 +174,110 @@ extern Mapper<bool>* bool_mapper;
 extern Mapper<double>* double_mapper;
 extern Mapper<int>* int_mapper;
 extern Mapper<std::string>* string_mapper;
+
+template <typename T>
+class ObjectsIndex {
+  public:
+    ObjectsIndex(
+        std::string type_name,
+        std::unordered_map<std::type_index, Class>* class_map
+    ) : type_name(type_name), class_map(class_map){};
+
+    Value to_js(Context& ctx, const std::shared_ptr<T>& native_object) {
+        auto it = records.find(native_object.get());
+        if (it != records.end()) {
+            return it->second.js_value.lock();
+        } else {
+            return create_js_value(ctx, native_object);
+        }
+    }
+
+    Value create_js_value(
+        Context& ctx, const std::shared_ptr<T>& native_object) {
+        auto ptr = native_object.get();
+        auto typeidx = std::type_index(typeid(*ptr));
+        auto js_class = class_map->find(typeidx)->second;
+        auto js_obj = ctx.object_make(&js_class);
+        auto js_val = js_obj.to_value();
+        auto res = records.emplace(
+            ptr, Record{native_object, js_val.make_weak(), this});
+        auto record_ptr = &(res.first->second);
+        js_obj.set_private_data(static_cast<void*>(record_ptr));
+        return js_val;
+    }
+
+    template <typename DerivedT>
+    std::shared_ptr<DerivedT> from_js(Context& ctx, const Value& value) {
+        auto native_obj = get_record(value)->native_object;
+        return std::dynamic_pointer_cast<DerivedT>(native_obj);
+    }
+
+    template <typename DerivedT>
+    tl::expected<std::shared_ptr<T>, std::string> try_from_js(
+        Context& ctx, const Value& value, const CheckErrorParams& err_params) {
+        auto err = check_type(ctx, value, "object", err_params);
+        if (err.has_value()) return tl::make_unexpected(err.value());
+        auto native_object = from_js<DerivedT>(ctx, value);
+        if (native_object == nullptr) {
+            auto error = fmt::format(
+                "Invalid {} `{}` supplied to `{}`, expected `{}`.",
+                err_params.kind,
+                err_params.name,
+                err_params.target,
+                type_name);
+            return tl::make_unexpected(error);
+        } else {
+            return native_object;
+        }
+    }
+
+    static void finalize(const Value& value) {
+        auto record = get_record(value);
+        if (record == nullptr) return;
+        auto index = record->index;
+        index->records.erase(record->native_object.get());
+    }
+
+  private:
+    struct Record {
+        std::shared_ptr<T> native_object;
+        WeakValue js_value;
+        ObjectsIndex<T>* index;
+    };
+
+    std::string type_name; // TODO
+    std::unordered_map<std::type_index, Class>* class_map;
+    std::unordered_map<T*, Record> records;
+
+    static Record* get_record(const Value& value) {
+        auto ptr = value.to_object().value().get_private_data();
+        return static_cast<Record*>(ptr);
+    }
+};
+
+template <typename T, typename BaseT>
+class ObjectsMapper2 : Mapper<std::shared_ptr<T>> {
+  public:
+    ObjectsMapper2(ObjectsIndex<BaseT>* index) : index(index) {};
+    
+    Value to_js(
+        Context& ctx, const std::shared_ptr<T>& native_object) override {
+        return index->to_js(ctx, native_object);
+    }
+    
+    std::shared_ptr<T> from_js(Context& ctx, const Value& value) override {
+        return index->template from_js<T>(ctx, value);
+    }
+    
+    tl::expected<std::shared_ptr<T>, std::string> try_from_js(
+        Context& ctx,
+        const Value& value,
+        const CheckErrorParams& err_params) override {
+        return index->template try_from_js<T>(ctx, value, err_params);
+    }
+    
+  private:
+    ObjectsIndex<BaseT>* index;
+};
 
 }  // namespace aardvark::jsi
