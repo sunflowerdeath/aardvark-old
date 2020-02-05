@@ -80,6 +80,8 @@ const classInitTmpl = compileTmpl(`
     auto def = ClassDefinition();
     def.name = "{{name}}";
 
+    {{#if extends}}def.base_class = {{extends}}_js_class;{{/if}}
+
     {{#each props}}
     auto {{name}}_getter = [this](Object& this_obj) -> Result<Value> {
         auto mapped_this = {{../name}}_mapper->from_js(*ctx, this_obj.to_value());

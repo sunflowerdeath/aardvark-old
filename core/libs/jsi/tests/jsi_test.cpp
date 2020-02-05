@@ -11,8 +11,8 @@
 using namespace aardvark::jsi;
 
 TEMPLATE_TEST_CASE(
-    "context",
-    "[context]"
+    "jsi",
+    "[jsi]"
 #ifdef ADV_JSI_QJS
     ,
     Qjs_Context
@@ -251,6 +251,47 @@ TEMPLATE_TEST_CASE(
         }
 
         REQUIRE(finalizer_called == true);
+    }
+
+    SECTION("base class") {
+        bool base_finalizer_called = false;
+        bool super_finalizer_called = false;
+
+        {
+            auto ctx = create_context();
+
+            auto base_method = [&](Value js_this, std::vector<Value>& args) {
+                return ctx->value_make_number(25);
+            };
+            auto base_finalizer = [&](const Object& object) {
+                base_finalizer_called = true;
+            };
+            auto super_finalizer = [&](const Object& object) {
+                super_finalizer_called = true;
+            };
+
+            auto base_def = ClassDefinition();
+            base_def.name = "BaseClass";
+            base_def.methods = {{"base", base_method}};
+            base_def.finalizer = base_finalizer;
+            auto base_cls = ctx->class_make(base_def);
+
+            auto super_def = ClassDefinition();
+            super_def.base_class = &base_cls;
+            super_def.finalizer = super_finalizer;
+            auto super_cls = ctx->class_make(super_def);
+
+            auto instance = ctx->object_make(&super_cls);
+            ctx->get_global_object().set_property(
+                "instance", instance.to_value());
+            auto ret_val =
+                ctx->eval("instance.base()", nullptr, "sourceurl").value();
+            REQUIRE(ret_val.to_number().value() == 25);
+        }
+
+        // TODO
+        // REQUIRE(base_finalizer_called);
+        REQUIRE(super_finalizer_called);
     }
 
     SECTION("class exception") {

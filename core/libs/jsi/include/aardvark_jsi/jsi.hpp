@@ -139,6 +139,11 @@ class Object : public Pointer {
     VoidResult set_property_at_index(size_t index, const Value& value) const;
 };
 
+class Class : public Pointer {
+  public:
+    using Pointer::Pointer;
+};
+
 using Function = std::function<Result<Value>(Value&, std::vector<Value>&)>;
 
 using ClassPropertyGetter = std::function<Result<Value>(Object&)>;
@@ -154,14 +159,10 @@ using ClassFinalizer = std::function<void(const Object&)>;
 
 struct ClassDefinition {
     std::string name;
+    Class* base_class = nullptr;
     std::map<std::string, Function> methods;
     std::map<std::string, ClassPropertyDefinition> properties;
     ClassFinalizer finalizer;
-};
-
-class Class : public Pointer {
-  public:
-    using Pointer::Pointer;
 };
 
 class Context {

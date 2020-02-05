@@ -364,6 +364,13 @@ Class Qjs_Context::class_make(const ClassDefinition& definition) {
             JS_PROP_ENUMERABLE);
     }
 
+    if (definition.base_class != nullptr) {
+        auto base_class_proto =
+            JS_GetClassProto(ctx, class_get_qjs(*definition.base_class));
+        JS_SetPrototype(ctx, proto, base_class_proto);
+        JS_FreeValue(ctx, base_class_proto);
+    }
+
     JS_SetClassProto(ctx, class_id, proto);
     class_finalizers.emplace(class_id, definition.finalizer);
     return Class(this, new QjsClass(class_id));
