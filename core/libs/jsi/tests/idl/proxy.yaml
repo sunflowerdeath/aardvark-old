@@ -1,0 +1,12 @@
+kind: class
+name: ProxyClass
+include: ../tests/idl/proxy.hpp
+props:
+    - name: prop
+      type: int
+      get_proxy: class_prop_get_proxy
+      set_proxy: class_prop_set_proxy
+methods:
+    - name: method
+      return: int
+      return_proxy: class_method_return_proxy

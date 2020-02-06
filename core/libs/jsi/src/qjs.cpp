@@ -242,7 +242,7 @@ ValueType Qjs_Context::value_get_type(const Value& value) {
     if (JS_IsUndefined(ptr)) return ValueType::undefined;
     if (JS_IsString(ptr)) return ValueType::string;
     if (JS_IsObject(ptr)) return ValueType::object;
-    // TODO unknown
+    return ValueType::unknown;
 }
 
 Result<bool> Qjs_Context::value_to_bool(const Value& value) {
@@ -299,8 +299,15 @@ void class_finalizer(JSRuntime* rt, JSValue value) {
     if (it == Qjs_Context::class_instances.end()) return;
     auto ctx = it->second.ctx;
     auto class_id = it->second.class_id;
-    auto finalizer = ctx->class_finalizers[class_id];
-    if (finalizer) finalizer(ctx->object_from_qjs(value, true));
+    while (true) {
+        auto& def = ctx->class_definitions[class_id];
+        if (def.finalizer) def.finalizer(ctx->object_from_qjs(value, true));
+        if (def.base_class.has_value()) {
+            class_id = static_cast<QjsClass*>(def.base_class.value().ptr)->id;
+        } else {
+            break;
+        }
+    }
     Qjs_Context::class_instances.erase(it);
 }
 
@@ -364,15 +371,15 @@ Class Qjs_Context::class_make(const ClassDefinition& definition) {
             JS_PROP_ENUMERABLE);
     }
 
-    if (definition.base_class != nullptr) {
+    if (definition.base_class.has_value()) {
         auto base_class_proto =
-            JS_GetClassProto(ctx, class_get_qjs(*definition.base_class));
+            JS_GetClassProto(ctx, class_get_qjs(definition.base_class.value()));
         JS_SetPrototype(ctx, proto, base_class_proto);
         JS_FreeValue(ctx, base_class_proto);
     }
 
     JS_SetClassProto(ctx, class_id, proto);
-    class_finalizers.emplace(class_id, definition.finalizer);
+    class_definitions.emplace(class_id, definition);
     return Class(this, new QjsClass(class_id));
 }
 

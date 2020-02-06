@@ -113,14 +113,13 @@ class Qjs_Context : public Context {
     JSRuntime* rt;
     JSContext* ctx;
     std::optional<Object> strict_equal_function;
-    std::unordered_map<JSClassID, ClassFinalizer> class_finalizers;
+    std::unordered_map<JSClassID, ClassDefinition> class_definitions;
 
     struct ClassInstanceRecord {
         Qjs_Context* ctx;
         JSClassID class_id;
     };
-
-    // JSValue cannot be map key, so need to use pointer
+    // JSValue cannot be map key, so need to use pointer to data
     static std::unordered_map<void*, ClassInstanceRecord> class_instances;
 };
 

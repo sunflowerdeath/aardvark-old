@@ -11,6 +11,7 @@
 #include "../generated/enum.hpp"
 #include "../generated/struct.hpp"
 #include "../generated/class.hpp"
+#include "../generated/extends.hpp"
 #include "../generated/function.hpp"
 #include "../generated/callback.hpp"
 
@@ -124,6 +125,37 @@ TEST_CASE("idl", "[idl]") {
             REQUIRE(res.has_value() == false);
         }
 
+        ctx.reset();
+    }
+
+    SECTION("extends") {
+        auto ctx = create_context();
+        auto& ctx_ref = *ctx.get();
+        auto api = test::TestExtendsApi(ctx.get());
+
+        SECTION("to_js") {
+            auto val = std::make_shared<SuperClass>();
+            auto js_val = api.SuperClass_mapper->to_js(ctx_ref, val);
+            auto js_obj = js_val.to_object().value();
+            ctx->get_global_object().set_property("inst", js_val);
+            // method
+            auto method_val =
+                ctx->eval("inst.baseMethod()", nullptr, "url").value();
+            REQUIRE(method_val.to_number().value() == 25);
+
+            // TODO
+            /*
+            auto res = ctx->eval(
+                "inst instanceof SuperClass && inst instanceof BaseClass",
+                nullptr,
+                "url");
+            REQUIRE(res.value().to_bool().value() == true);
+            */
+        }
+
+        // from_js 
+        // TODO
+        
         ctx.reset();
     }
 

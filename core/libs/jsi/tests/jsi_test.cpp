@@ -277,7 +277,7 @@ TEMPLATE_TEST_CASE(
             auto base_cls = ctx->class_make(base_def);
 
             auto super_def = ClassDefinition();
-            super_def.base_class = &base_cls;
+            super_def.base_class = base_cls;
             super_def.finalizer = super_finalizer;
             auto super_cls = ctx->class_make(super_def);
 
@@ -289,8 +289,7 @@ TEMPLATE_TEST_CASE(
             REQUIRE(ret_val.to_number().value() == 25);
         }
 
-        // TODO
-        // REQUIRE(base_finalizer_called);
+        REQUIRE(base_finalizer_called);
         REQUIRE(super_finalizer_called);
     }
 

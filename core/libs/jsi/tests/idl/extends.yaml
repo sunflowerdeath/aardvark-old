@@ -1,0 +1,11 @@
+kind: class
+name: BaseClass
+include: ../tests/idl/extends.hpp
+methods:
+    - name: baseMethod
+      return: int
+---
+kind: class
+name: SuperClass
+extends: BaseClass
+constructor: true

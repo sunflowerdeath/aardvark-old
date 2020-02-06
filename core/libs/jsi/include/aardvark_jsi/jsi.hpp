@@ -79,7 +79,8 @@ enum class ValueType {
     number,
     string,
     object,
-    symbol
+    symbol,
+    unknown
 };
 
 class WeakValue;
@@ -159,7 +160,7 @@ using ClassFinalizer = std::function<void(const Object&)>;
 
 struct ClassDefinition {
     std::string name;
-    Class* base_class = nullptr;
+    std::optional<Class> base_class = std::nullopt;
     std::map<std::string, Function> methods;
     std::map<std::string, ClassPropertyDefinition> properties;
     ClassFinalizer finalizer;

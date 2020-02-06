@@ -213,7 +213,7 @@ class ObjectsIndex {
     }
 
     template <typename DerivedT>
-    tl::expected<std::shared_ptr<T>, std::string> try_from_js(
+    tl::expected<std::shared_ptr<DerivedT>, std::string> try_from_js(
         Context& ctx, const Value& value, const CheckErrorParams& err_params) {
         auto err = check_type(ctx, value, "object", err_params);
         if (err.has_value()) return tl::make_unexpected(err.value());

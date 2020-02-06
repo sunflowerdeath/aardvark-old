@@ -79,16 +79,22 @@ const classDefTmpl = compileTmpl(`
 const classInitTmpl = compileTmpl(`
     auto def = ClassDefinition();
     def.name = "{{name}}";
-
     {{#if extends}}def.base_class = {{extends}}_js_class;{{/if}}
 
     {{#each props}}
     auto {{name}}_getter = [this](Object& this_obj) -> Result<Value> {
+        {{#if get_proxy}}
+        return {{get_proxy}}(ctx, this_obj, {{../name}}_mapper.value());
+        {{else}}
         auto mapped_this = {{../name}}_mapper->from_js(*ctx, this_obj.to_value());
         return {{type}}_mapper->to_js(*ctx, mapped_this->{{snakeCase name}});
+        {{/if}}
     };
     {{#unless readonly}}
     auto {{name}}_setter = [this](Object& this_obj, Value& val) -> Result<bool> {
+        {{#if get_proxy}}
+        return {{set_proxy}}(ctx, this_obj, val, {{../name}}_mapper.value());
+        {{else}}
         auto mapped_this = {{../name}}_mapper->from_js(*ctx, this_obj.to_value());
         auto err_params = CheckErrorParams{"property", "{{name}}", "{{../name}}"};
         auto mapped_val = {{type}}_mapper->try_from_js(*ctx, val, err_params);
@@ -97,6 +103,7 @@ const classInitTmpl = compileTmpl(`
         }
         mapped_this->{{snakeCase name}} = mapped_val.value();
         return true;
+        {{/if}}
     };
     {{/unless}}
     {{/each}}
@@ -166,7 +173,7 @@ const classInitTmpl = compileTmpl(`
         );
         return {{name}}_mapper->to_js(*ctx, res);
     {{else}}
-        return make_error_result("Class '{{name}}' doesn't provide a constructor.")
+        return make_error_result(*ctx, "Class '{{name}}' doesn't provide a constructor.");
     {{/if}}
     };
     auto ctor_obj = ctx->object_make_constructor2({{name}}_js_class.value(), ctor);
@@ -335,8 +342,9 @@ let setTypenames = defs => {
 }
 
 let getBaseClass = (name, defs) => {
-    if (defs[name]['extends'] === undefined) return name
-    return getBaseClass(defs[name]['extends'].name, defs)
+    let def = defs[name]
+    if (def['extends'] === undefined) return name
+    return getBaseClass(defs[def['extends']].name, defs)
 }
 
 let setBaseClasses = data => {
@@ -354,7 +362,7 @@ let setBaseClasses = data => {
         let def = data.defs[name];
         if (def.kind != 'class') break;
         if (def['extends'] !== undefined) {
-            def[def.baseClass].superClasses.push(def.name)
+            data.defs[def.baseClass].superClasses.push(def.name)
         }
     }
 }

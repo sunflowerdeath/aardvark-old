@@ -52,6 +52,7 @@ if(ADV_JSI_TESTS)
         generated/class.cpp
         generated/function.cpp
         generated/callback.cpp
+        generated/extends.cpp
     )
     target_link_libraries(aadrvark_jsi_tests Catch2 aardvark_jsi)
 endif()
