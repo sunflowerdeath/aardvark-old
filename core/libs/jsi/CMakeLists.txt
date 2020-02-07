@@ -47,12 +47,14 @@ if(ADV_JSI_TESTS)
         tests/mappers_test.cpp
         tests/idl_test.cpp
         tests/idl/function.cpp
+        tests/idl/proxy.cpp
         generated/enum.cpp
         generated/struct.cpp
         generated/class.cpp
         generated/function.cpp
         generated/callback.cpp
         generated/extends.cpp
+        generated/proxy.cpp
     )
     target_link_libraries(aadrvark_jsi_tests Catch2 aardvark_jsi)
 endif()

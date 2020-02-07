@@ -83,19 +83,19 @@ const classInitTmpl = compileTmpl(`
 
     {{#each props}}
     auto {{name}}_getter = [this](Object& this_obj) -> Result<Value> {
-        {{#if get_proxy}}
-        return {{get_proxy}}(ctx, this_obj, {{../name}}_mapper.value());
-        {{else}}
         auto mapped_this = {{../name}}_mapper->from_js(*ctx, this_obj.to_value());
+        {{#if get_proxy}}
+        return {{get_proxy}}(*ctx, mapped_this, *{{type}}_mapper);
+        {{else}}
         return {{type}}_mapper->to_js(*ctx, mapped_this->{{snakeCase name}});
         {{/if}}
     };
     {{#unless readonly}}
     auto {{name}}_setter = [this](Object& this_obj, Value& val) -> Result<bool> {
-        {{#if get_proxy}}
-        return {{set_proxy}}(ctx, this_obj, val, {{../name}}_mapper.value());
-        {{else}}
         auto mapped_this = {{../name}}_mapper->from_js(*ctx, this_obj.to_value());
+        {{#if get_proxy}}
+        return {{set_proxy}}(*ctx, mapped_this, val, *{{type}}_mapper);
+        {{else}}
         auto err_params = CheckErrorParams{"property", "{{name}}", "{{../name}}"};
         auto mapped_val = {{type}}_mapper->try_from_js(*ctx, val, err_params);
         if (!mapped_val.has_value()) {

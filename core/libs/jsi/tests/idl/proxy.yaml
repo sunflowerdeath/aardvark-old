@@ -1,6 +1,7 @@
 kind: class
 name: ProxyClass
 include: ../tests/idl/proxy.hpp
+constructor: true
 props:
     - name: prop
       type: int

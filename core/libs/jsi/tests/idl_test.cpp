@@ -8,12 +8,13 @@
 #include <aardvark_jsi/qjs.hpp>
 #endif
 
-#include "../generated/enum.hpp"
-#include "../generated/struct.hpp"
+#include "../generated/callback.hpp"
 #include "../generated/class.hpp"
+#include "../generated/enum.hpp"
 #include "../generated/extends.hpp"
 #include "../generated/function.hpp"
-#include "../generated/callback.hpp"
+#include "../generated/struct.hpp"
+#include "../generated/proxy.hpp"
 
 using namespace aardvark::jsi;
 
@@ -25,21 +26,20 @@ TEST_CASE("idl", "[idl]") {
     SECTION("enum") {
         auto ctx = create_context();
         auto api = test::TestEnumApi(&*ctx.get());
-        
+
         auto res = ctx->eval("TestEnum.valueA", nullptr, "sourceurl").value();
         REQUIRE(res.to_number().value() == 0);
-        
+
         // api.TestEnum_mapper.to_js(TestEnum::value_a)
     }
-    
+
     SECTION("struct") {
         auto ctx = create_context();
-        auto& ctx_ref = *ctx.get();
         auto api = test::TestStructApi(ctx.get());
-        
+
         SECTION("to_js") {
             auto val = TestStruct{5, "test"};
-            auto res = api.TestStruct_mapper->to_js(ctx_ref, val);
+            auto res = api.TestStruct_mapper->to_js(*ctx, val);
             auto obj = res.to_object().value();
             REQUIRE(
                 obj.get_property("intProp").value().to_number().value() == 5);
@@ -54,22 +54,22 @@ TEST_CASE("idl", "[idl]") {
         SECTION("from_js") {
             auto val = ctx->eval("({intProp: 5, strProp: 'test'})", nullptr, "")
                            .value();
-            auto res = api.TestStruct_mapper->from_js(ctx_ref, val);
+            auto res = api.TestStruct_mapper->from_js(*ctx, val);
             REQUIRE(res.int_prop == 5);
             REQUIRE(res.str_prop == "test");
         }
-        
+
         SECTION("try_from_js error") {
             auto val = ctx->value_make_bool(true);
             auto res =
-                api.TestStruct_mapper->try_from_js(ctx_ref, val, err_params);
+                api.TestStruct_mapper->try_from_js(*ctx, val, err_params);
             REQUIRE(res.has_value() == false);
         }
 
         SECTION("try_from_js missing prop") {
             auto val = ctx->eval("({intProp: 5})", nullptr, "").value();
             auto res =
-                api.TestStruct_mapper->try_from_js(ctx_ref, val, err_params);
+                api.TestStruct_mapper->try_from_js(*ctx, val, err_params);
             REQUIRE(res.has_value() == false);
         }
 
@@ -77,19 +77,18 @@ TEST_CASE("idl", "[idl]") {
             auto val =
                 ctx->eval("({intProp: 5, strProp: 10})", nullptr, "").value();
             auto res =
-                api.TestStruct_mapper->try_from_js(ctx_ref, val, err_params);
+                api.TestStruct_mapper->try_from_js(*ctx, val, err_params);
             REQUIRE(res.has_value() == false);
         }
     }
 
     SECTION("class") {
         auto ctx = create_context();
-        auto& ctx_ref = *ctx.get();
         auto api = test::TestClassApi(ctx.get());
 
         SECTION("to_js") {
             auto val = std::make_shared<TestClass>(5, true);
-            auto js_val = api.TestClass_mapper->to_js(ctx_ref, val);
+            auto js_val = api.TestClass_mapper->to_js(*ctx, val);
             auto js_obj = js_val.to_object().value();
             // getter
             REQUIRE(
@@ -113,15 +112,15 @@ TEST_CASE("idl", "[idl]") {
 
         SECTION("from_js") {
             auto val = std::make_shared<TestClass>(5, true);
-            auto js_val = api.TestClass_mapper->to_js(ctx_ref, val);
-            auto from_js_val = api.TestClass_mapper->from_js(ctx_ref, js_val);
+            auto js_val = api.TestClass_mapper->to_js(*ctx, val);
+            auto from_js_val = api.TestClass_mapper->from_js(*ctx, js_val);
             REQUIRE(val == from_js_val);
         }
 
         SECTION("try_from_js error") {
             auto js_val = ctx->value_make_number(2);
             auto res =
-                api.TestClass_mapper->try_from_js(ctx_ref, js_val, err_params);
+                api.TestClass_mapper->try_from_js(*ctx, js_val, err_params);
             REQUIRE(res.has_value() == false);
         }
 
@@ -130,12 +129,11 @@ TEST_CASE("idl", "[idl]") {
 
     SECTION("extends") {
         auto ctx = create_context();
-        auto& ctx_ref = *ctx.get();
         auto api = test::TestExtendsApi(ctx.get());
 
         SECTION("to_js") {
             auto val = std::make_shared<SuperClass>();
-            auto js_val = api.SuperClass_mapper->to_js(ctx_ref, val);
+            auto js_val = api.SuperClass_mapper->to_js(*ctx, val);
             auto js_obj = js_val.to_object().value();
             ctx->get_global_object().set_property("inst", js_val);
             // method
@@ -153,9 +151,9 @@ TEST_CASE("idl", "[idl]") {
             */
         }
 
-        // from_js 
+        // from_js
         // TODO
-        
+
         ctx.reset();
     }
 
@@ -168,10 +166,24 @@ TEST_CASE("idl", "[idl]") {
 
     SECTION("callback") {
         auto ctx = create_context();
-        auto& ctx_ref = *ctx.get();
         auto api = test::TestCallbackApi(ctx.get());
         auto js_val = ctx->eval("((a, b) => a + b)", nullptr, "url").value();
-        auto val = api.TestCallback_mapper->from_js(ctx_ref, js_val);
+        auto val = api.TestCallback_mapper->from_js(*ctx, js_val);
         REQUIRE(val(2, 3) == 5);
+    }
+
+    SECTION("proxy") {
+        auto ctx = create_context();
+        auto api = test::TestProxyApi(ctx.get());
+
+        auto val = std::make_shared<ProxyClass>();
+        auto js_val = api.ProxyClass_mapper->to_js(*ctx, val);
+        auto obj = js_val.to_object().value();
+
+        auto res = obj.get_property("prop");
+        REQUIRE(res.value().to_number().value() == 2);
+
+        obj.set_property("prop", ctx->value_make_number(25));
+        REQUIRE(val->prop == 2);
     }
 }
