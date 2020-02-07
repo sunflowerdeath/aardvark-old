@@ -20,4 +20,5 @@ Result<bool> class_prop_set_proxy(
     Value& val,
     Mapper<int>& mapper);
 
-Value class_method_return_proxy(Context& ctx, Value& val, Mapper<int>& mapper);
+Result<Value> class_method_return_proxy(
+    Context& ctx, int& val, Mapper<int>& mapper);

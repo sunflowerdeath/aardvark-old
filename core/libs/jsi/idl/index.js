@@ -125,7 +125,11 @@ const classInitTmpl = compileTmpl(`
             {{#each args}}{{name}}_arg.value(){{#unless @last}}, {{/unless}}{{/each}}
         );
         {{#if return}}
+        {{#if return_proxy}}
+        return {{return_proxy}}(*ctx, res, *{{return}}_mapper);
+        {{else}}
         return {{return}}_mapper->to_js(*ctx, res);
+        {{/if}}
         {{/if}}
     };
     {{/each}}
