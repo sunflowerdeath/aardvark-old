@@ -359,7 +359,7 @@ Class Qjs_Context::class_make(const ClassDefinition& definition) {
         JS_FreeAtom(ctx, atom);
     }
 
-    for (auto it : definition.methods) {
+    for (auto& it : definition.methods) {
         auto& [name, method] = it;
         auto value = object_make_function(method);
         JS_DupValue(ctx, object_get_qjs(value));

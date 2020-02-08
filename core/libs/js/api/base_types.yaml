@@ -1,0 +1,44 @@
+kind: class
+name: Connection
+methods:
+    - name: disconnect
+---
+kind: enum
+name: ValueType
+originalName: Value::ValueType
+values:
+    - none
+    - abs
+    - rel
+---
+kind: struct
+name: Value
+props:
+    - name: type
+      type: ValueType
+    - name: value
+      type: float
+---
+kind: struct
+name: Scale
+props:
+    - name: vert
+      type: float
+    - name: horiz
+      type: float
+--- 
+kind: struct
+name: Size
+props:
+    - name: width
+      type: float
+    - name: height
+      type: float
+---
+kind: struct
+name: Position
+props:
+    - name: left
+      type: float
+    - name: top
+      type: float

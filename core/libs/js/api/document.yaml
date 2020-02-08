@@ -1,0 +1,36 @@
+kind: class
+name: Document
+include: aardvark/document.hpp
+originalName: aardvark::Document
+props:
+    - name: root
+      type: Element
+      setter_proxy: document_set_root_proxy
+    - name: parent
+      type: Element
+      readonly: true
+      getter_proxy: document_get_root_proxy
+methods:
+    # - name: observeElementSize
+      # args:
+        # - name: elem
+          # type: Element
+          # doc: Observed element
+        # - name: handler
+          # type: SizeObserver
+      # return: Connection
+    # - name: addPointerEventHandler
+      # args:
+        # - name: handler
+          # type: PointerEventHandler
+      # return: Connection
+    # - name: addKeyEventHandler
+      # args:
+        # - name: handler
+          # type: KeyEventHandler
+      # return: Connection
+    # - name: addScrollEventHandler
+      # args:
+        # - name: handler
+          # type: ScrollEventHandler
+      # return: Connection

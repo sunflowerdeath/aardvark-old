@@ -14,7 +14,7 @@ class Value;
 
 class PointerData {
   public:
-    virtual ~PointerData(){};
+    virtual ~PointerData() = default;
     virtual PointerData* copy() = 0;
 };
 
@@ -28,7 +28,7 @@ class Pointer {
     Pointer& operator=(const Pointer& other) { return *this = Pointer(other); }
 
     // move
-    Pointer(Pointer&& other) : ctx(other.ctx), ptr(other.ptr) {
+    Pointer(Pointer&& other) noexcept : ctx(other.ctx), ptr(other.ptr) {
         other.ptr = nullptr;
     }
 

@@ -1,0 +1,13 @@
+kind: class
+name: DesktopApp
+include: aardvark/platforms/desktop/desktop_app.hpp
+methods:
+    - name: createWindow
+      args:
+        - name: size
+          type: Size
+    - name: getDocument
+      args:
+        - name: window
+          type: DesktopWindow
+      return: Document

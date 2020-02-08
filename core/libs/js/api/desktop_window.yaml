@@ -1,0 +1,18 @@
+kind: class
+name: DesktopWindow
+include: aardvark/platforms/desktop/desktop_window.hpp
+props:
+    - name: size
+      type: Size
+    # - name: position
+      # type: Position
+    # - name: title
+      # type: string
+methods:
+    - name: close
+    - name: minimize
+    - name: maximize
+    - name: restore
+    - name: hide
+    - name: show
+    - name: focus

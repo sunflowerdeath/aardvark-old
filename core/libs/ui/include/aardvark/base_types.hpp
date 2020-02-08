@@ -10,7 +10,7 @@ class Connection {
 struct Value {
     enum class ValueType { none, abs, rel };
 
-    Value(){};
+    Value() = default;
     Value(ValueType type, float value) : type(type), value(value){};
 
     ValueType type = ValueType::none;
@@ -49,7 +49,7 @@ inline bool operator!=(const Size& lhs, const Size& rhs) {
 };
 
 struct Position {
-    Position(){};
+    Position() = default;
     Position(float left, float top) : left(left), top(top) {};
     float left = 0;
     float top = 0;

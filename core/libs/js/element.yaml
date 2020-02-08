@@ -1,0 +1,27 @@
+kind: class
+name: Element
+props:
+    - name: size
+      type: Size
+    - name: relPosition
+      type: Position
+    - name: parent
+      type: Element
+    - name: document
+      type: Document
+methods:
+    - name: appendChild
+      args:
+        - name: child
+          type: Element
+    - name: removeChild
+      args:
+        - name: child
+          type: Element
+    - name: insertChildBefore
+      args:
+        - name: child
+          type: Element
+        - name: beforeChild
+          type: Element
+          

@@ -1,18 +1,18 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(ADV_CORE LANGUAGES C CXX)
+project(ADV_UI LANGUAGES C CXX)
 
 #-------------------------------------------------------------------------------
 # TARGETS
 #-------------------------------------------------------------------------------
 # Library
-if (ADV_CORE_SHARED)
-    set(ADV_CORE_LIB_TYPE SHARED)
+if (ADV_UI_SHARED)
+    set(ADV_UI_LIB_TYPE SHARED)
 else()
-    set(ADV_CORE_LIB_TYPE STATIC)
+    set(ADV_UI_LIB_TYPE STATIC)
 endif()
 
-add_library(aardvark_core ${ADV_CORE_LIB_TYPE}
+add_library(aardvark_ui ${ADV_UI_LIB_TYPE}
     src/base_types.cpp
     src/box_constraints.cpp
     src/layer.cpp
@@ -47,40 +47,40 @@ add_library(aardvark_core ${ADV_CORE_LIB_TYPE}
     src/utils/websocket.cpp
 )
 
-target_include_directories(aardvark_core PRIVATE
+target_include_directories(aardvark_ui PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include/aardvark)
 
-target_include_directories(aardvark_core INTERFACE
+target_include_directories(aardvark_ui INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/include)
     
-target_link_libraries(aardvark_core
+target_link_libraries(aardvark_ui
     skia ICU ICU_DATA fmt spdlog::spdlog nlohmann_json nod boost)
 
 if(ADV_PLATFORM STREQUAL "linux")
-    target_compile_definitions(aardvark_core PRIVATE "ADV_PLATFORM_DESKTOP=1")
-    target_sources(aardvark_core PRIVATE
+    target_compile_definitions(aardvark_ui PRIVATE "ADV_PLATFORM_DESKTOP=1")
+    target_sources(aardvark_ui PRIVATE
         src/platforms/desktop/desktop_window.cpp
         src/platforms/desktop/desktop_app.cpp
         src/utils/files_utils.cpp)
-    target_link_libraries(aardvark_core glfw ${X11_LIBRARIES} stdc++fs)
+    target_link_libraries(aardvark_ui glfw ${X11_LIBRARIES} stdc++fs)
 endif()
 
 if(ADV_PLATFORM STREQUAL "android")
-    target_compile_definitions(aardvark_core PRIVATE "ADV_PLATFORM_ANDROID=1")
-    target_sources(aardvark_core PRIVATE
+    target_compile_definitions(aardvark_ui PRIVATE "ADV_PLATFORM_ANDROID=1")
+    target_sources(aardvark_ui PRIVATE
         src/platforms/android/android_app.cpp
         src/platforms/android/android_jni.cpp
         src/platforms/android/android_binary_channel.cpp)
         # src/platforms/android/android_texture_layer.cpp)
-    target_link_libraries(aardvark_core android EGL GLESv2 log)
+    target_link_libraries(aardvark_ui android EGL GLESv2 log)
 endif()
 
-if(ADV_CORE_EXAMPLES)
+if(ADV_UI_EXAMPLES)
     # add_executable(align_example src/examples/align_example.cpp)
     # target_link_libraries(align_example aardvark)
 
     # add_executable(app_example examples/app_example.cpp)
-    # target_link_libraries(app_example aardvark_core)
+    # target_link_libraries(app_example aardvark_ui)
 
     # add_executable(border_example src/examples/border_example.cpp)
     # target_link_libraries(border_example aardvark)
@@ -88,8 +88,8 @@ if(ADV_CORE_EXAMPLES)
     # add_executable(clip_example src/examples/clip_example.cpp)
     # target_link_libraries(clip_example aardvark)
 
-    add_executable(flex_example examples/flex_example.cpp)
-    target_link_libraries(flex_example aardvark_core)
+    add_executable(adv_ui_flex_example examples/flex_example.cpp)
+    target_link_libraries(adv_ui_flex_example aardvark_ui)
 
     # add_executable(layer_example src/examples/layer_example.cpp)
     # target_link_libraries(layer_example aardvark)
@@ -107,7 +107,7 @@ if(ADV_CORE_EXAMPLES)
     # target_link_libraries(websocket_example aardvark)
 endif()
 
-if(ADV_CORE_TESTS)
+if(ADV_UI_TESTS)
     add_executable(tests
         src/tests/index.cpp
         src/tests/base_types_test.cpp
@@ -118,5 +118,5 @@ if(ADV_CORE_TESTS)
         src/tests/element_observer_test.cpp
         src/tests/event_loop_test.cpp
     )
-    target_link_libraries(aardvark_core_tests Catch2 aardvark_core)
+    target_link_libraries(aardvark_ui_tests Catch2 aardvark_ui)
 endif()

@@ -1,0 +1,258 @@
+kind: struct
+name: Alignment
+props:
+    - name: left
+      type: Value
+    - name: top
+      type: Value
+    - name: right
+      type: Value
+    - name: bottom
+      type: Value
+---
+kind: class
+name: AlignElement
+extends: Element
+constructor: default
+props:
+    - name: adjustChildSize
+      type: bool
+    - name: align
+      type: Align
+---
+
+kind: class
+name: BackgroundElement
+extends: Element
+constructor: default
+props:
+    - name: color
+      type: Color
+---
+
+kind: struct
+name: Border
+props:
+    - name: width
+      type: float
+    - name: color
+      type: Color
+---
+kind: struct
+name: BoxBorders
+props:
+    - name: top
+      type: BorderSide
+    - name: right
+      type: BorderSide
+    - name: bottom
+      type: BorderSide
+    - name: left
+      type: BorderSide
+---
+kind: struct
+name: Radius
+props:
+    - name: width
+      type: int
+    - name: height
+      type: int
+---
+kind: struct
+name: BoxRadiuses
+props:
+    - name: topLeft
+      type: Radius
+    - name: topRight
+      type: Radius
+    - name: bottomRigth
+      type: Radius
+    - name: bottomleft
+      type: Radius
+---
+kind: class
+name: BorderElement
+extends: Element
+constructor: default
+props:
+    - name: borders
+      type: BoxBorders
+    - name: radiuses
+      type: BoxRadiuses
+---
+
+kind: class
+name: CenterElement
+extends: Element
+constructor: default
+---
+
+kind: enum
+name: FlexDirection
+values:
+    - row
+    - column
+---
+kind: enum
+name: FlexAlign
+values:
+    - start
+    - center
+    - end
+    - stretch
+---
+kind: enum
+name: FlexJustify
+values:
+    - start
+    - center
+    - end
+    - spaceAround
+    - spaceBetween
+    - spaceEvenly
+---
+kind: class
+name: FlexChildElement
+extends: Element
+constructor: default
+props:
+    - name: flex
+      type: int
+      doc: Flex grow factor (Default is 0)
+    - name: align
+      type: FlexAlign?
+      doc: Overrides align property of the container
+    - name: tightFit
+      type: bool
+      doc: Whether to force flexible child to take all of the provided space.
+---
+kind: class
+name: FlexElement
+extends: Element
+constructor: default
+props:
+    - name: direction
+      type: FlexDirection
+      doc: Which axis is main, default is `row`
+    - name: justify
+      type: FlexJustify
+      doc: Alignment of the children across the main axis, default is `start`
+    - name: align
+      type: FlexAlign
+      doc: Alignment of the children across the secondary axis, default is `start`
+---
+
+kind: class
+name: IntrinsicHeightElement
+extends: Element
+constructor: default
+---
+
+kind: class
+name: IntrinsicWidthElement
+extends: Element
+constructor: default
+---
+
+kind: struct
+name: Transform
+---
+kind: class
+name: LayerElement
+extends: Element
+constructor: default
+doc: Renders child element on the separate layer
+props:
+    - name: opacity
+      type: float
+    - name: transform
+      type: Transform
+---
+
+kind: struct
+name: Padding
+props:
+    - name: left
+      type: float
+    - name: top
+      type: float
+    - name: right
+      type: float
+    - name: bottom
+      type: float
+---
+kind: class
+name: PaddingElement
+extends: Element
+constructor: default
+props:
+    - name: padding
+      type: Padding
+      
+---
+kind: class
+name: PlaceholderElement
+extends: Element
+constructor: default
+
+---
+kind: enum
+name: HitTestMode
+values:
+    - a
+    - b
+---
+kind: enum
+name: ResponderEventType
+values:
+    - a
+    - b
+---
+kind: callback
+name:
+args:
+    - name: event
+      type: PointerEvent
+    - name: eventType
+      type: ResponderEventType
+---
+kind: class
+name: ResponderElement
+extends: Element
+constructor: default
+props:
+    - name: hitTestMode
+      type: HitTestMode
+    - name: handler
+      type: ResponderHandler
+---
+
+kind: struct
+name: SizeConstraints
+props:
+    - name: width
+      type: Value
+    - name: height
+      type: Value
+    - name: minWidth
+      type: Value
+    - name: minHeight
+      type: Value
+    - name: maxWidth
+      type: Value
+    - name: maxHeight
+      type: Value
+---
+kind: class
+name: SizeElement
+extends: Element
+constructor: default
+props:
+    - name: sizeConstraints
+      type: SizeConstraints
+      
+---
+kind: class
+name: StackElement
+extends: Element
+constructor: default

@@ -36,7 +36,8 @@ template <typename T>
 class SimpleMapper : public Mapper<T> {
   public:
     SimpleMapper(ToJsCallback<T> to_js_cb, TryFromJsCallback<T> try_from_js_cb)
-        : to_js_cb(to_js_cb), try_from_js_cb(try_from_js_cb){};
+        : to_js_cb(std::move(to_js_cb)),
+          try_from_js_cb(std::move(try_from_js_cb)){};
 
     Value to_js(Context& ctx, const T& value) override {
         return to_js_cb(ctx, value);
@@ -94,7 +95,7 @@ class ObjectsMapper : public Mapper<std::shared_ptr<T>> {
   public:
     ObjectsMapper(
         std::string type_name, std::variant<Class, ClassGetter> js_class)
-        : type_name(type_name), js_class(js_class){};
+        : type_name(std::move(type_name)), js_class(std::move(js_class)){};
 
     Value to_js(
         Context& ctx, const std::shared_ptr<T>& native_object) override {
@@ -181,7 +182,7 @@ class ObjectsIndex {
     ObjectsIndex(
         std::string type_name,
         std::unordered_map<std::type_index, Class>* class_map
-    ) : type_name(type_name), class_map(class_map){};
+    ) : type_name(std::move(type_name)), class_map(class_map){};
 
     Value to_js(Context& ctx, const std::shared_ptr<T>& native_object) {
         auto it = records.find(native_object.get());

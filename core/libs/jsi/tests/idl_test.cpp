@@ -176,18 +176,22 @@ TEST_CASE("idl", "[idl]") {
         auto ctx = create_context();
         auto api = test::TestProxyApi(ctx.get());
 
-        auto val = std::make_shared<ProxyClass>();
-        auto js_val = api.ProxyClass_mapper->to_js(*ctx, val);
-        auto obj = js_val.to_object().value();
+        {
+            auto val = std::make_shared<ProxyClass>();
+            auto js_val = api.ProxyClass_mapper->to_js(*ctx, val);
+            auto obj = js_val.to_object().value();
 
-        auto res = obj.get_property("prop");
-        REQUIRE(res.value().to_number().value() == 2);
+            auto res = obj.get_property("prop");
+            REQUIRE(res.value().to_number().value() == 2);
 
-        obj.set_property("prop", ctx->value_make_number(25));
-        REQUIRE(val->prop == 2);
+            obj.set_property("prop", ctx->value_make_number(25));
+            REQUIRE(val->prop == 2);
 
-        ctx->get_global_object().set_property("inst", js_val);
-        auto method_res = ctx->eval("inst.method()", nullptr, "url");
-        REQUIRE(method_res.value().to_number().value() == 2);
+            ctx->get_global_object().set_property("inst", js_val);
+            auto method_res = ctx->eval("inst.method()", nullptr, "url");
+            REQUIRE(method_res.value().to_number().value() == 2);
+        }
+
+        ctx.reset();
     }
 }

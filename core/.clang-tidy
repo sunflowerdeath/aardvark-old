@@ -1,0 +1,4 @@
+---
+Checks: '-*,clang-diagnostic-*,clang-analyzer-*,bugprone-*,modernize-*,-modernize-use-trailing-return-type,-modernize-use-nodiscard,performance-*'
+HeaderFilterRegex: 'libs/*'
+...

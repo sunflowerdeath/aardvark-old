@@ -67,4 +67,4 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/externals/find.cmake")
 # set(ADV_JSI_TESTS OFF)
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/libs/jsi")
 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/libs/core")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/libs/ui")

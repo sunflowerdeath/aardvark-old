@@ -44,7 +44,7 @@ class Element : public std::enable_shared_from_this<Element> {
   public:
     Element(bool is_repaint_boundary, bool size_depends_on_parent);
 
-    virtual ~Element(){};
+    virtual ~Element() = default;
 
     // -------------------------------------------------------------------------
     // These fields can be set with default constructor:
