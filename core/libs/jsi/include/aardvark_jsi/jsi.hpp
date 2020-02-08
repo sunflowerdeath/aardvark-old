@@ -61,7 +61,7 @@ class Error {
     Error(Value* value);
     std::string message();
     Value value();
-    ErrorLocation location() { return ErrorLocation{}; }
+    ErrorLocation location() { return ErrorLocation{}; /* TODO */ }
     std::shared_ptr<Value> value_ptr;
 };
 

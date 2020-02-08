@@ -11,11 +11,11 @@ let compileTmpl = tmpl => Handlebars.compile(tmpl, { noEscape: true })
 Handlebars.registerHelper("snakeCase", snakeCase)
 
 const structDefTmpl = compileTmpl(`
-    std::optional<SimpleMapper<{{originalName}}>> {{name}}_mapper;
+    std::optional<SimpleMapper<{{typename}}>> {{name}}_mapper;
 `)
 
 const structInitTmpl = compileTmpl(`
-    auto to_js = [](Context& ctx, const {{name}}& val) {
+    auto to_js = [](Context& ctx, const {{typename}}& val) {
         auto res = ctx.object_make(nullptr);
         {{#each props}}
         res.set_property("{{name}}", {{type}}_mapper->to_js(
@@ -26,11 +26,11 @@ const structInitTmpl = compileTmpl(`
 
     auto try_from_js = [](
         Context& ctx, const Value& val, const CheckErrorParams& err_params
-    ) -> tl::expected<{{name}}, std::string> {
+    ) -> tl::expected<{{typename}}, std::string> {
         auto err = check_type(ctx, val, "object", err_params);
         if (err.has_value()) return tl::make_unexpected(err.value());
         auto obj = val.to_object().value();
-        auto mapped_struct = {{name}}();
+        auto mapped_struct = {{typename}}();
         {{#each props}}
         {
             auto prop_val = std::optional<Value>();
@@ -55,7 +55,7 @@ const structInitTmpl = compileTmpl(`
         return mapped_struct;
     };
 
-    {{name}}_mapper = SimpleMapper<{{typename}}>(to_js, try_from_js);
+    {{name}}_mapper = SimpleMapper<{{fullname}}>(to_js, try_from_js);
 `)
 
 const enumDefTmpl = compileTmpl(`
@@ -72,7 +72,8 @@ const enumInitTmpl = compileTmpl(`
 `)
 
 const classDefTmpl = compileTmpl(`
-    std::optional<ObjectsMapper2<{{originalName}}, {{baseClass}}>> {{name}}_mapper;
+    std::optional<ObjectsMapper2<{{fullname}}, {{fullBaseClass}}>>
+        {{name}}_mapper;
     std::optional<Class> {{name}}_js_class;
 `)
 
@@ -83,7 +84,8 @@ const classInitTmpl = compileTmpl(`
 
     {{#each props}}
     auto {{name}}_getter = [this](Object& this_obj) -> Result<Value> {
-        auto mapped_this = {{../name}}_mapper->from_js(*ctx, this_obj.to_value());
+        auto mapped_this = {{../name}}_mapper->from_js(
+            *ctx, this_obj.to_value());
         {{#if get_proxy}}
         return {{get_proxy}}(*ctx, mapped_this, *{{type}}_mapper);
         {{else}}
@@ -91,12 +93,15 @@ const classInitTmpl = compileTmpl(`
         {{/if}}
     };
     {{#unless readonly}}
-    auto {{name}}_setter = [this](Object& this_obj, Value& val) -> Result<bool> {
-        auto mapped_this = {{../name}}_mapper->from_js(*ctx, this_obj.to_value());
+    auto {{name}}_setter = [this](Object& this_obj, Value& val)
+        -> Result<bool> {
+        auto mapped_this = {{../name}}_mapper->from_js(
+            *ctx, this_obj.to_value());
         {{#if get_proxy}}
         return {{set_proxy}}(*ctx, mapped_this, val, *{{type}}_mapper);
         {{else}}
-        auto err_params = CheckErrorParams{"property", "{{name}}", "{{../name}}"};
+        auto err_params = CheckErrorParams{
+            "property", "{{name}}", "{{../name}}"};
         auto mapped_val = {{type}}_mapper->try_from_js(*ctx, val, err_params);
         if (!mapped_val.has_value()) {
             return make_error_result(*ctx, mapped_val.error());
@@ -110,7 +115,7 @@ const classInitTmpl = compileTmpl(`
 
     {{#each methods}}
     auto {{name}}_method = [this](Value& this_val, std::vector<Value>& args) 
-    -> Result<Value> {
+        -> Result<Value> {
         auto mapped_this = {{../name}}_mapper->from_js(*ctx, this_val);
         {{#each args}}
         auto {{name}}_err_params = CheckErrorParams{
@@ -153,15 +158,17 @@ const classInitTmpl = compileTmpl(`
     };
     
     def.finalizer = [](const Object& object) {
-        ObjectsIndex<{{baseClass}}>::finalize(object.to_value());
+        ObjectsIndex<{{fullBaseClass}}>::finalize(object.to_value());
     };
 
     {{name}}_js_class = ctx->class_make(def);
-    js_class_map.emplace(std::type_index(typeid({{name}})), {{name}}_js_class.value());
-    {{name}}_mapper = ObjectsMapper2<{{name}}, {{baseClass}}>(
+    js_class_map.emplace(
+        std::type_index(typeid({{fullname}})), {{name}}_js_class.value());
+    {{name}}_mapper = ObjectsMapper2<{{fullname}}, {{fullBaseClass}}>(
         &{{baseClass}}_objects_index.value());
     
-    auto ctor = [this](Value& this_val, std::vector<Value>& args) -> Result<Value> {
+    auto ctor = [this](Value& this_val, std::vector<Value>& args)
+        -> Result<Value> {
     {{#if constructor}}
         {{#each constructor.args}}
         auto {{name}}_err_params = CheckErrorParams{
@@ -177,10 +184,12 @@ const classInitTmpl = compileTmpl(`
         );
         return {{name}}_mapper->to_js(*ctx, res);
     {{else}}
-        return make_error_result(*ctx, "Class '{{name}}' doesn't provide a constructor.");
+        return make_error_result(
+            *ctx, "Class '{{name}}' doesn't provide a constructor.");
     {{/if}}
     };
-    auto ctor_obj = ctx->object_make_constructor2({{name}}_js_class.value(), ctor);
+    auto ctor_obj = ctx->object_make_constructor2(
+        {{name}}_js_class.value(), ctor);
     ctx->get_global_object().set_property("{{name}}", ctor_obj.to_value());
 `)
 
@@ -226,16 +235,18 @@ const callbackInitTmpl = compileTmpl(`
 const functionDefTmpl = compileTmpl(``)
 
 const functionInitTmpl = compileTmpl(`
-    auto func = [this](Value& this_val, std::vector<Value>& args) -> Result<Value> {
+    auto func = [this](Value& this_val, std::vector<Value>& args)
+        -> Result<Value> {
         {{#each args}}
-        auto {{name}}_err_params = CheckErrorParams{"argument", "{{name}}", "{{../name}}"};
+        auto {{name}}_err_params = CheckErrorParams{
+            "argument", "{{name}}", "{{../name}}"};
         auto {{name}}_arg = {{type}}_mapper->try_from_js(
             *ctx, args[{{@index}}], {{name}}_err_params);
         if (!{{name}}_arg.has_value()) {
             return make_error_result(*ctx, {{name}}_arg.error());
         }
         {{/each}}
-        auto res = {{originalName}}(
+        auto res = {{fullname}}(
             {{#each args}}{{name}}_arg.value(){{#unless @last}}, {{/unless}}{{/each}}
         );
         {{#if return}}
@@ -264,20 +275,20 @@ const headerTmpl = compileTmpl(
 #include "{{.}}"
 {{/each}}
 
-namespace {{namespace}} {
+namespace {{output.namespace}} {
 
 using namespace aardvark::jsi;
 
-class {{classname}} {
+class {{output.classname}} {
   public:
-    {{classname}}(Context* ctx);
+    {{output.classname}}(Context* ctx);
   // private:
     Context* ctx;
     
     std::unordered_map<std::type_index, Class> js_class_map = {};
 
     {{#each baseClasses}}
-    std::optional<ObjectsIndex<{{name}}>> {{name}}_objects_index;
+    std::optional<ObjectsIndex<{{fullname}}>> {{name}}_objects_index;
     {{/each}}
 
     {{#each types}}
@@ -285,17 +296,17 @@ class {{classname}} {
     {{/each}}
 };
 
-} // namespace {{namespace}}
+} // namespace {{output.namespace}}
 `)
 
 const implTmpl = compileTmpl(
-`#include "{{filename}}.hpp"
+`#include "{{output.filename}}.hpp"
 
-namespace {{namespace}} {
+namespace {{output.namespace}} {
 
-{{classname}}::{{classname}}(Context* ctx_arg) : ctx(ctx_arg) {
+{{output.classname}}::{{output.classname}}(Context* ctx_arg) : ctx(ctx_arg) {
     {{#each baseClasses}}
-    {{name}}_objects_index = ObjectsIndex<{{name}}>("{{name}}", &js_class_map);
+    {{name}}_objects_index = ObjectsIndex<{{fullname}}>("{{name}}", &js_class_map);
     {{/each}}
     
     {{#each types}}
@@ -306,7 +317,7 @@ namespace {{namespace}} {
     {{/each}}
 }
 
-} // namespace {{namespace}}
+} // namespace {{output.namespace}}
 `)
 
 const defaultTypes = {
@@ -322,7 +333,7 @@ let getTypename = (name, defs) => {
     throw new Error(`Unknown type "${name}"`)
 }
 
-let setTypenames = defs => {
+let setTypenames = (options, defs) => {
     let [callbacks, rest] = partition(defs, def => def.kind === 'callback') 
     rest.forEach(def => {
         if (!('originalName' in def)) {
@@ -330,9 +341,15 @@ let setTypenames = defs => {
                 ? snakeCase(def.name)
                 : def.name
         }
-        def.typename = def.kind === 'class' 
-            ? `std::shared_ptr<${def.originalName}>`
-            : def.originalName
+        let ns = def.namespace !== undefined 
+            ? def.namespace 
+            : options.defaultNamespace
+        def.prefix = ns !== undefined ? `${ns}::` : ''
+        def.fullname = `${def.prefix}${def.originalName}`
+        def.typename = def.fullname
+        if (def.kind === 'class') {
+            def.typename = `std::shared_ptr<${def.typename}>`
+        }
     })
     callbacks.forEach(def => {
         let returnTypename = 'return' in def
@@ -355,7 +372,7 @@ let setBaseClasses = data => {
     data.baseClasses = [];
     for (let name in data.defs) {
         let def = data.defs[name];
-        if (def.kind != 'class') break;
+        if (def.kind != 'class') continue;
         if (def['extends'] === undefined) {
             data.baseClasses.push(def)
             def.superClasses = []
@@ -364,10 +381,12 @@ let setBaseClasses = data => {
     }
     for (let name in data.defs) {
         let def = data.defs[name];
-        if (def.kind != 'class') break;
+        if (def.kind != 'class') continue;
+        let baseClassDef = data.defs[def.baseClass]
         if (def['extends'] !== undefined) {
-            data.defs[def.baseClass].superClasses.push(def.name)
+            baseClassDef.superClasses.push(def.name)
         }
+        def.fullBaseClass = baseClassDef.prefix + def.baseClass
     }
 }
 
@@ -391,7 +410,9 @@ let genCode = (options, data) => {
         })
     }
     includes = uniq(includes)
-    let tmplData = { ...options, types: chunks, includes, baseClasses: data.baseClasses }
+    let tmplData = {
+        ...options, types: chunks, includes, baseClasses: data.baseClasses
+    }
     return {
         header: headerTmpl(tmplData, tmplOptions),
         impl: implTmpl(tmplData, tmplOptions)
@@ -400,17 +421,20 @@ let genCode = (options, data) => {
 
 let output = (options, code) => {
     let { header, impl } = code    
-    let { filename, outputDir } = options
-    mkdirp.sync(outputDir)
-    fs.writeFileSync(path.join(outputDir, `${filename}.hpp`), header)
-    fs.writeFileSync(path.join(outputDir, `${filename}.cpp`), impl)
+    let { filename, dir } = options.output
+    mkdirp.sync(dir)
+    fs.writeFileSync(path.join(dir, `${filename}.hpp`), header)
+    fs.writeFileSync(path.join(dir, `${filename}.cpp`), impl)
 }
 
 let gen = options => {
-    let input = fs.readFileSync(options.src, 'utf8')
+    let src = Array.isArray(options.src) ? options.src : [options.src]
     let defs = []
-    yaml.loadAll(input, def => { if (def) defs.push(def) })
-    setTypenames(defs)
+    src.forEach(src => {
+        let input = fs.readFileSync(src, 'utf8')
+        yaml.loadAll(input, def => { if (def) defs.push(def) })
+    })
+    setTypenames(options, defs)
     let data = { defs: {} };
     for (let def of defs) data.defs[def.name] = def
     setBaseClasses(data)

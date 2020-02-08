@@ -5,25 +5,19 @@
 #include <functional>
 #include <optional>
 #include <aardvark_jsi/jsi.hpp>
-#include "utils/event_loop.hpp"
+#include <aardvark/utils/event_loop.hpp>
 
 namespace aardvark::js {
 
-struct JsErrorLocation {
-    std::string source_url = "";
-    int line = -1;
-    int column = -1;
-};
-
-using JsErrorHandler = std::function<void(jsi::Error)>;
+using ErrorHandler = std::function<void(jsi::Error&)>;
 
 class ModuleLoader {
   public:
     ModuleLoader(
         EventLoop* event_loop,
-        jsi::Context& ctx,
+        jsi::Context* ctx,
         bool enable_source_maps,
-        JsErrorHandler exception_handler);
+        ErrorHandler error_handler);
 
     jsi::Value load_from_source(
         const std::string& source,
@@ -35,18 +29,18 @@ class ModuleLoader {
     // void load_from_url(const std::string& url,
                        // std::function<void(JSValueRef)> callback);
 
-    void handle_exception(jsi::Value exception);
+    void handle_error(jsi::Error error);
 
-    std::function<void(jsi::Error)> exception_handler;
+    std::function<void(jsi::Error)> error_handler;
 
   private:
     EventLoop* event_loop;
     jsi::Context* ctx;
     bool enable_source_maps;
-    std::unordered_map<std::string, Value> source_maps;
-    Value js_get_original_location;
-    std::optional<JsErrorLocation> get_original_location(
-        const JsErrorLocation& location);
+    std::unordered_map<std::string, jsi::Value> source_maps;
+    jsi::Value js_get_original_location;
+    std::optional<jsi::ErrorLocation> get_original_location(
+        const jsi::ErrorLocation& location);
 };
 
 }  // namespace aardvark::js

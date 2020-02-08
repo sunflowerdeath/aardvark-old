@@ -1,15 +1,14 @@
 kind: class
 name: Document
 include: aardvark/document.hpp
-originalName: aardvark::Document
 props:
-    - name: root
-      type: Element
-      setter_proxy: document_set_root_proxy
-    - name: parent
-      type: Element
-      readonly: true
-      getter_proxy: document_get_root_proxy
+#    - name: root
+#      type: Element
+#      setter_proxy: document_set_root_proxy
+#    - name: parent
+#      type: Element
+#      readonly: true
+#      getter_proxy: document_get_root_proxy
 methods:
     # - name: observeElementSize
       # args:

@@ -38,7 +38,7 @@ enum class EnumName { enum_option1, enum_option2 };
 }  // namespace namespace_name
 ```
 
-Do not use prefixes in names.
+Prefer not to use prefixes in names.
 
 ```
 // Good
