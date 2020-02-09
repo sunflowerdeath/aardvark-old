@@ -6,6 +6,7 @@ methods:
       args:
         - name: size
           type: Size
+      return: DesktopWindow
     - name: getDocument
       args:
         - name: window

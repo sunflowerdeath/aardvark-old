@@ -29,16 +29,15 @@ class ModuleLoader {
     // void load_from_url(const std::string& url,
                        // std::function<void(JSValueRef)> callback);
 
-    void handle_error(jsi::Error error);
-
-    std::function<void(jsi::Error)> error_handler;
+    void handle_error(jsi::Error& error);
 
   private:
+    std::function<void(jsi::Error&)> error_handler;
     EventLoop* event_loop;
     jsi::Context* ctx;
     bool enable_source_maps;
     std::unordered_map<std::string, jsi::Value> source_maps;
-    jsi::Value js_get_original_location;
+    std::optional<jsi::Value> js_get_original_location;
     std::optional<jsi::ErrorLocation> get_original_location(
         const jsi::ErrorLocation& location);
 };

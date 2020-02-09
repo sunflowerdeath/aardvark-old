@@ -4,10 +4,10 @@
 
 #include <string>
 #include <tl/expected.hpp>
+#include <typeindex>
 #include <unordered_map>
 #include <unordered_set>
 #include <variant>
-#include <typeindex>
 
 #include "check.hpp"
 #include "jsi.hpp"
@@ -172,6 +172,7 @@ class ObjectsMapper : public Mapper<std::shared_ptr<T>> {
 };
 
 extern Mapper<bool>* bool_mapper;
+extern Mapper<float>* float_mapper;
 extern Mapper<double>* double_mapper;
 extern Mapper<int>* int_mapper;
 extern Mapper<std::string>* string_mapper;
@@ -181,8 +182,8 @@ class ObjectsIndex {
   public:
     ObjectsIndex(
         std::string type_name,
-        std::unordered_map<std::type_index, Class>* class_map
-    ) : type_name(std::move(type_name)), class_map(class_map){};
+        std::unordered_map<std::type_index, Class>* class_map)
+        : type_name(std::move(type_name)), class_map(class_map){};
 
     Value to_js(Context& ctx, const std::shared_ptr<T>& native_object) {
         auto it = records.find(native_object.get());
@@ -238,6 +239,7 @@ class ObjectsIndex {
         auto index = record->index;
         index->records.erase(record->native_object.get());
     }
+    std::unordered_map<std::type_index, Class>* class_map;
 
   private:
     struct Record {
@@ -247,7 +249,6 @@ class ObjectsIndex {
     };
 
     std::string type_name; // TODO
-    std::unordered_map<std::type_index, Class>* class_map;
     std::unordered_map<T*, Record> records;
 
     static Record* get_record(const Value& value) {
@@ -277,8 +278,8 @@ class ObjectsMapper2 : Mapper<std::shared_ptr<T>> {
         return index->template try_from_js<T>(ctx, value, err_params);
     }
     
-  private:
     ObjectsIndex<BaseT>* index;
+  private:
 };
 
 }  // namespace aardvark::jsi

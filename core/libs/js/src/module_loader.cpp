@@ -1,12 +1,11 @@
 #include "module_loader.hpp"
 
+#include <aardvark/utils/files_utils.hpp>
+#include <aardvark/utils/log.hpp>
 #include <aardvark_jsi/jsi.hpp>
 #include <aardvark_jsi/mappers.hpp>
 #include <experimental/filesystem>
 #include <regex>
-
-#include "../utils/files_utils.hpp"
-#include "../utils/log.hpp"
 
 namespace fs = std::experimental::filesystem;
 
@@ -33,7 +32,7 @@ ModuleLoader::ModuleLoader(
     : event_loop(event_loop),
       ctx(ctx),
       enable_source_maps(enable_source_maps),
-      error_handler(error_handler) {
+      error_handler(std::move(error_handler)) {
     /*
     if (enable_source_maps) {
         auto source_path =
@@ -61,14 +60,13 @@ jsi::Value ModuleLoader::load_from_source(
     const std::string& source_map) {
     if (enable_source_maps && !source_url.empty() && !source_map.empty()) {
         source_maps.try_emplace(
-            source_url, ctx.value_make_string(ctx.str_from_utf8(source_map)));
+            source_url,
+            ctx->value_make_string(ctx->string_make_from_utf8(source_map)));
     }
-    auto js_src = ctx->value_make_string(ctx.str_from_utf8(source));
-    auto js_source_url = ctx->value_make_string(ctx.str_from_utf8(source_url));
-    auto res = ctx.eval(js_src, nullptr, js_source_url);
+    auto res = ctx->eval(source, nullptr, source_url);
     if (res.has_value()) return res.value();
     handle_error(res.error());
-    return ctx.value_make_undefined();
+    return ctx->value_make_undefined();
 }
 
 jsi::Value ModuleLoader::load_from_file(const std::string& filepath) {

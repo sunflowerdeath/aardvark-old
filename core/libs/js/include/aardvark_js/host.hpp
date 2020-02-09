@@ -5,7 +5,7 @@
 #include <aardvark_jsi/jsi.hpp>
 #include <aardvark_jsi/qjs.hpp>
 
-#include "api.hpp"
+#include "../generated/api.hpp"
 #include "module_loader.hpp"
 
 namespace aardvark::js {
@@ -24,7 +24,7 @@ class Host {
     std::shared_ptr<EventLoop> event_loop;
     std::optional<ModuleLoader> module_loader;
     std::shared_ptr<DesktopApp> app;
-    bool is_running;
+    bool is_running = false;
 };
 
 }  // namespace aardvark::js

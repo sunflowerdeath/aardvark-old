@@ -15,7 +15,7 @@ const structDefTmpl = compileTmpl(`
 `)
 
 const structInitTmpl = compileTmpl(`
-    auto to_js = [](Context& ctx, const {{typename}}& val) {
+    auto to_js = [this](Context& ctx, const {{typename}}& val) {
         auto res = ctx.object_make(nullptr);
         {{#each props}}
         res.set_property("{{name}}", {{type}}_mapper->to_js(
@@ -24,7 +24,7 @@ const structInitTmpl = compileTmpl(`
         return res.to_value();
     };
 
-    auto try_from_js = [](
+    auto try_from_js = [this](
         Context& ctx, const Value& val, const CheckErrorParams& err_params
     ) -> tl::expected<{{typename}}, std::string> {
         auto err = check_type(ctx, val, "object", err_params);
@@ -126,7 +126,7 @@ const classInitTmpl = compileTmpl(`
             return make_error_result(*ctx, {{name}}_arg.error());
         }
         {{/each}}
-        auto res = mapped_this->{{snakeCase name}}(
+        {{#if return}}auto res = {{/if}}mapped_this->{{snakeCase name}}(
             {{#each args}}{{name}}_arg.value(){{#unless @last}}, {{/unless}}{{/each}}
         );
         {{#if return}}

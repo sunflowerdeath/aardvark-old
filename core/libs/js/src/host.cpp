@@ -5,11 +5,11 @@
 namespace aardvark::js {
 
 Host::Host() {
-    ctx = Qjs_Context::make();
-    api = aardvark_js_api::Api(ctx.get());
+    ctx = jsi::Qjs_Context::create();
+    api.emplace(ctx.get());
     event_loop = std::make_shared<EventLoop>();
-    module_loader =
-        ModuleLoader(event_loop, ctx.get(), true, [](jsi::Error& err) {
+    module_loader = ModuleLoader(
+        event_loop.get(), ctx.get(), true, [this](jsi::Error& err) {
             handle_error(err);
         });
 
@@ -20,16 +20,16 @@ Host::Host() {
 
 Host::~Host() {
     stop();
-    ~ctx.reset();
+    ctx.reset();
 }
 
 void Host::run() {
     if (is_running) return;
     is_running = true;
-    event_loop->run();
     app->run([&]() {
         // animation_frame->call_callbacks();
     });
+    event_loop->run();
 }
 
 void Host::stop() {

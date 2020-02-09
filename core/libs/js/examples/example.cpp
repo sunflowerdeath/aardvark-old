@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 // #include "spdlog/spdlog.h"
-// #include "../utils/log.hpp"
+#include <aardvark/utils/log.hpp>
 #include <aardvark_js/host.hpp>
 
 void run(const std::string& filepath) {
@@ -13,6 +13,7 @@ void run(const std::string& filepath) {
 int main(int argc, char *argv[]) {
     // spdlog::set_level(spdlog::level::debug);
     run(argv[1]);
+    aardvark::Log::info("exit");
     /*
     // auto filepath = fs::current_path().append();
     while (true) {

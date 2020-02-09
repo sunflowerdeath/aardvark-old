@@ -15,6 +15,18 @@ Mapper<bool>* bool_mapper = new SimpleMapper<bool>(
         return val.to_bool().value();
     });
 
+Mapper<float>* float_mapper = new SimpleMapper<float>(
+    [](Context& ctx, const float& value) {
+        return ctx.value_make_number(value);
+    },
+    [](Context& ctx,
+       const Value& val,
+       const CheckErrorParams& err_params) -> FromJsResult<float> {
+        auto err = check_type(ctx, val, "number", err_params);
+        if (err.has_value()) return tl::make_unexpected(err.value());
+        return val.to_number().value();
+    });
+
 Mapper<double>* double_mapper = new SimpleMapper<double>(
     [](Context& ctx, const double& value) {
         return ctx.value_make_number(value);

@@ -8,8 +8,10 @@ let items = [
 
 items.map(item => gen({
     src: path.resolve(__dirname, `../tests/idl/${item}.yaml`),
-    namespace: 'test',
-    classname: `Test${capitalize(item)}Api`,
-    outputDir: path.resolve(__dirname, '../generated'),
-    filename: item
+    output: {
+        dir: path.resolve(__dirname, '../generated'),
+        namespace: 'test',
+        classname: `Test${capitalize(item)}Api`,
+        filename: item
+    }
 }))

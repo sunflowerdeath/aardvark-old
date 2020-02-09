@@ -9,10 +9,8 @@ props:
     # - name: title
       # type: string
 methods:
-    - name: close
     - name: minimize
     - name: maximize
     - name: restore
     - name: hide
-    - name: show
     - name: focus
