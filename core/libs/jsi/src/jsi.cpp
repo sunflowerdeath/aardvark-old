@@ -2,12 +2,36 @@
 
 namespace aardvark::jsi {
 
-Error::Error(Value* value) { value_ptr = std::make_shared<Value>(*value); }
+Error::Error(Context* ctx, Value* value) : ctx(ctx) {
+    value_ptr = std::make_shared<Value>(*value);
+}
 
 Value Error::value() { return *value_ptr.get(); }
 
 std::string Error::message() {
     return value_ptr->to_string().value().to_utf8();
+}
+
+std::optional<ErrorLocation> Error::location() {
+    return ctx->value_get_error_location(*value_ptr);
+    /*
+    if (value_ptr->get_type() != ValueType::object) return std::nullopt;
+    auto obj = value_ptr->to_object().value();
+    if (!obj.has_property("sourceURL")) return std::nullopt;
+    auto source_url = obj.get_property("sourceURL")
+                          .and_then([](auto val) { return val.to_string(); })
+                          .map([](auto val) { return val.to_utf8(); })
+                          .value_or("");
+    auto line = obj.get_property("line")
+                    .and_then([](auto val) { return val.to_number(); })
+                    .map([](auto val) { return static_cast<int>(val); })
+                    .value_or(-1);
+    auto column = obj.get_property("column")
+                      .and_then([](auto val) { return val.to_number(); })
+                      .map([](auto val) { return static_cast<int>(val); })
+                      .value_or(-1);
+    return ErrorLocation{source_url, line, column};
+    */
 }
 
 // String
@@ -108,7 +132,7 @@ VoidResult Object::set_property_at_index(
 
 tl::unexpected<Error> make_error_result(Context& ctx, std::string message) {
     auto err_val = ctx.value_make_error(message);
-    return tl::make_unexpected(Error(&err_val));
+    return tl::make_unexpected(Error(&ctx, &err_val));
 }
 
 }  // namespace aardvark::jsi

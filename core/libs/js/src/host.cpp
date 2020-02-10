@@ -9,8 +9,13 @@ Host::Host() {
     api.emplace(ctx.get());
     event_loop = std::make_shared<EventLoop>();
     module_loader = ModuleLoader(
-        event_loop.get(), ctx.get(), true, [this](jsi::Error& err) {
-            handle_error(err);
+        event_loop.get(),
+        ctx.get(),
+        true,
+        [this](
+            jsi::Error& err,
+            std::optional<jsi::ErrorLocation> original_location) {
+            handle_error(err, original_location);
         });
 
     app = std::make_shared<DesktopApp>(event_loop);
@@ -39,8 +44,16 @@ void Host::stop() {
     event_loop->stop();
 }
 
-void Host::handle_error(jsi::Error& err) {
+void Host::handle_error(
+    jsi::Error& err, std::optional<jsi::ErrorLocation> original_location) {
+    Log::error("[JS] Uncaught exception:");
     Log::error(err.message());
+    auto loc =
+        original_location.has_value() ? original_location : err.location();
+    if (loc.has_value()) {
+        Log::error("Filename: {}", loc->source_url);
+        Log::error("Line: {}, column: {}", loc->line, loc->column);
+    }
     stop();
 }
 

@@ -9,7 +9,8 @@
 
 namespace aardvark::js {
 
-using ErrorHandler = std::function<void(jsi::Error&)>;
+using ErrorHandler =
+    std::function<void(jsi::Error&, std::optional<jsi::ErrorLocation>)>;
 
 class ModuleLoader {
   public:
@@ -32,7 +33,7 @@ class ModuleLoader {
     void handle_error(jsi::Error& error);
 
   private:
-    std::function<void(jsi::Error&)> error_handler;
+    ErrorHandler error_handler;
     EventLoop* event_loop;
     jsi::Context* ctx;
     bool enable_source_maps;

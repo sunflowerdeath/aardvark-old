@@ -58,8 +58,11 @@ class Qjs_Context : public Context {
 
     bool value_strict_equal(const Value& a, const Value& b) override;
 
+    // Error
     Value value_make_error(const std::string& message) override;
     bool value_is_error(const Value& value) override;
+    std::optional<ErrorLocation> value_get_error_location(
+        const Value& value) override;
 
     // Class
     Class class_make(const ClassDefinition& definition) override;

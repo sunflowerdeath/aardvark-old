@@ -17,7 +17,7 @@ class Host {
 
     void run();
     void stop();
-    void handle_error(jsi::Error& err);
+    void handle_error(jsi::Error& err, std::optional<jsi::ErrorLocation>);
 
     std::shared_ptr<jsi::Context> ctx;
     std::optional<aardvark_js_api::Api> api;

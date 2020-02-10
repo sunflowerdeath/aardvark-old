@@ -58,11 +58,13 @@ struct ErrorLocation {
 
 class Error {
   public:
-    Error(Value* value);
+    Error(Context* ctx, Value* value);
     std::string message();
     Value value();
-    ErrorLocation location() { return ErrorLocation{}; /* TODO */ }
+    std::optional<ErrorLocation> location();
+  private:
     std::shared_ptr<Value> value_ptr;
+    Context* ctx;
 };
 
 tl::unexpected<Error> make_error_result(Context& ctx, std::string message);
@@ -198,8 +200,11 @@ class Context {
 
     virtual bool value_strict_equal(const Value& a, const Value& b) = 0;
 
+    // Error
     virtual bool value_is_error(const Value& value) = 0;
     virtual Value value_make_error(const std::string& message) = 0;
+    virtual std::optional<ErrorLocation> value_get_error_location(
+        const Value& value) = 0;
 
     // Class
     virtual Class class_make(const ClassDefinition& definition) = 0;

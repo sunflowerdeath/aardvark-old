@@ -170,7 +170,7 @@ JSClassID Qjs_Context::class_get_qjs(const Class& cls) {
 
 tl::unexpected<Error> Qjs_Context::get_error() {
     auto value = value_from_qjs(JS_GetException(ctx));
-    return tl::make_unexpected<Error>(&value);
+    return tl::unexpected<Error>(Error(this, &value));
 }
 
 // Global
@@ -281,6 +281,7 @@ bool Qjs_Context::value_strict_equal(const Value& a, const Value& b) {
         .value();
 }
 
+// Error
 Value Qjs_Context::value_make_error(const std::string& message) {
     auto error = object_from_qjs(JS_NewError(ctx));
     error.set_property(
@@ -291,6 +292,15 @@ Value Qjs_Context::value_make_error(const std::string& message) {
 bool Qjs_Context::value_is_error(const Value& value) {
     return JS_IsError(ctx, value_get_qjs(value));
 };
+
+std::optional<ErrorLocation> Qjs_Context::value_get_error_location(
+    const Value& value) {
+    if (!value_is_error(value)) return std::nullopt;
+    auto obj = value.to_object().value();
+    if (!obj.has_property("stack")) return std::nullopt;
+    // TODO regexp
+    return ErrorLocation{"fileName", 1, 0};
+}
 
 // Class
 

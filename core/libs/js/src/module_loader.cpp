@@ -94,15 +94,10 @@ jsi::Value ModuleLoader::load_from_file(const std::string& filepath) {
 
 void ModuleLoader::handle_error(jsi::Error& error) {
     if (!error_handler) return;
-
-    // auto location = js_error_location_mapper->from_js(ctx, exception);
-    // auto error = JsError{
-        // exception,                                  // value
-        // aardvark::js::str_from_js(ctx, exception),  // text
-        // location,                                   // location
-        // get_original_location(location)             // original_location
-    // };
-    error_handler(error);
+    auto loc = error.location();
+    auto orig_loc =
+        loc.has_value() ? get_original_location(loc.value()) : std::nullopt;
+    error_handler(error, orig_loc);
 }
 
 std::optional<jsi::ErrorLocation> ModuleLoader::get_original_location(
