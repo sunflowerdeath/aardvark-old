@@ -54,6 +54,15 @@ void Host::handle_error(
         Log::error("Filename: {}", loc->source_url);
         Log::error("Line: {}, column: {}", loc->line, loc->column);
     }
+    auto val = err.value();
+    auto stack = val.to_object()
+                     .value()
+                     .get_property("stack")
+                     .value()
+                     .to_string()
+                     .value()
+                     .to_utf8();
+    Log::error("Stacktrace:\n{}", stack);
     stop();
 }
 

@@ -1,5 +1,7 @@
 #include "qjs.hpp"
 
+#include <regex>
+
 namespace aardvark::jsi {
 
 class QjsValue : public PointerData {
@@ -298,8 +300,20 @@ std::optional<ErrorLocation> Qjs_Context::value_get_error_location(
     if (!value_is_error(value)) return std::nullopt;
     auto obj = value.to_object().value();
     if (!obj.has_property("stack")) return std::nullopt;
-    // TODO regexp
-    return ErrorLocation{"fileName", 1, 0};
+    auto stack = obj.get_property("stack")
+                     .and_then([](auto val) { return val.to_string(); })
+                     .map([](auto val) { return val.to_utf8(); });
+    if (!stack.has_value()) return std::nullopt;
+    // matches string "   at functionName (/path/to/file.js:123)"
+    static auto re = std::regex("\\(([^:]+)(?:\\:(\\d+))?\\)\\n");
+    std::smatch match;
+    if (std::regex_search(stack.value(), match, re)) {
+        auto filename = match[1];
+        auto line = match.size() == 3 ? std::stoi(match[2]) : -1;
+        return ErrorLocation{filename, line, 0};
+    } else {
+        return std::nullopt;
+    }
 }
 
 // Class
