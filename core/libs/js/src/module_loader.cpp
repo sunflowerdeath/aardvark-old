@@ -11,18 +11,16 @@ namespace fs = std::experimental::filesystem;
 
 namespace aardvark::js {
 
-// auto js_error_location_mapper =
-    // new ObjectMapper<JsErrorLocation, std::string, int, int>(
-        // {"sourceURL", &JsErrorLocation::source_url, str_mapper},
-        // {"line", &JsErrorLocation::line, int_mapper},
-        // {"column", &JsErrorLocation::column, int_mapper});
-
 std::string get_source_map_url(const std::string& source) {
     static auto re = std::regex("\n//# sourceMappingURL=(.+)$");
     std::smatch match;
     if (std::regex_search(source, match, re)) return match[1];
     return "";
 }
+
+auto get_original_location_src = std::string(
+#include "../generated/getOriginalLocation.js"
+);
 
 ModuleLoader::ModuleLoader(
     EventLoop* event_loop,
@@ -33,25 +31,14 @@ ModuleLoader::ModuleLoader(
       ctx(ctx),
       enable_source_maps(enable_source_maps),
       error_handler(std::move(error_handler)) {
-    /*
     if (enable_source_maps) {
-        auto source_path =
-            fs::path(utils::get_self_path()).append("getOriginalLocation.js");
-        auto source = utils::read_text_file(source_path);
-        auto this_object = ctx->object_make(nullptr);
-        JSEvaluateScript(ctx,                            // ctx,
-                         JsStringWrapper(source).get(),  // script
-                         this_object,                    // thisObject,
-                         nullptr,                        // sourceURL,
-                         1,                              // startingLineNumber,
-                         nullptr                         // exception
-        );
-        auto value = JSObjectGetProperty(
-            ctx, this_object, JsStringWrapper("getOriginalLocation").get(),
-            nullptr);
-        js_get_original_location = JsValueWrapper(ctx_wptr, value);
+        ctx->eval(get_original_location_src, nullptr, "getOriginalLocation.js");
+        js_get_original_location = ctx->get_global_object()
+                                       .get_property("getOriginalLocation")
+                                       .value()
+                                       .to_object()
+                                       .value();
     }
-    */
 };
 
 jsi::Value ModuleLoader::load_from_source(

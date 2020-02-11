@@ -18,6 +18,10 @@ add_library(aardvark_js ${ADV_JS_LIB_TYPE}
     src/module_loader.cpp
 )
 
+make_includable(
+    "${ADV_JS_DIR}/packages/sourcemap/build/getOriginalLocation.js"
+    "${CMAKE_CURRENT_SOURCE_DIR}/generated/getOriginalLocation.js")
+
 target_include_directories(aardvark_js PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include/aardvark_js
     ${CMAKE_CURRENT_SOURCE_DIR}/generated

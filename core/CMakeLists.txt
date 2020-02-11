@@ -58,8 +58,10 @@ endif()
 #-------------------------------------------------------------------------------
 # LIBS
 #-------------------------------------------------------------------------------
+set(ADV_JS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../js")
 
-include("${CMAKE_CURRENT_SOURCE_DIR}/externals/find.cmake")
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/find_externals.cmake")
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/make_includable.cmake")
 
 # ui
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/libs/ui")

@@ -1,0 +1,6 @@
+function(make_includable input_file output_file)
+    file(READ ${input_file} content)
+    set(delim "ENDOFSTRING")
+    set(content "R\"${delim}(\n${content})${delim}\"")
+    file(WRITE ${output_file} "${content}")
+endfunction(make_includable)

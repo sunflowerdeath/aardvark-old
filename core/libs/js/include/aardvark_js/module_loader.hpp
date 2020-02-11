@@ -38,7 +38,7 @@ class ModuleLoader {
     jsi::Context* ctx;
     bool enable_source_maps;
     std::unordered_map<std::string, jsi::Value> source_maps;
-    std::optional<jsi::Value> js_get_original_location;
+    std::optional<jsi::Object> js_get_original_location;
     std::optional<jsi::ErrorLocation> get_original_location(
         const jsi::ErrorLocation& location);
 };
