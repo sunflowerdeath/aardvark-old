@@ -17,3 +17,14 @@ idl({
         classname: `Api`
     }
 })
+
+idl({
+    src: path.resolve(__dirname, `../api/error_location.yaml`),
+    defaultNamespace: 'aardvark::jsi',
+    output: {
+        dir: path.resolve(__dirname, '../generated'),
+        filename: 'error_location_api',
+        namespace: 'aardvark_js_api',
+        classname: `ErrorLocationApi`
+    }
+})

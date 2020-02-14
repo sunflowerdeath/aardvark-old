@@ -1,11 +1,13 @@
 #pragma once
 
-#include <string>
-#include <unordered_map>
+#include <aardvark/utils/event_loop.hpp>
+#include <aardvark_jsi/jsi.hpp>
 #include <functional>
 #include <optional>
-#include <aardvark_jsi/jsi.hpp>
-#include <aardvark/utils/event_loop.hpp>
+#include <string>
+#include <unordered_map>
+
+#include "../generated/error_location_api.hpp"
 
 namespace aardvark::js {
 
@@ -37,6 +39,7 @@ class ModuleLoader {
     EventLoop* event_loop;
     jsi::Context* ctx;
     bool enable_source_maps;
+    aardvark_js_api::ErrorLocationApi api;
     std::unordered_map<std::string, jsi::Value> source_maps;
     std::optional<jsi::Object> js_get_original_location;
     std::optional<jsi::ErrorLocation> get_original_location(

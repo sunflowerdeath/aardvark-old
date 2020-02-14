@@ -1,4 +1,4 @@
-build/
+build*/
 downloads/
 externals/
 libs/*/build/

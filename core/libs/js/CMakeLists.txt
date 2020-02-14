@@ -14,6 +14,7 @@ endif()
 
 add_library(aardvark_js ${ADV_JS_LIB_TYPE}
     generated/api.cpp
+    generated/error_location_api.cpp
     src/host.cpp
     src/module_loader.cpp
 )
@@ -32,10 +33,19 @@ target_include_directories(aardvark_js INTERFACE
 
 target_link_libraries(aardvark_js aardvark_ui aardvark_jsi)
 
-# Tests
+# Examples
 if(ADV_JS_EXAMPLES)
     add_executable(adv_js_example
         examples/example.cpp
     )
-    target_link_libraries(adv_js_example aardvark_js)
+    target_link_libraries(adv_js_example aardvark_ui aardvark_js)
+endif()
+
+# Tests
+if(ADV_JS_TESTS)
+    add_executable(adv_js_tests
+        tests/main.cpp
+        tests/module_loader_test.cpp
+    )
+    target_link_libraries(adv_js_tests aardvark_js Catch2)
 endif()

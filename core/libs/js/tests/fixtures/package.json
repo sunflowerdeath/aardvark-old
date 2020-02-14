@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "name": "aardvark-test-fixtures",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "build": "webpack"
+  },
+  "author": "",
+  "license": "Unlicense"
+}

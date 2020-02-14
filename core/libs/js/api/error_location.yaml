@@ -1,0 +1,10 @@
+kind: struct
+name: ErrorLocation
+props:
+    - name: sourceURL
+      originalName: source_url
+      type: string
+    - name: line
+      type: int
+    - name: column
+      type: int

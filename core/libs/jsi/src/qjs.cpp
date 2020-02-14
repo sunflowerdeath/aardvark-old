@@ -305,12 +305,15 @@ std::optional<ErrorLocation> Qjs_Context::value_get_error_location(
                      .map([](auto val) { return val.to_utf8(); });
     if (!stack.has_value()) return std::nullopt;
     // matches string "   at functionName (/path/to/file.js:123)"
-    static auto re = std::regex("\\(([^:]+)(?:\\:(\\d+))?\\)\\n");
+    static auto re = std::regex(R"(\(([^:]+)(?:\:(\d+))?\)\n)");
     std::smatch match;
     if (std::regex_search(stack.value(), match, re)) {
         auto filename = match[1];
-        auto line = match.size() == 3 ? std::stoi(match[2]) : -1;
-        return ErrorLocation{filename, line, 0};
+        auto line = 1;
+        if (match.size() == 3 && !(std::string(match[2]).empty())) {
+            line = std::stoi(match[2]);
+        }
+        return ErrorLocation{filename, line, 1};
     } else {
         return std::nullopt;
     }
