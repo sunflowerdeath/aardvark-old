@@ -15,6 +15,8 @@ struct CheckErrorParams {
 
 using CheckResult = std::optional<std::string>;
 
+std::string get_type_name(const Value& value);
+
 CheckResult check_type(
     const Context& ctx,
     const Value& value,

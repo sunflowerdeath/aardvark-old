@@ -3,6 +3,10 @@ name: Connection
 methods:
     - name: disconnect
 ---
+kind: class
+name: NodConnection
+extends: Connection
+---
 kind: enum
 name: ValueType
 originalName: Value::ValueType

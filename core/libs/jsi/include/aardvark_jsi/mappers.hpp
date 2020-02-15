@@ -198,7 +198,7 @@ class ObjectsIndex {
         Context& ctx, const std::shared_ptr<T>& native_object) {
         auto ptr = native_object.get();
         auto typeidx = std::type_index(typeid(*ptr));
-        auto js_class = class_map->find(typeidx)->second;
+        auto& js_class = class_map->find(typeidx)->second;
         auto js_obj = ctx.object_make(&js_class);
         auto js_val = js_obj.to_value();
         auto res = records.emplace(
