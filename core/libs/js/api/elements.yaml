@@ -118,9 +118,9 @@ constructor: default
 props:
     - name: flex
       type: int
-      doc: Flex grow factor (Default is 0)
+      doc: Flex grow factor, default is `0`.
     - name: align
-      type: FlexAlign?
+      type: FlexAlign
       doc: Overrides align property of the container
     - name: tightFit
       type: bool
@@ -136,10 +136,10 @@ props:
       doc: Which axis is main, default is `row`
     - name: justify
       type: FlexJustify
-      doc: Alignment of the children across the main axis, default is `start`
+      doc: Alignment of the children across the main axis, default is `FlexJustify.start`
     - name: align
       type: FlexAlign
-      doc: Alignment of the children across the secondary axis, default is `start`
+      doc: Alignment of the children across the secondary axis, default is `FlexAlign.start`
 ---
 
 kind: class

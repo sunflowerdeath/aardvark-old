@@ -32,6 +32,12 @@ nod::connection PointerEventManager::add_handler(
     return signal.connect(handler);
 }
 
+std::shared_ptr<Connection> PointerEventManager::add_handler2(
+    const PointerEventHandler& handler, const bool after_elements) {
+    auto& signal = after_elements ? after_signal : before_signal;
+    return std::make_shared<NodConnection>(signal.connect(handler));
+}
+
 nod::connection PointerEventManager::start_tracking_pointer(
     const int pointer_id, const PointerEventHandler& handler) {
     if (!map_contains(pointers_signals, pointer_id)) {

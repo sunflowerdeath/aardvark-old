@@ -1,0 +1,126 @@
+kind: enum
+name: PointerTool
+values:
+    - touch
+    - mouse
+    - other
+---
+kind: enum
+name: PointerAction
+values:
+    - pointerUp
+    - pointerDown
+    - pointerMove
+    - buttonPress
+    - buttonRelease
+---
+kind: struct
+name: PointerEvent
+props:
+    - name: timestamp
+      type: int
+    - name: pointerId
+      type: int
+      doc: Which pointer this event refers to.
+    - name: tool
+      type: PointerTool
+    - name: action
+      type: PointerAction
+    - name: left
+      type: float
+      doc: Left coordinate of the pointer.
+    - name: top
+      type: float
+      doc: Top coordinate of the pointer.
+    - name: button
+      type: int
+      doc: Which button (when action is `buttonPress` or `buttonRelease`).
+---
+kind: enum
+name: KeyAction
+values:
+    - press
+    - release
+    - repeat
+---
+kind: struct
+name: KeyEvent
+props:
+    - name: key
+      type: int
+    - name: scancode
+      type: int
+    - name: action
+      type: KeyAction
+    - name: mods
+      type: int
+---
+kind: struct
+name: ScrollEvent
+props:
+    - name: left
+      type: float
+    - name: top
+      type: float
+---
+# kind: enum
+# name: WindowEventType
+# values:
+    # - focus
+    # - blur
+    # - cursorEnter
+    # - cursorLeave
+    # - move
+    # - close
+    # - minimize
+    # - restore
+    # - resize
+# ---
+# kind: struct
+# name: WindowMoveEvent
+# props:
+    # - name: left
+      # type: float
+    # - name: top
+      # type: float
+# ---
+# kind: struct
+# name: WindowResizeEvent
+# props:
+    # - name: left
+      # type: float
+    # - name: top
+      # type: float
+# ---
+# kind: struct
+# name: WindowEvent
+# props:
+    # - name: type
+      # type: WindowEventType
+    # - name: event
+      # type: Object
+# custom_mapper: WindowEventMapper
+# ---
+kind: callback
+name: PointerEventHandler
+args:
+    - name: event
+      type: PointerEvent
+---
+kind: callback
+name: KeyEventHandler
+args:
+    - name: event
+      type: KeyEvent
+---
+kind: callback
+name: ScrollEventHandler
+args:
+    - name: event
+      type: ScrollEvent
+# ---
+# kind: callback
+# name: WindowEventHandler
+# args:
+    # - name: event
+      # type: WindowEvent

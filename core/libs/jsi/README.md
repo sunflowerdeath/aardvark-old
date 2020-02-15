@@ -18,6 +18,8 @@ properties and methods.
 - `jsc.h` &ndash; Implementation for JavaScriptCore
 - `qjs.h` &ndash; Implementation for quickjs
 
+- `idl` &ndash; Node.js module for automatically generating API bindings
+
 ## Config
 
 Use flags `ADV_JSI_QJS` or `ADV_JSI_JSC` to select implementation.

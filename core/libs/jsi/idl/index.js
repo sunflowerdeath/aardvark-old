@@ -202,12 +202,12 @@ const callbackInitTmpl = compileTmpl(`
         return ctx.value_make_null();
     };
 
-    auto try_from_js = [](
+    auto try_from_js = [this](
         Context& ctx, const Value& val, const CheckErrorParams& err_params
     )  -> tl::expected<{{typename}}, std::string> {
         // TODO check type
         auto fn = val.to_object().value();
-        return [fn, &ctx](
+        return [this, fn, &ctx](
             {{#each args}}{{getTypename type}} {{name}}{{#unless @last}},{{/unless}}{{/each}}
         ) {
             auto js_args = std::vector<Value>();
@@ -327,41 +327,6 @@ const defaultTypes = {
     string: 'std::string'
 }
 
-let getTypename = (name, defs) => {
-    if (name in defaultTypes) return defaultTypes[name]
-    if (name in defs) return defs[name].typename
-    throw new Error(`Unknown type "${name}"`)
-}
-
-let setTypenames = (options, defs) => {
-    let [callbacks, rest] = partition(defs, def => def.kind === 'callback') 
-    rest.forEach(def => {
-        if (!('originalName' in def)) {
-            def.originalName = def.kind === 'function'
-                ? snakeCase(def.name)
-                : def.name
-        }
-        let ns = def.namespace !== undefined 
-            ? def.namespace 
-            : options.defaultNamespace
-        def.prefix = ns !== undefined ? `${ns}::` : ''
-        def.fullname = `${def.prefix}${def.originalName}`
-        def.typename = def.fullname
-        if (def.kind === 'class') {
-            def.typename = `std::shared_ptr<${def.typename}>`
-        }
-    })
-    callbacks.forEach(def => {
-        let returnTypename = 'return' in def
-            ? getTypename(def['return'], defs)
-            : 'void'
-        let argTypenames = 'args' in def
-            ? def.args.map(arg => getTypename(arg.type, defs)).join(', ')
-            : ''
-        def.typename = `std::function<${returnTypename}(${argTypenames})>`
-    })
-}
-
 let getBaseClass = (name, defs) => {
     let def = defs[name]
     if (def['extends'] === undefined) return name
@@ -390,7 +355,50 @@ let setBaseClasses = data => {
     }
 }
 
-let genCode = (options, data) => {
+let getTypename = (name, defs) => {
+    if (name in defaultTypes) return defaultTypes[name]
+    if (name in defs) return defs[name].typename
+    throw new Error(`Unknown type "${name}"`)
+}
+
+let setTypenames = (data, options) => {
+    let [callbacks, rest] = partition(data.defs, def => def.kind === 'callback') 
+    rest.forEach(def => {
+        if (!('originalName' in def)) {
+            def.originalName = def.kind === 'function'
+                ? snakeCase(def.name)
+                : def.name
+        }
+        let ns = def.namespace !== undefined 
+            ? def.namespace 
+            : options.defaultNamespace
+        def.prefix = ns !== undefined ? `${ns}::` : ''
+        def.fullname = `${def.prefix}${def.originalName}`
+        def.typename = def.fullname
+        if (def.kind === 'class') {
+            def.typename = `std::shared_ptr<${def.typename}>`
+        }
+    })
+    callbacks.forEach(def => {
+        let returnTypename = 'return' in def
+            ? getTypename(def['return'], defs)
+            : 'void'
+        let argTypenames = 'args' in def
+            ? def.args.map(arg => getTypename(arg.type, data.defs)).join(', ')
+            : ''
+        def.typename = `std::function<${returnTypename}(${argTypenames})>`
+    })
+}
+
+let prepareData = (defs, options) => {
+    let data = { defs: {} }
+    defs.forEach(def => data.defs[def.name] = def)
+    setTypenames(data, options)
+    setBaseClasses(data)
+    return data
+}
+
+let genCode = (data, options) => {
     let tmplOptions = {
         helpers: {
             getTypename: name => getTypename(name, data.defs)
@@ -419,7 +427,7 @@ let genCode = (options, data) => {
     }
 }
 
-let output = (options, code) => {
+let output = (code, options) => {
     let { header, impl } = code    
     let { filename, dir } = options.output
     mkdirp.sync(dir)
@@ -434,12 +442,9 @@ let gen = options => {
         let input = fs.readFileSync(src, 'utf8')
         yaml.loadAll(input, def => { if (def) defs.push(def) })
     })
-    setTypenames(options, defs)
-    let data = { defs: {} };
-    for (let def of defs) data.defs[def.name] = def
-    setBaseClasses(data)
-    let code = genCode(options, data)
-    output(options, code)
+    let data = prepareData(defs, options)
+    let code = genCode(data, options)
+    output(code, options)
 }
 
 module.exports = gen

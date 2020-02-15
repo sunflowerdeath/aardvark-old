@@ -58,4 +58,19 @@ void DesktopWindow::hide() { glfwHideWindow(window); }
 
 void DesktopWindow::focus() { glfwFocusWindow(window); }
 
+std::shared_ptr<Connection> DesktopWindow::add_pointer_event_handler(
+    const SignalEventSink<PointerEvent>::EventHandler& handler) {
+    return pointer_event_sink.add_handler2(handler);
+}
+
+std::shared_ptr<Connection> DesktopWindow::add_key_event_handler(
+    const SignalEventSink<KeyEvent>::EventHandler& handler){
+    return key_event_sink.add_handler2(handler);
+}
+
+std::shared_ptr<Connection> DesktopWindow::add_scroll_event_handler(
+    const SignalEventSink<ScrollEvent>::EventHandler& handler) {
+    return scroll_event_sink.add_handler2(handler);
+}
+
 }  // namespace aardvark

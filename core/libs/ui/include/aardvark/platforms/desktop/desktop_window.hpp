@@ -37,6 +37,13 @@ class DesktopWindow {
     SignalEventSink<ScrollEvent> scroll_event_sink;
     SignalEventSink<PointerEvent> pointer_event_sink;
 
+    std::shared_ptr<Connection> add_pointer_event_handler(
+        const SignalEventSink<PointerEvent>::EventHandler& handler);
+    std::shared_ptr<Connection> add_key_event_handler(
+        const SignalEventSink<KeyEvent>::EventHandler& handler);
+    std::shared_ptr<Connection> add_scroll_event_handler(
+        const SignalEventSink<ScrollEvent>::EventHandler& handler);
+
     Size size;
     DesktopApp* app;
     GLFWwindow* window;

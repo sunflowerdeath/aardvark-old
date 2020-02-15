@@ -24,6 +24,9 @@ class PointerEventManager {
     nod::connection add_handler(const PointerEventHandler& handler,
                                 const bool after_elements = false);
 
+    std::shared_ptr<Connection> add_handler2(
+        const PointerEventHandler& handler, const bool after_elements = false);
+
     // Register handler to track events of the specified pointer
     nod::connection start_tracking_pointer(const int pointer_id,
                                            const PointerEventHandler& handler);

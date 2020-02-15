@@ -14,3 +14,18 @@ methods:
     - name: restore
     - name: hide
     - name: focus
+    - name: addPointerEventHandler
+      args:
+        - name: handler
+          type: PointerEventHandler
+      return: Connection
+    - name: addKeyEventHandler
+      args:
+        - name: handler
+          type: KeyEventHandler
+      return: Connection
+    - name: addScrollEventHandler
+      args:
+        - name: handler
+          type: ScrollEventHandler
+      return: Connection

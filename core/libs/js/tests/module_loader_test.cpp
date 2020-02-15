@@ -44,7 +44,7 @@ TEST_CASE("ModuleLoader", "[module_loader]" ) {
         // REQUIRE(err->location.column != -1);
     }
 
-    /*
+    /* TODO
     SECTION("inline source map") {
         std::optional<jsi::Error> err = std::nullopt;
         std::optional<jsi::ErrorLocation> orig_loc = std::nullopt;

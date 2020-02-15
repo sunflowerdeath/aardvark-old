@@ -76,10 +76,18 @@ class Document {
     std::shared_ptr<Layer> screen;
     std::shared_ptr<Element> root;
     bool is_initial_render;
+    bool need_recompose = false;
+
     std::unique_ptr<PointerEventManager> pointer_event_manager;
     SignalEventSink<KeyEvent> key_event_sink;
     SignalEventSink<ScrollEvent> scroll_event_sink;
-    bool need_recompose = false;
+
+    std::shared_ptr<Connection> add_pointer_event_handler(
+        const PointerEventHandler& handler, const bool after_elements = false);
+    std::shared_ptr<Connection> add_key_event_handler(
+        const SignalEventSink<KeyEvent>::EventHandler& handler);
+    std::shared_ptr<Connection> add_scroll_event_handler(
+        const SignalEventSink<ScrollEvent>::EventHandler& handler);
 
   private:
     bool initial_render();

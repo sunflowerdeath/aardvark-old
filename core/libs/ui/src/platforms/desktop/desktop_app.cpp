@@ -172,11 +172,11 @@ void DesktopApp::handle_event(DesktopWindow* window, Event event) {
     }
 
     if (auto pointer_event = std::get_if<PointerEvent>(&event)) {
+        window->pointer_event_sink.handle_event(*pointer_event);
         if (!document->is_initial_render) {  // TODO remove check
             document->pointer_event_manager->handle_event(
                 *pointer_event);
         }
-        window->pointer_event_sink.handle_event(*pointer_event);
     }
 }
 

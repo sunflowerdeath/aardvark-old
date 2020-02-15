@@ -1,10 +1,21 @@
 #pragma once
 
+#include <nod/nod.hpp>
+
 namespace aardvark {
 
 class Connection {
   public:
     virtual void disconnect(){};
+};
+
+class NodConnection : public Connection {
+  public:
+    NodConnection(nod::connection conn) : conn(std::move(conn)){};
+    void disconnect() override { conn.disconnect(); };
+
+  private:
+    nod::connection conn;
 };
 
 struct Value {
