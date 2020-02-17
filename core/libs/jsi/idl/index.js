@@ -125,7 +125,11 @@ const classInitTmpl = compileTmpl(`
         {{#if get_proxy}}
         return {{get_proxy}}(*ctx, mapped_this, *{{type}}_mapper);
         {{else}}
-        return {{type}}_mapper->to_js(*ctx, mapped_this->{{snakeCase name}});
+        return {{type}}_mapper->to_js(
+            *ctx,
+            {{#if getter}}mapped_this->{{getter}}()
+            {{else}}mapped_this->{{snakeCase name}}{{/if}}
+        );
         {{/if}}
     };
     {{#unless readonly}}
@@ -133,7 +137,7 @@ const classInitTmpl = compileTmpl(`
         -> Result<bool> {
         auto mapped_this = {{../name}}_mapper->from_js(
             *ctx, this_obj.to_value());
-        {{#if get_proxy}}
+        {{#if set_proxy}}
         return {{set_proxy}}(*ctx, mapped_this, val, *{{type}}_mapper);
         {{else}}
         auto err_params = CheckErrorParams{
@@ -142,7 +146,11 @@ const classInitTmpl = compileTmpl(`
         if (!mapped_val.has_value()) {
             return make_error_result(*ctx, mapped_val.error());
         }
+        {{#if setter}}
+        mapped_this->{{setter}}(mapped_val.value());
+        {{else}}
         mapped_this->{{snakeCase name}} = mapped_val.value();
+        {{/if}}
         return true;
         {{/if}}
     };

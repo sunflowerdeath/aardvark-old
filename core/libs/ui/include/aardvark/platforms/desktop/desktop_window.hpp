@@ -23,6 +23,7 @@ class DesktopWindow {
     void swap_now();
     void swap();
 
+    Size get_size();
     void set_size(const Size& size);
     void set_position(const Position& pos);
     void set_title(const char* title);
@@ -46,7 +47,6 @@ class DesktopWindow {
     std::shared_ptr<Connection> add_window_event_handler(
         const SignalEventSink<WindowEvent>::EventHandler& handler);
 
-    Size size;
     DesktopApp* app;
     GLFWwindow* window;
 

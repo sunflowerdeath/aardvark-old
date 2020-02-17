@@ -4,6 +4,8 @@ include: aardvark/platforms/desktop/desktop_window.hpp
 props:
     - name: size
       type: Size
+      getter: get_size
+      setter: set_size
     # - name: position
       # type: Position
     # - name: title

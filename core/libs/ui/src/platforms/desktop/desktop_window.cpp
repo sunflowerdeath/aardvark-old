@@ -6,8 +6,7 @@ namespace aardvark {
 const int STENCIL_BITS = 8;
 const int MSAA_SAMPLE_COUNT = 0;
 
-DesktopWindow::DesktopWindow(DesktopApp* app, const Size& size)
-    : app(app), size(size) {
+DesktopWindow::DesktopWindow(DesktopApp* app, const Size& size) : app(app) {
     if (!glfwInit()) {
         Log::error("[DesktopWindow] glfw init error");
     }
@@ -18,7 +17,8 @@ DesktopWindow::DesktopWindow(DesktopApp* app, const Size& size)
     glfwWindowHint(GLFW_DEPTH_BITS, 0);
     glfwWindowHint(GLFW_STENCIL_BITS, STENCIL_BITS);
     glfwWindowHint(GLFW_SAMPLES, MSAA_SAMPLE_COUNT);
-    window = glfwCreateWindow(size.width, size.height, "GLFW", NULL, NULL);
+    window =
+        glfwCreateWindow(size.width, size.height, "GLFW", nullptr, nullptr);
     if (window == nullptr) {
         Log::error("[DesktopWindow] Cannot create GLFW window");
     }
@@ -35,8 +35,13 @@ void DesktopWindow::swap_now() { glfwSwapBuffers(window); };
 
 void DesktopWindow::make_current() { glfwMakeContextCurrent(window); };
 
+Size DesktopWindow::get_size() {
+    int width, height;
+    glfwGetWindowSize(window, &width, &height);
+    return Size{static_cast<float>(width), static_cast<float>(height)};
+}
+
 void DesktopWindow::set_size(const Size& size) {
-    this->size = size;
     glfwSetWindowSize(window, size.width, size.height);
 }
 
