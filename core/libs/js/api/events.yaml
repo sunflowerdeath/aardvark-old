@@ -79,9 +79,9 @@ kind: struct
 name:  WindowMoveEvent
 props:
     - name: left
-      type: float
+      type: int
     - name: top
-      type: float
+      type: int
 ---
 kind: struct
 name: WindowCloseEvent
@@ -96,9 +96,9 @@ kind: struct
 name: WindowResizeEvent
 props:
     - name: width
-      type: float
+      type: int
     - name: height
-      type: float
+      type: int
 ---
 kind: union
 name: WindowEvent

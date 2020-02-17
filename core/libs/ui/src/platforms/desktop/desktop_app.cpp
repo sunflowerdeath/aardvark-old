@@ -18,19 +18,33 @@ void window_focus_callback(GLFWwindow* window, int focused) {
     auto event = focused ? static_cast<Event>(WindowFocusEvent())
                          : static_cast<Event>(WindowBlurEvent());
     DesktopApp::dispatch_event(window, event);
-};
+}
 
-void window_close_callback(GLFWwindow* window) {
-    DesktopApp::dispatch_event(window, WindowCloseEvent());
-};
-
-// Mouse events
 void window_cursor_enter_callback(GLFWwindow* window, int entered) {
     auto event = entered ? static_cast<Event>(WindowCursorEnterEvent())
                          : static_cast<Event>(WindowCursorLeaveEvent());
     DesktopApp::dispatch_event(window, event);
-};
+}
 
+void window_pos_callback(GLFWwindow* window, int left, int top) {
+    DesktopApp::dispatch_event(window, WindowMoveEvent{left, top});
+}
+
+void window_close_callback(GLFWwindow* window) {
+    DesktopApp::dispatch_event(window, WindowCloseEvent());
+}
+
+void window_iconify_callback(GLFWwindow* window, int iconified) {
+    auto event = iconified ? static_cast<Event>(WindowMinimizeEvent())
+                           : static_cast<Event>(WindowRestoreEvent());
+    DesktopApp::dispatch_event(window, event);
+}
+
+void window_size_callback(GLFWwindow* window, int width, int height) {
+    DesktopApp::dispatch_event(window, WindowResizeEvent{width, height});
+}
+
+// Mouse events
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
     auto event = ScrollEvent{
         static_cast<float>(xoffset),  // left
@@ -93,8 +107,11 @@ std::shared_ptr<DesktopWindow> DesktopApp::create_window(Size size) {
     auto glfw_window = window->window;
     // Window events
     glfwSetWindowFocusCallback(glfw_window, window_focus_callback);
-    glfwSetWindowCloseCallback(glfw_window, window_close_callback);
     glfwSetCursorEnterCallback(glfw_window, window_cursor_enter_callback);
+    glfwSetWindowPosCallback(glfw_window, window_pos_callback);
+    glfwSetWindowCloseCallback(glfw_window, window_close_callback);
+    glfwSetWindowIconifyCallback(glfw_window, window_iconify_callback);
+    glfwSetWindowSizeCallback(glfw_window, window_size_callback);
     // Mouse events
     glfwSetScrollCallback(glfw_window, scroll_callback);
     glfwSetCursorPosCallback(glfw_window, cursor_pos_callback);

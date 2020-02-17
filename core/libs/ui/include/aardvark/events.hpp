@@ -16,8 +16,8 @@ struct WindowCursorEnterEvent {};
 struct WindowCursorLeaveEvent {};
 
 struct WindowMoveEvent {
-    float left;
-    float top;
+    int left;
+    int top;
 };
 
 struct WindowCloseEvent {};
@@ -27,8 +27,8 @@ struct WindowMinimizeEvent {};
 struct WindowRestoreEvent {};
 
 struct WindowResizeEvent {
-    float width;
-    float height;
+    int width;
+    int height;
 };
 
 using WindowEvent =
