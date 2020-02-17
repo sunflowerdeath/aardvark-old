@@ -63,44 +63,66 @@ props:
     - name: top
       type: float
 ---
-# kind: enum
-# name: WindowEventType
-# values:
-    # - focus
-    # - blur
-    # - cursorEnter
-    # - cursorLeave
-    # - move
-    # - close
-    # - minimize
-    # - restore
-    # - resize
-# ---
-# kind: struct
-# name: WindowMoveEvent
-# props:
-    # - name: left
-      # type: float
-    # - name: top
-      # type: float
-# ---
-# kind: struct
-# name: WindowResizeEvent
-# props:
-    # - name: left
-      # type: float
-    # - name: top
-      # type: float
-# ---
-# kind: struct
-# name: WindowEvent
-# props:
-    # - name: type
-      # type: WindowEventType
-    # - name: event
-      # type: Object
-# custom_mapper: WindowEventMapper
-# ---
+kind: struct 
+name: WindowFocusEvent
+---
+kind: struct
+name:  WindowBlurEvent
+---
+kind: struct
+name:  WindowCursorEnterEvent
+---
+kind: struct
+name:  WindowCursorLeaveEvent
+---
+kind: struct
+name:  WindowMoveEvent
+props:
+    - name: left
+      type: float
+    - name: top
+      type: float
+---
+kind: struct
+name: WindowCloseEvent
+---
+kind: struct
+name: WindowMinimizeEvent
+---
+kind: struct
+name: WindowRestoreEvent
+---
+kind: struct
+name: WindowResizeEvent
+props:
+    - name: width
+      type: float
+    - name: height
+      type: float
+---
+kind: union
+name: WindowEvent
+tag: type
+items:
+    - tag: focus
+      type: WindowFocusEvent
+    - tag: blur
+      type: WindowBlurEvent
+    - tag: cursorEnter
+      type: WindowCursorEnterEvent
+    - tag: cursorLeave
+      type: WindowCursorLeaveEvent
+    - tag: move
+      type: WindowMoveEvent
+    - tag: close
+      type: WindowCloseEvent
+    - tag: minimize
+      type: WindowMinimizeEvent
+    - tag: restore
+      type: WindowRestoreEvent
+    - tag: resize
+      type: WindowResizeEvent
+---
 kind: callback
 name: PointerEventHandler
 args:
@@ -118,9 +140,9 @@ name: ScrollEventHandler
 args:
     - name: event
       type: ScrollEvent
-# ---
-# kind: callback
-# name: WindowEventHandler
-# args:
-    # - name: event
-      # type: WindowEvent
+---
+kind: callback
+name: WindowEventHandler
+args:
+    - name: event
+      type: WindowEvent

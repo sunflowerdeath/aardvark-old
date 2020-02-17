@@ -73,4 +73,9 @@ std::shared_ptr<Connection> DesktopWindow::add_scroll_event_handler(
     return scroll_event_sink.add_handler2(handler);
 }
 
+std::shared_ptr<Connection> DesktopWindow::add_window_event_handler(
+    const SignalEventSink<WindowEvent>::EventHandler& handler) {
+    return window_event_sink.add_handler2(handler);
+}
+
 }  // namespace aardvark

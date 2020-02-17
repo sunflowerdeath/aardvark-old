@@ -29,3 +29,8 @@ methods:
         - name: handler
           type: ScrollEventHandler
       return: Connection
+    - name: addWindowEventHandler
+      args:
+        - name: handler
+          type: WindowEventHandler
+      return: Connection
