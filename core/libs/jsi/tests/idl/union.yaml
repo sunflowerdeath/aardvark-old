@@ -1,0 +1,19 @@
+kind: struct
+name: UnionTypeA
+props:
+    - name: prop
+      type: int
+---
+kind: struct
+name: UnionTypeB
+---
+kind: union
+name: TestUnion
+include: ../tests/idl/union.hpp
+tag: tag
+items:
+    - tag: a
+      type: UnionTypeA
+    - tag: b
+      type: UnionTypeB
+      

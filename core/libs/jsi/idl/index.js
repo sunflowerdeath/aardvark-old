@@ -58,6 +58,42 @@ const structInitTmpl = compileTmpl(`
     {{name}}_mapper = SimpleMapper<{{fullname}}>(to_js, try_from_js);
 `)
 
+const unionDefTmpl = compileTmpl(`
+    std::optional<SimpleMapper<{{typename}}>> {{name}}_mapper;
+`)
+
+const unionInitTmpl = compileTmpl(`
+    auto to_js = [this](Context& ctx, const {{typename}}& val) {
+        auto tag = "";
+        std::optional<Value> js_val = std::nullopt;
+        {{#each items}}if (auto a = std::get_if<{{getTypename type}}>(&val)) {
+            tag = "{{tag}}";
+            js_val = {{type}}_mapper->to_js(ctx, *a);
+        }{{#unless @last}} else {{/unless}}{{/each}}
+        js_val.value().to_object().value().set_property(
+            "{{tag}}",
+            ctx.value_make_string(ctx.string_make_from_utf8(tag)));
+        return js_val.value();
+    };
+
+    auto try_from_js = [this](
+        Context& ctx, const Value& val, const CheckErrorParams& err_params
+    ) -> tl::expected<{{typename}}, std::string> {
+        auto tag = val
+            .to_object()
+            .and_then([](auto obj) { return obj.get_property("tag"); })
+            .and_then([](auto val) { return val.to_string(); })
+            .map([](auto str) { return str.to_utf8(); });
+        if (!tag.has_value()) return tl::make_unexpected("Invalid tag");
+        {{#each items}}if (tag.value() == "{{tag}}") {
+            return {{type}}_mapper->try_from_js(ctx, val, err_params);
+        }{{#unless @last}} else {{/unless}}{{/each}}
+        return tl::make_unexpected("Invalid tag");
+    };
+
+    {{name}}_mapper = SimpleMapper<{{fullname}}>(to_js, try_from_js);
+`)
+
 const enumDefTmpl = compileTmpl(`
     std::optional<EnumMapper<{{typename}}>> {{name}}_mapper;
 `)
@@ -259,6 +295,7 @@ const functionInitTmpl = compileTmpl(`
 
 const templates = {
     struct: { def: structDefTmpl, init: structInitTmpl },
+    union: { def: unionDefTmpl, init: unionInitTmpl },
     'enum': { def: enumDefTmpl, init: enumInitTmpl },
     'class': { def: classDefTmpl, init: classInitTmpl },
     'callback': { def: callbackDefTmpl, init: callbackInitTmpl },
@@ -381,7 +418,7 @@ let setTypenames = (data, options) => {
     })
     callbacks.forEach(def => {
         let returnTypename = 'return' in def
-            ? getTypename(def['return'], defs)
+            ? getTypename(def['return'], data.defs)
             : 'void'
         let argTypenames = 'args' in def
             ? def.args.map(arg => getTypename(arg.type, data.defs)).join(', ')

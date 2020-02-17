@@ -50,6 +50,7 @@ if(ADV_JSI_TESTS)
         tests/idl/proxy.cpp
         generated/enum.cpp
         generated/struct.cpp
+        generated/union.cpp
         generated/class.cpp
         generated/function.cpp
         generated/callback.cpp

@@ -13,8 +13,9 @@
 #include "../generated/enum.hpp"
 #include "../generated/extends.hpp"
 #include "../generated/function.hpp"
-#include "../generated/struct.hpp"
 #include "../generated/proxy.hpp"
+#include "../generated/struct.hpp"
+#include "../generated/union.hpp"
 
 using namespace aardvark::jsi;
 
@@ -79,6 +80,56 @@ TEST_CASE("idl", "[idl]") {
             auto res =
                 api.TestStruct_mapper->try_from_js(*ctx, val, err_params);
             REQUIRE(res.has_value() == false);
+        }
+    }
+
+    SECTION("union") {
+        auto ctx = create_context();
+        auto api = test::TestUnionApi(ctx.get());
+
+        SECTION("to_js") {
+            auto val = TestUnion(UnionTypeA{5});
+            auto res = api.TestUnion_mapper->to_js(*ctx, val);
+            auto obj = res.to_object().value();
+            REQUIRE(
+                obj.get_property("tag").value().to_string().value().to_utf8() ==
+                "a");
+            REQUIRE(obj.get_property("prop").value().to_number().value() == 5);
+        }
+
+        SECTION("try_from_js") {
+            auto obj = ctx->object_make(nullptr);
+            obj.set_property(
+                "tag", ctx->value_make_string(ctx->string_make_from_utf8("a")));
+            obj.set_property("prop", ctx->value_make_number(5));
+            auto res = api.TestUnion_mapper->try_from_js(
+                *ctx, obj.to_value(), err_params);
+            REQUIRE(res.has_value());
+            auto a = std::get_if<UnionTypeA>(&res.value());
+            REQUIRE(a != nullptr);
+            REQUIRE(a->prop == 5);
+        }
+
+        SECTION("try_from_js invalid") {
+            // not obj
+            auto val1 = ctx->value_make_number(5);
+            auto res1 =
+                api.TestUnion_mapper->try_from_js(*ctx, val1, err_params);
+            REQUIRE(res1.has_value() == false);
+
+            // no tag
+            auto val2 = ctx->object_make(nullptr);
+            auto res2 = api.TestUnion_mapper->try_from_js(
+                *ctx, val2.to_value(), err_params);
+            REQUIRE(res2.has_value() == false);
+
+            // invalid tag
+            auto val3 = ctx->object_make(nullptr);
+            val3.set_property(
+                "tag", ctx->value_make_string(ctx->string_make_from_utf8("c")));
+            auto res3 = api.TestUnion_mapper->try_from_js(
+                *ctx, val3.to_value(), err_params);
+            REQUIRE(res3.has_value() == false);
         }
     }
 
