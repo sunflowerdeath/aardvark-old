@@ -9,11 +9,11 @@ namespace aardvark::js {
 jsi::Value element_get_parent_proxy(
     jsi::Context& ctx,
     std::shared_ptr<Element>& elem,
-    jsi::ObjectsMapper2<Element, Element>& elem_mapper);
+    jsi::Mapper<std::shared_ptr<Element>>& mapper);
 
 jsi::Value element_get_document_proxy(
     jsi::Context& ctx,
     std::shared_ptr<Element>& elem,
-    jsi::ObjectsMapper2<Document, Document>& elem_mapper);
+    jsi::Mapper<std::shared_ptr<Document>>& mapper);
 
 }  // namespace aardvark::js
