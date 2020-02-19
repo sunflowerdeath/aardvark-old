@@ -259,7 +259,7 @@ class ObjectsIndex {
 };
 
 template <typename T, typename BaseT>
-class ObjectsMapper2 : Mapper<std::shared_ptr<T>> {
+class ObjectsMapper2 : public Mapper<std::shared_ptr<T>> {
   public:
     ObjectsMapper2(ObjectsIndex<BaseT>* index) : index(index) {};
     
@@ -268,7 +268,7 @@ class ObjectsMapper2 : Mapper<std::shared_ptr<T>> {
         if (native_object == nullptr) return ctx.value_make_undefined();
         return index->to_js(ctx, native_object);
     }
-    
+
     std::shared_ptr<T> from_js(Context& ctx, const Value& value) override {
         return index->template from_js<T>(ctx, value);
     }

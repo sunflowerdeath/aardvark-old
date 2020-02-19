@@ -29,7 +29,7 @@ using ElementsSet = std::unordered_set<Element*>;
 
 using LayerTreeNode = std::variant<LayerTree*, std::shared_ptr<Layer>>;
 
-class Document {
+class Document : public std::enable_shared_from_this<Document> {
   public:
     Document(sk_sp<GrContext> gt_context, std::shared_ptr<Layer> screen,
              std::shared_ptr<Element> root = nullptr);
