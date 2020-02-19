@@ -8,7 +8,7 @@ let src = [
     'desktop_window',
     'document',
     'element',
-    // 'elements'
+    'elements'
 ]
 
 idl({

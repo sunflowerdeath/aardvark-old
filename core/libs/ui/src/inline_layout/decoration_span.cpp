@@ -125,8 +125,8 @@ std::shared_ptr<Element> DecorationSpan::render(
         top_offset += insets.top.calc(metrics.height);
     }
     if (decoration.background != std::nullopt) {
-        auto background = std::make_shared<elements::Background>(
-            decoration.background.value());
+        auto background =
+            std::make_shared<BackgroundElement>(decoration.background.value());
         container = std::make_shared<elements::Stack>(
             std::vector<std::shared_ptr<Element>>{background, container});
     }

@@ -223,7 +223,7 @@ const classInitTmpl = compileTmpl(`
             return make_error_result(*ctx, {{name}}_arg.error());
         }
         {{/each}}
-        auto res = std::make_shared<{{name}}>(
+        auto res = std::make_shared<{{fullname}}>(
             {{#each constructor.args}}{{name}}_arg.value(){{#unless @last}},{{/unless}}{{/each}}
         );
         return {{name}}_mapper->to_js(*ctx, res);

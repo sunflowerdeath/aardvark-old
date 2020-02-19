@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SkColor.h"
 #include <nod/nod.hpp>
 
 namespace aardvark {
@@ -82,7 +83,6 @@ inline Position operator+(const Position& lhs, const Position& rhs) {
     );
 };
 
-/*
 struct Color {
     int red;
     int green;
@@ -98,7 +98,6 @@ struct Color {
                      SkColorGetB(sk_color), SkColorGetA(sk_color)};
     }
 };
-*/
 
 }  // namespace aardvark
 

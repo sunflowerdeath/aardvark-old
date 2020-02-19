@@ -46,3 +46,15 @@ props:
       type: float
     - name: top
       type: float
+---
+kind: struct
+name: Color
+props:
+    - name: red
+      type: int
+    - name: green
+      type: int
+    - name: blue
+      type: int
+    - name: alpha
+      type: int

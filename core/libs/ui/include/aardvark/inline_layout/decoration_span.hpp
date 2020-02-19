@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <memory>
+#include "../base_types.hpp"
 #include "../element.hpp"
 #include "../elements/border.hpp"
 #include "../elements/background.hpp"
@@ -11,7 +12,7 @@
 namespace aardvark::inline_layout {
 
 struct Decoration {
-    std::optional<SkColor> background;
+    std::optional<Color> background;
     std::optional<elements::BoxBorders> borders;
     std::optional<elements::EdgeInsets> insets;
 
