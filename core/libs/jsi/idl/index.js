@@ -3,7 +3,7 @@ let path = require('path')
 let yaml = require('js-yaml')
 let Handlebars = require('handlebars')
 let { snakeCase } = require('change-case')
-let { groupBy, partition, uniq } = require('lodash')
+let { groupBy, partition, uniq, flatten } = require('lodash')
 let mkdirp = require('mkdirp')
 
 let compileTmpl = tmpl => Handlebars.compile(tmpl, { noEscape: true })
@@ -316,7 +316,7 @@ const headerTmpl = compileTmpl(
 #include <aardvark_jsi/jsi.hpp>
 #include <aardvark_jsi/mappers.hpp>
 
-{{#each includes}}
+{{#each include}}
 #include "{{.}}"
 {{/each}}
 
@@ -450,10 +450,10 @@ let genCode = (data, options) => {
         }
     }
     let chunks = []
-    let includes = []
+    let include = options.include == undefined ? [] : options.include
     for (let name in data.defs) {
         let def = data.defs[name]
-        if ('include' in def) includes.push(def.include)
+        if ('include' in def) include.push(def.include)
         let t = templates[def.kind];
         chunks.push({
             name: def.name,
@@ -462,9 +462,9 @@ let genCode = (data, options) => {
             init: t.init(def, tmplOptions)
         })
     }
-    includes = uniq(includes)
+    include = uniq(flatten(include))
     let tmplData = {
-        ...options, types: chunks, includes, baseClasses: data.baseClasses
+        ...options, types: chunks, include, baseClasses: data.baseClasses
     }
     return {
         header: headerTmpl(tmplData, tmplOptions),

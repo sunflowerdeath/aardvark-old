@@ -17,6 +17,7 @@ add_library(aardvark_js ${ADV_JS_LIB_TYPE}
     generated/error_location_api.cpp
     src/host.cpp
     src/module_loader.cpp
+    src/proxies.cpp
 )
 
 make_includable(

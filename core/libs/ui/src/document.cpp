@@ -41,7 +41,7 @@ Document::Document(sk_sp<GrContext> gr_context, std::shared_ptr<Layer> screen,
 }
 
 void Document::set_root(std::shared_ptr<Element> new_root) {
-    root = new_root;
+    root = std::move(new_root);
     root->parent = nullptr;
     root->set_document(this);
     root->is_relayout_boundary = true;

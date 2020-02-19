@@ -210,8 +210,9 @@ class ObjectsIndex {
 
     template <typename DerivedT>
     std::shared_ptr<DerivedT> from_js(Context& ctx, const Value& value) {
-        auto native_obj = get_record(value)->native_object;
-        return std::dynamic_pointer_cast<DerivedT>(native_obj);
+        auto rec = get_record(value);
+        if (rec == nullptr) return nullptr;
+        return std::dynamic_pointer_cast<DerivedT>(rec->native_object);
     }
 
     template <typename DerivedT>
@@ -264,6 +265,7 @@ class ObjectsMapper2 : Mapper<std::shared_ptr<T>> {
     
     Value to_js(
         Context& ctx, const std::shared_ptr<T>& native_object) override {
+        if (native_object == nullptr) return ctx.value_make_undefined();
         return index->to_js(ctx, native_object);
     }
     

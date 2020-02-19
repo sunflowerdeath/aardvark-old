@@ -1,5 +1,6 @@
 kind: class
 name: Element
+include: aardvark/element.hpp
 props:
     - name: size
       type: Size
@@ -7,8 +8,12 @@ props:
       type: Position
     - name: parent
       type: Element
+      readonly: true
+      get_proxy: aardvark::js::element_get_parent_proxy
     - name: document
       type: Document
+      readonly: true
+      get_proxy: aardvark::js::element_get_document_proxy
 methods:
     - name: appendChild
       args:
@@ -18,7 +23,7 @@ methods:
       args:
         - name: child
           type: Element
-    - name: insertChildBefore
+    - name: insertBeforeChild
       args:
         - name: child
           type: Element

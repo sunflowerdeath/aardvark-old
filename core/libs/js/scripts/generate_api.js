@@ -7,13 +7,14 @@ let src = [
     'desktop_app',
     'desktop_window',
     'document',
-    //'element',
-    //'elements'
+    'element',
+    // 'elements'
 ]
 
 idl({
     src: src.map(file => path.resolve(__dirname, `../api/${file}.yaml`)),
     defaultNamespace: 'aardvark',
+    include: ["../include/aardvark_js/proxies.hpp"],
     output: {
         dir: path.resolve(__dirname, '../generated'),
         filename: 'api',
