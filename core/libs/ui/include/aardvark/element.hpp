@@ -11,6 +11,13 @@
 #include "pointer_events/responder.hpp"
 #include "pointer_events/hit_tester.hpp"
 
+#define ELEMENT_PROP_WITH_SETTER(TYPE, NAME) \
+    TYPE NAME;                   \
+    void set_##NAME(TYPE& val) { \
+        NAME = val;              \
+        change();                \
+    };
+
 namespace aardvark {
 
 // Forward declarations due to circular includes

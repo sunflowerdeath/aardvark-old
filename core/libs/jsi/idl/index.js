@@ -179,6 +179,8 @@ const classInitTmpl = compileTmpl(`
         {{else}}
         return {{return}}_mapper->to_js(*ctx, res);
         {{/if}}
+        {{else}}
+        return ctx->value_make_undefined();
         {{/if}}
     };
     {{/each}}

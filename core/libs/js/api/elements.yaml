@@ -29,6 +29,7 @@ constructor: default
 props:
     - name: color
       type: Color
+      settter: set_color
 # ---
 
 # kind: struct
