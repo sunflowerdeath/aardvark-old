@@ -1,8 +1,8 @@
 #include "elements/flex.hpp"
 
-namespace aardvark::elements {
+namespace aardvark {
 
-float Flex::get_intrinsic_height() {
+float FlexElement::get_intrinsic_height() {
     auto result = 0.0;
     for (auto& child : children) {
         if (direction == FlexDirection::column) {
@@ -14,7 +14,7 @@ float Flex::get_intrinsic_height() {
     return result;
 }
 
-float Flex::get_intrinsic_width() {
+float FlexElement::get_intrinsic_width() {
     auto result = 0.0;
     for (auto& child : children) {
         if (direction == FlexDirection::row) {
@@ -34,27 +34,30 @@ inline float get_cross(Size size, FlexDirection direction) {
     return direction == FlexDirection::row ? size.height : size.width;
 }
 
-inline BoxConstraints make_constraints(FlexDirection direction, float min_main,
-                                       float max_main, float min_cross,
-                                       float max_cross) {
+inline BoxConstraints make_constraints(
+    FlexDirection direction,
+    float min_main,
+    float max_main,
+    float min_cross,
+    float max_cross) {
     return direction == FlexDirection::row
-        ? BoxConstraints{min_main, max_main, min_cross, max_cross}
-        : BoxConstraints{min_cross, max_cross, min_main, max_main};
+               ? BoxConstraints{min_main, max_main, min_cross, max_cross}
+               : BoxConstraints{min_cross, max_cross, min_main, max_main};
 }
 
 inline FlexAlign get_align(Element* elem, FlexAlign align) {
-    auto flex_child = dynamic_cast<FlexChild*>(elem);
+    auto flex_child = dynamic_cast<FlexChildElement*>(elem);
     return (flex_child == nullptr || flex_child->align == std::nullopt)
                ? align
                : flex_child->align.value();
 }
 
-Size Flex::layout(BoxConstraints constraints) {
+Size FlexElement::layout(BoxConstraints constraints) {
     auto fixed_children = std::vector<Element*>();
-    auto flex_children = std::vector<FlexChild*>();
+    auto flex_children = std::vector<FlexChildElement*>();
     auto total_flex = 0;
     for (auto& child : children) {
-        auto flex_child = dynamic_cast<FlexChild*>(child.get());
+        auto flex_child = dynamic_cast<FlexChildElement*>(child.get());
         if (flex_child != nullptr && flex_child->flex > 0) {
             flex_children.push_back(flex_child);
             total_flex += flex_child->flex;
@@ -79,8 +82,8 @@ Size Flex::layout(BoxConstraints constraints) {
     for (auto child : fixed_children) {
         auto child_min_cross =
             get_align(child, align) == FlexAlign::stretch ? max_cross : 0;
-        auto child_constraints = make_constraints(direction, 0, remaining_main,
-                                                  child_min_cross, max_cross);
+        auto child_constraints = make_constraints(
+            direction, 0, remaining_main, child_min_cross, max_cross);
         auto size = document->layout_element(child, child_constraints);
         max_child_cross = fmax(get_cross(size, direction), max_child_cross);
         child->size = size;
@@ -91,11 +94,11 @@ Size Flex::layout(BoxConstraints constraints) {
     if (remaining_main < 0) remaining_main = 0;
     auto single_flex = remaining_main / total_flex;
     for (auto child : flex_children) {
-        auto child_main = single_flex * child->flex;
+        auto child_main = single_flex * static_cast<float>(child->flex);
         auto child_min_cross =
             get_align(child, align) == FlexAlign::stretch ? max_cross : 0;
-        auto child_constraints = make_constraints(direction, 0, child_main,
-                                                  child_min_cross, max_cross);
+        auto child_constraints = make_constraints(
+            direction, 0, child_main, child_min_cross, max_cross);
         auto size = document->layout_element(child, child_constraints);
         max_child_cross = fmax(get_cross(size, direction), max_child_cross);
         child->size = size;
@@ -108,6 +111,9 @@ Size Flex::layout(BoxConstraints constraints) {
     auto space_before = 0.0f;
     auto space_after = 0.0f;
     switch (justify) {
+        case FlexJustify::start:
+            // do nothing
+            break;
         case FlexJustify::center:
             current_main_pos = remaining_main / 2;
             break;
@@ -125,7 +131,7 @@ Size Flex::layout(BoxConstraints constraints) {
             space_before = remaining_main / (children.size() + 1);
             break;
     }
-    for (auto child : children) {
+    for (auto& child : children) {
         current_main_pos += space_before;
         auto child_align = get_align(child.get(), align);
         auto child_cross_pos = 0.0f;
@@ -142,9 +148,9 @@ Size Flex::layout(BoxConstraints constraints) {
 
     return direction == FlexDirection::row ? Size{max_main, cross}
                                            : Size{cross, max_main};
-};
+}
 
-Size FlexChild::layout(BoxConstraints constraints) {
+Size FlexChildElement::layout(BoxConstraints constraints) {
     auto child_constraints =
         (flex > 0 && tight_fit) ? constraints.make_tight() : constraints;
     auto size = document->layout_element(child.get(), child_constraints);
@@ -153,4 +159,4 @@ Size FlexChild::layout(BoxConstraints constraints) {
     return size;
 }
 
-}
+}  // namespace aardvark

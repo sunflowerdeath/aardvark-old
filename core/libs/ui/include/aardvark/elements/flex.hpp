@@ -3,7 +3,7 @@
 #include <optional>
 #include "../element.hpp"
 
-namespace aardvark::elements {
+namespace aardvark {
 
 enum class FlexDirection { row, column };
 
@@ -18,18 +18,23 @@ enum class FlexJustify {
     space_evenly
 };
 
-class Flex : public MultipleChildrenElement {
+class FlexElement : public MultipleChildrenElement {
   public:
-    Flex()
-        : MultipleChildrenElement(/* children */ {},
-                                  /* is_repaint_boundary */ false,
-                                  /* size_depends_on_parent */ false){};
+    FlexElement()
+        : MultipleChildrenElement(
+              /* children */ {},
+              /* is_repaint_boundary */ false,
+              /* size_depends_on_parent */ false){};
 
-    Flex(std::vector<std::shared_ptr<Element>> children,
-         FlexDirection direction, FlexJustify justify, FlexAlign align)
-        : MultipleChildrenElement(/* children */ children,
-                                  /* is_repaint_boundary */ false,
-                                  /* size_depends_on_parent */ false),
+    FlexElement(
+        std::vector<std::shared_ptr<Element>> children,
+        FlexDirection direction,
+        FlexJustify justify,
+        FlexAlign align)
+        : MultipleChildrenElement(
+              /* children */ std::move(children),
+              /* is_repaint_boundary */ false,
+              /* size_depends_on_parent */ false),
           direction(direction),
           justify(justify),
           align(align){};
@@ -50,18 +55,22 @@ class Flex : public MultipleChildrenElement {
     FlexAlign align = FlexAlign::start;
 };
 
-class FlexChild : public SingleChildElement {
+class FlexChildElement : public SingleChildElement {
   public:
-    FlexChild()
+    FlexChildElement()
         : SingleChildElement(/* child */ nullptr,
                              /* is_repaint_boundary */ false,
                              /* size_depends_on_parent */ false){};
 
-    FlexChild(std::shared_ptr<Element> child, std::optional<FlexAlign> align,
-              int flex, bool tight_fit)
-        : SingleChildElement(/* child */ child,
-                             /* is_repaint_boundary */ false,
-                             /* size_depends_on_parent */ false),
+    FlexChildElement(
+        std::shared_ptr<Element> child,
+        std::optional<FlexAlign> align,
+        int flex,
+        bool tight_fit)
+        : SingleChildElement(
+              /* child */ std::move(child),
+              /* is_repaint_boundary */ false,
+              /* size_depends_on_parent */ false),
           align(align),
           flex(flex),
           tight_fit(tight_fit){};
@@ -80,4 +89,4 @@ class FlexChild : public SingleChildElement {
     bool tight_fit = true;
 };
 
-}  // namespace aardvark::elements
+}  // namespace aardvark

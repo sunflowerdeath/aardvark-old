@@ -137,11 +137,12 @@ const classInitTmpl = compileTmpl(`
         -> Result<bool> {
         auto mapped_this = {{../name}}_mapper->from_js(
             *ctx, this_obj.to_value());
-        {{#if set_proxy}}
-        return {{set_proxy}}(*ctx, mapped_this, val, *{{type}}_mapper);
-        {{else}}
         auto err_params = CheckErrorParams{
             "property", "{{name}}", "{{../name}}"};
+        {{#if set_proxy}}
+        return {{set_proxy}}(
+            *ctx, mapped_this, val, *{{type}}_mapper, err_params);
+        {{else}}
         auto mapped_val = {{type}}_mapper->try_from_js(*ctx, val, err_params);
         if (!mapped_val.has_value()) {
             return make_error_result(*ctx, mapped_val.error());
