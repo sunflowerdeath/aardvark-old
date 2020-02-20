@@ -84,10 +84,10 @@ inline Position operator+(const Position& lhs, const Position& rhs) {
 };
 
 struct Color {
-    int red;
-    int green;
-    int blue;
-    int alpha;
+    int red = 0;
+    int green = 0;
+    int blue = 0;
+    int alpha = 0;
 
     SkColor to_sk_color() {
         return SkColorSetARGB(alpha, red, green, blue);

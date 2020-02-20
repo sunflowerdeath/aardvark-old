@@ -3,26 +3,27 @@
 namespace aardvark::inline_layout {
 
 std::pair<Decoration, Decoration> Decoration::split() {
-    std::optional<elements::BoxBorders> left_borders = std::nullopt; 
-    std::optional<elements::BoxBorders> right_borders = std::nullopt; 
+    std::optional<elements::BoxBorders> left_borders = std::nullopt;
+    std::optional<elements::BoxBorders> right_borders = std::nullopt;
     if (borders != std::nullopt) {
-       left_borders = borders.value();
-       right_borders = borders.value();
-       left_borders.value().right = elements::BorderSide::none();
-       right_borders.value().left = elements::BorderSide::none();
+        left_borders = borders.value();
+        right_borders = borders.value();
+        left_borders.value().right = elements::BorderSide::none();
+        right_borders.value().left = elements::BorderSide::none();
     }
 
     std::optional<elements::EdgeInsets> left_insets = std::nullopt;
     std::optional<elements::EdgeInsets> right_insets = std::nullopt;
     if (insets != std::nullopt) {
-       left_insets = insets.value();
-       right_insets = insets.value();
-       left_insets.value().right = Value::none();
-       right_insets.value().left = Value::none();
+        left_insets = insets.value();
+        right_insets = insets.value();
+        left_insets.value().right = Value::none();
+        right_insets.value().left = Value::none();
     }
 
-    return std::make_pair(Decoration{background, left_borders, left_insets},
-                          Decoration{background, right_borders, right_insets});
+    return std::make_pair(
+        Decoration{background, left_borders, left_insets},
+        Decoration{background, right_borders, right_insets});
 };
 
 std::pair<float, float> Decoration::get_paddings(float total_line_width) {
@@ -39,9 +40,10 @@ std::pair<float, float> Decoration::get_paddings(float total_line_width) {
     return std::make_pair(before, after);
 };
 
-DecorationSpan::DecorationSpan(std::vector<std::shared_ptr<Span>> content,
-                               Decoration decoration,
-                               std::optional<SpanBase> base_span)
+DecorationSpan::DecorationSpan(
+    std::vector<std::shared_ptr<Span>> content,
+    Decoration decoration,
+    std::optional<SpanBase> base_span)
     : content(content), decoration(decoration), Span(base_span){};
 
 InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
@@ -63,7 +65,8 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
             InlineConstraints{constraints.remaining_line_width -
                                   fit_spans_width,  // remaining_line_width
                               constraints.total_line_width,  // total_line_width
-                              padding_before, padding_after};
+                              padding_before,
+                              padding_after};
         auto result = Span::layout(span, span_constraints);
         if (result.fit_span != std::nullopt) {
             auto fit_span = result.fit_span.value();
@@ -114,7 +117,7 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
 
 std::shared_ptr<Element> DecorationSpan::render(
     std::optional<SpanSelectionRange> selection) {
-    auto stack = std::make_shared<elements::Stack>();
+    auto stack = std::make_shared<StackElement>();
     render_spans(content, metrics, Position{0, 0}, &stack->children);
 
     std::shared_ptr<Element> container = stack;
@@ -127,13 +130,14 @@ std::shared_ptr<Element> DecorationSpan::render(
     if (decoration.background != std::nullopt) {
         auto background =
             std::make_shared<BackgroundElement>(decoration.background.value());
-        container = std::make_shared<elements::Stack>(
+        container = std::make_shared<StackElement>(
             std::vector<std::shared_ptr<Element>>{background, container});
     }
     if (decoration.borders != std::nullopt) {
         auto borders = decoration.borders.value();
         container = std::make_shared<elements::Border>(
-            container, borders,
+            container,
+            borders,
             elements::BoxRadiuses::all(elements::Radius{0, 0}));
         top_offset += borders.top.width;
     }

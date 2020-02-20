@@ -83,11 +83,12 @@ props:
       # type: BoxRadiuses
 # ---
 
-# kind: class
-# name: CenterElement
-# extends: Element
-# constructor: default
-# ---
+kind: class
+name: CenterElement
+include: aardvark/elements/center.hpp
+extends: Element
+constructor: default
+---
 
 # kind: enum
 # name: FlexDirection
@@ -256,7 +257,8 @@ props:
       type: SizeConstraints
 ---
 
-# kind: class
-# name: StackElement
-# extends: Element
-# constructor: default
+kind: class
+name: StackElement
+extends: Element
+include: aardvark/elements/stack.hpp
+constructor: default

@@ -1,20 +1,22 @@
 #pragma once
 
-#include <memory>
-#include <vector>
 #include "../base_types.hpp"
-#include "../box_constraints.hpp"
 #include "../element.hpp"
 
-namespace aardvark::elements {
+namespace aardvark {
 
-class Stack : public MultipleChildrenElement {
+class StackElement : public MultipleChildrenElement {
   public:
-    Stack(std::vector<std::shared_ptr<Element>> children = {},
-          bool is_repaint_boundary = false);
+    StackElement(
+        std::vector<std::shared_ptr<Element>> children = {},
+        bool is_repaint_boundary = false)
+        : MultipleChildrenElement(
+              std::move(children),
+              is_repaint_boundary,
+              /* size_depends_on_parent */ true){};
 
     std::string get_debug_name() override { return "Stack"; };
     Size layout(BoxConstraints constraints) override;
 };
 
-}  // namespace aardvark::elements
+}  // namespace aardvark

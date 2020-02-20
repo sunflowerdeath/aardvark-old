@@ -1,8 +1,8 @@
 #include "elements/center.hpp"
 
-namespace aardvark::elements {
+namespace aardvark {
 
-Size Center::layout(BoxConstraints constraints) {
+Size CenterElement::layout(BoxConstraints constraints) {
     auto child_size =
         document->layout_element(child.get(), constraints.make_loose());
     child->size = child_size;
@@ -13,4 +13,4 @@ Size Center::layout(BoxConstraints constraints) {
     return constraints.max_size();
 };
 
-}  // namespace aardvark::elements
+}  // namespace aardvark
