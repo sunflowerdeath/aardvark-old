@@ -2,19 +2,22 @@
 
 #include "../element.hpp"
 
-namespace aardvark::elements {
+namespace aardvark {
 
-class IntrinsicHeight : public SingleChildElement {
+class IntrinsicHeightElement : public SingleChildElement {
   public:
-    IntrinsicHeight()
-        : SingleChildElement(/* child */ nullptr,
-                             /* is_repaint_boundary */ false,
-                             /* size_depends_on_parent */ false){};
+    IntrinsicHeightElement()
+        : SingleChildElement(
+              /* child */ nullptr,
+              /* is_repaint_boundary */ false,
+              /* size_depends_on_parent */ false){};
 
-    IntrinsicHeight(std::shared_ptr<Element> child,
-                    bool is_repaint_boundary = false)
-        : SingleChildElement(child, is_repaint_boundary,
-                             /* size_depends_on_parent */ false){};
+    IntrinsicHeightElement(
+        std::shared_ptr<Element> child, bool is_repaint_boundary = false)
+        : SingleChildElement(
+              std::move(child),
+              is_repaint_boundary,
+              /* size_depends_on_parent */ false){};
 
     std::string get_debug_name() override { return "IntrinsicHeight"; };
 
@@ -30,4 +33,4 @@ class IntrinsicHeight : public SingleChildElement {
     };
 };
 
-}  // namespace aardvark::elements
+}  // namespace aardvark

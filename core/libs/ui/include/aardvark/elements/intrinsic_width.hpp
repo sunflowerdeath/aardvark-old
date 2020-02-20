@@ -2,19 +2,22 @@
 
 #include "../element.hpp"
 
-namespace aardvark::elements {
+namespace aardvark {
 
-class IntrinsicWidth : public SingleChildElement {
+class IntrinsicWidthElement : public SingleChildElement {
   public:
-    IntrinsicWidth()
-        : SingleChildElement(/* child */ nullptr,
-                             /* is_repaint_boundary */ false,
-                             /* size_depends_on_parent */ false){};
+    IntrinsicWidthElement()
+        : SingleChildElement(
+              /* child */ nullptr,
+              /* is_repaint_boundary */ false,
+              /* size_depends_on_parent */ false){};
 
-    IntrinsicWidth(std::shared_ptr<Element> child,
-                    bool is_repaint_boundary = false)
-        : SingleChildElement(child, is_repaint_boundary,
-                             /* size_depends_on_parent */ false){};
+    IntrinsicWidthElement(
+        std::shared_ptr<Element> child, bool is_repaint_boundary = false)
+        : SingleChildElement(
+              std::move(child),
+              is_repaint_boundary,
+              /* size_depends_on_parent */ false){};
 
     std::string get_debug_name() override { return "IntrinsicWidth"; };
 
@@ -30,4 +33,4 @@ class IntrinsicWidth : public SingleChildElement {
     };
 };
 
-}  // namespace aardvark::elements
+}  // namespace aardvark

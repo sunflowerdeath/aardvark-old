@@ -20,7 +20,6 @@
     # - name: align
       # type: Align
 # ---
-
 kind: class
 name: BackgroundElement
 extends: Element
@@ -31,7 +30,6 @@ props:
       type: Color
       settter: set_color
 ---
-
 # kind: struct
 # name: Border
 # props:
@@ -82,14 +80,14 @@ props:
     # - name: radiuses
       # type: BoxRadiuses
 # ---
-
 kind: class
 name: CenterElement
 include: aardvark/elements/center.hpp
 extends: Element
 constructor: default
 ---
-
+# TODO Clip
+# ---
 kind: enum
 name: FlexDirection
 values:
@@ -151,19 +149,16 @@ props:
         Alignment of the children across the secondary axis, default is
         `FlexAlign.start`
 ---
-
-# kind: class
-# name: IntrinsicHeightElement
-# extends: Element
-# constructor: default
-# ---
-
-# kind: class
-# name: IntrinsicWidthElement
-# extends: Element
-# constructor: default
-# ---
-
+kind: class
+name: IntrinsicHeightElement
+extends: Element
+constructor: default
+---
+kind: class
+name: IntrinsicWidthElement
+extends: Element
+constructor: default
+---
 # kind: struct
 # name: Transform
 # ---
@@ -178,7 +173,6 @@ props:
     # - name: transform
       # type: Transform
 # ---
-
 kind: struct
 name: Padding
 include: aardvark/elements/padding.hpp
@@ -200,13 +194,13 @@ props:
     - name: padding
       type: Padding
 ---
-
-# kind: class
-# name: PlaceholderElement
-# extends: Element
-# constructor: default
-
+# TODO Paragraph
 # ---
+kind: class
+name: PlaceholderElement
+extends: Element
+constructor: default
+---
 # kind: enum
 # name: HitTestMode
 # values:
@@ -237,7 +231,6 @@ props:
     # - name: handler
       # type: ResponderHandler
 # ---
-
 kind: struct
 name: SizeConstraints
 props:
@@ -263,9 +256,12 @@ props:
     - name: sizeConstraints
       type: SizeConstraints
 ---
-
 kind: class
 name: StackElement
 extends: Element
 include: aardvark/elements/stack.hpp
 constructor: default
+---
+# TODO Text
+# ---
+# TODO Translate

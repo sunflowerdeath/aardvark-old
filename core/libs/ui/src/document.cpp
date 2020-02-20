@@ -27,14 +27,16 @@ void add_only_parent(ElementsSet& set, Element* added) {
     set.insert(added);
 };
 
-Document::Document(sk_sp<GrContext> gr_context, std::shared_ptr<Layer> screen,
-                   std::shared_ptr<Element> root)
-    : gr_context(gr_context), screen(screen) {
+Document::Document(
+    sk_sp<GrContext> gr_context,
+    std::shared_ptr<Layer> screen,
+    std::shared_ptr<Element> root)
+    : gr_context(std::move(gr_context)), screen(std::move(screen)) {
     pointer_event_manager = std::make_unique<PointerEventManager>(this);
     size_observer = std::make_shared<ElementObserver<Size>>(
         [](std::shared_ptr<Element> element) { return element->size; });
     if (root == nullptr) {
-        set_root(std::make_shared<elements::Placeholder>());
+        set_root(std::make_shared<PlaceholderElement>());
     } else {
         set_root(root);
     }
@@ -51,7 +53,7 @@ void Document::set_root(std::shared_ptr<Element> new_root) {
     is_initial_render = true;
 }
 
-// weak ptrs
+// TODO think if need weak ptrs
 void Document::change_element(Element* elem) { changed_elements.insert(elem); }
 
 bool Document::render() {
@@ -63,8 +65,8 @@ bool Document::render() {
 }
 
 bool Document::initial_render() {
-    layout_element(root.get(),
-                   BoxConstraints::from_size(screen->size, true /* tight */));
+    layout_element(
+        root.get(), BoxConstraints::from_size(screen->size, true /* tight */));
     size_observer->check_all_elements();
     if (!changed_elements.empty()) relayout();
 
@@ -89,8 +91,8 @@ bool Document::rerender() {
 void Document::relayout() {
     for (auto elem : changed_elements) {
         if (elem->document != this) continue;
-        add_only_parent(relayout_boundaries,
-                        elem->find_closest_relayout_boundary());
+        add_only_parent(
+            relayout_boundaries, elem->find_closest_relayout_boundary());
     }
     changed_elements.clear();
     for (auto elem : relayout_boundaries) {
@@ -186,7 +188,9 @@ void Document::paint_element(Element* elem, bool is_repaint_root) {
         } else {
             // Intersect prev clip with element's clip and make it new
             // current clip
-            Op(current_clip.value(), offset_clip, kIntersect_SkPathOp,
+            Op(current_clip.value(),
+               offset_clip,
+               kIntersect_SkPathOp,
                &current_clip.value());
         }
     }
@@ -234,12 +238,13 @@ void Document::setup_layer(Layer* layer, Element* elem) {
     auto layer_pos = current_layer_tree->element->abs_position;
     if (current_clip != std::nullopt) {
         SkPath offset_clip;
-        current_clip.value().offset(-layer_pos.left, -layer_pos.top,
-                                    &offset_clip);
+        current_clip.value().offset(
+            -layer_pos.left, -layer_pos.top, &offset_clip);
         layer->canvas->clipPath(offset_clip, SkClipOp::kIntersect, true);
     }
-    layer->canvas->translate(elem->abs_position.left - layer_pos.left,
-                             elem->abs_position.top - layer_pos.top);
+    layer->canvas->translate(
+        elem->abs_position.left - layer_pos.left,
+        elem->abs_position.top - layer_pos.top);
 }
 
 // Creates layer and adds it to the current layer tree, reusing layers from
@@ -297,8 +302,8 @@ void Document::paint_layer_tree(LayerTree* tree) {
             paint_layer_tree(child_tree);
         } else {
             auto child_layer = std::get<std::shared_ptr<Layer>>(item);
-            screen->paint_layer(child_layer.get(), Position{0, 0},
-                                current_opacity);
+            screen->paint_layer(
+                child_layer.get(), Position{0, 0}, current_opacity);
         }
     }
     auto current_opacity = prev_opacity;
