@@ -30,7 +30,7 @@ props:
     - name: color
       type: Color
       settter: set_color
-# ---
+---
 
 # kind: struct
 # name: Border
@@ -171,27 +171,28 @@ props:
       # type: Transform
 # ---
 
-# kind: struct
-# name: Padding
-# props:
-    # - name: left
-      # type: float
-    # - name: top
-      # type: float
-    # - name: right
-      # type: float
-    # - name: bottom
-      # type: float
-# ---
-# kind: class
-# name: PaddingElement
-# extends: Element
-# constructor: default
-# props:
-    # - name: padding
-      # type: Padding
-      
-# ---
+kind: struct
+name: Padding
+include: aardvark/elements/padding.hpp
+props:
+    - name: left
+      type: float
+    - name: top
+      type: float
+    - name: right
+      type: float
+    - name: bottom
+      type: float
+---
+kind: class
+name: PaddingElement
+extends: Element
+constructor: default
+props:
+    - name: padding
+      type: Padding
+---
+
 # kind: class
 # name: PlaceholderElement
 # extends: Element
@@ -229,31 +230,32 @@ props:
       # type: ResponderHandler
 # ---
 
-# kind: struct
-# name: SizeConstraints
-# props:
-    # - name: width
-      # type: Value
-    # - name: height
-      # type: Value
-    # - name: minWidth
-      # type: Value
-    # - name: minHeight
-      # type: Value
-    # - name: maxWidth
-      # type: Value
-    # - name: maxHeight
-      # type: Value
-# ---
-# kind: class
-# name: SizeElement
-# extends: Element
-# constructor: default
-# props:
-    # - name: sizeConstraints
-      # type: SizeConstraints
-      
-# ---
+kind: struct
+name: SizeConstraints
+props:
+    - name: width
+      type: Value
+    - name: height
+      type: Value
+    - name: minWidth
+      type: Value
+    - name: minHeight
+      type: Value
+    - name: maxWidth
+      type: Value
+    - name: maxHeight
+      type: Value
+---
+kind: class
+name: SizeElement
+extends: Element
+include: aardvark/elements/size.hpp
+constructor: default
+props:
+    - name: sizeConstraints
+      type: SizeConstraints
+---
+
 # kind: class
 # name: StackElement
 # extends: Element

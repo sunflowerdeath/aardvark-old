@@ -1,11 +1,9 @@
 #pragma once
 
-#include <memory>
 #include "../base_types.hpp"
-#include "../box_constraints.hpp"
 #include "../element.hpp"
 
-namespace aardvark::elements {
+namespace aardvark {
 
 struct SizeConstraints {
     Value width = Value::none();
@@ -20,16 +18,22 @@ struct SizeConstraints {
     }
 };
 
-class Sized : public SingleChildElement {
+class SizeElement : public SingleChildElement {
   public:
-    Sized()
-        : SingleChildElement(nullptr, /* is_repaint_boundary */ false,
-                             /* size_depends_on_parent */ false){};
+    SizeElement()
+        : SingleChildElement(
+              nullptr,
+              /* is_repaint_boundary */ false,
+              /* size_depends_on_parent */ false){};
 
-    Sized(std::shared_ptr<Element> child, SizeConstraints size_constraints,
-          bool is_repaint_boundary = false)
-        : SingleChildElement(child, is_repaint_boundary,
-                             /* size_depends_on_parent */ false),
+    SizeElement(
+        std::shared_ptr<Element> child,
+        SizeConstraints size_constraints,
+        bool is_repaint_boundary = false)
+        : SingleChildElement(
+              std::move(child),
+              is_repaint_boundary,
+              /* size_depends_on_parent */ false),
           size_constraints(size_constraints){};
 
     std::string get_debug_name() override { return "Sized"; };
@@ -37,7 +41,7 @@ class Sized : public SingleChildElement {
     float get_intrinsic_width() override;
     Size layout(BoxConstraints constraints) override;
 
-    SizeConstraints size_constraints = SizeConstraints();
+    ELEMENT_PROP_WITH_SETTER(SizeConstraints, size_constraints);
 };
 
 }  // namespace aardvark::elements

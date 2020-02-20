@@ -1,8 +1,6 @@
 #pragma once
 
-#include <memory>
 #include "../base_types.hpp"
-#include "../box_constraints.hpp"
 #include "../element.hpp"
 
 namespace aardvark {
@@ -17,14 +15,19 @@ struct Padding {
 class PaddingElement : public SingleChildElement {
   public:
     PaddingElement()
-        : SingleChildElement(/* child */ nullptr,
-                             /* is_repaint_boundary */ false,
-                             /* size_depends_on_parent */ false){};
+        : SingleChildElement(
+              /* child */ nullptr,
+              /* is_repaint_boundary */ false,
+              /* size_depends_on_parent */ false){};
 
-    PaddingElement(std::shared_ptr<Element> child, Padding padding,
-                   bool is_repaint_boundary = false)
-        : SingleChildElement(child, is_repaint_boundary,
-                             /* size_depends_on_parent */ false),
+    PaddingElement(
+        std::shared_ptr<Element> child,
+        Padding padding,
+        bool is_repaint_boundary = false)
+        : SingleChildElement(
+              std::move(child),
+              is_repaint_boundary,
+              /* size_depends_on_parent */ false),
           padding(padding){};
 
     std::string get_debug_name() override { return "Padding"; };
@@ -32,7 +35,7 @@ class PaddingElement : public SingleChildElement {
     float get_intrinsic_width() override;
     Size layout(BoxConstraints constraints) override;
 
-    Padding padding;
+    ELEMENT_PROP_WITH_SETTER(Padding, padding);
 };
 
 }  // namespace aardvark

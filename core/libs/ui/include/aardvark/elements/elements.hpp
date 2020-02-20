@@ -14,7 +14,7 @@
 #include "placeholder.hpp"
 #include "responder.hpp"
 #include "scroll.hpp"
-#include "sized.hpp"
+#include "size.hpp"
 #include "stack.hpp"
 #include "text.hpp"
 #include "translate.hpp"

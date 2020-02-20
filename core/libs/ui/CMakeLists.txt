@@ -36,7 +36,7 @@ add_library(aardvark_ui ${ADV_UI_LIB_TYPE}
     src/elements/padding.cpp
     src/elements/paragraph.cpp
     src/elements/responder.cpp
-    src/elements/sized.cpp
+    src/elements/size.cpp
     src/elements/scroll.cpp
     src/elements/stack.cpp
     src/elements/text.cpp
