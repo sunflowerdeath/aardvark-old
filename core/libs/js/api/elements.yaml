@@ -1,25 +1,26 @@
-# kind: struct
-# name: Alignment
-# props:
-    # - name: left
-      # type: Value
-    # - name: top
-      # type: Value
-    # - name: right
-      # type: Value
-    # - name: bottom
-      # type: Value
-# ---
-# kind: class
-# name: AlignElement
-# extends: Element
-# constructor: default
-# props:
-    # - name: adjustChildSize
-      # type: bool
-    # - name: align
-      # type: Align
-# ---
+kind: struct
+name: Alignment
+props:
+    - name: left
+      type: Value
+    - name: top
+      type: Value
+    - name: right
+      type: Value
+    - name: bottom
+      type: Value
+---
+kind: class
+name: AlignElement
+include: aardvark/elements/align.hpp
+extends: Element
+constructor: default
+props:
+    - name: adjustChildSize
+      type: bool
+    - name: insets
+      type: Alignment
+---
 kind: class
 name: BackgroundElement
 extends: Element
@@ -30,56 +31,57 @@ props:
       type: Color
       settter: set_color
 ---
-# kind: struct
-# name: Border
-# props:
-    # - name: width
-      # type: float
-    # - name: color
-      # type: Color
-# ---
-# kind: struct
-# name: BoxBorders
-# props:
-    # - name: top
-      # type: BorderSide
-    # - name: right
-      # type: BorderSide
-    # - name: bottom
-      # type: BorderSide
-    # - name: left
-      # type: BorderSide
-# ---
-# kind: struct
-# name: Radius
-# props:
-    # - name: width
-      # type: int
-    # - name: height
-      # type: int
-# ---
-# kind: struct
-# name: BoxRadiuses
-# props:
-    # - name: topLeft
-      # type: Radius
-    # - name: topRight
-      # type: Radius
-    # - name: bottomRigth
-      # type: Radius
-    # - name: bottomleft
-      # type: Radius
-# ---
-# kind: class
-# name: BorderElement
-# extends: Element
-# constructor: default
-# props:
-    # - name: borders
-      # type: BoxBorders
-    # - name: radiuses
-      # type: BoxRadiuses
-# ---
+kind: struct
+name: BorderSide
+props:
+    - name: width
+      type: float
+    - name: color
+      type: Color
+---
+kind: struct
+name: BoxBorders
+props:
+    - name: top
+      type: BorderSide
+    - name: right
+      type: BorderSide
+    - name: bottom
+      type: BorderSide
+    - name: left
+      type: BorderSide
+---
+kind: struct
+name: Radius
+props:
+    - name: width
+      type: int
+    - name: height
+      type: int
+---
+kind: struct
+name: BoxRadiuses
+props:
+    - name: topLeft
+      type: Radius
+    - name: topRight
+      type: Radius
+    - name: bottomRight
+      type: Radius
+    - name: bottomLeft
+      type: Radius
+---
+kind: class
+name: BorderElement
+include: aardvark/elements/border.hpp
+extends: Element
+constructor: default
+props:
+    - name: borders
+      type: BoxBorders
+    - name: radiuses
+      type: BoxRadiuses
+---
 kind: class
 name: CenterElement
 include: aardvark/elements/center.hpp
@@ -87,6 +89,8 @@ extends: Element
 constructor: default
 ---
 # TODO Clip
+# ---
+# TODO CustomLayout
 # ---
 kind: enum
 name: FlexDirection
@@ -151,11 +155,13 @@ props:
 ---
 kind: class
 name: IntrinsicHeightElement
+include: aardvark/elements/intrinsic_height.hpp
 extends: Element
 constructor: default
 ---
 kind: class
 name: IntrinsicWidthElement
+include: aardvark/elements/intrinsic_width.hpp
 extends: Element
 constructor: default
 ---
@@ -198,6 +204,7 @@ props:
 # ---
 kind: class
 name: PlaceholderElement
+include: aardvark/elements/placeholder.hpp
 extends: Element
 constructor: default
 ---

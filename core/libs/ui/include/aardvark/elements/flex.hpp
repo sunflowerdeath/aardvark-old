@@ -46,13 +46,13 @@ class FlexElement : public MultipleChildrenElement {
     HitTestMode get_hit_test_mode() override { return HitTestMode::Disabled; };
 
     // Which axis is main
-    FlexDirection direction = FlexDirection::row;
+    ELEMENT_PROP_DEFAULT(FlexDirection, direction, FlexDirection::row);
 
     // Alignment of the children across the main axis
-    FlexJustify justify = FlexJustify::start;
+    ELEMENT_PROP_DEFAULT(FlexJustify, justify, FlexJustify::start);
 
     // Alignment of the children across the secondary axis
-    FlexAlign align = FlexAlign::start;
+    ELEMENT_PROP_DEFAULT(FlexAlign, align, FlexAlign::start);
 };
 
 class FlexChildElement : public SingleChildElement {
@@ -80,13 +80,13 @@ class FlexChildElement : public SingleChildElement {
     HitTestMode get_hit_test_mode() override { return HitTestMode::Disabled; };
 
     // Flex grow factor
-    int flex = 0;
+    ELEMENT_PROP_DEFAULT(int, flex, 0);
 
     // Overrides align property of the container
-    std::optional<FlexAlign> align = FlexAlign::start;
+    ELEMENT_PROP_DEFAULT(std::optional<FlexAlign>, align, FlexAlign::start);
 
     // Whether to force flexible child to take all of the provided space
-    bool tight_fit = true;
+    ELEMENT_PROP_DEFAULT(bool, tight_fit, true);
 };
 
 }  // namespace aardvark

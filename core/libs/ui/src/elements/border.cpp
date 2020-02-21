@@ -1,27 +1,30 @@
 #include "elements/border.hpp"
 
-#include <optional>
+namespace aardvark {
 
-namespace aardvark::elements {
-
-Border::Border(std::shared_ptr<Element> child, BoxBorders borders,
-               BoxRadiuses radiuses, bool is_repaint_boundary)
-    : SingleChildElement(child, is_repaint_boundary,
-                         /* size_depends_on_parent */ false),
+BorderElement::BorderElement(
+    std::shared_ptr<Element> child,
+    BoxBorders borders,
+    BoxRadiuses radiuses,
+    bool is_repaint_boundary)
+    : SingleChildElement(
+          std::move(child),
+          is_repaint_boundary,
+          /* size_depends_on_parent */ false),
       borders(borders),
       radiuses(radiuses){};
 
-float Border::get_intrinsic_height() {
+float BorderElement::get_intrinsic_height() {
     return borders.top.width + borders.bottom.width +
            child->get_intrinsic_height();
 }
 
-float Border::get_intrinsic_width() {
+float BorderElement::get_intrinsic_width() {
     return borders.left.width + borders.right.width +
            child->get_intrinsic_width();
 }
 
-Size Border::layout(BoxConstraints constraints) {
+Size BorderElement::layout(BoxConstraints constraints) {
     auto vert_width = borders.left.width + borders.right.width;
     auto horiz_width = borders.top.width + borders.bottom.width;
     auto child_constraints = BoxConstraints{
@@ -42,7 +45,7 @@ Size Border::layout(BoxConstraints constraints) {
     };
 };
 
-void Border::paint(bool is_changed) {
+void BorderElement::paint(bool is_changed) {
     auto layer = document->get_layer();
     document->setup_layer(layer, this);
     this->canvas = layer->canvas;
@@ -52,14 +55,30 @@ void Border::paint(bool is_changed) {
     matrix = SkMatrix();
     rotation = 0;
     // top -> right -> bottom -> left
-    paint_side(borders.left, borders.top, borders.right, radiuses.topLeft,
-               radiuses.topRight);
-    paint_side(borders.top, borders.right, borders.bottom, radiuses.topRight,
-               radiuses.bottomRight);
-    paint_side(borders.right, borders.bottom, borders.left,
-               radiuses.bottomRight, radiuses.bottomLeft);
-    paint_side(borders.bottom, borders.left, borders.top, radiuses.bottomLeft,
-               radiuses.topLeft);
+    paint_side(
+        borders.left,
+        borders.top,
+        borders.right,
+        radiuses.top_left,
+        radiuses.top_right);
+    paint_side(
+        borders.top,
+        borders.right,
+        borders.bottom,
+        radiuses.top_right,
+        radiuses.bottom_right);
+    paint_side(
+        borders.right,
+        borders.bottom,
+        borders.left,
+        radiuses.bottom_right,
+        radiuses.bottom_left);
+    paint_side(
+        borders.bottom,
+        borders.left,
+        borders.top,
+        radiuses.bottom_left,
+        radiuses.top_left);
 
     // TODO if all *inner* radiuses are square
     bool need_custom_clip = !radiuses.is_square();
@@ -68,14 +87,30 @@ void Border::paint(bool is_changed) {
         clip_path = SkPath();
         rotation = 0;
         // top -> right -> bottom -> left
-        clip_side(borders.left, borders.top, borders.right, radiuses.topLeft,
-                  radiuses.topRight);
-        clip_side(borders.top, borders.right, borders.bottom, radiuses.topRight,
-                  radiuses.bottomRight);
-        clip_side(borders.right, borders.bottom, borders.left,
-                  radiuses.bottomRight, radiuses.bottomLeft);
-        clip_side(borders.bottom, borders.left, borders.top,
-                  radiuses.bottomLeft, radiuses.topLeft);
+        clip_side(
+            borders.left,
+            borders.top,
+            borders.right,
+            radiuses.top_left,
+            radiuses.top_right);
+        clip_side(
+            borders.top,
+            borders.right,
+            borders.bottom,
+            radiuses.top_right,
+            radiuses.bottom_right);
+        clip_side(
+            borders.right,
+            borders.bottom,
+            borders.left,
+            radiuses.bottom_right,
+            radiuses.bottom_left);
+        clip_side(
+            borders.bottom,
+            borders.left,
+            borders.top,
+            radiuses.bottom_left,
+            radiuses.top_left);
     }
     child->clip =
         need_custom_clip ? std::make_optional(clip_path) : std::nullopt;
@@ -96,9 +131,13 @@ void transform_to_next_side(SkMatrix& matrix, float side_width) {
     matrix.preRotate(90);
 };
 
-void Border::paint_triangle(Radius& radius, BorderSide& prev_side,
-                            BorderSide& side, BorderSide& next_side, int width,
-                            bool is_left_edge) {
+void BorderElement::paint_triangle(
+    Radius& radius,
+    BorderSide& prev_side,
+    BorderSide& side,
+    BorderSide& next_side,
+    int width,
+    bool is_left_edge) {
     if (is_left_edge && prev_side.width == 0) return;
     if (!is_left_edge && next_side.width == 0) return;
 
@@ -115,37 +154,42 @@ void Border::paint_triangle(Radius& radius, BorderSide& prev_side,
 
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
-    paint.setColor(side.color);
+    paint.setColor(side.color.to_sk_color());
     paint.setAntiAlias(true);
     canvas->drawPath(path, paint);
 };
 
-void Border::paint_arc(Radius& radius, BorderSide& side, int width) {
+void BorderElement::paint_arc(Radius& radius, BorderSide& side, int width) {
     // TODO change radius width/height to opposite when rotated
     auto line_width = fmin(side.width, radius.width);  // height???
     SkPaint arc_paint;
-    arc_paint.setColor(side.color);
+    arc_paint.setColor(side.color.to_sk_color());
     arc_paint.setStyle(SkPaint::kStroke_Style);
     arc_paint.setStrokeWidth(line_width);
     arc_paint.setAntiAlias(true);
     // Adding line_width/2 is needed to paint stroke inside of the oval
-    auto bounds = SkRect::MakeLTRB(width - 2 * radius.width,  // l
-                                   line_width / 2,            // t
-                                   width - line_width / 2,    // r
-                                   2 * radius.height          // b
+    auto bounds = SkRect::MakeLTRB(
+        width - 2 * radius.width,  // l
+        line_width / 2,            // t
+        width - line_width / 2,    // r
+        2 * radius.height          // b
     );
     matrix.mapRect(&bounds);
-    canvas->drawArc(bounds,         // oval
-                    rotation - 90,  // startAngle, 0 is right middle
-                    90,             // sweepAngle
-                    false,          // useCenter
-                    arc_paint       // paint
+    canvas->drawArc(
+        bounds,         // oval
+        rotation - 90,  // startAngle, 0 is right middle
+        90,             // sweepAngle
+        false,          // useCenter
+        arc_paint       // paint
     );
 };
 
-void Border::paint_side(BorderSide& prev_side, BorderSide& side,
-                        BorderSide& next_side, Radius& left_radius,
-                        Radius& right_radius) {
+void BorderElement::paint_side(
+    BorderSide& prev_side,
+    BorderSide& side,
+    BorderSide& next_side,
+    Radius& left_radius,
+    Radius& right_radius) {
     auto width = rotation % 180 == 0 ? size.width : size.height;
     if (side.width == 0) {
         transform_to_next_side(matrix, width);
@@ -161,8 +205,8 @@ void Border::paint_side(BorderSide& prev_side, BorderSide& side,
         } else {
             // When prev side has different color, draw triangle on the left and
             // then draw the line
-            paint_triangle(left_radius, prev_side, side, next_side, width,
-                           true);
+            paint_triangle(
+                left_radius, prev_side, side, next_side, width, true);
             start = prev_side.width;
         }
     } else {
@@ -174,19 +218,21 @@ void Border::paint_side(BorderSide& prev_side, BorderSide& side,
     // Draw the line
     SkPaint line_paint;
     line_paint.setStyle(SkPaint::kStroke_Style);
-    line_paint.setColor(side.color);
+    line_paint.setColor(side.color.to_sk_color());
     line_paint.setStrokeWidth(side.width);
     line_paint.setAntiAlias(true);
-    canvas->drawLine(calc(matrix, start, side.width / 2),
-                     calc(matrix, end, side.width / 2), line_paint);
+    canvas->drawLine(
+        calc(matrix, start, side.width / 2),
+        calc(matrix, end, side.width / 2),
+        line_paint);
 
     // Draw different type of transition to next side depending on corner
     if (right_radius.is_square()) {
         if (side.color != next_side.color) {
             // Draw triangle on the end of the line when next side has different
             // color
-            paint_triangle(right_radius, prev_side, side, next_side, width,
-                           false);
+            paint_triangle(
+                right_radius, prev_side, side, next_side, width, false);
         }
     } else {
         // When corner is rounded draw an arc
@@ -197,9 +243,12 @@ void Border::paint_side(BorderSide& prev_side, BorderSide& side,
     rotation += 90;
 };
 
-void Border::clip_side(BorderSide& prev_side, BorderSide& side,
-                       BorderSide& next_side, Radius& left_radius,
-                       Radius& right_radius) {
+void BorderElement::clip_side(
+    BorderSide& prev_side,
+    BorderSide& side,
+    BorderSide& next_side,
+    Radius& left_radius,
+    Radius& right_radius) {
     auto width = (rotation % 180 == 0 ? size.width : size.height) -
                  prev_side.width - next_side.width;
     auto begin = fmax(0, left_radius.width - prev_side.width);
@@ -208,16 +257,18 @@ void Border::clip_side(BorderSide& prev_side, BorderSide& side,
     clip_path.lineTo(calc(clip_matrix, end, 0));
     auto inner_radius = right_radius.inner(side.width);
     if (!inner_radius.is_square()) {
-        auto bounds = SkRect::MakeLTRB(width - 2 * inner_radius.width,  // left
-                                       0,                               // top
-                                       width,                           // right
-                                       2 * inner_radius.height  // height
+        auto bounds = SkRect::MakeLTRB(
+            width - 2 * inner_radius.width,  // left
+            0,                               // top
+            width,                           // right
+            2 * inner_radius.height          // height
         );
         clip_matrix.mapRect(&bounds);
-        clip_path.arcTo(bounds,         // oval bounds
-                        rotation - 90,  // startAngle, 0 is right middle
-                        90,             // sweepAngle
-                        false           // forceMoveTo
+        clip_path.arcTo(
+            bounds,         // oval bounds
+            rotation - 90,  // startAngle, 0 is right middle
+            90,             // sweepAngle
+            false           // forceMoveTo
         );
     }
 
@@ -225,4 +276,4 @@ void Border::clip_side(BorderSide& prev_side, BorderSide& side,
     rotation += 90;
 };
 
-}  // namespace aardvark::elements
+}  // namespace aardvark

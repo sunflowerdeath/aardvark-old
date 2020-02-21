@@ -35,7 +35,7 @@ class PaddingElement : public SingleChildElement {
     float get_intrinsic_width() override;
     Size layout(BoxConstraints constraints) override;
 
-    ELEMENT_PROP_WITH_SETTER(Padding, padding);
+    ELEMENT_PROP(Padding, padding);
 };
 
 }  // namespace aardvark

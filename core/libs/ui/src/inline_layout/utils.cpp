@@ -48,10 +48,10 @@ void render_spans(const std::vector<std::shared_ptr<Span>>& spans,
     for (auto& span : spans) {
         auto elem = span->render(/* selection */ std::nullopt);
         auto size = Size{span->width, span->metrics.height};
-        auto align = elements::EdgeInsets{
+        auto align = Alignment{
             Value::abs(current_width + offset.left),
             Value::abs(span->vert_align(metrics, span->metrics) + offset.top)};
-        auto aligned = std::make_shared<elements::Align>(
+        auto aligned = std::make_shared<AlignElement>(
             std::make_shared<elements::FixedSize>(elem, size), align);
         container->push_back(aligned);
         current_width += span->width;

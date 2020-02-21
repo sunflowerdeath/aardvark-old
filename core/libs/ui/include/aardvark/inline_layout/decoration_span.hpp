@@ -13,8 +13,8 @@ namespace aardvark::inline_layout {
 
 struct Decoration {
     std::optional<Color> background;
-    std::optional<elements::BoxBorders> borders;
-    std::optional<elements::EdgeInsets> insets;
+    std::optional<BoxBorders> borders;
+    std::optional<Alignment> insets;
 
     // Splits decoration into left and right parts
     std::pair<Decoration, Decoration> split();

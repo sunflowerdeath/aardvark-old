@@ -29,6 +29,7 @@ class Text : public Element {
 
     UnicodeString text = UnicodeString((UChar*)u"");
     SkPaint skpaint = Text::make_default_paint();
+
   private:
     static SkPaint make_default_paint() {
         SkPaint paint;

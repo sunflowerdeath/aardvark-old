@@ -41,7 +41,7 @@ class SizeElement : public SingleChildElement {
     float get_intrinsic_width() override;
     Size layout(BoxConstraints constraints) override;
 
-    ELEMENT_PROP_WITH_SETTER(SizeConstraints, size_constraints);
+    ELEMENT_PROP(SizeConstraints, size_constraints);
 };
 
 }  // namespace aardvark::elements

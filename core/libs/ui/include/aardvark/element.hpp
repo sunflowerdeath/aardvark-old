@@ -11,11 +11,18 @@
 #include "pointer_events/responder.hpp"
 #include "pointer_events/hit_tester.hpp"
 
-#define ELEMENT_PROP_WITH_SETTER(TYPE, NAME) \
+#define ELEMENT_PROP(TYPE, NAME) \
     TYPE NAME;                   \
     void set_##NAME(TYPE& val) { \
         NAME = val;              \
         change();                \
+    };
+
+#define ELEMENT_PROP_DEFAULT(TYPE, NAME, DEFAULT) \
+    TYPE NAME = DEFAULT;                          \
+    void set_##NAME(TYPE& val) {                  \
+        NAME = val;                               \
+        change();                                 \
     };
 
 namespace aardvark {

@@ -3,17 +3,17 @@
 namespace aardvark::inline_layout {
 
 std::pair<Decoration, Decoration> Decoration::split() {
-    std::optional<elements::BoxBorders> left_borders = std::nullopt;
-    std::optional<elements::BoxBorders> right_borders = std::nullopt;
+    std::optional<BoxBorders> left_borders = std::nullopt;
+    std::optional<BoxBorders> right_borders = std::nullopt;
     if (borders != std::nullopt) {
         left_borders = borders.value();
         right_borders = borders.value();
-        left_borders.value().right = elements::BorderSide::none();
-        right_borders.value().left = elements::BorderSide::none();
+        left_borders.value().right = BorderSide::none();
+        right_borders.value().left = BorderSide::none();
     }
 
-    std::optional<elements::EdgeInsets> left_insets = std::nullopt;
-    std::optional<elements::EdgeInsets> right_insets = std::nullopt;
+    std::optional<Alignment> left_insets = std::nullopt;
+    std::optional<Alignment> right_insets = std::nullopt;
     if (insets != std::nullopt) {
         left_insets = insets.value();
         right_insets = insets.value();
@@ -44,7 +44,7 @@ DecorationSpan::DecorationSpan(
     std::vector<std::shared_ptr<Span>> content,
     Decoration decoration,
     std::optional<SpanBase> base_span)
-    : content(content), decoration(decoration), Span(base_span){};
+    : content(std::move(content)), decoration(decoration), Span(base_span){};
 
 InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
     std::vector<std::shared_ptr<Span>> fit_spans;
@@ -124,7 +124,7 @@ std::shared_ptr<Element> DecorationSpan::render(
     auto top_offset = 0;
     if (decoration.insets != std::nullopt) {
         auto insets = decoration.insets.value();
-        container = std::make_shared<elements::Align>(container, insets);
+        container = std::make_shared<AlignElement>(container, insets);
         top_offset += insets.top.calc(metrics.height);
     }
     if (decoration.background != std::nullopt) {
@@ -135,16 +135,13 @@ std::shared_ptr<Element> DecorationSpan::render(
     }
     if (decoration.borders != std::nullopt) {
         auto borders = decoration.borders.value();
-        container = std::make_shared<elements::Border>(
-            container,
-            borders,
-            elements::BoxRadiuses::all(elements::Radius{0, 0}));
+        container = std::make_shared<BorderElement>(
+            container, borders, BoxRadiuses::all(Radius{0, 0}));
         top_offset += borders.top.width;
     }
     if (top_offset > 0) {
-        container = std::make_shared<elements::Align>(
-            container,
-            elements::EdgeInsets{Value::abs(0), Value::abs(-top_offset)});
+        container = std::make_shared<AlignElement>(
+            container, Alignment{Value::abs(0), Value::abs(-top_offset)});
     }
     return container;
 };
