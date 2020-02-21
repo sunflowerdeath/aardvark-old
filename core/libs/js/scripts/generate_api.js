@@ -22,7 +22,7 @@ idl({
         // `aardvark::core` to prevent name conflicts between aardvark::Value 
         // and aardvark::jsi::Value
         namespace: 'aardvark_js_api',
-        classname: `Api`
+        class: `Api`
     }
 })
 
@@ -33,6 +33,6 @@ idl({
         dir: path.resolve(__dirname, '../generated'),
         filename: 'error_location_api',
         namespace: 'aardvark_js_api',
-        classname: `ErrorLocationApi`
+        class: `ErrorLocationApi`
     }
 })

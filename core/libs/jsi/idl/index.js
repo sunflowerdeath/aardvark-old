@@ -11,11 +11,11 @@ let compileTmpl = tmpl => Handlebars.compile(tmpl, { noEscape: true })
 Handlebars.registerHelper("snakeCase", snakeCase)
 
 const structDefTmpl = compileTmpl(`
-    std::optional<SimpleMapper<{{typename}}>> {{name}}_mapper;
+    std::optional<SimpleMapper<{{typeName}}>> {{name}}_mapper;
 `)
 
 const structInitTmpl = compileTmpl(`
-    auto to_js = [this](Context& ctx, const {{typename}}& val) {
+    auto to_js = [this](Context& ctx, const {{typeName}}& val) {
         auto res = ctx.object_make(nullptr);
         {{#each props}}
         res.set_property("{{name}}", {{type}}_mapper->to_js(
@@ -26,11 +26,11 @@ const structInitTmpl = compileTmpl(`
 
     auto try_from_js = [this](
         Context& ctx, const Value& val, const CheckErrorParams& err_params
-    ) -> tl::expected<{{typename}}, std::string> {
+    ) -> tl::expected<{{typeName}}, std::string> {
         auto err = check_type(ctx, val, "object", err_params);
         if (err.has_value()) return tl::make_unexpected(err.value());
         auto obj = val.to_object().value();
-        auto mapped_struct = {{typename}}();
+        auto mapped_struct = {{typeName}}();
         {{#each props}}
         {
             auto prop_val = std::optional<Value>();
@@ -55,18 +55,18 @@ const structInitTmpl = compileTmpl(`
         return mapped_struct;
     };
 
-    {{name}}_mapper = SimpleMapper<{{typename}}>(to_js, try_from_js);
+    {{name}}_mapper = SimpleMapper<{{typeName}}>(to_js, try_from_js);
 `)
 
 const unionDefTmpl = compileTmpl(`
-    std::optional<SimpleMapper<{{typename}}>> {{name}}_mapper;
+    std::optional<SimpleMapper<{{typeName}}>> {{name}}_mapper;
 `)
 
 const unionInitTmpl = compileTmpl(`
-    auto to_js = [this](Context& ctx, const {{typename}}& val) {
+    auto to_js = [this](Context& ctx, const {{typeName}}& val) {
         auto tag = "";
         std::optional<Value> js_val = std::nullopt;
-        {{#each items}}if (auto a = std::get_if<{{getTypename type}}>(&val)) {
+        {{#each items}}if (auto a = std::get_if<{{getTypeName type}}>(&val)) {
             tag = "{{tag}}";
             js_val = {{type}}_mapper->to_js(ctx, *a);
         }{{#unless @last}} else {{/unless}}{{/each}}
@@ -78,7 +78,7 @@ const unionInitTmpl = compileTmpl(`
 
     auto try_from_js = [this](
         Context& ctx, const Value& val, const CheckErrorParams& err_params
-    ) -> tl::expected<{{typename}}, std::string> {
+    ) -> tl::expected<{{typeName}}, std::string> {
         auto tag = val
             .to_object()
             .and_then([](auto obj) { return obj.get_property("tag"); })
@@ -91,15 +91,15 @@ const unionInitTmpl = compileTmpl(`
         return tl::make_unexpected("Invalid tag");
     };
 
-    {{name}}_mapper = SimpleMapper<{{typename}}>(to_js, try_from_js);
+    {{name}}_mapper = SimpleMapper<{{typeName}}>(to_js, try_from_js);
 `)
 
 const enumDefTmpl = compileTmpl(`
-    std::optional<EnumMapper<{{typename}}>> {{name}}_mapper;
+    std::optional<EnumMapper<{{typeName}}>> {{name}}_mapper;
 `)
 
 const enumInitTmpl = compileTmpl(`
-    {{name}}_mapper = EnumMapper<{{typename}}>(int_mapper);
+    {{name}}_mapper = EnumMapper<{{typeName}}>(int_mapper);
     auto obj = ctx->object_make(nullptr);
     {{#each values}}
     obj.set_property("{{.}}", ctx->value_make_number({{@index}}));
@@ -108,7 +108,7 @@ const enumInitTmpl = compileTmpl(`
 `)
 
 const classDefTmpl = compileTmpl(`
-    std::optional<ObjectsMapper2<{{classname}}, {{rootClassname}}>>
+    std::optional<ObjectsMapper2<{{className}}, {{rootClassName}}>>
         {{name}}_mapper;
     std::optional<Class> {{name}}_js_class;
 `)
@@ -205,13 +205,13 @@ const classInitTmpl = compileTmpl(`
     };
     
     def.finalizer = [](const Object& object) {
-        ObjectsIndex<{{rootClassname}}>::finalize(object.to_value());
+        ObjectsIndex<{{rootClassName}}>::finalize(object.to_value());
     };
 
     {{name}}_js_class = ctx->class_make(def);
     js_class_map.emplace(
-        std::type_index(typeid({{classname}})), {{name}}_js_class.value());
-    {{name}}_mapper = ObjectsMapper2<{{classname}}, {{rootClassname}}>(
+        std::type_index(typeid({{className}})), {{name}}_js_class.value());
+    {{name}}_mapper = ObjectsMapper2<{{className}}, {{rootClassName}}>(
         &{{rootClass}}_objects_index.value());
     
     auto ctor = [this](Value& this_val, std::vector<Value>& args)
@@ -226,7 +226,7 @@ const classInitTmpl = compileTmpl(`
             return make_error_result(*ctx, {{name}}_arg.error());
         }
         {{/each}}
-        auto res = std::make_shared<{{classname}}>(
+        auto res = std::make_shared<{{className}}>(
             {{#each constructor.args}}{{name}}_arg.value(){{#unless @last}},{{/unless}}{{/each}}
         );
         return {{name}}_mapper->to_js(*ctx, res);
@@ -241,21 +241,21 @@ const classInitTmpl = compileTmpl(`
 `)
 
 const callbackDefTmpl = compileTmpl(`
-    std::optional<SimpleMapper<{{typename}}>> {{name}}_mapper;
+    std::optional<SimpleMapper<{{typeName}}>> {{name}}_mapper;
 `)
 
 const callbackInitTmpl = compileTmpl(`
-    auto to_js = [](Context& ctx, const {{typename}}& val) {
+    auto to_js = [](Context& ctx, const {{typeName}}& val) {
         return ctx.value_make_null();
     };
 
     auto try_from_js = [this](
         Context& ctx, const Value& val, const CheckErrorParams& err_params
-    )  -> tl::expected<{{typename}}, std::string> {
+    )  -> tl::expected<{{typeName}}, std::string> {
         // TODO check type
         auto fn = val.to_object().value();
         return [this, fn, &ctx](
-            {{#each args}}{{getTypename type}} {{name}}{{#unless @last}},{{/unless}}{{/each}}
+            {{#each args}}{{getTypeName type}} {{name}}{{#unless @last}},{{/unless}}{{/each}}
         ) {
             auto js_args = std::vector<Value>();
             {{#each args}}
@@ -276,7 +276,7 @@ const callbackInitTmpl = compileTmpl(`
         };
     };
     
-    {{name}}_mapper = SimpleMapper<{{typename}}>(to_js, try_from_js);
+    {{name}}_mapper = SimpleMapper<{{typeName}}>(to_js, try_from_js);
 `)
 
 const functionDefTmpl = compileTmpl(``)
@@ -293,7 +293,7 @@ const functionInitTmpl = compileTmpl(`
             return make_error_result(*ctx, {{name}}_arg.error());
         }
         {{/each}}
-        auto res = {{typename}}(
+        auto res = {{typeName}}(
             {{#each args}}{{name}}_arg.value(){{#unless @last}}, {{/unless}}{{/each}}
         );
         {{#if return}}
@@ -305,11 +305,11 @@ const functionInitTmpl = compileTmpl(`
 `)
 
 const customDefTmpl = compileTmpl(`
-    std::optional<SimpleMapper<{{typename}}>> {{name}}_mapper;
+    std::optional<SimpleMapper<{{typeName}}>> {{name}}_mapper;
 `)
 
 const customInitTmpl = compileTmpl(`
-    {{name}}_mapper = SimpleMapper<{{typename}}>({{to_js}}, {{try_from_js}});
+    {{name}}_mapper = SimpleMapper<{{typeName}}>({{to_js}}, {{try_from_js}});
 `)
 
 const templates = {
@@ -336,16 +336,16 @@ namespace {{output.namespace}} {
 
 using namespace aardvark::jsi;
 
-class {{output.classname}} {
+class {{output.class}} {
   public:
-    {{output.classname}}(Context* ctx);
+    {{output.class}}(Context* ctx);
   // private:
     Context* ctx;
     
     std::unordered_map<std::type_index, Class> js_class_map = {};
 
     {{#each rootClasses}}
-    std::optional<ObjectsIndex<{{classname}}>> {{name}}_objects_index;
+    std::optional<ObjectsIndex<{{className}}>> {{name}}_objects_index;
     {{/each}}
 
     {{#each types}}
@@ -361,9 +361,9 @@ const implTmpl = compileTmpl(
 
 namespace {{output.namespace}} {
 
-{{output.classname}}::{{output.classname}}(Context* ctx_arg) : ctx(ctx_arg) {
+{{output.class}}::{{output.class}}(Context* ctx_arg) : ctx(ctx_arg) {
     {{#each rootClasses}}
-    {{name}}_objects_index = ObjectsIndex<{{classname}}>("{{name}}", &js_class_map);
+    {{name}}_objects_index = ObjectsIndex<{{className}}>("{{name}}", &js_class_map);
     {{/each}}
     
     {{#each types}}
@@ -408,19 +408,18 @@ let setRootClasses = data => {
         if (def['extends'] !== undefined) {
             rootClassDef.superClasses.push(def.name)
         }
-        def.rootClassname = rootClassDef.classname
+        def.rootClassName = rootClassDef.className
     }
 }
 
-let getTypename = (name, defs) => {
+let getTypeName = (name, defs) => {
     if (name in defaultTypes) return defaultTypes[name]
-    if (name in defs) return defs[name].typename
+    if (name in defs) return defs[name].typeName
     throw new Error(`Unknown type "${name}"`)
 }
 
-let setTypenames = (data, options) => {
+let setTypeNames = (data, options) => {
     let [callbacks, rest] = partition(data.defs, def => def.kind === 'callback') 
-    // Set typenames
     rest.forEach(def => {
         if (!('originalName' in def)) {
             def.originalName = def.kind === 'function'
@@ -430,29 +429,30 @@ let setTypenames = (data, options) => {
         let ns = def.namespace !== undefined 
             ? def.namespace 
             : options.defaultNamespace
-        def.prefix = ns !== undefined ? `${ns}::` : ''
-        def.typename = `${def.prefix}${def.originalName}`
+        let prefix = ns !== undefined ? `${ns}::` : ''
+        let fullName = `${prefix}${def.originalName}`
         if (def.kind === 'class') {
-            def.classname = def.typename
-            def.typename = `std::shared_ptr<${def.typename}>`
+            def.className = fullName
+            def.typeName = `std::shared_ptr<${fullName}>`
+        } else {
+            def.typeName = fullName
         }
     })
-    // Set typenames for callbacks after, because they use typenames
     callbacks.forEach(def => {
-        let returnTypename = 'return' in def
-            ? getTypename(def['return'], data.defs)
+        let returnTypeName = 'return' in def
+            ? getTypeName(def['return'], data.defs)
             : 'void'
-        let argTypenames = 'args' in def
-            ? def.args.map(arg => getTypename(arg.type, data.defs)).join(', ')
+        let argTypeNames = 'args' in def
+            ? def.args.map(arg => getTypeName(arg.type, data.defs)).join(', ')
             : ''
-        def.typename = `std::function<${returnTypename}(${argTypenames})>`
+        def.typeName = `std::function<${returnTypeName}(${argTypeNames})>`
     })
 }
 
 let prepareData = (defs, options) => {
     let data = { defs: {} }
     defs.forEach(def => data.defs[def.name] = def)
-    setTypenames(data, options)
+    setTypeNames(data, options)
     setRootClasses(data)
     return data
 }
@@ -460,7 +460,7 @@ let prepareData = (defs, options) => {
 let genCode = (data, options) => {
     let tmplOptions = {
         helpers: {
-            getTypename: name => getTypename(name, data.defs)
+            getTypeName: name => getTypeName(name, data.defs)
         }
     }
     let chunks = []

@@ -12,7 +12,7 @@ items.map(item => gen({
     output: {
         dir: path.resolve(__dirname, '../generated'),
         namespace: 'test',
-        classname: `Test${capitalize(item)}Api`,
+        class: `Test${capitalize(item)}Api`,
         filename: item
     }
 }))
