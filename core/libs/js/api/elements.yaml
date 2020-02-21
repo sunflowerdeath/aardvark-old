@@ -29,7 +29,7 @@ constructor: default
 props:
     - name: color
       type: Color
-      settter: set_color
+      setter: set_color
 ---
 kind: struct
 name: BorderSide
@@ -231,36 +231,40 @@ include: aardvark/elements/placeholder.hpp
 extends: Element
 constructor: default
 ---
-# kind: enum
-# name: HitTestMode
-# values:
-    # - a
-    # - b
-# ---
-# kind: enum
-# name: ResponderEventType
-# values:
-    # - a
-    # - b
-# ---
-# kind: callback
-# name:
-# args:
-    # - name: event
-      # type: PointerEvent
-    # - name: eventType
-      # type: ResponderEventType
-# ---
-# kind: class
-# name: ResponderElement
-# extends: Element
-# constructor: default
-# props:
-    # - name: hitTestMode
-      # type: HitTestMode
-    # - name: handler
-      # type: ResponderHandler
-# ---
+kind: enum
+name: HitTestMode
+values:
+    - passThrough
+    - passToParent
+    - absorb
+    - disabled
+---
+kind: enum
+name: ResponderEventType
+values:
+    - add
+    - remove
+    - update
+---
+kind: callback
+name: ResponderEventHandler
+args:
+    - name: event
+      type: PointerEvent
+    - name: eventType
+      type: ResponderEventType
+---
+kind: class
+name: ResponderElement
+include: aardvark/elements/responder.hpp
+extends: Element
+constructor: default
+props:
+    - name: hitTestMode
+      type: HitTestMode
+    - name: handler
+      type: ResponderEventHandler
+---
 kind: struct
 name: SizeConstraints
 props:

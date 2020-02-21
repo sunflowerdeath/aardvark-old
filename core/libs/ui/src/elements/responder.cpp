@@ -1,6 +1,6 @@
 #include "elements/responder.hpp"
 
-namespace aardvark::elements {
+namespace aardvark {
 
 Size ResponderElement::layout(BoxConstraints constraints) {
     auto child_size =
@@ -14,4 +14,4 @@ void ResponderElement::paint(bool is_changed) {
     document->paint_element(child.get());
 };
 
-}  // namespace aardvark::elements
+}  // namespace aardvark

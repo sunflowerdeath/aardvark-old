@@ -12,8 +12,8 @@ inline bool wptr_equals(const std::weak_ptr<A>& a, const std::weak_ptr<B>& b) {
     return !a.expired() && a.lock() == b.lock();
 }
 
-bool contains_elem(std::vector<std::weak_ptr<Element>>* elems,
-                   std::weak_ptr<Element> target) {
+bool contains_elem(
+    std::vector<std::weak_ptr<Element>>* elems, std::weak_ptr<Element> target) {
     auto pred = [&target](std::weak_ptr<Element>& elem) {
         return wptr_equals(elem, target);
     };
@@ -80,27 +80,27 @@ void PointerEventManager::call_responders_handlers(const PointerEvent& event) {
     auto is_pointer_remove = event.action == PointerAction::pointer_up;
     if (is_pointer_remove) {
         // End all responders
-        for (auto elem_wptr : *pointer_prev_hit_elems) {
+        for (auto& elem_wptr : *pointer_prev_hit_elems) {
             if (auto elem = elem_wptr.lock()) {
-                elem->get_responder()->handler(event,
-                                               ResponderEventType::remove);
+                elem->get_responder()->handler(
+                    event, ResponderEventType::remove);
             }
         }
     } else {
         // Call `remove` handlers of responders that are no longer hit
-        for (auto elem_wptr : *pointer_prev_hit_elems) {
+        for (auto& elem_wptr : *pointer_prev_hit_elems) {
             if (auto elem = elem_wptr.lock()) {
                 if (!contains_elem(
                         const_cast<std::vector<std::weak_ptr<Element>>*>(
                             &hit_elems),
                         elem_wptr)) {
-                    elem->get_responder()->handler(event,
-                                                   ResponderEventType::remove);
+                    elem->get_responder()->handler(
+                        event, ResponderEventType::remove);
                 }
             }
         }
         // Call `add` and `update` handlers
-        for (auto elem_wptr : hit_elems) {
+        for (auto& elem_wptr : hit_elems) {
             if (auto elem = elem_wptr.lock()) {
                 auto event_type =
                     contains_elem(pointer_prev_hit_elems, elem_wptr)

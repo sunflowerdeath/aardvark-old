@@ -103,7 +103,7 @@ const warnsIfNotActing = true
 const supportsMutation = true
 
 const appendChild = (parentInstance, child) => {
-	log('appendChild')
+	// log('appendChild')
 	parentInstance.appendChild(child)
 }
 
@@ -149,7 +149,7 @@ const removeChild = (parentInstance, child) => {
 
 const removeChildFromContainer = (parentInstance, child) => {
 	// log('removeChildFromContainer')
-	// TODO undefined
+	// TODO undefined / placeholder
 	parentInstance.root = new Stack()
 }
 
