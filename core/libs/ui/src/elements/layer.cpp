@@ -1,8 +1,8 @@
 #include "elements/layer.hpp"
 
-namespace aardvark::elements {
+namespace aardvark {
 
-Size Layer::layout(BoxConstraints constraints) {
+Size LayerElement::layout(BoxConstraints constraints) {
     child->size =
         document->layout_element(child.get(), constraints.make_loose());
     child->rel_position = Position{0, 0};
@@ -10,4 +10,4 @@ Size Layer::layout(BoxConstraints constraints) {
     // return constraints.max_size();
 }
 
-}  // namespace aardvark::elements
+}  // namespace aardvark

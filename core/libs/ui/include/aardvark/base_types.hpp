@@ -1,8 +1,10 @@
 #pragma once
 
+#include <array>
 #include <nod/nod.hpp>
 
 #include "SkColor.h"
+#include "SkMatrix.h"
 
 namespace aardvark {
 
@@ -90,7 +92,9 @@ struct Color {
     int blue = 0;
     int alpha = 0;
 
-    SkColor to_sk_color() { return SkColorSetARGB(alpha, red, green, blue); }
+    SkColor to_sk_color() const {
+        return SkColorSetARGB(alpha, red, green, blue);
+    }
 
     static Color from_sk_color(const SkColor& sk_color) {
         return Color{SkColorGetR(sk_color),
@@ -109,6 +113,22 @@ inline bool operator==(const Color& lhs, const Color& rhs) {
 inline bool operator!=(const Color& lhs, const Color& rhs) {
     return !(lhs == rhs);
 }
+
+struct Transform {
+    std::array<float, 9> values = {1, 0, 0, 0, 1, 0, 0, 0, 1};  // identity
+
+    SkMatrix to_sk_matrix() const {
+        auto matrix = SkMatrix();
+        matrix.set9(values.data());
+        return matrix;
+    }
+
+    static Transform from_sk_matrix(const SkMatrix& matrix) {
+        auto transform = Transform();
+        matrix.get9(transform.values.data());
+        return transform;
+    }
+};
 
 }  // namespace aardvark
 

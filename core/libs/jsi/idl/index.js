@@ -293,7 +293,7 @@ const functionInitTmpl = compileTmpl(`
             return make_error_result(*ctx, {{name}}_arg.error());
         }
         {{/each}}
-        auto res = {{typeName}}(
+        auto res = {{functionName}}(
             {{#each args}}{{name}}_arg.value(){{#unless @last}}, {{/unless}}{{/each}}
         );
         {{#if return}}
@@ -434,6 +434,8 @@ let setTypeNames = (data, options) => {
         if (def.kind === 'class') {
             def.className = fullName
             def.typeName = `std::shared_ptr<${fullName}>`
+        } else if (def.kind == 'function') {
+            def.functionName = fullName
         } else {
             def.typeName = fullName
         }

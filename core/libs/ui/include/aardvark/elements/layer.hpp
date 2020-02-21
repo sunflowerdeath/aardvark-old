@@ -1,25 +1,23 @@
 #pragma once
 
-#include <memory>
-#include <variant>
-
 #include "../base_types.hpp"
-#include "../box_constraints.hpp"
 #include "../element.hpp"
-#include "SkMatrix.h"
 
-namespace aardvark::elements {
+namespace aardvark {
 
-class Layer : public SingleChildElement {
+class LayerElement : public SingleChildElement {
   public:
-    Layer()
-        : SingleChildElement(/* child */ nullptr,
-                             /* is_repaint_boundary */ true,
-                             /* size_depends_on_parent */ false){};
+    LayerElement()
+        : SingleChildElement(
+              /* child */ nullptr,
+              /* is_repaint_boundary */ true,
+              /* size_depends_on_parent */ false){};
 
-    Layer(std::shared_ptr<Element> child, SkMatrix transform)
-        : SingleChildElement(child, /* is_repaint_boundary */ true,
-                             /* size_depends_on_parent */ false) {
+    LayerElement(std::shared_ptr<Element> child, Transform transform)
+        : SingleChildElement(
+              std::move(child),
+              /* is_repaint_boundary */ true,
+              /* size_depends_on_parent */ false) {
         set_transform(transform);
     };
 
@@ -31,13 +29,11 @@ class Layer : public SingleChildElement {
         if (document != nullptr) document->change_layer(this);
     }
 
-    void set_transform(const SkMatrix& new_transform) {
+    void set_transform(const Transform& new_transform) {
         transform = new_transform;
-        layer_tree->transform = new_transform;
+        layer_tree->transform = new_transform.to_sk_matrix();
         change_layer();
     }
-
-    SkMatrix get_transform() { return transform; }
 
     void set_opacity(float new_opacity) {
         opacity = new_opacity;
@@ -45,11 +41,8 @@ class Layer : public SingleChildElement {
         change_layer();
     }
 
-    float get_opacity() { return opacity; }
-
-  private:
-    SkMatrix transform = SkMatrix::MakeScale(1);
-    float opacity = 1;
+    ELEMENT_PROP(Transform, transform);
+    ELEMENT_PROP_DEFAULT(float, opacity, 1);
 };
 
-}  // namespace aardvark::elements
+}  // namespace aardvark

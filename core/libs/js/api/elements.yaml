@@ -185,20 +185,23 @@ include: aardvark/elements/intrinsic_width.hpp
 extends: Element
 constructor: default
 ---
-# kind: struct
-# name: Transform
-# ---
-# kind: class
-# name: LayerElement
-# extends: Element
-# constructor: default
-# doc: Renders child element on the separate layer
-# props:
-    # - name: opacity
-      # type: float
-    # - name: transform
-      # type: Transform
-# ---
+kind: custom
+name: Transform
+to_js: aardvark::js::transform_to_js
+try_from_js: aardvark::js::transform_try_from_js
+---
+kind: class
+name: LayerElement
+include: aardvark/elements/layer.hpp
+extends: Element
+constructor: default
+doc: Renders child element on the separate layer
+props:
+    - name: opacity
+      type: float
+    - name: transform
+      type: Transform
+---
 kind: struct
 name: Padding
 include: aardvark/elements/padding.hpp

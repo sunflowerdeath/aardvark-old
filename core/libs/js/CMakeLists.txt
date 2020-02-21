@@ -18,6 +18,7 @@ add_library(aardvark_js ${ADV_JS_LIB_TYPE}
     src/host.cpp
     src/module_loader.cpp
     src/proxies.cpp
+    src/transform_mapping.cpp
 )
 
 make_includable(
