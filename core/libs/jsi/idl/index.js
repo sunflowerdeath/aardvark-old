@@ -55,7 +55,7 @@ const structInitTmpl = compileTmpl(`
         return mapped_struct;
     };
 
-    {{name}}_mapper = SimpleMapper<{{fullname}}>(to_js, try_from_js);
+    {{name}}_mapper = SimpleMapper<{{typename}}>(to_js, try_from_js);
 `)
 
 const unionDefTmpl = compileTmpl(`
@@ -91,7 +91,7 @@ const unionInitTmpl = compileTmpl(`
         return tl::make_unexpected("Invalid tag");
     };
 
-    {{name}}_mapper = SimpleMapper<{{fullname}}>(to_js, try_from_js);
+    {{name}}_mapper = SimpleMapper<{{typename}}>(to_js, try_from_js);
 `)
 
 const enumDefTmpl = compileTmpl(`
@@ -108,7 +108,7 @@ const enumInitTmpl = compileTmpl(`
 `)
 
 const classDefTmpl = compileTmpl(`
-    std::optional<ObjectsMapper2<{{fullname}}, {{fullBaseClass}}>>
+    std::optional<ObjectsMapper2<{{classname}}, {{rootClassname}}>>
         {{name}}_mapper;
     std::optional<Class> {{name}}_js_class;
 `)
@@ -205,14 +205,14 @@ const classInitTmpl = compileTmpl(`
     };
     
     def.finalizer = [](const Object& object) {
-        ObjectsIndex<{{fullBaseClass}}>::finalize(object.to_value());
+        ObjectsIndex<{{rootClassname}}>::finalize(object.to_value());
     };
 
     {{name}}_js_class = ctx->class_make(def);
     js_class_map.emplace(
-        std::type_index(typeid({{fullname}})), {{name}}_js_class.value());
-    {{name}}_mapper = ObjectsMapper2<{{fullname}}, {{fullBaseClass}}>(
-        &{{baseClass}}_objects_index.value());
+        std::type_index(typeid({{classname}})), {{name}}_js_class.value());
+    {{name}}_mapper = ObjectsMapper2<{{classname}}, {{rootClassname}}>(
+        &{{rootClass}}_objects_index.value());
     
     auto ctor = [this](Value& this_val, std::vector<Value>& args)
         -> Result<Value> {
@@ -226,7 +226,7 @@ const classInitTmpl = compileTmpl(`
             return make_error_result(*ctx, {{name}}_arg.error());
         }
         {{/each}}
-        auto res = std::make_shared<{{fullname}}>(
+        auto res = std::make_shared<{{classname}}>(
             {{#each constructor.args}}{{name}}_arg.value(){{#unless @last}},{{/unless}}{{/each}}
         );
         return {{name}}_mapper->to_js(*ctx, res);
@@ -293,7 +293,7 @@ const functionInitTmpl = compileTmpl(`
             return make_error_result(*ctx, {{name}}_arg.error());
         }
         {{/each}}
-        auto res = {{fullname}}(
+        auto res = {{classname}}(
             {{#each args}}{{name}}_arg.value(){{#unless @last}}, {{/unless}}{{/each}}
         );
         {{#if return}}
@@ -304,13 +304,22 @@ const functionInitTmpl = compileTmpl(`
     ctx->get_global_object().set_property("{{name}}", obj.to_value());
 `)
 
+const customDefTmpl = compileTmpl(`
+    std::optional<SimpleMapper<{{typename}}>> {{name}}_mapper;
+`)
+
+const customInitTmpl = compileTmpl(`
+    {{name}}_mapper = SimpleMapper<{{typename}}>({{to_js}}, {{try_from_js}});
+`)
+
 const templates = {
     struct: { def: structDefTmpl, init: structInitTmpl },
     union: { def: unionDefTmpl, init: unionInitTmpl },
-    'enum': { def: enumDefTmpl, init: enumInitTmpl },
-    'class': { def: classDefTmpl, init: classInitTmpl },
-    'callback': { def: callbackDefTmpl, init: callbackInitTmpl },
-    'function': { def: functionDefTmpl, init: functionInitTmpl }
+    enum: { def: enumDefTmpl, init: enumInitTmpl },
+    class: { def: classDefTmpl, init: classInitTmpl },
+    callback: { def: callbackDefTmpl, init: callbackInitTmpl },
+    function: { def: functionDefTmpl, init: functionInitTmpl },
+    custom: { def: customDefTmpl, init: customInitTmpl },
 }     
 
 const headerTmpl = compileTmpl(
@@ -335,8 +344,8 @@ class {{output.classname}} {
     
     std::unordered_map<std::type_index, Class> js_class_map = {};
 
-    {{#each baseClasses}}
-    std::optional<ObjectsIndex<{{fullname}}>> {{name}}_objects_index;
+    {{#each rootClasses}}
+    std::optional<ObjectsIndex<{{classname}}>> {{name}}_objects_index;
     {{/each}}
 
     {{#each types}}
@@ -353,8 +362,8 @@ const implTmpl = compileTmpl(
 namespace {{output.namespace}} {
 
 {{output.classname}}::{{output.classname}}(Context* ctx_arg) : ctx(ctx_arg) {
-    {{#each baseClasses}}
-    {{name}}_objects_index = ObjectsIndex<{{fullname}}>("{{name}}", &js_class_map);
+    {{#each rootClasses}}
+    {{name}}_objects_index = ObjectsIndex<{{classname}}>("{{name}}", &js_class_map);
     {{/each}}
     
     {{#each types}}
@@ -375,31 +384,31 @@ const defaultTypes = {
     string: 'std::string'
 }
 
-let getBaseClass = (name, defs) => {
+let getRootClass = (name, defs) => {
     let def = defs[name]
     if (def['extends'] === undefined) return name
-    return getBaseClass(defs[def['extends']].name, defs)
+    return getRootClass(defs[def['extends']].name, defs)
 }
 
-let setBaseClasses = data => {
-    data.baseClasses = [];
+let setRootClasses = data => {
+    data.rootClasses = [];
     for (let name in data.defs) {
         let def = data.defs[name];
         if (def.kind != 'class') continue;
         if (def['extends'] === undefined) {
-            data.baseClasses.push(def)
+            data.rootClasses.push(def)
             def.superClasses = []
         }
-        def.baseClass = getBaseClass(def.name, data.defs)
+        def.rootClass = getRootClass(def.name, data.defs)
     }
     for (let name in data.defs) {
         let def = data.defs[name];
         if (def.kind != 'class') continue;
-        let baseClassDef = data.defs[def.baseClass]
+        let rootClassDef = data.defs[def.rootClass]
         if (def['extends'] !== undefined) {
-            baseClassDef.superClasses.push(def.name)
+            rootClassDef.superClasses.push(def.name)
         }
-        def.fullBaseClass = baseClassDef.prefix + def.baseClass
+        def.rootClassname = rootClassDef.classname
     }
 }
 
@@ -421,9 +430,9 @@ let setTypenames = (data, options) => {
             ? def.namespace 
             : options.defaultNamespace
         def.prefix = ns !== undefined ? `${ns}::` : ''
-        def.fullname = `${def.prefix}${def.originalName}`
-        def.typename = def.fullname
+        def.typename = `${def.prefix}${def.originalName}`
         if (def.kind === 'class') {
+            def.classname = def.typename
             def.typename = `std::shared_ptr<${def.typename}>`
         }
     })
@@ -442,7 +451,7 @@ let prepareData = (defs, options) => {
     let data = { defs: {} }
     defs.forEach(def => data.defs[def.name] = def)
     setTypenames(data, options)
-    setBaseClasses(data)
+    setRootClasses(data)
     return data
 }
 
@@ -467,7 +476,7 @@ let genCode = (data, options) => {
     }
     include = uniq(flatten(include))
     let tmplData = {
-        ...options, types: chunks, include, baseClasses: data.baseClasses
+        ...options, types: chunks, include, rootClasses: data.rootClasses
     }
     return {
         header: headerTmpl(tmplData, tmplOptions),
