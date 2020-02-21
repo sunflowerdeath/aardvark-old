@@ -293,7 +293,7 @@ const functionInitTmpl = compileTmpl(`
             return make_error_result(*ctx, {{name}}_arg.error());
         }
         {{/each}}
-        auto res = {{classname}}(
+        auto res = {{typename}}(
             {{#each args}}{{name}}_arg.value(){{#unless @last}}, {{/unless}}{{/each}}
         );
         {{#if return}}
@@ -420,6 +420,7 @@ let getTypename = (name, defs) => {
 
 let setTypenames = (data, options) => {
     let [callbacks, rest] = partition(data.defs, def => def.kind === 'callback') 
+    // Set typenames
     rest.forEach(def => {
         if (!('originalName' in def)) {
             def.originalName = def.kind === 'function'
@@ -436,6 +437,7 @@ let setTypenames = (data, options) => {
             def.typename = `std::shared_ptr<${def.typename}>`
         }
     })
+    // Set typenames for callbacks after, because they use typenames
     callbacks.forEach(def => {
         let returnTypename = 'return' in def
             ? getTypename(def['return'], data.defs)

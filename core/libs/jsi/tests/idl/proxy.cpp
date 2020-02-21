@@ -9,7 +9,8 @@ Result<bool> class_prop_set_proxy(
     Context& ctx,
     std::shared_ptr<ProxyClass>& this_val,
     Value& val,
-    Mapper<int>& mapper) {
+    Mapper<int>& mapper,
+    CheckErrorParams& err_params) {
     this_val->prop = 2;
     return true;
 }

@@ -1,0 +1,5 @@
+kind: custom
+name: CustomType
+include: ../tests/idl/custom.hpp
+to_js: custom_to_js
+try_from_js: custom_try_from_js

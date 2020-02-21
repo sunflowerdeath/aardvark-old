@@ -10,6 +10,7 @@
 
 #include "../generated/callback.hpp"
 #include "../generated/class.hpp"
+#include "../generated/custom.hpp"
 #include "../generated/enum.hpp"
 #include "../generated/extends.hpp"
 #include "../generated/function.hpp"
@@ -244,5 +245,18 @@ TEST_CASE("idl", "[idl]") {
         }
 
         ctx.reset();
+    }
+
+    SECTION("custom") {
+        auto ctx = create_context();
+        auto api = test::TestCustomApi(ctx.get());
+
+        auto val = CustomType{5,5};
+        auto js_val = api.CustomType_mapper->to_js(*ctx, val);
+        REQUIRE(js_val.get_type() == ValueType::number);
+        REQUIRE(js_val.to_number().value() == 5);
+
+        auto val2 = api.CustomType_mapper->from_js(*ctx, js_val);
+        REQUIRE(val2[0] == 5);
     }
 }

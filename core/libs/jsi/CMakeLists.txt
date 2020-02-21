@@ -48,6 +48,7 @@ if(ADV_JSI_TESTS)
         tests/idl_test.cpp
         tests/idl/function.cpp
         tests/idl/proxy.cpp
+        tests/idl/custom.cpp
         generated/enum.cpp
         generated/struct.cpp
         generated/union.cpp
@@ -56,6 +57,7 @@ if(ADV_JSI_TESTS)
         generated/callback.cpp
         generated/extends.cpp
         generated/proxy.cpp
+        generated/custom.cpp
     )
     target_link_libraries(aadrvark_jsi_tests Catch2 aardvark_jsi)
 endif()

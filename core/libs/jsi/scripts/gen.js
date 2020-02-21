@@ -3,7 +3,8 @@ let { capitalize } = require('../idl/node_modules/lodash')
 let gen = require('../idl/index.js')
 
 let items = [
-    'enum', 'union', 'struct', 'class', 'extends', 'function', 'callback', 'proxy'
+    'enum', 'union', 'struct', 'class', 'extends', 'function', 'callback',
+    'proxy', 'custom'
 ]
 
 items.map(item => gen({
