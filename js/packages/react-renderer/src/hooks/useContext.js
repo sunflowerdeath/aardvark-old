@@ -10,6 +10,7 @@ const useFirstRender = () => {
     return isFirstRender.current
 }
 
+// TODO better name
 // Hook that creates object resembling `this` in old class components.
 // It has properties `props`, `state` and `setState`, and can be used to store
 // any properties.

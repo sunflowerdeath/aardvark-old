@@ -1,35 +1,40 @@
 #pragma once
 
 #include <functional>
-#include <memory>
 
 #include "../base_types.hpp"
-#include "../box_constraints.hpp"
 #include "../element.hpp"
 
-namespace aardvark::elements {
+namespace aardvark {
 
-using CustomLayoutProc = std::function<Size(Element*, BoxConstraints)>;
+using CustomLayoutFn =
+    std::function<Size(std::shared_ptr<Element>, BoxConstraints)>;
 
-class CustomLayout : public MultipleChildrenElement {
+class CustomLayoutElement : public MultipleChildrenElement {
   public:
-    CustomLayout()
-        : MultipleChildrenElement({}, /* is_repaint_boundary */ false,
-                                  /* size_depends_on_parent */ false){};
+    CustomLayoutElement()
+        : MultipleChildrenElement(
+              {},
+              /* is_repaint_boundary */ false,
+              /* size_depends_on_parent */ false){};
 
-    CustomLayout(std::vector<std::shared_ptr<Element>> children,
-                 CustomLayoutProc layout_func, bool is_repaint_boundary)
-        : layout_proc(layout_proc),
-          MultipleChildrenElement(children, is_repaint_boundary,
-                                  /* size_depends_on_parent */ false){};
+    CustomLayoutElement(
+        std::vector<std::shared_ptr<Element>> children,
+        CustomLayoutFn layout_fn,
+        bool is_repaint_boundary)
+        : layout_fn(std::move(layout_fn)),
+          MultipleChildrenElement(
+              std::move(children),
+              is_repaint_boundary,
+              /* size_depends_on_parent */ false){};
 
     std::string get_debug_name() override { return "CustomLayout"; };
 
     Size layout(BoxConstraints constraints) override {
-        return layout_proc(this, constraints);
+        return layout_fn(shared_from_this(), constraints);
     };
 
-    CustomLayoutProc layout_proc;
+    ELEMENT_PROP(CustomLayoutFn, layout_fn);
 };
 
-}  // namespace aardvark::elements
+}  // namespace aardvark

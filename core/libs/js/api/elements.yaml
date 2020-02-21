@@ -88,10 +88,30 @@ include: aardvark/elements/center.hpp
 extends: Element
 constructor: default
 ---
-# TODO Clip
-# ---
-# TODO CustomLayout
-# ---
+kind: class
+name: ClipElement
+include: aardvark/elements/clip.hpp
+extends: Element
+constructor: default
+---
+kind: callback
+name: CustomLayoutCallback
+args:
+    - name: elem
+      type: Element
+    - name: size
+      type: BoxConstraints
+return: Size
+---
+kind: class
+name: CustomLayoutElement
+include: aardvark/elements/custom_layout.hpp
+extends: Element
+constructor: default
+props:
+    - name: layoutFn
+      type: CustomLayoutCallback
+---
 kind: enum
 name: FlexDirection
 values:

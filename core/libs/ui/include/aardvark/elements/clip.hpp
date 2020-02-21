@@ -1,33 +1,36 @@
 #pragma once
 
-#include <memory>
 #include <functional>
+
 #include "../base_types.hpp"
-#include "../box_constraints.hpp"
 #include "../element.hpp"
 #include "SkPath.h"
 
-namespace aardvark::elements {
+namespace aardvark {
 
 using Clipper = std::function<SkPath(Size)>;
 
-class Clip : public SingleChildElement {
+class ClipElement : public SingleChildElement {
   public:
-    // TODO default clip
-    Clip()
-        : SingleChildElement(nullptr, /* is_repaint_boundary */ false,
-                             /* size_depends_on_parent */ true){};
+    ClipElement()
+        : SingleChildElement(
+              nullptr,
+              /* is_repaint_boundary */ false,
+              /* size_depends_on_parent */ true){};
 
-    Clip(std::shared_ptr<Element> child, Clipper clipper)
-        : SingleChildElement(child, /* is_repaint_boundary */ false,
-                             /* size_depends_on_parent */ true),
-          clipper(clipper){};
+    ClipElement(std::shared_ptr<Element> child, Clipper clipper)
+        : SingleChildElement(
+              std::move(child),
+              /* is_repaint_boundary */ false,
+              /* size_depends_on_parent */ true),
+          clipper(std::move(clipper)){};
 
-    Clipper clipper = &Clip::default_clip;
     Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
+
+    Clipper clipper = &ClipElement::default_clip;
 
     static SkPath default_clip(Size size);
 };
 
-}  // namespace aardvark::elements
+}  // namespace aardvark

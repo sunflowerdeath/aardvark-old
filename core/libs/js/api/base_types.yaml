@@ -1,3 +1,16 @@
+kind: struct
+name: BoxConstraints
+include: aardvark/box_constraints.hpp
+props:
+    - name: minWidth
+      type: float
+    - name: maxWidth
+      type: float
+    - name: minHeight
+      type: float
+    - name: maxHeight
+      type: float
+---
 kind: class
 name: Connection
 methods:
