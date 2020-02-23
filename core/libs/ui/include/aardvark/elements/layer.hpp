@@ -41,8 +41,8 @@ class LayerElement : public SingleChildElement {
         change_layer();
     }
 
-    ELEMENT_PROP(Transform, transform);
-    ELEMENT_PROP_DEFAULT(float, opacity, 1);
+    Transform transform;
+    float opacity = 1;
 };
 
 }  // namespace aardvark

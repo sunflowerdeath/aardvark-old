@@ -18,8 +18,10 @@ constructor: default
 props:
     - name: adjustChildSize
       type: bool
+      setter: set_adjust_child_size
     - name: insets
       type: Alignment
+      setter: set_insets
 ---
 kind: class
 name: BackgroundElement
@@ -79,8 +81,10 @@ constructor: default
 props:
     - name: borders
       type: BoxBorders
+      setter: set_borders
     - name: radiuses
       type: BoxRadiuses
+      setter: set_radiuses
 ---
 kind: class
 name: CenterElement
@@ -111,6 +115,7 @@ constructor: default
 props:
     - name: layoutFn
       type: CustomLayoutCallback
+      setter: set_layout_fn
 ---
 kind: enum
 name: FlexDirection
@@ -143,14 +148,17 @@ constructor: default
 props:
     - name: flex
       type: int
+      setter: set_flex
       doc: Flex grow factor, default is `0`.
     - name: align
       type: FlexAlign
+      setter: set_align
       doc: When set it Overrides align property of the container
       get_proxy: aardvark::js::flex_child_get_align_proxy
       set_proxy: aardvark::js::flex_child_set_align_proxy
     - name: tightFit
       type: bool
+      setter: set_tight_fit
       doc: Whether to force flexible child to take all of the provided space.
 ---
 kind: class
@@ -161,14 +169,17 @@ constructor: default
 props:
     - name: direction
       type: FlexDirection
+      setter: set_direction
       doc: Which axis is main, default is `row`
     - name: justify
       type: FlexJustify
+      setter: set_justify
       doc: >-
         Alignment of the children across the main axis, default is
         `FlexJustify.start`
     - name: align
       type: FlexAlign
+      setter: set_align
       doc: >-
         Alignment of the children across the secondary axis, default is
         `FlexAlign.start`
@@ -199,8 +210,10 @@ doc: Renders child element on the separate layer
 props:
     - name: opacity
       type: float
+      setter: set_opacity
     - name: transform
       type: Transform
+      setter: set_transform
 ---
 kind: struct
 name: Padding
@@ -222,6 +235,7 @@ constructor: default
 props:
     - name: padding
       type: Padding
+      setter: set_padding
 ---
 # TODO Paragraph
 # ---
@@ -289,6 +303,7 @@ constructor: default
 props:
     - name: sizeConstraints
       type: SizeConstraints
+      setter: set_size_constraints
 ---
 kind: class
 name: StackElement
