@@ -1,22 +1,24 @@
 #pragma once
 
-#include <memory>
 #include <unicode/unistr.h>
-#include "SkPaint.h"
-#include "../base_types.hpp"
-#include "../box_constraints.hpp"
+
+#include <memory>
+
 #include "../element.hpp"
 #include "../inline_layout/line_metrics.hpp"
+#include "SkPaint.h"
 
-namespace aardvark::elements {
+namespace aardvark {
 
-class Text : public Element {
+class TextElement : public Element {
   public:
-    Text()
-        : Element(/* is_repaint_boundary */ false,
-                  /* size_depends_on_parent */ true){};
+    TextElement()
+        : Element(
+              /* is_repaint_boundary */ false,
+              /* size_depends_on_parent */ true){};
 
-    Text(UnicodeString text, SkPaint paint, bool is_repaint_boundary = false)
+    TextElement(
+        UnicodeString text, SkPaint paint, bool is_repaint_boundary = false)
         : Element(is_repaint_boundary, /* size_depends_on_parent */ true),
           text(text),
           skpaint(paint){};
@@ -27,8 +29,19 @@ class Text : public Element {
     Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
 
+    // TODO decide utf8/16
+    void set_text(std::string& new_text) {
+        text = UnicodeString(new_text.c_str());
+    }
+
+    std::string get_text() {
+        std::string utf8;
+        text.toUTF8String(utf8);
+        return utf8;
+    }
+
     UnicodeString text = UnicodeString((UChar*)u"");
-    SkPaint skpaint = Text::make_default_paint();
+    SkPaint skpaint = TextElement::make_default_paint();
 
   private:
     static SkPaint make_default_paint() {
@@ -41,4 +54,4 @@ class Text : public Element {
     };
 };
 
-}  // namespace aardvark::elements
+}  // namespace aardvark

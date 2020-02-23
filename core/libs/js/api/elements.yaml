@@ -311,6 +311,31 @@ extends: Element
 include: aardvark/elements/stack.hpp
 constructor: default
 ---
-# TODO Text
-# ---
-# TODO Translate
+kind: class
+name: TextElement
+extends: Element
+include: aardvark/elements/text.hpp
+constructor: default
+props:
+    - name: text
+      type: string
+      setter: set_text
+      getter: get_text
+---
+kind: struct
+name: Translation
+props:
+    - name: left
+      type: Value
+    - name: top
+      type: Value
+---
+kind: class
+name: TranslateElement
+extends: Element
+include: aardvark/elements/translate.hpp
+constructor: default
+props:
+    - name: translation
+      type: Translation
+      setter: set_translation
