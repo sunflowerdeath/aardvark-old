@@ -33,6 +33,7 @@ Host::Host() {
             handle_error(err, original_location);
         });
 
+    auto global = ctx->get_global_object();
     app = std::make_shared<DesktopApp>(event_loop);
     auto log_val =
         ctx->object_make_function(
@@ -42,9 +43,36 @@ Host::Host() {
                    return ctx.value_make_undefined();
                })
             .to_value();
-    ctx->get_global_object().set_property("log", log_val);
-    ctx->get_global_object().set_property("application",
-        api->DesktopApp_mapper->to_js(*ctx, app));
+    global.set_property("log", log_val);
+
+    auto set_timeout =
+        ctx->object_make_function(
+               [this](jsi::Value& this_val, std::vector<jsi::Value>& args) {
+                   auto callback = args[0].to_object().value();
+                   auto timeout =
+                       args.size() == 2 ? args[1].to_number().value() : 0;
+                   auto id = event_loop->set_timeout(
+                       [this, callback]() {
+                           ctx->object_call_as_function(callback, nullptr, {});
+                       },
+                       timeout);
+                   return ctx->value_make_number(id);
+               })
+            .to_value();
+    auto clear_timeout =
+        ctx->object_make_function(
+               [this](jsi::Value& this_val, std::vector<jsi::Value>& args) {
+                   auto id = args[0].to_number().value();
+                   event_loop->clear_timeout(id);
+                   return ctx->value_make_undefined();
+               })
+            .to_value();
+    global.set_property("setTimeout", set_timeout);
+    global.set_property("clearTimeout", clear_timeout);
+
+    global.set_property(
+        "application", api->DesktopApp_mapper->to_js(*ctx, app));
+    global.set_property("window", global.to_value());
 }
 
 Host::~Host() {
