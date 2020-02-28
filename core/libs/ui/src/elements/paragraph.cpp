@@ -44,7 +44,7 @@ void Paragraph::layout_span(std::shared_ptr<inline_layout::Span> span_sp) {
         0,                // padding_before
         0                 // padding_after
     };
-    auto result = inline_layout::Span::layout(span_sp, constraints);
+    auto result = span_sp->layout(constraints);
     if (result.fit_span != std::nullopt) {
         auto fit_span = result.fit_span.value();
         fit_span->metrics = result.metrics;

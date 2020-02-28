@@ -67,7 +67,7 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
                               constraints.total_line_width,  // total_line_width
                               padding_before,
                               padding_after};
-        auto result = Span::layout(span, span_constraints);
+        auto result = span->layout(span_constraints);
         if (result.fit_span != std::nullopt) {
             auto fit_span = result.fit_span.value();
             fit_span->metrics = result.metrics;
@@ -88,9 +88,10 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
         // TODO use default_metrics?
         auto fit_span_metrics =
             calc_combined_metrics(fit_spans, LineMetrics{0, 0, 0});
-        return InlineLayoutResult::fit(fit_spans_width, fit_span_metrics);
+        return InlineLayoutResult::fit(
+            fit_spans_width, fit_span_metrics, shared_from_this());
     } else if (fit_spans.size() == 0) {
-        return InlineLayoutResult::wrap();
+        return InlineLayoutResult::wrap(shared_from_this());
     } else {
         auto split_decoration = decoration.split();
         auto fit_span = std::make_shared<DecorationSpan>(
@@ -115,8 +116,7 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
     }
 };
 
-std::shared_ptr<Element> DecorationSpan::render(
-    std::optional<SpanSelectionRange> selection) {
+std::shared_ptr<Element> DecorationSpan::render() {
     auto stack = std::make_shared<StackElement>();
     render_spans(content, metrics, Position{0, 0}, &stack->children);
 

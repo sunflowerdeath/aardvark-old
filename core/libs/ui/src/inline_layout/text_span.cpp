@@ -1,11 +1,18 @@
 #include "inline_layout/text_span.hpp"
+
 #include <iostream>
 
 namespace aardvark::inline_layout {
 
-TextSpan::TextSpan(UnicodeString text, SkPaint paint, LineBreak linebreak,
-                   std::optional<SpanBase> base_span)
-    : text(text), paint(paint), linebreak(linebreak), Span(base_span) {
+TextSpan::TextSpan(
+    UnicodeString text,
+    SkPaint paint,
+    LineBreak linebreak,
+    std::optional<SpanBase> base_span)
+    : text(std::move(text)),
+      paint(std::move(paint)),
+      linebreak(linebreak),
+      Span(base_span) {
     this->paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
 
     if (base_span != std::nullopt) {
@@ -30,25 +37,30 @@ TextSpan::~TextSpan() {
 };
 
 InlineLayoutResult TextSpan::fit(float measured_width) {
-    return InlineLayoutResult::fit(measured_width,
-                                   LineMetrics::from_paint(paint));
+    return InlineLayoutResult::fit(
+        measured_width, LineMetrics::from_paint(paint), shared_from_this());
 };
 
 InlineLayoutResult TextSpan::split(int fit_chars, float fit_width) {
     auto fit_text = text.tempSubString(0, fit_chars);
     auto remainder_text = text.tempSubString(fit_chars);
-    auto fit_span = std::make_shared<TextSpan>(fit_text, paint, linebreak,
-                                               SpanBase{this, 0});
+    auto fit_span = std::make_shared<TextSpan>(
+        fit_text, paint, linebreak, SpanBase{this, 0});
     auto remainder_span = std::make_shared<TextSpan>(
         remainder_text, paint, linebreak, SpanBase{this, fit_chars});
-    return InlineLayoutResult::split(fit_width, LineMetrics::from_paint(paint),
-                                     fit_span, remainder_span);
-};
+    return InlineLayoutResult::split(
+        fit_width, LineMetrics::from_paint(paint), fit_span, remainder_span);
+}
+
+InlineLayoutResult TextSpan::wrap() {
+    return InlineLayoutResult::wrap(shared_from_this());
+}
 
 // Breaks text segment into lines, taking into account special cases
-InlineLayoutResult TextSpan::break_segment(const UnicodeString& text,
-                                           const InlineConstraints& constraints,
-                                           bool is_last_segment) {
+InlineLayoutResult TextSpan::break_segment(
+    const UnicodeString& text,
+    const InlineConstraints& constraints,
+    bool is_last_segment) {
     auto chars_count = text.countChar32();
     auto required_width =
         constraints.remaining_line_width - constraints.padding_before;
@@ -58,8 +70,9 @@ InlineLayoutResult TextSpan::break_segment(const UnicodeString& text,
         // If span fits completely without `padding_after` but does not fit
         // with it, split one char to the next line
         if (fit_width > required_width - constraints.padding_after) {
-            return split(chars_count - 1,
-                         measure_text_width(text, paint, chars_count - 1));
+            return split(
+                chars_count - 1,
+                measure_text_width(text, paint, chars_count - 1));
         } else {
             return fit(fit_width);
         }
@@ -74,7 +87,7 @@ InlineLayoutResult TextSpan::break_segment(const UnicodeString& text,
             return chars_count == 1 ? fit(first_char_width)
                                     : split(1, first_char_width);
         } else {
-            return InlineLayoutResult::wrap();
+            return wrap();
         }
     }
     return split(fit_chars, fit_width);
@@ -92,7 +105,7 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
                               constraints.padding_after;
         auto text_width = measure_text_width(text, paint);
         if (text_width <= required_width) return fit(text_width);
-        return at_line_start ? fit(text_width) : InlineLayoutResult::wrap();
+        return at_line_start ? fit(text_width) : wrap();
     }
 
     if (linebreak == LineBreak::anywhere) {
@@ -145,15 +158,28 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
     if (end == BreakIterator::DONE) {
         return fit(fit_width);
     } else if (start == linebreaker->first()) {
-        return InlineLayoutResult::wrap();
+        return wrap();
     } else {
         return split(start, fit_width);
     }
-};
+}
 
-std::shared_ptr<Element> TextSpan::render(
-    std::optional<SpanSelectionRange> selection) {
+std::shared_ptr<Element> TextSpan::render() {
     return std::make_shared<TextElement>(text, paint);
-};
+}
+
+UnicodeString TextSpan::get_text() { return text; }
+
+int TextSpan::get_text_length() { 
+    // TODO cache
+    return text.countChar32();
+}
+
+std::shared_ptr<Span> TextSpan::slice(int start, int end) {
+    auto new_text = text.tempSubString(start, end - start);
+    return shared_from_this();
+}
+
+int TextSpan::get_text_offset_at_position(int position) {}
 
 }  // namespace aardvark::inline_layout

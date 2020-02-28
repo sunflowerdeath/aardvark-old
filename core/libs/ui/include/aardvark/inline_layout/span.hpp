@@ -1,7 +1,10 @@
 #pragma once
 
+#include <unicode/unistr.h>
+
 #include <memory>
 #include <optional>
+
 #include "../base_types.hpp"
 #include "../element.hpp"
 #include "line_metrics.hpp"
@@ -44,22 +47,14 @@ struct InlineLayoutResult {
     std::optional<std::shared_ptr<Span>> fit_span = std::nullopt;
     std::optional<std::shared_ptr<Span>> remainder_span = std::nullopt;
 
-    static InlineLayoutResult fit(float width, LineMetrics metrics);
-    static InlineLayoutResult split(float width, LineMetrics metrics,
-                                    std::shared_ptr<Span> fit_span,
-                                    std::shared_ptr<Span> remainder_span);
-    static InlineLayoutResult wrap();
-};
-
-struct SpanSelectionEdge {
-    enum class Type {start, offset, end};
-    Type type;
-    int offset = 0;
-};
-
-struct SpanSelectionRange {
-    SpanSelectionEdge from;
-    SpanSelectionEdge to;
+    static InlineLayoutResult fit(
+        float width, LineMetrics metrics, std::shared_ptr<Span> fit_span);
+    static InlineLayoutResult split(
+        float width,
+        LineMetrics metrics,
+        std::shared_ptr<Span> fit_span,
+        std::shared_ptr<Span> remainder_span);
+    static InlineLayoutResult wrap(std::shared_ptr<Span> remainder_span);
 };
 
 struct SpanBase {
@@ -68,24 +63,51 @@ struct SpanBase {
 };
 
 // Span represents part of the contents of the inline container element
-class Span {
+class Span : public std::enable_shared_from_this<Span> {
   public:
     Span(std::optional<SpanBase> base_span = std::nullopt)
         : base_span(base_span){};
 
-    virtual ~Span(){};
+    virtual ~Span() = default;
 
     // Defines how the content should be lay out by the container
-    virtual InlineLayoutResult layout(InlineConstraints constraints){};
+    virtual InlineLayoutResult layout(InlineConstraints constraints) = 0;
 
     // Returns elements that represent this span in the document
-    virtual std::shared_ptr<Element> render(
-        std::optional<SpanSelectionRange> selection){};
+    virtual std::shared_ptr<Element> render() = 0;
 
     // Calculates position of the span in the line, default is baseline
     virtual float vert_align(LineMetrics line, LineMetrics span) {
         return vert_align::baseline(line, span);
     };
+
+    // Returns text content of the span
+    virtual UnicodeString get_text() { return UnicodeString(); }
+
+    // Returns length of the span's text
+    virtual int get_text_length() { return 0; }
+
+    // Slices new span at provided text offsets
+    virtual std::shared_ptr<Span> slice(int start, int end) {
+        return shared_from_this();
+    }
+
+    // Finds closest text offset at the provided position
+    virtual int get_text_offset_at_position(int position) { return 0; }
+
+    // Returns original span and text offset in it
+    std::pair<Span*, int> get_original_text_offset(int offset) {
+        auto orig_span = this;
+        auto orig_offset = offset;
+        auto base = base_span;
+        while (base != std::nullopt) {
+            orig_offset += base->prev_offset;
+            orig_span = base->span;
+            base = orig_span->base_span;
+        }
+        return std::make_pair(orig_span, orig_offset);
+    }
+
 
     // Span from which this span is derived
     std::optional<SpanBase> base_span;
@@ -93,11 +115,6 @@ class Span {
     // Should be set by container during layout
     float width;
     LineMetrics metrics;
-
-    // To layout span you should use static method, because span can not return
-    // shared pointer to itself
-    static InlineLayoutResult layout(std::shared_ptr<Span> span_sp,
-                                     InlineConstraints constraints);
 };
 
 };  // namespace aardvark::inline_layout

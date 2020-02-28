@@ -1,7 +1,9 @@
 #pragma once
 
-#include <optional>
 #include <unicode/unistr.h>
+
+#include <optional>
+
 #include "../base_types.hpp"
 #include "../elements/elements.hpp"
 #include "span.hpp"

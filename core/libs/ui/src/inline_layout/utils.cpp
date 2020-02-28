@@ -2,17 +2,22 @@
 
 namespace aardvark::inline_layout {
 
-float measure_text_width(const UnicodeString& text, const SkPaint& paint,
-                         std::optional<int> num_chars) {
+float measure_text_width(
+    const UnicodeString& text,
+    const SkPaint& paint,
+    std::optional<int> num_chars) {
     auto byte_length =
         (num_chars == std::nullopt ? text.length() : num_chars.value()) * 2;
     return paint.measureText(text.getBuffer(), byte_length);
 };
 
-int break_text(const UnicodeString& text, const SkPaint& paint, float max_width,
-               float* measured_width) {
-    auto fit_bytes = paint.breakText(text.getBuffer(), text.length() * 2,
-                                     max_width, measured_width);
+int break_text(
+    const UnicodeString& text,
+    const SkPaint& paint,
+    float max_width,
+    float* measured_width) {
+    auto fit_bytes = paint.breakText(
+        text.getBuffer(), text.length() * 2, max_width, measured_width);
     return text.countChar32(0, fit_bytes / 2);
 };
 
@@ -41,12 +46,14 @@ LineMetrics calc_combined_metrics(
     };
 }
 
-void render_spans(const std::vector<std::shared_ptr<Span>>& spans,
-                  const LineMetrics& metrics, const Position& offset,
-                  std::vector<std::shared_ptr<Element>>* container) {
+void render_spans(
+    const std::vector<std::shared_ptr<Span>>& spans,
+    const LineMetrics& metrics,
+    const Position& offset,
+    std::vector<std::shared_ptr<Element>>* container) {
     auto current_width = 0.0f;
     for (auto& span : spans) {
-        auto elem = span->render(/* selection */ std::nullopt);
+        auto elem = span->render();
         auto size = Size{span->width, span->metrics.height};
         auto align = Alignment{
             Value::abs(current_width + offset.left),

@@ -1,11 +1,12 @@
 #pragma once
 
-#include <optional>
 #include <memory>
+#include <optional>
+
 #include "../base_types.hpp"
 #include "../element.hpp"
-#include "../elements/border.hpp"
 #include "../elements/background.hpp"
+#include "../elements/border.hpp"
 #include "span.hpp"
 #include "utils.hpp"
 
@@ -28,9 +29,10 @@ class DecorationSpan : public Span {
     DecorationSpan(std::vector<std::shared_ptr<Span>> content,
                    Decoration decoration,
                    std::optional<SpanBase> base_span = std::nullopt);
+
     InlineLayoutResult layout(InlineConstraints constraints) override;
-    std::shared_ptr<Element> render(
-        std::optional<SpanSelectionRange> selection) override;
+    std::shared_ptr<Element> render() override;
+
     std::vector<std::shared_ptr<Span>> content;
     Decoration decoration;
 };

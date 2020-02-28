@@ -1,8 +1,10 @@
 #pragma once
 
-#include <optional>
-#include <memory>
 #include <unicode/brkiter.h>
+
+#include <memory>
+#include <optional>
+
 #include "../element.hpp"
 #include "../elements/text.hpp"
 #include "span.hpp"
@@ -31,9 +33,14 @@ class TextSpan : public Span {
              LineBreak linebreak = LineBreak::normal,
              std::optional<SpanBase> base_span = std::nullopt);
     ~TextSpan() override;
+
     InlineLayoutResult layout(InlineConstraints constraints) override;
-    std::shared_ptr<Element> render(
-        std::optional<SpanSelectionRange> selection) override;
+    std::shared_ptr<Element> render() override;
+    UnicodeString get_text() override;
+    int get_text_length() override;
+    std::shared_ptr<Span> slice(int start, int end) override;
+    int get_text_offset_at_position(int position) override;
+
     UnicodeString text;
     SkPaint paint;
     LineBreak linebreak;
@@ -42,6 +49,7 @@ class TextSpan : public Span {
     BreakIterator* linebreaker;
     InlineLayoutResult split(int pos, float measured_width);
     InlineLayoutResult fit(float measured_width);
+    InlineLayoutResult wrap();
     InlineLayoutResult break_segment(const UnicodeString& text,
                                      const InlineConstraints& constraints,
                                      bool is_last_segment);

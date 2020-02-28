@@ -24,8 +24,9 @@ int text_center(LineMetrics line, LineMetrics span) {
 
 }  // namespace vert_align
 
-InlineLayoutResult InlineLayoutResult::fit(float width, LineMetrics metrics) {
-    return InlineLayoutResult{Type::fit, width, metrics};
+InlineLayoutResult InlineLayoutResult::fit(
+    float width, LineMetrics metrics, std::shared_ptr<Span> fit_span) {
+    return InlineLayoutResult{Type::fit, width, metrics, fit_span};
 };
 
 InlineLayoutResult InlineLayoutResult::split(
@@ -35,10 +36,14 @@ InlineLayoutResult InlineLayoutResult::split(
                               remainder_span};
 };
 
-InlineLayoutResult InlineLayoutResult::wrap() {
-    return InlineLayoutResult{Type::wrap};
+InlineLayoutResult InlineLayoutResult::wrap(
+    std::shared_ptr<Span> remainder_span) {
+    auto res = InlineLayoutResult{Type::wrap};
+    res.remainder_span = remainder_span;
+    return res;
 };
 
+/*
 InlineLayoutResult Span::layout(std::shared_ptr<Span> span_sp,
                                 InlineConstraints constraints) {
     auto result = span_sp->layout(constraints);
@@ -49,5 +54,6 @@ InlineLayoutResult Span::layout(std::shared_ptr<Span> span_sp,
     }
     return result;
 };
+*/
 
 } // namespace aardvark::inline_layout
