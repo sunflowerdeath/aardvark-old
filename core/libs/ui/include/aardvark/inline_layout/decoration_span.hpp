@@ -18,7 +18,9 @@ struct Decoration {
     std::optional<Alignment> insets;
 
     // Splits decoration into left and right parts
-    std::pair<Decoration, Decoration> split();
+    std::pair<Decoration, Decoration> split(); // TODO remove
+    Decoration left();
+    Decoration right();
  
     // Calculates widths of left and right paddings
     std::pair<float, float> get_paddings(float total_line_width);
@@ -32,6 +34,10 @@ class DecorationSpan : public Span {
 
     InlineLayoutResult layout(InlineConstraints constraints) override;
     std::shared_ptr<Element> render() override;
+    UnicodeString get_text() override;
+    int get_text_length() override;
+    std::shared_ptr<Span> slice(int start, int end) override;
+    int get_text_offset_at_position(int position) override;
 
     std::vector<std::shared_ptr<Span>> content;
     Decoration decoration;

@@ -1,6 +1,6 @@
+#include <Catch2/catch.hpp>
+#include <aardvark/pointer_events/responder.hpp>
 #include <vector>
-#include "Catch2/catch.hpp"
-#include "../pointer_events/responder.hpp"
 
 using namespace aardvark;
 

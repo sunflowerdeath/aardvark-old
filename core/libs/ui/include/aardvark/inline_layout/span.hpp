@@ -66,7 +66,9 @@ struct SpanBase {
 class Span : public std::enable_shared_from_this<Span> {
   public:
     Span(std::optional<SpanBase> base_span = std::nullopt)
-        : base_span(base_span){};
+        : base_span(
+              base_span == std::nullopt ? SpanBase{this, 0}
+                                        : base_span.value()){};
 
     virtual ~Span() = default;
 
@@ -95,22 +97,8 @@ class Span : public std::enable_shared_from_this<Span> {
     // Finds closest text offset at the provided position
     virtual int get_text_offset_at_position(int position) { return 0; }
 
-    // Returns original span and text offset in it
-    std::pair<Span*, int> get_original_text_offset(int offset) {
-        auto orig_span = this;
-        auto orig_offset = offset;
-        auto base = base_span;
-        while (base != std::nullopt) {
-            orig_offset += base->prev_offset;
-            orig_span = base->span;
-            base = orig_span->base_span;
-        }
-        return std::make_pair(orig_span, orig_offset);
-    }
-
-
     // Span from which this span is derived
-    std::optional<SpanBase> base_span;
+    SpanBase base_span;
 
     // Should be set by container during layout
     float width;

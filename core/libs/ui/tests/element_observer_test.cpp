@@ -1,9 +1,9 @@
-#include <Catch2/catch.hpp>
-
 #include <GLFW/glfw3.h>
-#include "../document.hpp"
-#include "../elements/elements.hpp"
-#include "../platforms/desktop/desktop_window.hpp"
+
+#include <Catch2/catch.hpp>
+#include <aardvark/document.hpp>
+#include <aardvark/elements/elements.hpp>
+#include <aardvark/platforms/desktop/desktop_window.hpp>
 
 using namespace aardvark;
 
@@ -17,21 +17,17 @@ TEST_CASE("ElementObserver", "[element_observer]") {
     SECTION("SizeObserver") {
         auto gr_context = GrContext::MakeGL();
         auto screen = Layer::make_offscreen_layer(gr_context, Size{500, 500});
-        auto document =
-            std::make_shared<aardvark::Document>(gr_context, screen);
+        auto document = std::make_shared<Document>(gr_context, screen);
 
-        auto small = aardvark::elements::SizeConstraints::exact(
-            Value::abs(100), Value::abs(100));
-        auto big = aardvark::elements::SizeConstraints::exact(Value::abs(200),
-                                                              Value::abs(200));
-        auto child1 = std::make_shared<aardvark::elements::Sized>(
-            std::make_shared<aardvark::elements::Background>(SK_ColorRED),
-            small);
-        auto child2 = std::make_shared<aardvark::elements::Sized>(
-            std::make_shared<aardvark::elements::Background>(SK_ColorRED),
-            small);
-        auto root = std::make_shared<aardvark::elements::Stack>(
-            std::vector<std::shared_ptr<aardvark::Element>>{child1, child2});
+        auto color = Color::from_sk_color(SK_ColorRED);
+        auto small = SizeConstraints::exact(Value::abs(100), Value::abs(100));
+        auto big = SizeConstraints::exact(Value::abs(200), Value::abs(200));
+        auto child1 = std::make_shared<SizeElement>(
+            std::make_shared<BackgroundElement>(color), small);
+        auto child2 = std::make_shared<SizeElement>(
+            std::make_shared<BackgroundElement>(color), small);
+        auto root = std::make_shared<StackElement>(
+            std::vector<std::shared_ptr<Element>>{child1, child2});
         document->set_root(root);
         document->render();
 

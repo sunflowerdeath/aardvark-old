@@ -15,12 +15,8 @@ TextSpan::TextSpan(
       Span(base_span) {
     this->paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
 
-    if (base_span != std::nullopt) {
-        // Reuse linebreaker from the base span
-        linebreaker =
-            dynamic_cast<TextSpan*>(base_span.value().span)->linebreaker;
-    } else {
-        // Create own linebreaker
+    if (this->base_span.span == this) {
+        // Create linebreaker
         UErrorCode status = U_ZERO_ERROR;
         linebreaker =
             BreakIterator::createLineInstance(Locale::getUS(), status);
@@ -29,11 +25,15 @@ TextSpan::TextSpan(
                       << u_errorName(status) << std::endl;
             exit(1);
         }
+    } else {
+        // Reuse linebreaker from the base span
+        linebreaker =
+            dynamic_cast<TextSpan*>(this->base_span.span)->linebreaker;
     }
 };
 
 TextSpan::~TextSpan() {
-    if (base_span == std::nullopt) delete linebreaker;
+    if (base_span.span == this) delete linebreaker;
 };
 
 InlineLayoutResult TextSpan::fit(float measured_width) {
@@ -177,9 +177,12 @@ int TextSpan::get_text_length() {
 
 std::shared_ptr<Span> TextSpan::slice(int start, int end) {
     auto new_text = text.tempSubString(start, end - start);
-    return shared_from_this();
+    auto new_base = SpanBase{base_span.span, base_span.prev_offset + start};
+    return std::make_shared<TextSpan>(new_text, paint, linebreak, new_base);
 }
 
-int TextSpan::get_text_offset_at_position(int position) {}
+int TextSpan::get_text_offset_at_position(int position) {
+    // TODO
+}
 
 }  // namespace aardvark::inline_layout

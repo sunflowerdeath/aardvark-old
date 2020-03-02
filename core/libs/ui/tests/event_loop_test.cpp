@@ -1,5 +1,6 @@
-#include "../utils/event_loop.hpp"
+#include <aardvark/utils/event_loop.hpp>
 #include <iostream>
+
 #include "Catch2/catch.hpp"
 
 using namespace aardvark;

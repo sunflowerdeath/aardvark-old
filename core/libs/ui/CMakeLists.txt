@@ -108,15 +108,15 @@ if(ADV_UI_EXAMPLES)
 endif()
 
 if(ADV_UI_TESTS)
-    add_executable(tests
-        src/tests/index.cpp
-        src/tests/base_types_test.cpp
-        src/tests/box_constraints_test.cpp
-        # src/tests/responder_test.cpp
-        # src/tests/align_test.cpp
-        src/tests/text_span_test.cpp
-        src/tests/element_observer_test.cpp
-        src/tests/event_loop_test.cpp
+    add_executable(adv_ui_tests
+        tests/index.cpp
+        tests/base_types_test.cpp
+        tests/box_constraints_test.cpp
+        # tests/responder_test.cpp
+        # tests/align_test.cpp
+        tests/text_span_test.cpp
+        tests/element_observer_test.cpp
+        tests/event_loop_test.cpp
     )
-    target_link_libraries(aardvark_ui_tests Catch2 aardvark_ui)
+    target_link_libraries(adv_ui_tests Catch2 aardvark_ui)
 endif()

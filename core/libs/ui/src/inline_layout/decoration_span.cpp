@@ -2,6 +2,20 @@
 
 namespace aardvark::inline_layout {
 
+Decoration Decoration::left() {
+    auto res = *this;
+    if (borders != std::nullopt) res.borders.value().right = BorderSide::none();
+    if (insets != std::nullopt) res.insets.value().right = Value::none();
+    return res;
+}
+
+Decoration Decoration::right() {
+    auto res = *this;
+    if (borders != std::nullopt) res.borders.value().left = BorderSide::none();
+    if (insets != std::nullopt) res.insets.value().left = Value::none();
+    return res;
+}
+
 std::pair<Decoration, Decoration> Decoration::split() {
     std::optional<BoxBorders> left_borders = std::nullopt;
     std::optional<BoxBorders> right_borders = std::nullopt;
@@ -38,7 +52,7 @@ std::pair<float, float> Decoration::get_paddings(float total_line_width) {
         after += borders.value().right.width;
     }
     return std::make_pair(before, after);
-};
+}
 
 DecorationSpan::DecorationSpan(
     std::vector<std::shared_ptr<Span>> content,
@@ -114,7 +128,7 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
             remainder_span                     // remainder_span
         );
     }
-};
+}
 
 std::shared_ptr<Element> DecorationSpan::render() {
     auto stack = std::make_shared<StackElement>();
@@ -144,6 +158,58 @@ std::shared_ptr<Element> DecorationSpan::render() {
             container, Alignment{Value::abs(0), Value::abs(-top_offset)});
     }
     return container;
-};
+}
+
+UnicodeString DecorationSpan::get_text() {
+    auto text = UnicodeString();
+    for (auto& span : content) text.append(span->get_text());
+    return text;
+}
+
+int DecorationSpan::get_text_length() {
+    auto length = 0;
+    for (auto& span : content) length += span->get_text_length();
+    return length;
+}
+
+std::shared_ptr<Span> DecorationSpan::slice(int start, int end) {
+    auto slice_content = std::vector<std::shared_ptr<Span>>();
+    auto span_start = -1;
+    auto span_end = 0;
+    for (auto& span : content) {
+        auto span_len = span->get_text_length();
+        span_start = span_end + 1;
+        span_end = span_start + span_len - 1;
+        if (span_start <= start || end <= span_end) {
+            if (start <= span_start && span_end <= end) {
+                slice_content.push_back(span);
+            } else {
+                auto split_start = std::max(start - span_start, 0);
+                auto split_end = std::min(end - span_start, span_len - 1);
+                slice_content.push_back(span->slice(split_start, split_end));
+            }
+            if (end <= span_end) break;
+        }
+    }
+    auto slice_decoration = decoration;
+    auto include_start = start == 0;
+    auto include_end = end == get_text_length();
+    if (include_start && !include_end) {
+        slice_decoration = decoration.left();
+    } else if (!include_start && include_end) {
+        slice_decoration = decoration.right();
+    }
+    return std::make_shared<DecorationSpan>(
+        slice_content,
+        slice_decoration,
+        SpanBase{this, base_span.prev_offset + start});
+}
+
+/*
+int DecorationSpan::get_text_offset_at_position(int position) {
+    auto current_offset = 0;
+    auto current_position = 0;
+}
+*/
 
 }  // namespace aardvark::inline_layout

@@ -1,6 +1,6 @@
-#include "Catch2/catch.hpp"
-#include "../base_types.hpp"
-#include "../elements/elements.hpp"
+#include <Catch2/catch.hpp>
+#include <aardvark/base_types.hpp>
+#include <aardvark/elements/elements.hpp>
 
 using namespace aardvark;
 
