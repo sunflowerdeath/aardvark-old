@@ -174,22 +174,20 @@ int DecorationSpan::get_text_length() {
 
 std::shared_ptr<Span> DecorationSpan::slice(int start, int end) {
     auto slice_content = std::vector<std::shared_ptr<Span>>();
-    auto span_start = -1;
-    auto span_end = 0;
+    auto span_start = 0;
+    auto span_end = -1;
     for (auto& span : content) {
         auto span_len = span->get_text_length();
         span_start = span_end + 1;
         span_end = span_start + span_len - 1;
-        if (span_start <= start || end <= span_end) {
-            if (start <= span_start && span_end <= end) {
-                slice_content.push_back(span);
-            } else {
-                auto split_start = std::max(start - span_start, 0);
-                auto split_end = std::min(end - span_start, span_len - 1);
-                slice_content.push_back(span->slice(split_start, split_end));
-            }
-            if (end <= span_end) break;
+        if (start <= span_start && span_end <= end) {
+            slice_content.push_back(span);
+        } else if (span_start <= start || end <= span_end) {
+            auto split_start = std::max(start - span_start, 0);
+            auto split_end = std::min(end - span_start, span_len - 1);
+            slice_content.push_back(span->slice(split_start, split_end));
         }
+        if (end <= span_end) break;
     }
     auto slice_decoration = decoration;
     auto include_start = start == 0;
@@ -205,11 +203,9 @@ std::shared_ptr<Span> DecorationSpan::slice(int start, int end) {
         SpanBase{this, base_span.prev_offset + start});
 }
 
-/*
 int DecorationSpan::get_text_offset_at_position(int position) {
-    auto current_offset = 0;
-    auto current_position = 0;
+    // TODO
+    return 0;
 }
-*/
 
 }  // namespace aardvark::inline_layout

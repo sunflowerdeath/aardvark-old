@@ -176,7 +176,7 @@ int TextSpan::get_text_length() {
 }
 
 std::shared_ptr<Span> TextSpan::slice(int start, int end) {
-    auto new_text = text.tempSubString(start, end - start);
+    auto new_text = text.tempSubString(start, end - start + 1);
     auto new_base = SpanBase{base_span.span, base_span.prev_offset + start};
     return std::make_shared<TextSpan>(new_text, paint, linebreak, new_base);
 }

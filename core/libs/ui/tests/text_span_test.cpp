@@ -1,11 +1,64 @@
 #include <Catch2/catch.hpp>
 #include <aardvark/base_types.hpp>
 #include <aardvark/inline_layout/text_span.hpp>
-#include <iostream>
+#include <aardvark/inline_layout/decoration_span.hpp>
+#include <aardvark/inline_layout/utils.hpp>
 
 using namespace aardvark;
 
-TEST_CASE("inline_layout::TextSpan", "[inline_layout] [text_span]") {
+TEST_CASE("DecorationSpan", "[inline][decoration_span]") {
+    SECTION("slice") {
+        SkPaint paint;
+        auto text1 = UnicodeString("abc");
+        auto text2 = UnicodeString("def");
+        auto text3 = UnicodeString("ghi");
+        auto text4 = UnicodeString("klm");
+        auto span1 = std::make_shared<inline_layout::TextSpan>(text1, paint);
+        auto span2 = std::make_shared<inline_layout::TextSpan>(text2, paint);
+        auto span3 = std::make_shared<inline_layout::TextSpan>(text3, paint);
+        auto span4 = std::make_shared<inline_layout::TextSpan>(text4, paint);
+        auto content = std::vector<std::shared_ptr<inline_layout::Span>>{
+            span1, span2, span3, span4};
+
+        auto red = Color::from_sk_color(SK_ColorRED);
+        auto blue = Color::from_sk_color(SK_ColorBLUE);
+        auto decoration = inline_layout::Decoration{red,  // color
+                                     BoxBorders{
+                                         BorderSide{0, red},   // top
+                                         BorderSide{0, red},   // right
+                                         BorderSide{0, blue},  // bottom
+                                         BorderSide{0, blue},  // left
+                                     },
+                                     Alignment{
+                                         Value::abs(5),   // left
+                                         Value::none(),   // top
+                                         Value::abs(10),  // right
+                                         Value::none()    // bottom
+                                     }};
+        auto span = std::make_shared<inline_layout::DecorationSpan>(
+            content, decoration);
+
+        REQUIRE(span->get_text_length() == 12);
+        auto text = span->get_text();
+        REQUIRE(inline_layout::icu_to_std_string(text) == "abcdefghiklm");
+
+        // abc | def | ghi | k l  m
+        // 012   345   678   9 10 11
+        //  ^-----------^
+        auto slice_mid =
+            std::dynamic_pointer_cast<inline_layout::DecorationSpan>(
+                span->slice(1, 7));
+        REQUIRE(slice_mid->content.size() == 3);
+        REQUIRE(slice_mid->content[0]->get_text() == "bc");
+        REQUIRE(slice_mid->content[1]->get_text() == "def");
+        REQUIRE(slice_mid->content[2]->get_text() == "gh");
+        // TODO check_decoration
+
+        // TODO slice_start, slice_end
+    }
+}
+
+TEST_CASE("TextSpan", "[inline][text_span]") {
     SECTION("slice") {
         auto text = UnicodeString((UChar*)u"abcdefgh");
         SkPaint paint;
