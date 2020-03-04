@@ -1,0 +1,9 @@
+kind: struct
+name: TestOptionalStruct
+include: ../tests/idl/optional.hpp
+props:
+    - name: intProp
+      type: int
+    - name: optionalProp
+      type: int
+      optional: true

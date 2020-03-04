@@ -14,6 +14,7 @@
 #include "../generated/enum.hpp"
 #include "../generated/extends.hpp"
 #include "../generated/function.hpp"
+#include "../generated/optional.hpp"
 #include "../generated/proxy.hpp"
 #include "../generated/struct.hpp"
 #include "../generated/union.hpp"
@@ -81,6 +82,27 @@ TEST_CASE("idl", "[idl]") {
             auto res =
                 api.TestStruct_mapper->try_from_js(*ctx, val, err_params);
             REQUIRE(res.has_value() == false);
+        }
+    }
+
+    SECTION("optional") {
+        auto ctx = create_context();
+        auto api = test::TestOptionalApi(ctx.get());
+
+        SECTION("from_js") {
+            auto val = ctx->eval("({intProp: 1, optionalProp: 2})", nullptr, "")
+                           .value();
+            auto res = api.TestOptionalStruct_mapper->from_js(*ctx, val);
+            REQUIRE(res.int_prop == 1);
+            REQUIRE(res.optional_prop == 2);
+        }
+
+        SECTION("from_js optional") {
+            auto val = ctx->eval("({intProp: 1})", nullptr, "")
+                           .value();
+            auto res = api.TestOptionalStruct_mapper->from_js(*ctx, val);
+            REQUIRE(res.int_prop == 1);
+            REQUIRE(res.optional_prop == 25); // 25 is the default value
         }
     }
 

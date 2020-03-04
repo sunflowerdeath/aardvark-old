@@ -1,14 +1,19 @@
 kind: struct
 name: Alignment
+doc: Default value is `Value.none`
 props:
     - name: left
       type: Value
+      optional: true
     - name: top
       type: Value
+      optional: true
     - name: right
       type: Value
+      optional: true
     - name: bottom
       type: Value
+      optional: true
 ---
 kind: class
 name: AlignElement
@@ -221,12 +226,16 @@ include: aardvark/elements/padding.hpp
 props:
     - name: left
       type: float
+      optional: true
     - name: top
       type: float
+      optional: true
     - name: right
       type: float
+      optional: true
     - name: bottom
       type: float
+      optional: true
 ---
 kind: class
 name: PaddingElement
@@ -284,16 +293,22 @@ name: SizeConstraints
 props:
     - name: width
       type: Value
+      optional: true
     - name: height
       type: Value
+      optional: true
     - name: minWidth
       type: Value
+      optional: true
     - name: minHeight
       type: Value
+      optional: true
     - name: maxWidth
       type: Value
+      optional: true
     - name: maxHeight
       type: Value
+      optional: true
 ---
 kind: class
 name: SizeElement
@@ -327,8 +342,10 @@ name: Translation
 props:
     - name: left
       type: Value
+      optional: true
     - name: top
       type: Value
+      optional: true
 ---
 kind: class
 name: TranslateElement

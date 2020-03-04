@@ -58,6 +58,7 @@ if(ADV_JSI_TESTS)
         generated/extends.cpp
         generated/proxy.cpp
         generated/custom.cpp
+        generated/optional.cpp
     )
     target_link_libraries(aadrvark_jsi_tests Catch2 aardvark_jsi)
 endif()

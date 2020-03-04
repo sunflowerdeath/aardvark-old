@@ -4,7 +4,7 @@ let gen = require('../idl/index.js')
 
 let items = [
     'enum', 'union', 'struct', 'class', 'extends', 'function', 'callback',
-    'proxy', 'custom'
+    'proxy', 'custom', 'optional'
 ]
 
 items.map(item => gen({

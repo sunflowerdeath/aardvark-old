@@ -38,17 +38,20 @@ const structInitTmpl = compileTmpl(`
                 auto res = obj.get_property("{{name}}");
                 if (res.has_value()) prop_val = res.value();
             }
-            if (!prop_val.has_value()) prop_val = ctx.value_make_undefined();
-            auto prop_err_params = CheckErrorParams{
-                err_params.kind,
-                err_params.name + ".{{name}}",
-                err_params.target};
-            auto mapped_prop_val = {{type}}_mapper->try_from_js(
-                ctx, prop_val.value(), prop_err_params);
-            if (mapped_prop_val.has_value()) {
-                mapped_struct.{{snakeCase name}} = mapped_prop_val.value();
-            } else {
-                return tl::make_unexpected(mapped_prop_val.error());
+            auto optional = {{#if optional}}true{{else}}false{{/if}};
+            if (prop_val.has_value() || !optional) {
+                if (!prop_val.has_value()) prop_val = ctx.value_make_undefined();
+                auto prop_err_params = CheckErrorParams{
+                    err_params.kind,
+                    err_params.name + ".{{name}}",
+                    err_params.target};
+                auto mapped_prop_val = {{type}}_mapper->try_from_js(
+                    ctx, prop_val.value(), prop_err_params);
+                if (mapped_prop_val.has_value()) {
+                    mapped_struct.{{snakeCase name}} = mapped_prop_val.value();
+                } else {
+                    return tl::make_unexpected(mapped_prop_val.error());
+                }
             }
         }
         {{/each}}
