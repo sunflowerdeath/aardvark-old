@@ -16,6 +16,7 @@ Decoration Decoration::right() {
     return res;
 }
 
+// TODO remove
 std::pair<Decoration, Decoration> Decoration::split() {
     std::optional<BoxBorders> left_borders = std::nullopt;
     std::optional<BoxBorders> right_borders = std::nullopt;
@@ -196,6 +197,12 @@ std::shared_ptr<Span> DecorationSpan::slice(int start, int end) {
         slice_decoration = decoration.left();
     } else if (!include_start && include_end) {
         slice_decoration = decoration.right();
+    } else if (!include_start && !include_end) {
+        slice_decoration = Decoration{
+            decoration.background,  // background
+            std::nullopt,           // borders
+            std::nullopt            // insets
+        };
     }
     return std::make_shared<DecorationSpan>(
         slice_content,

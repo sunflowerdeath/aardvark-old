@@ -7,6 +7,39 @@
 using namespace aardvark;
 
 TEST_CASE("DecorationSpan", "[inline][decoration_span]") {
+    auto red = Color::from_sk_color(SK_ColorRED);
+    auto blue = Color::from_sk_color(SK_ColorBLUE);
+    auto decoration =
+        inline_layout::Decoration{red,  // color
+                                  BoxBorders{
+                                      BorderSide{1, red},   // top
+                                      BorderSide{2, red},   // right
+                                      BorderSide{3, blue},  // bottom
+                                      BorderSide{4, blue},  // left
+                                  },
+                                  Alignment{
+                                      Value::abs(1),  // left
+                                      Value::abs(2),  // top
+                                      Value::abs(3),  // right
+                                      Value::abs(4)   // bottom
+                                  }};
+
+    SECTION("decoration split") {
+        auto left = decoration.left();
+        REQUIRE(left.background == red);
+        REQUIRE(left.borders.value().left.width == 4);
+        REQUIRE(left.borders.value().right.width == 0);
+        REQUIRE(left.insets.value().left == Value::abs(1));
+        REQUIRE(left.insets.value().right == Value::none());
+
+        auto right = decoration.right();
+        REQUIRE(right.background == red);
+        REQUIRE(right.borders.value().left.width == 0);
+        REQUIRE(right.borders.value().right.width == 2);
+        REQUIRE(right.insets.value().left == Value::none());
+        REQUIRE(right.insets.value().right == Value::abs(3));
+    }
+
     SECTION("slice") {
         SkPaint paint;
         auto text1 = UnicodeString("abc");
@@ -20,21 +53,6 @@ TEST_CASE("DecorationSpan", "[inline][decoration_span]") {
         auto content = std::vector<std::shared_ptr<inline_layout::Span>>{
             span1, span2, span3, span4};
 
-        auto red = Color::from_sk_color(SK_ColorRED);
-        auto blue = Color::from_sk_color(SK_ColorBLUE);
-        auto decoration = inline_layout::Decoration{red,  // color
-                                     BoxBorders{
-                                         BorderSide{0, red},   // top
-                                         BorderSide{0, red},   // right
-                                         BorderSide{0, blue},  // bottom
-                                         BorderSide{0, blue},  // left
-                                     },
-                                     Alignment{
-                                         Value::abs(5),   // left
-                                         Value::none(),   // top
-                                         Value::abs(10),  // right
-                                         Value::none()    // bottom
-                                     }};
         auto span = std::make_shared<inline_layout::DecorationSpan>(
             content, decoration);
 
@@ -52,7 +70,8 @@ TEST_CASE("DecorationSpan", "[inline][decoration_span]") {
         REQUIRE(slice_mid->content[0]->get_text() == "bc");
         REQUIRE(slice_mid->content[1]->get_text() == "def");
         REQUIRE(slice_mid->content[2]->get_text() == "gh");
-        // TODO check_decoration
+        REQUIRE(slice_mid->decoration.background == red);
+        REQUIRE(slice_mid->decoration.borders.has_value() == false);
 
         // TODO slice_start, slice_end
     }

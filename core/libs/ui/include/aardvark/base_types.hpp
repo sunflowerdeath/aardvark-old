@@ -44,6 +44,10 @@ struct Value {
     static Value none() { return Value(ValueType::none, 0); };
 };
 
+inline bool operator==(const Value& lhs, const Value& rhs) {
+    return lhs.type == rhs.type && lhs.value == rhs.value;
+}
+
 struct Scale {
     float horiz = 1;
     float vert = 1;
