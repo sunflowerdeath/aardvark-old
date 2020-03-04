@@ -46,6 +46,12 @@ nod::connection PointerEventManager::start_tracking_pointer(
     return pointers_signals[pointer_id].connect(handler);
 }
 
+std::shared_ptr<Connection> PointerEventManager::start_tracking_pointer2(
+    const int pointer_id, const PointerEventHandler& handler) {
+    return std::make_shared<NodConnection>(
+        start_tracking_pointer(pointer_id, handler));
+}
+
 void PointerEventManager::handle_event(const PointerEvent& event) {
     before_signal(event);
 

@@ -29,3 +29,10 @@ methods:
         - name: handler
           type: ScrollEventHandler
       return: Connection
+    - name: startTrackingPointer
+      args:
+        - name: pointerId
+          type: int
+        - name: handler
+          type: PointerEventHandler
+      return: Connection

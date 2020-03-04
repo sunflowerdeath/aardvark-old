@@ -6,9 +6,9 @@
   "scripts": {
     "build": "../../node_modules/.bin/webpack",
     "build-prod": "NODE_ENV=production ../../node_modules/.bin/webpack",
-    "start": "../../../core/build/bin/jsc_example build/main.js",
-    "debug": "gdb --args ../../../core/build/bin/jsc_example build/main.js",
-    "lldb": "lldb ../../../core/build/bin/jsc_example -- build/main.js"
+    "start": "../../../core/build/bin/adv_js_example build/main.js",
+    "debug": "gdb --args ../../../core/build/bin/adv_js_example build/main.js",
+    "lldb": "lldb ../../../core/build/bin/adv_js_example -- build/main.js"
   },
   "dependencies": {
     "@advk/common": "*",

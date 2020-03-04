@@ -1,5 +1,3 @@
-import { PointerEventType, PointerTool } from '../events/PointerEvent.js'
-
 class HoverRecognizer {
     constructor({ onHoverStart, onHoverEnd }) {
         this.onHoverStart = onHoverStart
@@ -9,10 +7,10 @@ class HoverRecognizer {
 
     handler(event, eventType) {
         if (this.isDisabled) return
-        if (event.tool !== PointerTool.MOUSE) return
-        if (eventType === PointerEventType.ENTER) {
+        if (event.tool !== PointerTool.mouse) return
+        if (eventType === ResponderEventType.add) {
             this.onHoverStart && this.onHoverStart()
-        } else if (eventType === PointerEventType.LEAVE) {
+        } else if (eventType === ResponderEventType.remove) {
             this.onHoverEnd && this.onHoverEnd()
         }
     }

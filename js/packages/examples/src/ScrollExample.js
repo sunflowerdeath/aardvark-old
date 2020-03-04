@@ -9,14 +9,12 @@ import {
     Color,
     Value,
     Padding as Padding1,
-    FlexDirection,
-    PointerEventType,
     TransformMatrix
 } from '@advk/common'
 import ReactAardvark, {
     Align,
     GestureResponder,
-    Sized,
+    Size,
     Stack,
     Background,
     Center,
@@ -72,9 +70,9 @@ const Expandable = React.forwardRef((props, ref) => {
         []
     )
     return (
-        <Sized sizeConstraints={{ height: Value.abs(isExpanded ? 150 : 50) }}>
+        <Size sizeConstraints={{ height: Value.abs(isExpanded ? 150 : 50) }}>
             <Background color={Color.PURPLE} />
-        </Sized>
+        </Size>
     )
 })
 
@@ -90,7 +88,7 @@ const BasicScrollExample = () => {
                     <Text text="Disable" />
                 </Button>
             </Flex>
-            <Sized
+            <Size
                 sizeConstraints={{
                     width: Value.abs(200),
                     height: Value.abs(200)
@@ -105,7 +103,7 @@ const BasicScrollExample = () => {
                         ))}
                     </Scrollable>
                 </Stack>
-            </Sized>
+            </Size>
         </>
     )
 }
@@ -117,7 +115,7 @@ const FloatingScrollbarExample = () => {
             <Button onTap={() => expandRef.current.toggle()}>
                 <Text text="Expand" />
             </Button>
-            <Sized
+            <Size
                 sizeConstraints={{
                     width: Value.abs(200),
                     height: Value.abs(200)
@@ -131,7 +129,7 @@ const FloatingScrollbarExample = () => {
                         ))}
                     </Scrollable>
                 </Stack>
-            </Sized>
+            </Size>
         </>
     )
 }

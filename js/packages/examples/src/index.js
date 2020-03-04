@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Color, FlexDirection, FlexAlign, Padding as Padding1 } from '@advk/common'
+import { Color, Padding as Padding1 } from '@advk/common'
 import ReactAardvark, {
     Background,
     Flex,
@@ -59,6 +59,6 @@ const Main = () => {
     )
 }
 
-const win = application.createWindow(640, 480)
+const win = application.createWindow({ width: 640, height: 480 })
 const document = application.getDocument(win)
 ReactAardvark.render(<Main />, document)

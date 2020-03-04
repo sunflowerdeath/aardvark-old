@@ -4,7 +4,7 @@ import Animated from 'animated'
 import { Value, TransformMatrix } from '@advk/common'
 import {
     Align,
-    Sized,
+    Size,
     Stack,
     Background,
     Clip,

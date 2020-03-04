@@ -8,16 +8,16 @@ class GestureResolver {
     }
 
     onPointerEvent(event) {
-        if (event.action === PointerEventAction.POINTER_DOWN) {
+        if (event.action === PointerEventAction.pointerDown) {
             this.arenas[event.pointerId] = new GestureArena(this)
-        } else if (event.action === PointerEventAction.POINTER_UP) {
+        } else if (event.action === PointerEventAction.pointerUp) {
             this.arenas[event.pointerId].resolve()
             delete this.arenas[event.pointerId]
         }
     }
 
     afterPointerEvent(event) {
-        if (event.action === PointerEventAction.POINTER_DOWN) {
+        if (event.action === PointerEventAction.pointerDown) {
             this.arenas[event.pointerId].close()
         }
     }

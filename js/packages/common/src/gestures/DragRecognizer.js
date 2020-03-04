@@ -1,8 +1,3 @@
-import {
-	PointerTool,
-	PointerAction,
-	PointerEventType
-} from '../events/PointerEvent.js'
 import VelocityTracker from './VelocityTracker.js'
 
 const DEFAULT_TRESHOLD = 12
@@ -20,20 +15,20 @@ const DragTool = {
 }
 
 const isMouseButtonPress = (event, button = 0) =>
-	event.tool === PointerTool.MOUSE &&
-	event.action === PointerAction.BUTTON_PRESS
+	event.tool === PointerTool.mouse &&
+	event.action === PointerAction.buttonPress
 
 const isMouseButtonUp = (event, button = 0) =>
-	event.tool === PointerTool.MOUSE &&
-	event.action === PointerAction.BUTTON_RELEASE
+	event.tool === PointerTool.mouse &&
+	event.action === PointerAction.buttonRelease
 
 const isTouchDown = event =>
-	event.device === PointerTool.TOUCH &&
-	event.action === PointerAction.POINTER_DOWN
+	event.device === PointerTool.touch &&
+	event.action === PointerAction.pointerDown
 
 const isTouchUp = event =>
-	event.device === PointerTool.TOUCH &&
-	event.action === PointerAction.POINTER_UP
+	event.device === PointerTool.touch &&
+	event.action === PointerAction.pointerUp
 
 class DragRecognizer {
 	constructor(options) {

@@ -84,6 +84,8 @@ class Document : public std::enable_shared_from_this<Document> {
 
     std::shared_ptr<Connection> add_pointer_event_handler(
         const PointerEventHandler& handler, const bool after_elements = false);
+    std::shared_ptr<Connection> start_tracking_pointer(
+        const int pointer_id, const PointerEventHandler& handler);
     std::shared_ptr<Connection> add_key_event_handler(
         const SignalEventSink<KeyEvent>::EventHandler& handler);
     std::shared_ptr<Connection> add_scroll_event_handler(

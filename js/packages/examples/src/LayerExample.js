@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useMemo } from 'react'
-import { Value, Color, TransformMatrix, FlexDirection } from '@advk/common'
+import { Value, Color, TransformMatrix } from '@advk/common'
 import ReactAardvark, {
     Align,
-    Sized,
+    Size,
     Stack,
     Background,
     Layer,
@@ -38,7 +38,7 @@ const LayerExample = () => {
                         onHoverStart={useCallback(() => setIsHovered(true))}
                         onHoverEnd={useCallback(() => setIsHovered(false))}
                     >
-                        <Sized
+                        <Size
                             sizeConstraints={{
                                 width: Value.abs(100),
                                 height: Value.abs(100)
@@ -49,12 +49,12 @@ const LayerExample = () => {
                                     isHovered ? HOVERED_COLOR : INITIAL_COLOR
                                 }
                             />
-                        </Sized>
+                        </Size>
                     </GestureResponder>
                 </Layer>
             </Align>
             <Align align={{ top: Value.abs(20), right: Value.abs(20) }}>
-                <Sized
+                <Size
                     sizeConstraints={{
                         width: Value.abs(200),
                         height: Value.abs(200)
@@ -77,7 +77,7 @@ const LayerExample = () => {
                             </Button>
                         </Flex>
                     </Stack>
-                </Sized>
+                </Size>
             </Align>
         </Stack>
     )

@@ -31,6 +31,9 @@ class PointerEventManager {
     nod::connection start_tracking_pointer(const int pointer_id,
                                            const PointerEventHandler& handler);
 
+    std::shared_ptr<Connection> start_tracking_pointer2(
+        const int pointer_id, const PointerEventHandler& handler);
+
     void handle_event(const PointerEvent& event);
 
   private:

@@ -315,6 +315,11 @@ std::shared_ptr<Connection> Document::add_pointer_event_handler(
     return pointer_event_manager->add_handler2(handler, after_elements);
 }
 
+std::shared_ptr<Connection> Document::start_tracking_pointer(
+    const int pointer_id, const PointerEventHandler& handler) {
+    return pointer_event_manager->start_tracking_pointer2(pointer_id, handler);
+}
+
 std::shared_ptr<Connection> Document::add_key_event_handler(
     const SignalEventSink<KeyEvent>::EventHandler& handler) {
     return key_event_sink.add_handler2(handler);

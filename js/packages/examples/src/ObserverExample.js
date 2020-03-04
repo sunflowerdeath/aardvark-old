@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Value, Color, FlexDirection } from '@advk/common'
+import { Value, Color } from '@advk/common'
 import ReactAardvark, {
     Align,
-    Sized,
+    Size,
     Stack,
     Background,
     Flex,
@@ -24,17 +24,17 @@ const ObserverExample = () => {
     return (
         <Stack>
             <Align align={{ top: Value.abs(50), left: Value.abs(50) }}>
-                <Sized
+                <Size
                     sizeConstraints={{
                         width: Value.abs(width),
                         height: Value.abs(50)
                     }}
                 >
                     <Background color={Color.PURPLE} ref={elemRef} />
-                </Sized>
+                </Size>
             </Align>
             <Align align={{ top: Value.abs(20), right: Value.abs(20) }}>
-                <Sized
+                <Size
                     sizeConstraints={{
                         width: Value.abs(200),
                         height: Value.abs(200)
@@ -51,7 +51,7 @@ const ObserverExample = () => {
                             </Button>
                         </Flex>
                     </Stack>
-                </Sized>
+                </Size>
             </Align>
         </Stack>
     )

@@ -1,22 +1,20 @@
-import { PointerAction, PointerTool } from '../events/PointerEvent.js'
-
-const isLeftMouseButtonPress = event =>
-	event.tool === PointerTool.MOUSE &&
-	event.action === PointerAction.BUTTON_PRESS // &&
+const isLeftMouseButtonPress = event => 
+    event.tool === PointerTool.mouse &&
+	event.action === PointerAction.buttonPress // &&
 // event.button === 0
 
 const isLeftMouseButtonUp = event =>
-	event.tool === PointerTool.MOUSE &&
-	event.action === PointerAction.BUTTON_RELEASE // &&
+	event.tool === PointerTool.mouse &&
+	event.action === PointerAction.buttonRelease // &&
 // event.button === 0
 
 const isTouchDown = event =>
-	event.device === PointerTool.TOUCH &&
-	event.action === PointerAction.POINTER_DOWN
+	event.tool === PointerTool.touch &&
+	event.action === PointerAction.pointerDown
 
 const isTouchUp = event =>
-	event.device === PointerTool.TOUCH &&
-	event.action === PointerAction.POINTER_UP
+	event.tool === PointerTool.touch &&
+	event.action === PointerAction.pointerUp
 
 class TapRecognizer {
 	constructor({ document, onPressStart, onPressEnd, onTap }) {
@@ -59,12 +57,12 @@ class TapRecognizer {
 	}
 
 	press(event) {
-		this.stopTrackingPointer = this.document().startTrackingPointer(
+		this.trackingPointerConnection = this.document().startTrackingPointer(
 			event.pointerId,
 			this.onPointerEvent
 		)
 		this.pressedPointer = event.pointerId
-		if (event.tool === PointerTool.TOUCH) {
+		if (event.tool === PointerTool.touch) {
 			this.gestureResolverEntry = gestureResolver.addEntry(
 				event.pointerId,
 				this.onGestureResolve
@@ -80,7 +78,7 @@ class TapRecognizer {
 	}
 
 	unpress(event) {
-		this.stopTrackingPointer()
+		this.trackingPointerConnection.disconnect()
 		this.isPressed = false
 		this.isAccepted = false
 		if (this.onPressEnd) this.onPressEnd()

@@ -6,8 +6,8 @@ import DragRecognizer from '@advk/common/src/gestures/DragRecognizer.js'
 import MultiRecognizer from '@advk/common/src/gestures/MultiRecognizer.js'
 import RawRecognizer from '@advk/common/src/gestures/RawRecognizer.js'
 import VelocityTracker from '@advk/common/src/gestures/VelocityTracker.js'
-import { KeyCode, KeyAction } from '@advk/common/src/events/KeyEvent.js'
-import { isMouseButtonPress } from '@advk/common/src/events/PointerEvent.js'
+import KeyCode from '@advk/common/src/events/KeyCode.js'
+import isMouseButtonPress from '@advk/common/src/events/isMouseButtonPress.js'
 import { Responder } from '../nativeComponents'
 import useContext from '../hooks/useContext.js'
 import Scrolled from './Scrolled.js'
@@ -100,11 +100,11 @@ const onRawEvent = (ctx, event) => {
 
 const onKeyEvent = (ctx, event) => {
     if (!isScrollable(ctx)) return
-    if (event.action === KeyAction.PRESS || event.action === KeyAction.REPEAT) {
+    if (event.action === KeyAction.press || event.action === KeyAction.repeat) {
         if (event.key === KeyCode.UP || event.key == KeyCode.DOWN) {
             const scrollTop = ctx.scrollTopValue.__getValue()
             const delta =
-                (event.key === KeyCode.UP ? -1 : 1) *
+                (event.key === KeyCode.release ? -1 : 1) *
                 ctx.props.keyboardScrollSpeed
             animateScroll(ctx, clampScrollTop(ctx, scrollTop + delta))
         } else if (event.key === KeyCode.HOME) {

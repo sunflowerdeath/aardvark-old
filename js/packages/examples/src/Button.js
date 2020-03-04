@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react'
 import { Color, Value, Padding as Padding1 } from '@advk/common'
 import ReactAardvark, {
     GestureResponder,
-    Sized,
+    Size,
     Stack,
     Background,
     Center,
@@ -30,7 +30,7 @@ const Button = ({ children, onTap }) => {
             onHoverStart={useCallback(() => setIsHovered(true))}
             onHoverEnd={useCallback(() => setIsHovered(false))}
         >
-            <Sized sizeConstraints={{ height: Value.abs(40) }}>
+            <Size sizeConstraints={{ height: Value.abs(40) }}>
                 <IntrinsicWidth>
                     <Stack>
                         <Background color={color} />
@@ -41,7 +41,7 @@ const Button = ({ children, onTap }) => {
                         </Center>
                     </Stack>
                 </IntrinsicWidth>
-            </Sized>
+            </Size>
         </GestureResponder>
     )
 }

@@ -1,4 +1,4 @@
-import { connectToDevTools } from 'react-devtools-core'
+// import { connectToDevTools } from 'react-devtools-core'
 import WebApiWebSocket from '@advk/common/src/WebApiWebSocket'
 import Renderer from './renderer.js'
 import { registerNativeComponent } from './helpers.js'
@@ -22,6 +22,8 @@ const RendererAPI = {
 		)
 	},
 
+    /*
+    TODO
     connectToDevTools(url = 'ws://localhost:8097') {
         const websocket = new WebApiWebSocket(url)
         // ws.onopen = () => log('open')
@@ -34,6 +36,7 @@ const RendererAPI = {
 	        rendererPackageName: 'react-aardvark'
         })
     },
+    */
     
     registerNativeComponent
 }

@@ -1,11 +1,5 @@
-export const KeyAction = {
-	PRESS: 0,
-	RELEASE: 1,
-	REPEAT: 2
-}
-
 // From https://www.glfw.org/docs/latest/group__keys.html
-export const KeyCode = {
+export default {
     UNKNOWN: -1,
     SPACE: 2,
     APOSTROPHE: 9,
