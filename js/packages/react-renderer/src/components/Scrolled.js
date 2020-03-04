@@ -38,7 +38,7 @@ const Scrolled = React.forwardRef((props, ref) => {
         const container = containerRef.current
         const content = contentRef.current
         const document = container.document
-        const unobserveContainer = document.observeElementSize(
+        const observeContainerConnection = document.observeElementSize(
             container,
             size => {
                 if (ctx.height != size.height) {
@@ -47,15 +47,15 @@ const Scrolled = React.forwardRef((props, ref) => {
                 }
             }
         )
-        const unobserveContent = document.observeElementSize(content, size => {
+        const observeContentConnection = document.observeElementSize(content, size => {
             if (ctx.scrollHeight != size.height) {
                 ctx.scrollHeight = size.height
                 ctx.props.onChangeScrollHeight?.()
             }
         })
         return () => {
-            unobserveContainer()
-            unobserveContent()
+            observeContainerConnection.disconnect()
+            observeContentConnection.disconnect()
         }
     }, [])
     useImperativeHandle(ref, () => ({

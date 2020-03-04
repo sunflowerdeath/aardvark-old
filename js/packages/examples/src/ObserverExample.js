@@ -16,14 +16,14 @@ const ObserverExample = () => {
     const [width, setWidth] = useState(200)
     useEffect(() => {
         const elem = elemRef.current
-        const disconnect = elem.document.observeElementSize(elem, size =>
+        const conn = elem.document.observeElementSize(elem, size =>
             log(JSON.stringify(size))
         )
-        return () => disconnect()
+        return () => conn.disconnect()
     }, [])
     return (
         <Stack>
-            <Align align={{ top: Value.abs(50), left: Value.abs(50) }}>
+            <Align insets={{ top: Value.abs(50), left: Value.abs(50) }}>
                 <Size
                     sizeConstraints={{
                         width: Value.abs(width),
@@ -33,7 +33,7 @@ const ObserverExample = () => {
                     <Background color={Color.PURPLE} ref={elemRef} />
                 </Size>
             </Align>
-            <Align align={{ top: Value.abs(20), right: Value.abs(20) }}>
+            <Align insets={{ top: Value.abs(20), right: Value.abs(20) }}>
                 <Size
                     sizeConstraints={{
                         width: Value.abs(200),

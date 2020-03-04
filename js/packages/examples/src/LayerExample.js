@@ -32,7 +32,7 @@ const LayerExample = () => {
     )
     return (
         <Stack>
-            <Align align={{ top: Value.abs(50), left: Value.abs(50) }}>
+            <Align insets={{ top: Value.abs(50), left: Value.abs(50) }}>
                 <Layer transform={matrix}>
                     <GestureResponder
                         onHoverStart={useCallback(() => setIsHovered(true))}
@@ -53,7 +53,7 @@ const LayerExample = () => {
                     </GestureResponder>
                 </Layer>
             </Align>
-            <Align align={{ top: Value.abs(20), right: Value.abs(20) }}>
+            <Align insets={{ top: Value.abs(20), right: Value.abs(20) }}>
                 <Size
                     sizeConstraints={{
                         width: Value.abs(200),

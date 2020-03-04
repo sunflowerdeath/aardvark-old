@@ -247,8 +247,7 @@ const callbackDefTmpl = compileTmpl(`
     std::optional<SimpleMapper<{{typeName}}>> {{name}}_mapper;
 `)
 
-const callbackInitTmpl = compileTmpl(`
-    auto to_js = [](Context& ctx, const {{typeName}}& val) {
+const callbackInitTmpl = compileTmpl(` auto to_js = [](Context& ctx, const {{typeName}}& val) {
         return ctx.value_make_null();
     };
 
@@ -259,21 +258,30 @@ const callbackInitTmpl = compileTmpl(`
         auto fn = val.to_object().value();
         return [this, fn, &ctx](
             {{#each args}}{{getTypeName type}} {{name}}{{#unless @last}},{{/unless}}{{/each}}
-        ) {
+        ) -> {{#if return}}{{getTypeName return}}{{else}}void{{/if}} {
             auto js_args = std::vector<Value>();
             {{#each args}}
             js_args.push_back({{type}}_mapper->to_js(ctx, {{name}}));
             {{/each}}
             auto res = fn.call_as_function(nullptr, js_args);
-            // TODO check return value error
+            if (!res.has_value()) {
+                if (error_handler) error_handler(res.error());
+                // TODO fallback
+                return {{#if return}}{{getTypeName return}}(){{/if}};
+            }
             {{#if return}}
             auto err_params = CheckErrorParams{"return value", "", "{{name}}"};
             auto js_res = {{return}}_mapper->try_from_js(
                 ctx, res.value(), err_params);
-            // TODO handle error
-            // if (!js_res.has_value()) {
-                // return make_error_result(ctx, js_res.error());
-            // }
+            if (!js_res.has_value()) {
+                if (error_handler) {
+                    auto err_val = ctx.value_make_error(js_res.error());
+                    auto err = Error(&ctx, &err_val);
+                    error_handler(err);
+                }
+                // TODO fallback
+                return {{#if return}}{{getTypeName return}}(){{/if}};
+            }
             return js_res.value();
             {{/if}}
         };
@@ -342,9 +350,9 @@ using namespace aardvark::jsi;
 class {{output.class}} {
   public:
     {{output.class}}(Context* ctx);
-  // private:
-    Context* ctx;
     
+    Context* ctx;
+    std::function<void(Error&)> error_handler;
     std::unordered_map<std::type_index, Class> js_class_map = {};
 
     {{#each rootClasses}}

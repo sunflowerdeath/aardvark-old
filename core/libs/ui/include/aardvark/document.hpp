@@ -68,9 +68,10 @@ class Document : public std::enable_shared_from_this<Document> {
     // previous repaint if possible.
     Layer* create_layer(Size size);
 
-    ElementObserverConnection<Size> observe_element_size(
+    std::shared_ptr<Connection> observe_element_size(
         std::shared_ptr<Element> element, std::function<void(Size)> handler) {
-        return size_observer->observe(element, handler);
+        return std::make_shared<Connection>(
+            size_observer->observe(element, handler));
     };
 
     std::shared_ptr<Layer> screen;

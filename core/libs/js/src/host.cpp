@@ -22,6 +22,10 @@ void log(jsi::Context& ctx, std::vector<jsi::Value>& args) {
 Host::Host() {
     ctx = jsi::Qjs_Context::create();
     api.emplace(ctx.get());
+    api->error_handler = [this](jsi::Error& err) {
+        // TODO original_location
+        handle_error(err, /* original_location */ std::nullopt);
+    };
     event_loop = std::make_shared<EventLoop>();
     module_loader = ModuleLoader(
         event_loop.get(),
@@ -30,7 +34,7 @@ Host::Host() {
         [this](
             jsi::Error& err,
             std::optional<jsi::ErrorLocation> original_location) {
-            handle_error(err, original_location);
+            handle_error(err, std::move(original_location));
         });
 
     auto global = ctx->get_global_object();

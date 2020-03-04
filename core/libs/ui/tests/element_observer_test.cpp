@@ -60,7 +60,7 @@ TEST_CASE("ElementObserver", "[element_observer]") {
         reset();
 
         // Handler is not called after disconnecting
-        connection.disconnect();
+        connection->disconnect();
         child1->size_constraints = small;
         child1->change();
         document->render();

@@ -1,3 +1,9 @@
+kind: callback
+name: SizeObserver
+args:
+    - name: size
+      type: Size
+---
 kind: class
 name: Document
 include: aardvark/document.hpp
@@ -6,14 +12,14 @@ props:
      type: Element
      setter: set_root
 methods:
-    # - name: observeElementSize
-      # args:
-        # - name: elem
-          # type: Element
-          # doc: Observed element
-        # - name: handler
-          # type: SizeObserver
-      # return: Connection
+    - name: observeElementSize
+      args:
+        - name: elem
+          type: Element
+          doc: Observed element
+        - name: handler
+          type: SizeObserver
+      return: Connection
     - name: addPointerEventHandler
       args:
         - name: handler

@@ -241,9 +241,25 @@ TEST_CASE("idl", "[idl]") {
     SECTION("callback") {
         auto ctx = create_context();
         auto api = test::TestCallbackApi(ctx.get());
-        auto js_val = ctx->eval("((a, b) => a + b)", nullptr, "url").value();
-        auto val = api.TestCallback_mapper->from_js(*ctx, js_val);
-        REQUIRE(val(2, 3) == 5);
+
+        SECTION("ok") {
+            auto js_val =
+                ctx->eval("((a, b) => a + b)", nullptr, "url").value();
+            auto val = api.TestCallback_mapper->from_js(*ctx, js_val);
+            REQUIRE(val(2, 3) == 5);
+        }
+
+        SECTION("exception") {
+            auto error = std::optional<Error>(std::nullopt);
+            api.error_handler = [&error](Error& an_error) {
+                error = an_error;
+            };
+            auto js_val =
+                ctx->eval("((a, b) => A + B)", nullptr, "url").value();
+            auto val = api.TestCallback_mapper->from_js(*ctx, js_val);
+            auto res = val(2, 3);
+            REQUIRE(error.has_value());
+        }
     }
 
     SECTION("proxy") {
