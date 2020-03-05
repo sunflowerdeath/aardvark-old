@@ -6,33 +6,10 @@
 #include <aardvark_jsi/qjs.hpp>
 
 #include "../generated/api.hpp"
+#include "animation_frame.hpp"
 #include "module_loader.hpp"
 
 namespace aardvark::js {
-
-class AnimationFrame {
-  public:
-    int add_callback(std::function<void()> callback) {
-        id++;
-        callbacks[id] = std::move(callback);
-        return id;
-    };
-
-    void remove_callback(int id) {
-        callbacks.erase(id);
-    };
-
-    void call_callbacks() {
-        // Copy because list of callbacks can be modified during the call
-        auto copy = callbacks;
-        callbacks.clear();
-        for (auto& it : copy) it.second();
-    };
-
-  private:
-    int id = 0;
-    std::map<int, std::function<void()>> callbacks;
-};
 
 class Host {
   public:

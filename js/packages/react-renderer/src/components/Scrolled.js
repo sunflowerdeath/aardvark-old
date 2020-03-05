@@ -11,7 +11,6 @@ import useContext from '../hooks/useContext.js'
 const layout = (elem, constraints) => {
     let scrollHeight = 0
     for (let i = 0; i < elem.childrenCount; i++) {
-        log(i)
         let child = elem.getChildAt(i);
         const childConstraints = {
             minWidth: 0,

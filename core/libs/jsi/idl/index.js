@@ -309,11 +309,14 @@ const functionInitTmpl = compileTmpl(`
             return make_error_result(*ctx, {{name}}_arg.error());
         }
         {{/each}}
-        auto res = {{functionName}}(
+        {{#if return}}auto res = {{/if}}{{functionName}}(
+            *ctx,
             {{#each args}}{{name}}_arg.value(){{#unless @last}}, {{/unless}}{{/each}}
         );
         {{#if return}}
         return {{return}}_mapper->to_js(*ctx, res);
+        {{else}}
+        return ctx->value_make_undefined();
         {{/if}}
     };
     auto obj = ctx->object_make_function(func);

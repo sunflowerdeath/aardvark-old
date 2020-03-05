@@ -16,6 +16,7 @@ idl({
     src: src.map(file => path.resolve(__dirname, `../api/${file}.yaml`)),
     defaultNamespace: 'aardvark',
     include: [
+        "../include/aardvark_js/animation_frame.hpp",
         "../include/aardvark_js/proxies.hpp",
         "../include/aardvark_js/transform_mapping.hpp"
     ],

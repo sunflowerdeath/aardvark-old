@@ -1,3 +1,17 @@
 kind: callback
 name: AnimationFrameCallback
 ---
+kind: function
+name: requestAnimationFrame
+namespace: aardvark::js
+args:
+    - name: callback
+      type: AnimationFrameCallback
+return: int
+---
+kind: function
+name: cancelAnimationFrame
+namespace: aardvark::js
+args:
+    - name: id
+      type: int

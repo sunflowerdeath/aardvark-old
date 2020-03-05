@@ -170,6 +170,8 @@ struct ClassDefinition {
 
 class Context {
   public:
+    void* user_pointer;
+
     virtual Result<Value> eval(
         const std::string& source,
         Object* this_obj,

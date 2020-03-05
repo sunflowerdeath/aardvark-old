@@ -21,6 +21,8 @@ void log(jsi::Context& ctx, std::vector<jsi::Value>& args) {
 
 Host::Host() {
     ctx = jsi::Qjs_Context::create();
+    ctx->user_pointer = static_cast<void*>(this);
+
     api.emplace(ctx.get());
     api->error_handler = [this](jsi::Error& err) {
         // TODO original_location
@@ -49,6 +51,7 @@ Host::Host() {
             .to_value();
     global.set_property("log", log_val);
 
+    // TODO move to IDL
     auto set_timeout =
         ctx->object_make_function(
                [this](jsi::Value& this_val, std::vector<jsi::Value>& args) {
@@ -73,22 +76,6 @@ Host::Host() {
             .to_value();
     global.set_property("setTimeout", set_timeout);
     global.set_property("clearTimeout", clear_timeout);
-
-    auto request_animation_frame = ctx->object_make_function(
-        [this](jsi::Value& this_val, std::vector<jsi::Value>& args) {
-            auto id = animation_frame.add_callback(
-                api->AnimationFrameCallback_mapper->from_js(*ctx, args[0]));
-            return jsi::int_mapper->to_js(*ctx, id);
-        }).to_value();
-    auto cancel_animation_frame =
-        ctx->object_make_function(
-               [this](jsi::Value& this_val, std::vector<jsi::Value>& args) {
-        auto id = jsi::int_mapper->from_js(*ctx, args[0]);
-        animation_frame.remove_callback(id);
-        return ctx->value_make_undefined();
-    }).to_value();
-    global.set_property("requestAnimationFrame", request_animation_frame);
-    global.set_property("cancelAnimationFrame", cancel_animation_frame);
 
     global.set_property(
         "application", api->DesktopApp_mapper->to_js(*ctx, app));

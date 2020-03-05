@@ -15,6 +15,7 @@ endif()
 add_library(aardvark_js ${ADV_JS_LIB_TYPE}
     generated/api.cpp
     generated/error_location_api.cpp
+    src/animation_frame.cpp
     src/host.cpp
     src/module_loader.cpp
     src/proxies.cpp
