@@ -59,18 +59,19 @@ class ElementObserver
         : get_prop_value(get_prop_value){};
 
     // Start observing element
-    ElementObserverConnection<T> observe(std::shared_ptr<Element> element,
-                                         std::function<void(T)> handler) {
+    std::shared_ptr<Connection> observe(
+        std::shared_ptr<Element> element, std::function<void(T)> handler) {
         auto it = observed_elements.find(element);
         if (it == observed_elements.end()) {
             it = observed_elements.emplace(
                 element, ElementObserverEntry(get_prop_value(element))).first;
         }
-        return ElementObserverConnection(
-            this->weak_from_this(),              // observer
-            element,                             // element
+        auto conn = ElementObserverConnection(
+            this->weak_from_this(),             // observer
+            element,                            // element
             it->second.signal.connect(handler)  // connection
         );
+        return std::make_shared<Connection>(conn);
     }
 
     // Stop observing element (called when element is removed from the document)

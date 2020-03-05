@@ -26,43 +26,28 @@ PointerEventManager::PointerEventManager(Document* document)
     hit_tester = std::make_unique<HitTester>(document);
 }
 
-nod::connection PointerEventManager::add_handler(
-    const PointerEventHandler& handler, const bool after_elements) {
-    auto& signal = after_elements ? after_signal : before_signal;
-    return signal.connect(handler);
-}
-
-std::shared_ptr<Connection> PointerEventManager::add_handler2(
+std::shared_ptr<Connection> PointerEventManager::add_handler(
     const PointerEventHandler& handler, const bool after_elements) {
     auto& signal = after_elements ? after_signal : before_signal;
     return std::make_shared<NodConnection>(signal.connect(handler));
 }
 
-nod::connection PointerEventManager::start_tracking_pointer(
+std::shared_ptr<Connection> PointerEventManager::start_tracking_pointer(
     const int pointer_id, const PointerEventHandler& handler) {
     if (!map_contains(pointers_signals, pointer_id)) {
         pointers_signals[pointer_id] = nod::signal<void(const PointerEvent&)>();
     }
-    return pointers_signals[pointer_id].connect(handler);
-}
-
-std::shared_ptr<Connection> PointerEventManager::start_tracking_pointer2(
-    const int pointer_id, const PointerEventHandler& handler) {
     return std::make_shared<NodConnection>(
-        start_tracking_pointer(pointer_id, handler));
+        pointers_signals[pointer_id].connect(handler));
 }
 
 void PointerEventManager::handle_event(const PointerEvent& event) {
     before_signal(event);
-
     call_responders_handlers(event);
-
     if (map_contains(pointers_signals, event.pointer_id)) {
         pointers_signals[event.pointer_id](event);
     }
-
     after_signal(event);
-
     if (event.action == PointerAction::pointer_up) {
         // remove pointer signal
         pointers_signals.erase(event.pointer_id);

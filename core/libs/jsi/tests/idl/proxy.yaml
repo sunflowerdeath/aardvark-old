@@ -9,5 +9,8 @@ props:
       set_proxy: class_prop_set_proxy
 methods:
     - name: method
+      args:
+        - name: arg
+          type: int
       return: int
-      return_proxy: class_method_return_proxy
+      proxy: class_method_proxy

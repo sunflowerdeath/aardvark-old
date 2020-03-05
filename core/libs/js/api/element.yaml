@@ -14,7 +14,16 @@ props:
       type: Document
       readonly: true
       get_proxy: aardvark::js::element_get_document_proxy
+    - name: childrenCount
+      type: int
+      getter: get_children_count
+      readonly: true
 methods:
+    - name: getChildAt
+      args:
+        - name: index
+          type: int
+      return: Element
     - name: appendChild
       args:
         - name: child

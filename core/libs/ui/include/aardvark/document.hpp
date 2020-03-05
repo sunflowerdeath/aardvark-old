@@ -68,10 +68,21 @@ class Document : public std::enable_shared_from_this<Document> {
     // previous repaint if possible.
     Layer* create_layer(Size size);
 
+    std::shared_ptr<Connection> add_pointer_event_handler(
+        const PointerEventHandler& handler, const bool after_elements = false);
+
+    std::shared_ptr<Connection> start_tracking_pointer(
+        const int pointer_id, const PointerEventHandler& handler);
+
+    std::shared_ptr<Connection> add_key_event_handler(
+        const SignalEventSink<KeyEvent>::EventHandler& handler);
+
+    std::shared_ptr<Connection> add_scroll_event_handler(
+        const SignalEventSink<ScrollEvent>::EventHandler& handler);
+
     std::shared_ptr<Connection> observe_element_size(
         std::shared_ptr<Element> element, std::function<void(Size)> handler) {
-        return std::make_shared<Connection>(
-            size_observer->observe(element, handler));
+        return size_observer->observe(std::move(element), std::move(handler));
     };
 
     std::shared_ptr<Layer> screen;
@@ -83,15 +94,6 @@ class Document : public std::enable_shared_from_this<Document> {
     SignalEventSink<KeyEvent> key_event_sink;
     SignalEventSink<ScrollEvent> scroll_event_sink;
 
-    std::shared_ptr<Connection> add_pointer_event_handler(
-        const PointerEventHandler& handler, const bool after_elements = false);
-    std::shared_ptr<Connection> start_tracking_pointer(
-        const int pointer_id, const PointerEventHandler& handler);
-    std::shared_ptr<Connection> add_key_event_handler(
-        const SignalEventSink<KeyEvent>::EventHandler& handler);
-    std::shared_ptr<Connection> add_scroll_event_handler(
-        const SignalEventSink<ScrollEvent>::EventHandler& handler);
-
   private:
     bool initial_render();
     bool rerender();
@@ -101,7 +103,6 @@ class Document : public std::enable_shared_from_this<Document> {
     void paint_layer_tree(LayerTree* tree);
 
     sk_sp<GrContext> gr_context;
-    std::shared_ptr<ElementObserver<Size>> size_observer;
     ElementsSet changed_elements;
     ElementsSet relayout_boundaries;
     ElementsSet repaint_boundaries;
@@ -118,6 +119,7 @@ class Document : public std::enable_shared_from_this<Document> {
     // repaint
     bool inside_changed = false;
     float current_opacity = 1;
+    std::shared_ptr<ElementObserver<Size>> size_observer;
 };
 
 }  // namespace aardvark

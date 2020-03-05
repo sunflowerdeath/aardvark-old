@@ -15,6 +15,7 @@ std::string Error::message() {
 std::optional<ErrorLocation> Error::location() {
     return ctx->value_get_error_location(*value_ptr);
     /*
+    TODO use this for JSC
     if (value_ptr->get_type() != ValueType::object) return std::nullopt;
     auto obj = value_ptr->to_object().value();
     if (!obj.has_property("sourceURL")) return std::nullopt;

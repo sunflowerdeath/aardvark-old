@@ -8,7 +8,7 @@ using namespace aardvark::jsi;
 struct ProxyClass {
   public:
     int prop = 1;
-    int method() { return 1; }
+    int proxied_method(int arg) { return arg * 2; }
 };
 
 Result<Value> class_prop_get_proxy(
@@ -21,5 +21,8 @@ Result<bool> class_prop_set_proxy(
     Mapper<int>& mapper,
     CheckErrorParams& err_params);
 
-Result<Value> class_method_return_proxy(
-    Context& ctx, int& val, Mapper<int>& mapper);
+Result<Value> class_method_proxy(
+    Context& ctx,
+    std::shared_ptr<ProxyClass>& this_val,
+    int& val,
+    Mapper<int>& mapper);

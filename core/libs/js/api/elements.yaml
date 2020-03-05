@@ -108,7 +108,7 @@ name: CustomLayoutCallback
 args:
     - name: elem
       type: Element
-    - name: size
+    - name: constraints
       type: BoxConstraints
 return: Size
 ---
@@ -121,6 +121,22 @@ props:
     - name: layoutFn
       type: CustomLayoutCallback
       setter: set_layout_fn
+methods:
+    - name: runChildLayout
+      args: 
+        - name: child
+          type: Element
+        - name: constraints
+          type: BoxConstraints
+      return: Size
+    - name: setChildLayout
+      args:
+        - name: child
+          type: Element
+        - name: position
+          type: Position
+        - name: size
+          type: Size
 ---
 kind: enum
 name: FlexDirection

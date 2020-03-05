@@ -34,6 +34,18 @@ class CustomLayoutElement : public MultipleChildrenElement {
         return layout_fn(shared_from_this(), constraints);
     };
 
+    Size run_child_layout(
+        std::shared_ptr<Element> child, BoxConstraints constraints) {
+        // TODO add some checks
+        return document->layout_element(child.get(), constraints);
+    }
+
+    void set_child_layout(
+        std::shared_ptr<Element> child, Position position, Size size) {
+        child->rel_position = position;
+        child->size = size;
+    }
+
     ELEMENT_PROP(CustomLayoutFn, layout_fn);
 };
 

@@ -312,22 +312,22 @@ void Document::paint_layer_tree(LayerTree* tree) {
 
 std::shared_ptr<Connection> Document::add_pointer_event_handler(
     const PointerEventHandler& handler, const bool after_elements) {
-    return pointer_event_manager->add_handler2(handler, after_elements);
+    return pointer_event_manager->add_handler(handler, after_elements);
 }
 
 std::shared_ptr<Connection> Document::start_tracking_pointer(
     const int pointer_id, const PointerEventHandler& handler) {
-    return pointer_event_manager->start_tracking_pointer2(pointer_id, handler);
+    return pointer_event_manager->start_tracking_pointer(pointer_id, handler);
 }
 
 std::shared_ptr<Connection> Document::add_key_event_handler(
     const SignalEventSink<KeyEvent>::EventHandler& handler) {
-    return key_event_sink.add_handler2(handler);
+    return key_event_sink.add_handler(handler);
 }
 
 std::shared_ptr<Connection> Document::add_scroll_event_handler(
     const SignalEventSink<ScrollEvent>::EventHandler& handler) {
-    return scroll_event_sink.add_handler2(handler);
+    return scroll_event_sink.add_handler(handler);
 }
 
 }  // namespace aardvark

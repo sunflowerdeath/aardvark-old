@@ -9,16 +9,20 @@ import { Clip, Layer, CustomLayout } from '../nativeComponents'
 import useContext from '../hooks/useContext.js'
 
 const layout = (elem, constraints) => {
+    log('TEST')
+    log(`COUNT ${elem.childrenCount}`)
     let scrollHeight = 0
-    for (const child of elem.children) {
+    for (let i = 0; i < elem.childrenCount; i++) {
+        log(i)
+        let child = elem.getChildAt(i);
         const childConstraints = {
             minWidth: 0,
             maxWidth: constraints.maxWidth,
             minHeight: 0,
             maxHeight: Infinity
         }
-        const childSize = elem.document.layoutElement(child, childConstraints)
-        child.setLayoutProps({ left: 0, top: scrollHeight }, childSize)
+        const childSize = elem.runChildLayout(child, childConstraints)
+        elem.setChildLayout(child, { left: 0, top: scrollHeight }, childSize)
         scrollHeight += childSize.height
     }
     return { width: constraints.maxWidth, height: scrollHeight }
@@ -89,7 +93,7 @@ const Scrolled = React.forwardRef((props, ref) => {
                 ref={contentRef}
                 transform={TransformMatrix.makeTranslate(0, 0)}
             >
-                <CustomLayout layout={layout}>{props.children}</CustomLayout>
+                <CustomLayout layoutFn={layout}>{props.children}</CustomLayout>
             </Layer>
         </Clip>
     )

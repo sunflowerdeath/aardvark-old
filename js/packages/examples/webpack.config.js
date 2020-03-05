@@ -3,7 +3,10 @@ const path = require('path')
 module.exports = {
     entry: './src/index.js',
     output: {
-        path: path.resolve(__dirname, 'build'),
+        path: path.resolve(
+            __dirname,
+            process.env.NODE_ENV == 'production' ? 'build-prod' : 'build'
+        ),
         filename: 'main.js'
     },
     mode: process.env.NODE_ENV == 'production' ? 'production' : 'development',
@@ -37,5 +40,5 @@ module.exports = {
             }
         ]
     },
-    devtool: 'source-map'
+    devtool: process.env.NODE_ENV == 'production' ? false : 'source-map'
 }

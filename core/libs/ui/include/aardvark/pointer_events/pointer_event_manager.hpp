@@ -21,17 +21,11 @@ class PointerEventManager {
 
     // Registers handler for all pointer events of the document.
     // When `after` is true, handler will be called after all other handlers.
-    nod::connection add_handler(const PointerEventHandler& handler,
-                                const bool after_elements = false);
-
-    std::shared_ptr<Connection> add_handler2(
+    std::shared_ptr<Connection> add_handler(
         const PointerEventHandler& handler, const bool after_elements = false);
 
     // Register handler to track events of the specified pointer
-    nod::connection start_tracking_pointer(const int pointer_id,
-                                           const PointerEventHandler& handler);
-
-    std::shared_ptr<Connection> start_tracking_pointer2(
+    std::shared_ptr<Connection> start_tracking_pointer(
         const int pointer_id, const PointerEventHandler& handler);
 
     void handle_event(const PointerEvent& event);

@@ -41,8 +41,8 @@ const ListItem = ({ children }) => {
     const [isHovered, setIsHovered] = useState(false)
 
     const handler = (event, eventType) => {
-        if (eventType === PointerEventType.ENTER) setIsHovered(true)
-        else if (eventType === PointerEventType.LEAVE) setIsHovered(false)
+        if (eventType === ResponderEventType.add) setIsHovered(true)
+        else if (eventType === ResponderEventType.remove) setIsHovered(false)
     }
     return (
         <Responder handler={handler}>

@@ -278,8 +278,8 @@ TEST_CASE("idl", "[idl]") {
             REQUIRE(val->prop == 2);
 
             ctx->get_global_object().set_property("inst", js_val);
-            auto method_res = ctx->eval("inst.method()", nullptr, "url");
-            REQUIRE(method_res.value().to_number().value() == 2);
+            auto method_res = ctx->eval("inst.method(2)", nullptr, "url");
+            REQUIRE(method_res.value().to_number().value() == 4);
         }
 
         ctx.reset();

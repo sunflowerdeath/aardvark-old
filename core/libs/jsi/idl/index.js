@@ -174,17 +174,22 @@ const classInitTmpl = compileTmpl(`
             return make_error_result(*ctx, {{name}}_arg.error());
         }
         {{/each}}
+        {{#if proxy}}
+        {{#if return}}return {{/if}}{{proxy}}(
+            *ctx, mapped_this
+            {{#each args}}, {{name}}_arg.value(){{/each}}
+            {{#if return}},*{{return}}_mapper{{/if}}
+        );
+        {{#unless return}}return ctx->value_make_undefined();{{/unless}}
+        {{else}}
         {{#if return}}auto res = {{/if}}mapped_this->{{snakeCase name}}(
             {{#each args}}{{name}}_arg.value(){{#unless @last}}, {{/unless}}{{/each}}
         );
         {{#if return}}
-        {{#if return_proxy}}
-        return {{return_proxy}}(*ctx, res, *{{return}}_mapper);
-        {{else}}
         return {{return}}_mapper->to_js(*ctx, res);
-        {{/if}}
         {{else}}
         return ctx->value_make_undefined();
+        {{/if}}
         {{/if}}
     };
     {{/each}}

@@ -75,7 +75,7 @@ class DragRecognizer {
 		this.startEvent = event
 
 		this.isActive = true
-		this.stopTrackingPointer = this.document().startTrackingPointer(
+		this.trackingPointerConnection = this.document().startTrackingPointer(
 			event.pointerId,
 			this.onPointerEvent.bind(this)
 		)
@@ -98,7 +98,7 @@ class DragRecognizer {
 
 	end(event) {
         if (!this.isStarted) return
-		this.stopTrackingPointer()
+		this.trackingPointerConnection.disconnect()
 		this.isStarted = false
 		this.isActive = false
 		if (this.onDragEnd) this.onDragEnd(this.makeDragEvent(event))

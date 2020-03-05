@@ -18,9 +18,9 @@ const OverscrollResistance = {
     diminishing: value => Math.pow(value, 0.8)
 }
 
-const removeHandler = (object, key) => {
+const disconnectAndDelete = (object, key) => {
     if (key in object) {
-        object[key]()
+        object[key].disconnect()
         delete object[key]
     }
 }
@@ -78,9 +78,9 @@ const checkDisabled = ctx => {
 let currentKeyHandler
 
 const makeCurrentKeyHandler = ctx => {
-    if (currentKeyHandler) currentKeyHandler.removeKeyHandler()
+    if (currentKeyHandler) currentKeyHandler.keyHandlerConnection.disconnect()
     const document = ctx.elemRef.current.document
-    ctx.removeKeyHandler = document.addKeyHandler(onKeyEvent(ctx, ?))
+    ctx.keyHandlerConnection = document.addKeyEventHandler(onKeyEvent(ctx, ?))
     currentKeyHandler = ctx
 }
 
@@ -127,10 +127,10 @@ const onKeyEvent = (ctx, event) => {
 // Mouse wheel
 const onHoverStart = ctx => {
     const document = ctx.elemRef.current.document
-    ctx.removeScrollHandler = document.addScrollHandler(onScrollEvent(ctx, ?))
+    ctx.scrollHandlerConnection = document.addScrollEventHandler(onScrollEvent(ctx, ?))
 }
 
-const onHoverEnd = ctx => removeHandler(ctx, 'removeScrollHandler')
+const onHoverEnd = ctx => disconnectAndDelete(ctx, 'scrollHandlerConnection')
 
 // When there are multiple nested scrollables, only top one should be scrolled
 const alreadyScrolled = false
@@ -184,11 +184,11 @@ const onDragEnd = (ctx, event) => {
 
 const unmount = ctx => {
     ctx.scrollTopValue.stopAnimation()
-    removeHandler(ctx, 'removeScrollHandler')
-    removeHandler(ctx, 'removeKeyHandler')
+    disconnectAndDelete(ctx, 'scrollHandlerConnection')
+    disconnectAndDelete(ctx, 'keyHandlerConnection')
     if (currentKeyHandler === ctx) {
         currentKeyHandler = undefined
-        removeHandler(ctx, 'removeKeyHandler')
+        //disconnectAndDelete(ctx, 'keyHandlerConnection')
     }
 }
 

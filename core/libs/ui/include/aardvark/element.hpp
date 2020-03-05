@@ -4,12 +4,13 @@
 #include <memory>
 #include <optional>
 #include <string>
+
 #include "SkPath.h"
 #include "base_types.hpp"
 #include "box_constraints.hpp"
 #include "document.hpp"
-#include "pointer_events/responder.hpp"
 #include "pointer_events/hit_tester.hpp"
+#include "pointer_events/responder.hpp"
 
 #define ELEMENT_PROP(TYPE, NAME) \
     TYPE NAME;                   \
@@ -98,7 +99,11 @@ class Element : public std::enable_shared_from_this<Element> {
     virtual void paint(bool is_changed){};
 
     // Walks children in paint order.
-    virtual void visit_children(ChildrenVisitor visitor){};
+    virtual void visit_children(ChildrenVisitor visitor) {};
+    virtual int get_children_count() { return 0; };
+    virtual std::shared_ptr<Element> get_child_at(int index) {
+        return nullptr;
+    };
 
     // Checks if element is hit by pointer. Default is checking element's box.
     virtual bool hit_test(double left, double top);
@@ -178,6 +183,10 @@ class SingleChildElement : public Element {
     void append_child(std::shared_ptr<Element> child) override;
     void remove_child(std::shared_ptr<Element> child) override;
     void visit_children(ChildrenVisitor visitor) override { visitor(child); };
+    int get_children_count() override { return child == nullptr ? 0 : 1; };
+    std::shared_ptr<Element> get_child_at(int index) override {
+        return index == 0 ? child : nullptr;
+    };
 
     std::shared_ptr<Element> child;
 };
@@ -196,6 +205,10 @@ class MultipleChildrenElement : public Element {
     void insert_before_child(std::shared_ptr<Element> child,
                              std::shared_ptr<Element> before_child) override;
     void visit_children(ChildrenVisitor visitor) override;
+    int get_children_count() override { return children.size(); };
+    std::shared_ptr<Element> get_child_at(int index) override {
+        return (index + 1 > children.size()) ? nullptr : children[index];
+    };
 
     std::vector<std::shared_ptr<Element>> children;
 };
