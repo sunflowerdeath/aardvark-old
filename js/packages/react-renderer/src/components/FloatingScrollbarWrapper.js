@@ -65,7 +65,7 @@ const FloatingScrollbarWrapper = props => {
         <Stack>
             {children}
             <Align alignment={{ top: Value.abs(0), right: Value.abs(0) }}>
-                <Sized
+                <Size
                     sizeConstraints={{
                         height: Value.rel(1),
                         width: Value.abs(10)
@@ -73,17 +73,17 @@ const FloatingScrollbarWrapper = props => {
                 >
                     <Clip>
                         <Layer ref={layerRef}>
-                            <Sized
+                            <Size
                                 sizeConstraints={{
                                     height: Value.abs(scrollbarHeight),
                                     width: Value.rel(1)
                                 }}
                             >
                                 {React.createElement(scrollbarComponent)}
-                            </Sized>
+                            </Size>
                         </Layer>
                     </Clip>
-                </Sized>
+                </Size>
             </Align>
         </Stack>
     )

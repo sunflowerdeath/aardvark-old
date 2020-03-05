@@ -124,6 +124,7 @@ const FloatingScrollbarExample = () => {
                 <Stack>
                     <Background color={Color.LIGHTGREY} />
                     <Scrollable wrapper={FloatingScrollbarWrapper}>
+                        <Expandable ref={expandRef} />
                         {range(1, 20).map(i => (
                             <ListItem>Item {i}</ListItem>
                         ))}

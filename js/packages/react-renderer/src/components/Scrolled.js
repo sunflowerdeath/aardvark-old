@@ -9,8 +9,6 @@ import { Clip, Layer, CustomLayout } from '../nativeComponents'
 import useContext from '../hooks/useContext.js'
 
 const layout = (elem, constraints) => {
-    log('TEST')
-    log(`COUNT ${elem.childrenCount}`)
     let scrollHeight = 0
     for (let i = 0; i < elem.childrenCount; i++) {
         log(i)

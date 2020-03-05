@@ -2,6 +2,7 @@ let path = require('path')
 let idl = require('../../jsi/idl')
 
 let src = [
+    'animation_frame',
     'base_types',
     'events',
     'desktop_app',

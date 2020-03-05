@@ -104,7 +104,7 @@ const onKeyEvent = (ctx, event) => {
         if (event.key === KeyCode.UP || event.key == KeyCode.DOWN) {
             const scrollTop = ctx.scrollTopValue.__getValue()
             const delta =
-                (event.key === KeyCode.release ? -1 : 1) *
+                (event.key === KeyCode.UP ? -1 : 1) *
                 ctx.props.keyboardScrollSpeed
             animateScroll(ctx, clampScrollTop(ctx, scrollTop + delta))
         } else if (event.key === KeyCode.HOME) {
@@ -133,7 +133,7 @@ const onHoverStart = ctx => {
 const onHoverEnd = ctx => disconnectAndDelete(ctx, 'scrollHandlerConnection')
 
 // When there are multiple nested scrollables, only top one should be scrolled
-const alreadyScrolled = false
+let alreadyScrolled = false
 
 const onScrollEvent = (ctx, event) => {
     if (!isScrollable(ctx) || alreadyScrolled) return
