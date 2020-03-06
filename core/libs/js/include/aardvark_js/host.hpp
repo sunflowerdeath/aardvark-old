@@ -6,7 +6,7 @@
 #include <aardvark_jsi/qjs.hpp>
 
 #include "../generated/api.hpp"
-#include "animation_frame.hpp"
+#include "api/animation_frame.hpp"
 #include "module_loader.hpp"
 
 namespace aardvark::js {

@@ -41,7 +41,7 @@ const FloatingScrollbarWrapper = props => {
     })
     useEffect(() => {
         scrollTopValue.addListener(({ value }) => {
-            const top = (height * value) / scrollHeight
+            const top = (ctx.props.height * value) / ctx.props.scrollHeight
             layerRef.current.transform = TransformMatrix.makeTranslate(0, top)
             if (ctx.props.autoHide) {
                 clearTimeout(ctx.hideTimer)
@@ -52,7 +52,7 @@ const FloatingScrollbarWrapper = props => {
                 )
             }
         })
-    }, [height, scrollHeight])
+    }, [])
     useEffect(() => {
         if (ctx.props.autoHide) ctx.layerRef.current.opacity = 0
         ctx.opacityValue.addListener(({ value }) => {

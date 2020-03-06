@@ -1,3 +1,6 @@
+kind: callback
+name: EmptyCallback
+---
 kind: struct
 name: BoxConstraints
 include: aardvark/box_constraints.hpp

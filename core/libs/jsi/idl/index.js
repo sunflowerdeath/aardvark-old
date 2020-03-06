@@ -300,6 +300,7 @@ const functionDefTmpl = compileTmpl(``)
 const functionInitTmpl = compileTmpl(`
     auto func = [this](Value& this_val, std::vector<Value>& args)
         -> Result<Value> {
+        // TODO check number of arguments
         {{#each args}}
         auto {{name}}_err_params = CheckErrorParams{
             "argument", "{{name}}", "{{../name}}"};

@@ -15,11 +15,13 @@ endif()
 add_library(aardvark_js ${ADV_JS_LIB_TYPE}
     generated/api.cpp
     generated/error_location_api.cpp
-    src/animation_frame.cpp
     src/host.cpp
     src/module_loader.cpp
-    src/proxies.cpp
-    src/transform_mapping.cpp
+    src/api/animation_frame.cpp
+    src/api/flex_child.cpp
+    src/api/element.cpp
+    src/api/timeout.cpp
+    src/api/transform.cpp
 )
 
 make_includable(

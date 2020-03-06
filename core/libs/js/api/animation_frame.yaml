@@ -1,12 +1,9 @@
-kind: callback
-name: AnimationFrameCallback
----
 kind: function
 name: requestAnimationFrame
 namespace: aardvark::js
 args:
     - name: callback
-      type: AnimationFrameCallback
+      type: EmptyCallback
 return: int
 ---
 kind: function

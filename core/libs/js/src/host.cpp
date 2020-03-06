@@ -3,10 +3,11 @@
 #include <aardvark_jsi/check.hpp>
 #include <aardvark/utils/log.hpp>
 #include <iostream>
+#include "api/timeout.hpp"
 
 namespace aardvark::js {
 
-void log(jsi::Context& ctx, std::vector<jsi::Value>& args) {
+void log(std::vector<jsi::Value>& args) {
     for (auto& arg : args) {
         auto to_str = arg.to_string();
         if (to_str.has_value()) {
@@ -41,45 +42,20 @@ Host::Host() {
 
     auto global = ctx->get_global_object();
     app = std::make_shared<DesktopApp>(event_loop);
-    auto log_val =
-        ctx->object_make_function(
-               [& ctx = *ctx](
-                   jsi::Value& this_val, std::vector<jsi::Value>& args) {
-                   log(ctx, args);
-                   return ctx.value_make_undefined();
-               })
-            .to_value();
-    global.set_property("log", log_val);
-
-    // TODO move to IDL
-    auto set_timeout =
-        ctx->object_make_function(
-               [this](jsi::Value& this_val, std::vector<jsi::Value>& args) {
-                   auto callback = args[0].to_object().value();
-                   auto timeout =
-                       args.size() == 2 ? args[1].to_number().value() : 0;
-                   auto id = event_loop->set_timeout(
-                       [this, callback]() {
-                           ctx->object_call_as_function(callback, nullptr, {});
-                       },
-                       timeout);
-                   return ctx->value_make_number(id);
-               })
-            .to_value();
-    auto clear_timeout =
-        ctx->object_make_function(
-               [this](jsi::Value& this_val, std::vector<jsi::Value>& args) {
-                   auto id = args[0].to_number().value();
-                   event_loop->clear_timeout(id);
-                   return ctx->value_make_undefined();
-               })
-            .to_value();
-    global.set_property("setTimeout", set_timeout);
-    global.set_property("clearTimeout", clear_timeout);
-
     global.set_property(
         "application", api->DesktopApp_mapper->to_js(*ctx, app));
     global.set_property("window", global.to_value());
+
+    auto log_fn =
+        ctx->object_make_function(
+               [this](jsi::Value& this_val, std::vector<jsi::Value>& args) {
+                   log(args);
+                   return ctx->value_make_undefined();
+               })
+            .to_value();
+    global.set_property("log", log_fn);
+
+    add_timeout(*ctx);
 }
 
 Host::~Host() {
