@@ -22,7 +22,7 @@ jsi::Result<jsi::Value> set_timeout(
         return jsi::make_error_result(*host.ctx, callback.error());
     }
     auto timeout = args.size() >= 2 ? args[1].to_number().value_or(0) : 0;
-    auto id = host.event_loop->set_timeout(callback.value(), timeout);
+    auto id = host.event_loop->set_timeout(callback.value(), timeout * 1000);
     return host.ctx->value_make_number(id);
 }
 

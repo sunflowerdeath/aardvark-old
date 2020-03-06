@@ -55,10 +55,10 @@ const FloatingScrollbarWrapper = props => {
     }, [])
     useEffect(() => {
         if (ctx.props.autoHide) ctx.layerRef.current.opacity = 0
-        ctx.opacityValue.addListener(({ value }) => {
-            ctx.layerRef.current.opacity = value
+        let id = ctx.opacityValue.addListener(({ value }) => {
+            let layer = ctx.layerRef.current
+            if (layer) layer.opacity = value
         })
-        return () => ctx.opacityValue.stopAnimation()
     }, [])
     const scrollbarHeight = height * (height / scrollHeight)
     return (
