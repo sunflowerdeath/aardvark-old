@@ -51,6 +51,10 @@ class Document : public std::enable_shared_from_this<Document> {
     // Makes the layout of the specified element up-to-date by performing
     // partial relayout of the document.
     void partial_relayout(Element* elem);
+    
+    void partial_relayout(std::shared_ptr<Element>& elem) {
+        partial_relayout(elem.get());
+    };
 
     // Elements should call this function to layout its children
     Size layout_element(Element* elem, BoxConstraints constraints);

@@ -12,13 +12,15 @@ import ReactAardvark, {
 import ScrollExample from './ScrollExample.js'
 import LayerExample from './LayerExample.js'
 import ObserverExample from './ObserverExample.js'
+import EditorExample from './EditorExample.js'
 
 import Button from './Button.js'
 
 const examples = [
     { name: 'Scroll', component: ScrollExample },
     { name: 'Layer', component: LayerExample },
-    { name: 'Observer', component: ObserverExample }
+    { name: 'Observer', component: ObserverExample },
+    { name: 'Editor', component: EditorExample }
 ]
 
 const Main = () => {

@@ -42,3 +42,7 @@ methods:
         - name: handler
           type: PointerEventHandler
       return: Connection
+    - name: partialRelayout
+      args:
+        - name: element
+          type: Element

@@ -133,7 +133,7 @@ void Document::partial_relayout(Element* elem) {
     auto current = elem;
     auto changed_it = changed_elements.end();
     while (current != nullptr) {
-        changed_it = changed_elements.find(elem);
+        changed_it = changed_elements.find(current);
         if (changed_it != changed_elements.end()) break;
         current = current->parent;
     }
@@ -142,6 +142,8 @@ void Document::partial_relayout(Element* elem) {
         auto boundary = (*changed_it)->find_closest_relayout_boundary();
         relayout_boundary_element(boundary);
         changed_elements.erase(changed_it);
+        // TODO should erase from `changed` all elements that are children
+        // of the boundary
     }
 }
 

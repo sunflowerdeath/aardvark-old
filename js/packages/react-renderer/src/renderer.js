@@ -150,7 +150,7 @@ const removeChild = (parentInstance, child) => {
 const removeChildFromContainer = (parentInstance, child) => {
 	// log('removeChildFromContainer')
 	// TODO undefined / placeholder
-	parentInstance.root = new Stack()
+	parentInstance.root = new Placeholder()
 }
 
 const resetTextContent = instance => {
