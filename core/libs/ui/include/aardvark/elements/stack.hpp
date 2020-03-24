@@ -16,6 +16,7 @@ class StackElement : public MultipleChildrenElement {
               /* size_depends_on_parent */ true){};
 
     std::string get_debug_name() override { return "Stack"; };
+    HitTestMode get_hit_test_mode() override { return HitTestMode::Disabled; };
     Size layout(BoxConstraints constraints) override;
 };
 

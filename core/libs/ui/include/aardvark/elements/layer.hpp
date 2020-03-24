@@ -24,6 +24,8 @@ class LayerElement : public SingleChildElement {
     std::string get_debug_name() override { return "Layer"; };
 
     Size layout(BoxConstraints constraints) override;
+    
+    HitTestMode get_hit_test_mode() override { return HitTestMode::Disabled; };
 
     void change_layer() {
         if (document != nullptr) document->change_layer(this);

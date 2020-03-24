@@ -29,7 +29,7 @@ bool Element::is_parent_of(Element* elem) {
 void Element::set_document(Document* new_document) {
     if (document != new_document) {
         document = new_document;
-        visit_children([new_document](std::shared_ptr<Element> child) {
+        visit_children([new_document](std::shared_ptr<Element>& child) {
             child->set_document(new_document);
         });
     }
@@ -138,7 +138,7 @@ void MultipleChildrenElement::insert_before_child(
 }
 
 void MultipleChildrenElement::visit_children(ChildrenVisitor visitor) {
-    for (auto child : children) visitor(child);
+    for (auto& child : children) visitor(child);
 }
 
 }  // namespace aardvark

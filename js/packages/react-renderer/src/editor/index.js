@@ -246,7 +246,9 @@ const Selection = forwardRef((props, ref) => {
             <Layer opacity={opacity}>
                 <Stack>{children}</Stack>
             </Layer>
-            <Stack>{ears}</Stack>
+            <Layer>
+                <Stack>{ears}</Stack>
+            </Layer>
         </>
     )
 })
