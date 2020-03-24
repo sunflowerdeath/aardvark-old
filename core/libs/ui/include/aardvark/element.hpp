@@ -49,7 +49,7 @@ enum class HitTestMode {
     Disabled
 };
 
-using ChildrenVisitor = std::function<void(std::shared_ptr<Element>)>;
+using ChildrenVisitor = std::function<void(std::shared_ptr<Element>&)>;
 
 // Base class for elements of the document
 class Element : public std::enable_shared_from_this<Element> {

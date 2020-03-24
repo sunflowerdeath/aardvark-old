@@ -17,7 +17,8 @@ import {
     Translate,
     Size,
     Background
-} from '../nativeComponents'
+} from '../nativeComponents.js'
+import GestureResponder from '../components/GestureResponder'
 
 const EditorContext = createContext()
 
@@ -82,12 +83,12 @@ const Children = props => {
     for (let i = 0; i < node.children.length; i++) {
         const child = node.children[i]
         const childPath = path.concat(i)
-        const childRange = Editor.range(editor, path)
+        const childRange = Editor.range(editor, childPath)
         const childSelection =
             selection && Range.intersection(childRange, selection)
         const isFullySelected =
             !isInsideSelected &&
-            selection &&
+            childSelection &&
             Range.equals(childRange, childSelection)
         if (Element.isElement(child)) {
             children.push(
@@ -112,10 +113,11 @@ const Children = props => {
         }
 
         if (isFullySelected) {
-            SELECTED_NODES.add(node)
+            SELECTED_NODES.add(child)
         } else {
-            SELECTED_NODES.delete(node)
+            SELECTED_NODES.delete(child)
         }
+
         NODES_INDEXES.set(child, i)
         NODES_PARENTS.set(child, node)
     }
@@ -139,7 +141,6 @@ const ElementComponent = props => {
             NODES_ELEMENTS.set(node, ref.current)
             ELEMENTS_NODES.set(ref.current, node)
         } else {
-            // remove??
             NODES_ELEMENTS.delete(node)
             // ELEMENTS_NODES.delete(ref.current, node)
         }
@@ -167,67 +168,88 @@ const LeafComponent = props => {
     TODO decorations
     const leaves = SlateText.decorations(text, decorations)
     */
+    useLayoutEffect(() => {
+        if (ref.current) {
+            NODES_ELEMENTS.set(node, ref.current)
+            ELEMENTS_NODES.set(ref.current, node)
+        } else {
+            NODES_ELEMENTS.delete(node)
+            // ELEMENTS_NODES.delete(ref.current, node)
+        }
+    })
 
     return renderLeaf({ node, ref })
 }
 
+const Ear = () => {}
+
 const Selection = forwardRef((props, ref) => {
     const { editorRef, color, padding, opacity } = props
     const [children, setChildren] = useState([])
+    const [ears, setEars] = useState([])
     useImperativeHandle(
         ref,
-        () => {
-            return {
-                update: () => {
-                    editorRef.current.document.partialRelayout(
-                        editorRef.current
-                    )
-                    const children = []
-                    for (let node of SELECTED_NODES) {
-                        const elem = NODES_ELEMENTS.get(node)
-                        const { left, top } = elem.relPosition // abs pos
-                        const { width, height } = elem.size
-                        const translate = {
-                            left: Value.abs(left - padding),
-                            top: Value.abs(top - padding)
-                        }
-                        const size = {
-                            width: Value.abs(width + padding * 2),
-                            height: Value.abs(height + padding * 2)
-                        }
-                        children.push(
-                            <Translate translation={translate}>
-                                <Size sizeConstraints={size}>
-                                    <Background color={color} />
-                                </Size>
-                            </Translate>
-                        )
+        () => ({
+            update: () => {
+                editorRef.current.document.partialRelayout(editorRef.current)
+                const children = []
+                const absPos = editorRef.current.absPosition
+                // const absPos = { left: 0, top: 0 }
+                for (let node of SELECTED_NODES) {
+                    const elem = NODES_ELEMENTS.get(node)
+                    const { left, top } = elem.absPosition
+                    // const { left, top } = elem.relPosition
+                    const { width, height } = elem.size
+                    const translate = {
+                        left: Value.abs(-absPos.left + left - padding),
+                        top: Value.abs(-absPos.top + top - padding)
                     }
-                    setChildren(children)
+                    const size = {
+                        width: Value.abs(width + padding * 2),
+                        height: Value.abs(height + padding * 2)
+                    }
+                    children.push(
+                        <Translate translation={translate}>
+                            <Size sizeConstraints={size}>
+                                <Background color={color} />
+                            </Size>
+                        </Translate>
+                    )
+
+                    const earSize = {
+                        width: Value.abs(2),
+                        height: Value.abs(height + padding * 2)
+                    }
+                    ears.push(
+                        <Translate translation={translate}>
+                            <Size sizeConstraints={earSize}>
+                                <Background
+                                    color={{
+                                        red: 19,
+                                        green: 111,
+                                        blue: 225,
+                                        alpha: 255
+                                    }}
+                                />
+                            </Size>
+                        </Translate>
+                    )
                 }
+                setChildren(children)
+                setEars(ears)
             }
-        },
+        }),
         []
     )
     return (
-        <Layer opacity={opacity}>
-            <Stack>
-                {children}
-            </Stack>
-        </Layer>
+        <>
+            <Layer opacity={opacity}>
+                <Stack>{children}</Stack>
+            </Layer>
+            <Stack>{ears}</Stack>
+        </>
     )
 })
-
-const renderElement = ({ schema, node, children }) => {
-    let def = schema[node.type]
-    return React.createElement(def.component, { node, children })
-}
-
-const renderLeaf = ({ node }) => {
-    let def = schema[node.type]
-    // TODO decorations
-    return React.createElement(schema[node.type], { node })
-}
 
 const EditorComponent = props => {
     const { state, editorProps, renderElement, renderLeaf } = props
@@ -267,9 +289,9 @@ const EditorComponent = props => {
             <Selection
                 ref={selectionRef}
                 editorRef={elemRef}
-                color={{ red: 0, green: 0, blue: 255, alpha: 255 }}
+                color={{ red: 152, green: 187, blue: 224, alpha: 255 }}
                 padding={3}
-                opacity={0.4}
+                opacity={0.5}
             />
         </Stack>
     )

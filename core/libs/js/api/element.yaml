@@ -6,6 +6,8 @@ props:
       type: Size
     - name: relPosition
       type: Position
+    - name: absPosition
+      type: Position
     - name: parent
       type: Element
       readonly: true

@@ -102,6 +102,8 @@ class Document : public std::enable_shared_from_this<Document> {
     bool initial_render();
     bool rerender();
     void relayout_boundary_element(Element* elem);
+    void update_tree_abs_position(Element* elem);
+    void update_abs_position(Element* elem);
     bool repaint();
     void compose();
     void paint_layer_tree(LayerTree* tree);

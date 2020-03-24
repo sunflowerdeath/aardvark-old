@@ -107,7 +107,22 @@ void Document::relayout() {
 void Document::relayout_boundary_element(Element* elem) {
     layout_element(elem, elem->prev_constraints);
     add_only_parent(repaint_boundaries, elem->find_closest_repaint_boundary());
+    update_tree_abs_position(elem);
     elem->is_changed = true;
+}
+
+void Document::update_tree_abs_position(Element* elem) {
+    update_abs_position(elem);
+    elem->visit_children([this](std::shared_ptr<Element>& child) {
+        update_tree_abs_position(child.get());
+    });
+}
+
+void Document::update_abs_position(Element* elem) {
+    elem->abs_position =
+        elem->parent == nullptr
+            ? elem->rel_position
+            : Position::add(elem->parent->abs_position, elem->rel_position);
 }
 
 Size Document::layout_element(Element* elem, BoxConstraints constraints) {
@@ -173,11 +188,6 @@ void Document::paint_element(Element* elem, bool is_repaint_root) {
         layers_pool = std::move(current_layer_tree->children);
         current_layer = nullptr;
     }
-
-    elem->abs_position =
-        elem->parent == nullptr
-            ? elem->rel_position
-            : Position::add(elem->parent->abs_position, elem->rel_position);
 
     // Clipping
     auto prev_clip = current_clip;
@@ -308,7 +318,7 @@ void Document::paint_layer_tree(LayerTree* tree) {
                 child_layer.get(), Position{0, 0}, current_opacity);
         }
     }
-    auto current_opacity = prev_opacity;
+    current_opacity = prev_opacity;
     screen->canvas->restore();
 }
 

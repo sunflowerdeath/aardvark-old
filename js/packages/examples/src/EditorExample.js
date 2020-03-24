@@ -62,6 +62,19 @@ const initialState = [
     }
 ]
 
+const selection = {
+    anchor: {
+        path: [0, 1],
+        offset: 0
+    },
+    focus: {
+        path: [2, 0],
+        offset: 0
+    }
+}
+
+const caret = {}
+
 const EditorExample = () => {
     let [state, setState] = useState(initialState)
     return (
@@ -69,16 +82,7 @@ const EditorExample = () => {
             <Editor
                 editorProps={{
                     isVoid,
-                    selection: {
-                        anchor: {
-                            path: [0, 1],
-                            offset: 0
-                        },
-                        focus: {
-                            path: [2, 0],
-                            offset: 0
-                        }
-                    }
+                    selection
                 }}
                 state={state}
                 onChange={setState}
