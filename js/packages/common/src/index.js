@@ -1,4 +1,4 @@
-export { BorderSide, BoxBorders } from './Borders.js'
+export { BorderSide, BoxBorders, Radius, BoxRadiuses } from './Borders.js'
 export { Color } from './Color.js'
 export { Padding } from './Padding.js'
 export { Value } from './Value.js'

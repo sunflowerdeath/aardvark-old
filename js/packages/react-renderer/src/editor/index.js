@@ -8,15 +8,17 @@ import React, {
     useMemo,
     useImperativeHandle
 } from 'react'
-import { createEditor, Editor, Element, Range } from 'slate'
-import { Value, Color } from '@advk/common'
+import { createEditor, Editor, Element, Range, Path } from 'slate'
+import { Value, Color, Padding, Radius, BoxRadiuses } from '@advk/common'
 import {
     Layer,
     Stack,
     Flex,
     Translate,
     Size,
-    Background
+    Border,
+    Background,
+    Padding as Padding1
 } from '../nativeComponents.js'
 import GestureResponder from '../components/GestureResponder'
 
@@ -73,11 +75,11 @@ const Children = props => {
     const path = findPath(node)
 
     /*
-    const isLeafBlock =
-        Element.isElement(node) &&
-        !editor.isInline(node) &&
-        Editor.hasInlines(editor, node)
-    */
+      const isLeafBlock =
+          Element.isElement(node) &&
+          !editor.isInline(node) &&
+          Editor.hasInlines(editor, node)
+      */
 
     const children = []
     for (let i = 0; i < node.children.length; i++) {
@@ -181,7 +183,61 @@ const LeafComponent = props => {
     return renderLeaf({ node, ref })
 }
 
-const Ear = () => {}
+const Ear = props => {
+    const {
+        color,
+        absPos,
+        padding,
+        left,
+        top,
+        width,
+        height,
+        isFirst,
+        isLast
+    } = props
+    const barWidth = 2
+    const d = 8
+    const barPos = {
+        left: isFirst
+            ? Value.abs(-absPos.left + left - padding)
+            : Value.abs(-absPos.left + left + padding + width - barWidth),
+        top: Value.abs(-absPos.top + top - padding)
+    }
+    const barSize = {
+        width: Value.abs(2),
+        height: Value.abs(height + padding * 2)
+    }
+    const circlePos = {
+        left: Value.abs((-d + barWidth) / 2),
+        top: Value.abs(-d / 2)
+    }
+    const circleSize = {
+        width: Value.abs(d),
+        height: Value.abs(d)
+    }
+    return (
+        <Translate translation={barPos}>
+            <Stack>
+                <Size sizeConstraints={barSize}>
+                    <Background color={color} />
+                </Size>
+                <Translate translation={circlePos}>
+                    <Size sizeConstraints={circleSize}>
+                        <Border
+                            radiuses={BoxRadiuses.all(Radius.circular(d / 2))}
+                        >
+                            <Background color={color} />
+                        </Border>
+                    </Size>
+                </Translate>
+            </Stack>
+        </Translate>
+    )
+}
+
+Ear.defaultProps = {
+    color: { red: 19, green: 111, blue: 225, alpha: 255 }
+}
 
 const Selection = forwardRef((props, ref) => {
     const { editorRef, color, padding, opacity } = props
@@ -194,11 +250,17 @@ const Selection = forwardRef((props, ref) => {
                 editorRef.current.document.partialRelayout(editorRef.current)
                 const children = []
                 const absPos = editorRef.current.absPosition
-                // const absPos = { left: 0, top: 0 }
-                for (let node of SELECTED_NODES) {
+                const size = SELECTED_NODES.size
+                let sortedNodes = Array.from(SELECTED_NODES)
+                    .map(node => ({
+                        node,
+                        path: findPath(node)
+                    }))
+                    .sort((a, b) => Path.compare(a.path, b.path))
+                for (let i = 0; i < sortedNodes.length; i++) {
+                    let node = sortedNodes[i].node
                     const elem = NODES_ELEMENTS.get(node)
                     const { left, top } = elem.absPosition
-                    // const { left, top } = elem.relPosition
                     const { width, height } = elem.size
                     const translate = {
                         left: Value.abs(-absPos.left + left - padding),
@@ -216,24 +278,22 @@ const Selection = forwardRef((props, ref) => {
                         </Translate>
                     )
 
-                    const earSize = {
-                        width: Value.abs(2),
-                        height: Value.abs(height + padding * 2)
+                    let isFirst = i === 0
+                    let isLast = i === sortedNodes.length - 1
+                    if (isFirst || isLast) {
+                        ears.push(
+                            <Ear
+                                isFirst={isFirst}
+                                isLast={isLast}
+                                absPos={absPos}
+                                left={left}
+                                top={top}
+                                width={width}
+                                height={height}
+                                padding={padding}
+                            />
+                        )
                     }
-                    ears.push(
-                        <Translate translation={translate}>
-                            <Size sizeConstraints={earSize}>
-                                <Background
-                                    color={{
-                                        red: 19,
-                                        green: 111,
-                                        blue: 225,
-                                        alpha: 255
-                                    }}
-                                />
-                            </Size>
-                        </Translate>
-                    )
                 }
                 setChildren(children)
                 setEars(ears)
@@ -278,16 +338,18 @@ const EditorComponent = props => {
 
     return (
         <Stack>
-            <Flex direction={FlexDirection.column} ref={elemRef}>
-                <EditorContext.Provider value={editor}>
-                    <Children
-                        node={editor}
-                        selection={editor.selection}
-                        renderElement={renderElement}
-                        renderLeaf={renderLeaf}
-                    />
-                </EditorContext.Provider>
-            </Flex>
+            <Padding1 padding={Padding.all(10)} ref={elemRef}>
+                <Flex direction={FlexDirection.column}>
+                    <EditorContext.Provider value={editor}>
+                        <Children
+                            node={editor}
+                            selection={editor.selection}
+                            renderElement={renderElement}
+                            renderLeaf={renderLeaf}
+                        />
+                    </EditorContext.Provider>
+                </Flex>
+            </Padding1>
             <Selection
                 ref={selectionRef}
                 editorRef={elemRef}
