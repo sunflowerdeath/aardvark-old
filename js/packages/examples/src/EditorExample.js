@@ -6,22 +6,34 @@ import {
     Padding as Paddings,
     Value
 } from '@advk/common'
-import Editor from '@advk/react-renderer/src/editor'
-import { Size, Background, Padding, Flex, Border } from '@advk/react-renderer'
+import Editor from '@advk/react-renderer/src/components/editor'
+import {
+    Size,
+    Background,
+    Padding,
+    Flex,
+    Border,
+    IntrinsicWidth
+} from '@advk/react-renderer'
 
 const Container = forwardRef(({ children, color }, ref) => (
-    <Padding ref={ref} padding={Paddings.vert(10)}>
-        <Border borders={BoxBorders.all(BorderSide(2, Color[color]))}>
+    <Padding padding={Paddings.vert(10)}>
+        <Border ref={ref} borders={BoxBorders.all(BorderSide(2, Color[color]))}>
             <Padding padding={Paddings.all(10)}>
-                <Flex>{children}</Flex>
+                <IntrinsicWidth>
+                    <Flex>{children}</Flex>
+                </IntrinsicWidth>
             </Padding>
         </Border>
     </Padding>
 ))
 
-const Box = forwardRef(({ color }, ref) => (
-    <Padding ref={ref} padding={Paddings.only('right', 10)}>
-        <Size sizeConstraints={{ width: Value.abs(40), height: Value.abs(40) }}>
+const Box = forwardRef(({ color, isLast }, ref) => (
+    <Padding padding={isLast ? Paddings.none : Paddings.only('right', 10)}>
+        <Size
+            ref={ref}
+            sizeConstraints={{ width: Value.abs(40), height: Value.abs(40) }}
+        >
             <Background color={Color[color]} />
         </Size>
     </Padding>
@@ -35,7 +47,9 @@ const renderElement = ({ node, children, ref }) => (
     </Container>
 )
 
-const renderLeaf = ({ node, ref }) => <Box ref={ref} color={node.color} />
+const renderLeaf = ({ node, isLast, ref }) => (
+    <Box ref={ref} isLast={isLast} color={node.color} />
+)
 
 const initialState = [
     {

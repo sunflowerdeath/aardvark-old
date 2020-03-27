@@ -9,18 +9,18 @@ import React, {
     useImperativeHandle
 } from 'react'
 import { createEditor, Editor, Element, Range, Path } from 'slate'
-import { Value, Color, Padding, Radius, BoxRadiuses } from '@advk/common'
+import { Value, Color, Padding } from '@advk/common'
 import {
     Layer,
     Stack,
     Flex,
-    Translate,
     Size,
-    Border,
-    Background,
-    Padding as Padding1
-} from '../nativeComponents.js'
-import GestureResponder from '../components/GestureResponder'
+    Padding as Padding1,
+    Translate,
+    Background
+} from '../../nativeComponents.js'
+import GestureResponder from '../GestureResponder'
+import Ear from './Ear.js'
 
 const EditorContext = createContext()
 
@@ -92,12 +92,14 @@ const Children = props => {
             !isInsideSelected &&
             childSelection &&
             Range.equals(childRange, childSelection)
+        const isLast = i === node.children.length - 1
         if (Element.isElement(child)) {
             children.push(
                 <ElementComponent
                     node={child}
                     selection={childSelection}
                     isFullySelected={isFullySelected}
+                    isLast={isLast}
                     renderElement={renderElement}
                     renderLeaf={renderLeaf}
                 />
@@ -109,9 +111,9 @@ const Children = props => {
                     parent={node}
                     selection={childSelection}
                     renderLeaf={renderLeaf}
+                    isLast={isLast}
                 />
             )
-            // isLast={isLeafBlock && i === node.children.length - 1}
         }
 
         if (isFullySelected) {
@@ -133,6 +135,7 @@ const ElementComponent = props => {
         renderElement,
         renderLeaf,
         isFullySelected,
+        isLast,
         selection
     } = props
     const ref = useRef()
@@ -158,11 +161,11 @@ const ElementComponent = props => {
         />
     )
 
-    return renderElement({ node, ref, children })
+    return renderElement({ node, ref, isLast, children })
 }
 
 const LeafComponent = props => {
-    const { node, parent, renderLeaf } = props
+    const { node, parent, isLast, renderLeaf } = props
     // const editor = useEditor()
     const ref = useRef()
 
@@ -180,63 +183,7 @@ const LeafComponent = props => {
         }
     })
 
-    return renderLeaf({ node, ref })
-}
-
-const Ear = props => {
-    const {
-        color,
-        absPos,
-        padding,
-        left,
-        top,
-        width,
-        height,
-        isFirst,
-        isLast
-    } = props
-    const barWidth = 2
-    const d = 8
-    const barPos = {
-        left: isFirst
-            ? Value.abs(-absPos.left + left - padding)
-            : Value.abs(-absPos.left + left + padding + width - barWidth),
-        top: Value.abs(-absPos.top + top - padding)
-    }
-    const barSize = {
-        width: Value.abs(2),
-        height: Value.abs(height + padding * 2)
-    }
-    const circlePos = {
-        left: Value.abs((-d + barWidth) / 2),
-        top: Value.abs(-d / 2)
-    }
-    const circleSize = {
-        width: Value.abs(d),
-        height: Value.abs(d)
-    }
-    return (
-        <Translate translation={barPos}>
-            <Stack>
-                <Size sizeConstraints={barSize}>
-                    <Background color={color} />
-                </Size>
-                <Translate translation={circlePos}>
-                    <Size sizeConstraints={circleSize}>
-                        <Border
-                            radiuses={BoxRadiuses.all(Radius.circular(d / 2))}
-                        >
-                            <Background color={color} />
-                        </Border>
-                    </Size>
-                </Translate>
-            </Stack>
-        </Translate>
-    )
-}
-
-Ear.defaultProps = {
-    color: { red: 19, green: 111, blue: 225, alpha: 255 }
+    return renderLeaf({ node, ref, isLast })
 }
 
 const Selection = forwardRef((props, ref) => {
@@ -283,14 +230,11 @@ const Selection = forwardRef((props, ref) => {
                     if (isFirst || isLast) {
                         ears.push(
                             <Ear
-                                isFirst={isFirst}
-                                isLast={isLast}
-                                absPos={absPos}
-                                left={left}
-                                top={top}
-                                width={width}
-                                height={height}
-                                padding={padding}
+                                side={isLast ? 'end' : 'start'}
+                                left={-absPos.left + left - padding}
+                                top={-absPos.top + top - padding}
+                                width={width + padding * 2}
+                                height={height + padding * 2}
                             />
                         )
                     }
@@ -354,7 +298,7 @@ const EditorComponent = props => {
                 ref={selectionRef}
                 editorRef={elemRef}
                 color={{ red: 152, green: 187, blue: 224, alpha: 255 }}
-                padding={3}
+                padding={4}
                 opacity={0.5}
             />
         </Stack>

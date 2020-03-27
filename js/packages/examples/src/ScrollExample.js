@@ -49,7 +49,7 @@ const ListItem = ({ children }) => {
             <IntrinsicHeight>
                 <Stack>
                     <Background
-                        color={isHovered ? Color.GREEN : Color.TRANSPARENT}
+                        color={isHovered ? Color.green : Color.transparent}
                     />
                     <Padding padding={Padding1.all(16)}>
                         <Text text={children.join('')} />

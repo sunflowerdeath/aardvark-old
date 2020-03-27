@@ -1,4 +1,4 @@
-export const Padding = {
+const Padding = {
 	all(value) {
 		return { left: value, top: value, right: value, bottom: value }
 	},
@@ -24,3 +24,7 @@ export const Padding = {
 		return { left: 0, top: value, right: 0, bottom: value }
 	}
 }
+
+Padding.none = Padding.all(0)
+
+export { Padding }

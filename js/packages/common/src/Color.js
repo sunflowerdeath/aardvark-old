@@ -10,8 +10,8 @@ const Color = {
     BLUE: { red: 0, green: 0, blue: 255, alpha: 255 },
     YELLOW: { red: 255, green: 255, blue: 0, alpha: 255 },
     PURPLE: { red: 255, green: 0, blue: 255, alpha: 255 },
+    TRANSPARENT: { red: 255, green: 255, blue: 255, alpha: 0 },
 
-    transparent: { red: 255, green: 255, blue: 255, alpha: 0 },
     white: { red: 255, green: 255, blue: 255, alpha: 255 },
     black: { red: 0, green: 0, blue: 0, alpha: 255 },
     lightgray: { red: 211, green: 211, blue: 211, alpha: 255 },

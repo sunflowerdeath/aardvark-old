@@ -24,7 +24,7 @@ class IntrinsicHeightElement : public SingleChildElement {
     Size layout(BoxConstraints constraints) override {
         auto size = Size{constraints.max_width, child->get_intrinsic_height()};
         auto child_constraints =
-            BoxConstraints::from_size(size, /* tight */ true);
+            BoxConstraints::from_size(size, /* tight */ false);
         auto child_size =
             document->layout_element(child.get(), child_constraints);
         child->size = child_size;
