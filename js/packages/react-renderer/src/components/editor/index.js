@@ -241,16 +241,19 @@ const Selection = forwardRef((props, ref) => {
 
                     let isFirst = i === 0
                     let isLast = i === sortedNodes.length - 1
-                    if (isFirst || isLast) {
-                        ears.push(
-                            <Ear
-                                side={isLast ? 'end' : 'start'}
-                                left={-absPos.left + left - padding}
-                                top={-absPos.top + top - padding}
-                                width={width + padding * 2}
-                                height={height + padding * 2}
-                            />
-                        )
+                    if (isFirst) {
+                        const earProps = {
+                            left: -absPos.left + left - padding,
+                            top: -absPos.top + top - padding,
+                            width: width + padding * 2,
+                            height: height + padding * 2
+                        }
+                        if (isFirst) {
+                            ears.push(<Ear side="start" {...earProps} />)
+                        }
+                        if (isLast) {
+                            ears.push(<Ear side="end" {...earProps} />)
+                        }
                     }
                 }
                 setChildren(children)
