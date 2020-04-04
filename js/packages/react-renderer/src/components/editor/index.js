@@ -6,10 +6,21 @@ import React, {
     useContext,
     useLayoutEffect,
     useMemo,
-    useImperativeHandle
+    useImperativeHandle,
+    useCallback
 } from 'react'
-import { createEditor, Editor, Element, Range, Path } from 'slate'
+import {
+    createEditor,
+    Editor,
+    Element,
+    Text,
+    Range,
+    Path,
+    Transforms
+} from 'slate'
 import { Value, Color, Padding } from '@advk/common'
+import MultiRecognizer from '@advk/common/src/gestures/MultiRecognizer.js'
+import TapRecognizer from '@advk/common/src/gestures/TapRecognizer.js'
 import {
     Layer,
     Stack,
@@ -17,10 +28,12 @@ import {
     Size,
     Padding as Padding1,
     Translate,
-    Background
+    Background,
+    Responder
 } from '../../nativeComponents.js'
 import GestureResponder from '../GestureResponder'
 import Ear from './Ear.js'
+import { default as myUseContext } from '../../hooks/useContext.js'
 
 const EditorContext = createContext()
 
@@ -196,6 +209,7 @@ const Selection = forwardRef((props, ref) => {
             update: () => {
                 editorRef.current.document.partialRelayout(editorRef.current)
                 const children = []
+                const ears = []
                 const absPos = editorRef.current.absPosition
                 const size = SELECTED_NODES.size
                 let sortedNodes = Array.from(SELECTED_NODES)
@@ -257,51 +271,120 @@ const Selection = forwardRef((props, ref) => {
     )
 })
 
-const EditorComponent = props => {
-    const { state, editorProps, renderElement, renderLeaf } = props
+const elemContainsPoint = (elem, point) => {
+    const { left, top } = elem.absPosition
+    const { width, height } = elem.size
+    return (
+        top < point.top &&
+        point.top < top + height &&
+        left < point.left &&
+        point.left < left + width
+    )
+}
 
-    const editor = useMemo(() => createEditor())
-    useMemo(() => {
-        Object.assign(editor, editorProps)
-    }, [editorProps])
-    useMemo(() => {
-        editor.children = state
-    }, [state])
+const getNodeCursorPos = (ctx, event, node) => {
+    if (Text.isText(node)) return [0]
+
+    for (let i = 0; i < node.children.length; i++) {
+        const childNode = node.children[i]
+        const elem = NODES_ELEMENTS.get(childNode)
+        if (elemContainsPoint(elem, event)) {
+            return [i, ...getNodeCursorPos(ctx, event, childNode)]
+        }
+    }
+}
+
+const getCursorPosition = (ctx, event) => {
+    const pos = getNodeCursorPos(ctx, event, ctx.editor)
+    return { path: pos.slice(0, -1), offset: pos[pos.length - 1] }
+}
+
+const onTap = (ctx, event) => {
+    log('tap', JSON.stringify(event))
+    if (!ctx.props.isEditable) {
+        Transforms.deselect(ctx.editor)
+        ctx.props.onChangeSelection(ctx.editor.selection)
+    } else {
+        const n = getCursorPosition(ctx, event)
+        log(JSON.stringify(n))
+        Transforms.setSelection(ctx.editor, { anchor: n, focus: n })
+        ctx.props.onChangeSelection(ctx.editor.selection)
+    }
+}
+
+const EditorComponent = props => {
+    const {
+        isSelectable,
+        isEditable,
+        state,
+        selection,
+        editorProps,
+        renderElement,
+        renderLeaf
+    } = props
 
     const elemRef = useRef()
     const selectionRef = useRef()
+    const ctx = myUseContext({
+        props,
+        initialCtx: () => ({
+            elemRef,
+            selectionRef,
+            editor: createEditor()
+        }),
+        initialState: ctx => ({
+            recognizer: new MultiRecognizer({
+                tap: new TapRecognizer({
+                    document: () => elemRef.current.document,
+                    onTap: onTap(ctx, ?)
+                })
+            })
+        })
+    })
+    useMemo(() => {
+        ctx.editor.children = state
+    }, [state])
+    useMemo(() => {
+        ctx.editor.selection = selection
+    }, [selection])
+    useMemo(() => {
+        Object.assign(ctx.editor, editorProps)
+    }, [editorProps])
+
     useLayoutEffect(() => {
         if (elemRef.current) {
-            NODES_ELEMENTS.set(editor, elemRef.current)
-            ELEMENTS_NODES.set(elemRef.current, editor)
+            NODES_ELEMENTS.set(ctx.editor, elemRef.current)
+            ELEMENTS_NODES.set(elemRef.current, ctx.editor)
         } else {
-            NODES_ELEMENTS.delete(editor)
+            NODES_ELEMENTS.delete(ctx.editor)
         }
         if (selectionRef.current != null) selectionRef.current.update()
     })
 
     return (
-        <Stack>
-            <Padding1 padding={Padding.all(10)} ref={elemRef}>
-                <Flex direction={FlexDirection.column}>
-                    <EditorContext.Provider value={editor}>
-                        <Children
-                            node={editor}
-                            selection={editor.selection}
-                            renderElement={renderElement}
-                            renderLeaf={renderLeaf}
-                        />
-                    </EditorContext.Provider>
-                </Flex>
-            </Padding1>
-            <Selection
-                ref={selectionRef}
-                editorRef={elemRef}
-                color={{ red: 152, green: 187, blue: 224, alpha: 255 }}
-                padding={4}
-                opacity={0.5}
-            />
-        </Stack>
+        <Responder handler={useCallback(ctx.state.recognizer.getHandler())}>
+            <Stack>
+                <Padding1 padding={Padding.all(10)} ref={elemRef}>
+                    <Flex direction={FlexDirection.column}>
+                        <EditorContext.Provider value={ctx.editor}>
+                            <Children
+                                node={ctx.editor}
+                                selection={ctx.editor.selection}
+                                renderElement={renderElement}
+                                renderLeaf={renderLeaf}
+                            />
+                        </EditorContext.Provider>
+                    </Flex>
+                </Padding1>
+                <Selection
+                    ref={selectionRef}
+                    editorRef={elemRef}
+                    color={{ red: 152, green: 187, blue: 224, alpha: 255 }}
+                    padding={4}
+                    opacity={0.5}
+                />
+            </Stack>
+        </Responder>
     )
 }
 

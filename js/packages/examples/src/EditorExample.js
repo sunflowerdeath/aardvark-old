@@ -76,7 +76,7 @@ const initialState = [
     }
 ]
 
-const selection = {
+const initialSelection = {
     anchor: {
         path: [0, 1],
         offset: 0
@@ -91,17 +91,18 @@ const caret = {}
 
 const EditorExample = () => {
     let [state, setState] = useState(initialState)
+    let [selection, setSelection] = useState(initialSelection)
     return (
         <Padding padding={Paddings.horiz(20)}>
             <Editor
-                editorProps={{
-                    isVoid,
-                    selection
-                }}
+                editorProps={{ isVoid }}
                 state={state}
                 onChange={setState}
+                selection={selection}
+                onChangeSelection={setSelection}
                 renderElement={renderElement}
                 renderLeaf={renderLeaf}
+                isEditable={true}
             />
         </Padding>
     )
