@@ -7,7 +7,8 @@ import React, {
     useLayoutEffect,
     useMemo,
     useImperativeHandle,
-    useCallback
+    useCallback,
+    useEffect
 } from 'react'
 import {
     createEditor,
@@ -199,6 +200,54 @@ const LeafComponent = props => {
     return renderLeaf({ node, ref, isLast })
 }
 
+class Timer {
+    start(interval, callback) {
+        this.timeout = setTimeout(() => {
+            callback()
+            this.start(interval, callback)
+        }, interval)
+    }
+
+    stop() {
+        clearTimeout(this.timeout)
+    }
+}
+
+const Cursor = props => {
+    const { ctx, blinkInterval, color } = props
+    const [opacity, setOpacity] = useState(1)
+    useEffect(() => {
+        const timer = new Timer().start(blinkInterval, () =>
+            setOpacity(val => (val === 1 ? 0 : 1))
+        )
+        return () => timer.stop()
+    }, [])
+    const node = Editor.node(ctx.editor, ctx.editor.selection.anchor)[0]
+    const elem = NODES_ELEMENTS.get(node)
+    const editorPos = ctx.elemRef.current.absPosition
+    const { left, top } = elem.absPosition
+    const { width, height } = elem.size
+    const translate = {
+        left: Value.abs(-editorPos.left + left),
+        top: Value.abs(-editorPos.top + top)
+    }
+    const size = { width: Value.abs(2), height: Value.abs(height) }
+    return (
+        <Layer opacity={opacity}>
+            <Translate translation={translate}>
+                <Size sizeConstraints={size}>
+                    <Background color={color} />
+                </Size>
+            </Translate>
+        </Layer>
+    )
+}
+
+Cursor.defaultProps = {
+    blinkInterval: 750,
+    color: Color.black
+}
+
 const Selection = forwardRef((props, ref) => {
     const { editorRef, color, padding, opacity } = props
     const [children, setChildren] = useState([])
@@ -241,7 +290,7 @@ const Selection = forwardRef((props, ref) => {
 
                     let isFirst = i === 0
                     let isLast = i === sortedNodes.length - 1
-                    if (isFirst) {
+                    if (isFirst || isLast) {
                         const earProps = {
                             left: -absPos.left + left - padding,
                             top: -absPos.top + top - padding,
@@ -285,22 +334,69 @@ const elemContainsPoint = (elem, point) => {
     )
 }
 
+const calcVertDistance = (elem, point) => {
+    let above = point.top - elem.absPosition.top
+    let below = point.top - elem.absPosition.top - elem.size.height
+    if (above > 0 && below < 0) return 0
+    // return Math.abs(above
+    return Math.min(Math.abs(above), Math.abs(below))
+}
+
+const calcHorizDistance = (elem, point) => {
+    let left = point.left - elem.absPosition.left
+    let right = point.left - elem.absPosition.left - elem.size.width
+    if (left > 0 && right < 0) return 0
+    return Math.abs(left)
+    // return Math.min(Math.abs(left), Math.abs(right))
+}
+
 const getNodeCursorPos = (ctx, event, node) => {
     if (Text.isText(node)) return [0]
 
+    let minVertDistance = Infinity
+    let closestNodes = []
     for (let i = 0; i < node.children.length; i++) {
         const childNode = node.children[i]
         const elem = NODES_ELEMENTS.get(childNode)
         if (elemContainsPoint(elem, event)) {
             return [i, ...getNodeCursorPos(ctx, event, childNode)]
         }
+        const vertDistance = calcVertDistance(elem, event)
+        if (vertDistance === minVertDistance) {
+            closestNodes.push({ node, elem, index: i })
+        } else if (vertDistance < minVertDistance) {
+            minVertDistance = vertDistance
+            closestNodes = [{ node, elem, index: i }]
+        }
     }
+
+    let minHorizDistance = Infinity
+    let closestNode
+    for (let i = 0; i < closestNodes.length; i++) {
+        const { elem, node } = closestNodes[i]
+        const horizDistance = calcHorizDistance(elem, event)
+        if (horizDistance < minHorizDistance) {
+            minHorizDistance = horizDistance
+            closestNode = closestNodes[i]
+        }
+    }
+
+    return [
+        closestNode.index,
+        ...getNodeCursorPos(
+            ctx,
+            event,
+            closestNode.node.children[closestNode.index]
+        )
+    ]
 }
 
 const getCursorPosition = (ctx, event) => {
     const pos = getNodeCursorPos(ctx, event, ctx.editor)
     return { path: pos.slice(0, -1), offset: pos[pos.length - 1] }
 }
+
+const CursorType = { range: 0, cursor: 1 }
 
 const onTap = (ctx, event) => {
     log('tap', JSON.stringify(event))
@@ -311,6 +407,7 @@ const onTap = (ctx, event) => {
         const n = getCursorPosition(ctx, event)
         log(JSON.stringify(n))
         Transforms.setSelection(ctx.editor, { anchor: n, focus: n })
+        ctx.setState({ cursorType: CursorType.cursor })
         ctx.props.onChangeSelection(ctx.editor.selection)
     }
 }
@@ -336,6 +433,7 @@ const EditorComponent = props => {
             editor: createEditor()
         }),
         initialState: ctx => ({
+            cursorType: CursorType.range,
             recognizer: new MultiRecognizer({
                 tap: new TapRecognizer({
                     document: () => elemRef.current.document,
@@ -379,13 +477,17 @@ const EditorComponent = props => {
                         </EditorContext.Provider>
                     </Flex>
                 </Padding1>
-                <Selection
-                    ref={selectionRef}
-                    editorRef={elemRef}
-                    color={{ red: 152, green: 187, blue: 224, alpha: 255 }}
-                    padding={4}
-                    opacity={0.5}
-                />
+                {ctx.state.cursorType === CursorType.range ? (
+                    <Selection
+                        ref={selectionRef}
+                        editorRef={elemRef}
+                        color={{ red: 152, green: 187, blue: 224, alpha: 255 }}
+                        padding={4}
+                        opacity={0.5}
+                    />
+                ) : (
+                    <Cursor ctx={ctx} />
+                )}
             </Stack>
         </Responder>
     )

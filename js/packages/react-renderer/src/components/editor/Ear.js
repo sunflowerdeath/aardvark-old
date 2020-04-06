@@ -32,7 +32,7 @@ const Ear = props => {
         <Translate
             translation={{
                 left: Value.abs((-circleSize + barWidth) / 2),
-                top: Value.abs(-circleSize / 2)
+                top: Value.abs(side === 'end' ? height : -circleSize)
             }}
         >
             <Size
@@ -70,7 +70,7 @@ const Ear = props => {
 
 Ear.defaultProps = {
     color: { red: 19, green: 111, blue: 225, alpha: 255 },
-    circleSize: 8,
+    circleSize: 10,
     barWidth: 2
 }
 
