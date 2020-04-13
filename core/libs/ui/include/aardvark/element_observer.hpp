@@ -66,12 +66,11 @@ class ElementObserver
             it = observed_elements.emplace(
                 element, ElementObserverEntry(get_prop_value(element))).first;
         }
-        auto conn = ElementObserverConnection(
+        return std::make_shared<ElementObserverConnection<T>>(
             this->weak_from_this(),             // observer
             element,                            // element
             it->second.signal.connect(handler)  // connection
         );
-        return std::make_shared<Connection>(conn);
     }
 
     // Stop observing element (called when element is removed from the document)
@@ -107,7 +106,7 @@ class ElementObserver
 
     void disconnect(ElementObserverConnection<T>* connection) {
         auto element = connection->element.lock();
-        // If element is destroyed, then observing is already stopped
+        // Element can be destroyed only if it is not observed anymore
         if (element == nullptr) return;
         connection->connection.disconnect();
         auto it = observed_elements.find(element);
