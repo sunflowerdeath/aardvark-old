@@ -41,6 +41,7 @@ const createInstance = (
 
 const appendInitialChild = (parentInstance, child) => {
 	// log('appendInitialChild')
+    log(parentInstance.name)
 	parentInstance.appendChild(child)
 }
 
@@ -104,6 +105,7 @@ const supportsMutation = true
 
 const appendChild = (parentInstance, child) => {
 	// log('appendChild')
+    log(parentInstance.name)
 	parentInstance.appendChild(child)
 }
 
@@ -136,6 +138,7 @@ const commitUpdate = (
 const insertBefore = (parentInstance, child, beforeChild) => {
 	// TODO Move existing child or add new child?
 	// log('insertBeforeChild')
+    log(parentInstance.name)
 	parentInstance.insertBeforeChild(child, beforeChild)
 }
 const insertInContainerBefore = (parentInstance, child, beforeChild) => {

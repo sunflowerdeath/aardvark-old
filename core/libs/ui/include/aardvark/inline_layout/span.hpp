@@ -7,6 +7,7 @@
 
 #include "../base_types.hpp"
 #include "../element.hpp"
+#include "../node.hpp"
 #include "line_metrics.hpp"
 
 namespace aardvark::inline_layout {
@@ -63,7 +64,8 @@ struct SpanBase {
 };
 
 // Span represents part of the contents of the inline container element
-class Span : public std::enable_shared_from_this<Span> {
+class Span : public std::enable_shared_from_this<Span>,
+             public virtual Node<Span, Element> {
   public:
     Span(std::optional<SpanBase> base_span = std::nullopt)
         : base_span(
@@ -103,6 +105,31 @@ class Span : public std::enable_shared_from_this<Span> {
     // Should be set by container during layout
     float width;
     LineMetrics metrics;
+};
+
+class SingleChildSpan : public Span, public SingleChildNode<Span, Element> {
+  public:
+    SingleChildSpan(
+        std::shared_ptr<Span> child,
+        std::optional<SpanBase> base_span = std::nullopt)
+        : Node([](Element* owner, std::shared_ptr<Span>& child) {
+              owner->change();
+          }),
+          Span(base_span),
+          SingleChildNode(std::move(child)){};
+};
+
+class MultipleChildrenSpan : public Span,
+                             public MultipleChildrenNode<Span, Element> {
+  public:
+    MultipleChildrenSpan(
+        std::vector<std::shared_ptr<Span>> children,
+        std::optional<SpanBase> base_span = std::nullopt)
+        : Node([](Element* owner, std::shared_ptr<Span>& child) {
+              owner->change();
+          }),
+          Span(base_span),
+          MultipleChildrenNode(std::move(children), nullptr){};
 };
 
 };  // namespace aardvark::inline_layout

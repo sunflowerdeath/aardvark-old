@@ -4,8 +4,9 @@
 #include "../element.hpp"
 #include "../inline_layout/span.hpp"
 #include "../inline_layout/utils.hpp"
+#include "../inline_layout/decoration_span.hpp"
 
-namespace aardvark::elements {
+namespace aardvark {
 
 struct Selection {
     inline_layout::Span* base;
@@ -16,15 +17,28 @@ struct Selection {
 
 using ParagraphLine = std::vector<std::shared_ptr<inline_layout::Span>>;
 
-class Paragraph : public Element {
+class ParagraphElement : public Element {
   public:
-    Paragraph(std::vector<std::shared_ptr<inline_layout::Span>> content,
-              inline_layout::LineMetrics metrics,
-              bool is_repaint_boundary = false);
+    ParagraphElement()
+        : root(std::make_shared<inline_layout::DecorationSpan>()),
+          metrics(inline_layout::LineMetrics::from_paint(
+                      inline_layout::make_default_paint())
+                      .scale(1.5)),
+          Element(
+              /* is_repaint_boundary */ false,
+              /* size_depends_on_parent */ true){};
+
+    ParagraphElement(
+        // std::vector<std::shared_ptr<inline_layout::Span>> children,
+        std::shared_ptr<inline_layout::Span> root,
+        inline_layout::LineMetrics metrics,
+        bool is_repaint_boundary = false);
+
     std::vector<std::shared_ptr<inline_layout::Span>> content;
     std::string get_debug_name() override { return "Paragraph"; };
     Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
+    std::shared_ptr<inline_layout::Span> root;
 
   private:
     inline_layout::LineMetrics metrics;

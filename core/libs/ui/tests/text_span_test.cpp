@@ -50,11 +50,11 @@ TEST_CASE("DecorationSpan", "[inline][decoration_span]") {
         auto span2 = std::make_shared<inline_layout::TextSpan>(text2, paint);
         auto span3 = std::make_shared<inline_layout::TextSpan>(text3, paint);
         auto span4 = std::make_shared<inline_layout::TextSpan>(text4, paint);
-        auto content = std::vector<std::shared_ptr<inline_layout::Span>>{
+        auto children = std::vector<std::shared_ptr<inline_layout::Span>>{
             span1, span2, span3, span4};
 
         auto span = std::make_shared<inline_layout::DecorationSpan>(
-            content, decoration);
+            children, decoration);
 
         REQUIRE(span->get_text_length() == 12);
         auto text = span->get_text();
@@ -66,10 +66,10 @@ TEST_CASE("DecorationSpan", "[inline][decoration_span]") {
         auto slice_mid =
             std::dynamic_pointer_cast<inline_layout::DecorationSpan>(
                 span->slice(1, 7));
-        REQUIRE(slice_mid->content.size() == 3);
-        REQUIRE(slice_mid->content[0]->get_text() == "bc");
-        REQUIRE(slice_mid->content[1]->get_text() == "def");
-        REQUIRE(slice_mid->content[2]->get_text() == "gh");
+        REQUIRE(slice_mid->children.size() == 3);
+        REQUIRE(slice_mid->children[0]->get_text() == "bc");
+        REQUIRE(slice_mid->children[1]->get_text() == "def");
+        REQUIRE(slice_mid->children[2]->get_text() == "gh");
         REQUIRE(slice_mid->decoration.background == red);
         REQUIRE(slice_mid->decoration.borders.has_value() == false);
 

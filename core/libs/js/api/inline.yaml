@@ -1,0 +1,50 @@
+kind: class
+name: Span
+include: aardvark/inline_layout/span.hpp
+namespace: aardvark::inline_layout
+props:
+    - name: childrenCount
+      type: int
+      getter: get_children_count
+      readonly: true
+methods:
+    - name: getChildAt
+      args:
+        - name: index
+          type: int
+      return: Span
+    - name: appendChild
+      args:
+        - name: child
+          type: Span
+    - name: removeChild
+      args:
+        - name: child
+          type: Span
+    - name: insertBeforeChild
+      args:
+        - name: child
+          type: Span
+        - name: beforeChild
+          type: Span
+---
+kind: class
+name: TextSpan
+extends: Span
+include: aardvark/inline_layout/text_span.hpp
+namespace: aardvark::inline_layout
+props:
+    - name: text
+      type: string
+      setter: set_text
+      getter: get_text_p
+---
+kind: class
+name: ParagraphElement
+extends: Element
+include: aardvark/elements/paragraph.hpp
+constructor: default
+props:
+    - name: root
+      type: Span
+      readonly: true

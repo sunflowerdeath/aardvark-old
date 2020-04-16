@@ -1,5 +1,8 @@
 #include "inline_layout/utils.hpp"
 
+#include "elements/fixed_size.hpp"
+#include "elements/align.hpp"
+
 namespace aardvark::inline_layout {
 
 float measure_text_width(
@@ -63,6 +66,15 @@ void render_spans(
         container->push_back(aligned);
         current_width += span->width;
     }
-};
+}
+
+SkPaint make_default_paint() {
+    SkPaint paint;
+    paint.setColor(SK_ColorBLACK);
+    paint.setTextSize(16);
+    paint.setAntiAlias(true);
+    paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
+    return paint;
+}
 
 }  // namespace aardvark::inline_layout

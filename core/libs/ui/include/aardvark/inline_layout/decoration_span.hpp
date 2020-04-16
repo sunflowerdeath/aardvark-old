@@ -5,17 +5,20 @@
 
 #include "../base_types.hpp"
 #include "../element.hpp"
+#include "../node.hpp"
 #include "../elements/background.hpp"
 #include "../elements/border.hpp"
+#include "../elements/align.hpp"
+#include "../elements/stack.hpp"
 #include "span.hpp"
 #include "utils.hpp"
 
 namespace aardvark::inline_layout {
 
 struct Decoration {
-    std::optional<Color> background;
-    std::optional<BoxBorders> borders;
-    std::optional<Alignment> insets;
+    std::optional<Color> background = std::nullopt;
+    std::optional<BoxBorders> borders = std::nullopt;
+    std::optional<Alignment> insets = std::nullopt;
 
     // Splits decoration into left and right parts
     std::pair<Decoration, Decoration> split(); // TODO remove
@@ -26,11 +29,12 @@ struct Decoration {
     std::pair<float, float> get_paddings(float total_line_width);
 };
 
-class DecorationSpan : public Span {
+class DecorationSpan : public MultipleChildrenSpan {
   public:
-    DecorationSpan(std::vector<std::shared_ptr<Span>> content,
-                   Decoration decoration,
-                   std::optional<SpanBase> base_span = std::nullopt);
+    DecorationSpan(
+        std::vector<std::shared_ptr<Span>> children = {},
+        Decoration decoration = Decoration(),
+        std::optional<SpanBase> base_span = std::nullopt);
 
     InlineLayoutResult layout(InlineConstraints constraints) override;
     std::shared_ptr<Element> render() override;
@@ -39,7 +43,6 @@ class DecorationSpan : public Span {
     std::shared_ptr<Span> slice(int start, int end) override;
     int get_text_offset_at_position(int position) override;
 
-    std::vector<std::shared_ptr<Span>> content;
     Decoration decoration;
 };
 

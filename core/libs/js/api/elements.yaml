@@ -262,8 +262,6 @@ props:
       type: Padding
       setter: set_padding
 ---
-# TODO Paragraph
-# ---
 kind: class
 name: PlaceholderElement
 include: aardvark/elements/placeholder.hpp

@@ -32,6 +32,7 @@ class TextElement : public Element {
     // TODO decide utf8/16
     void set_text(std::string& new_text) {
         text = UnicodeString(new_text.c_str());
+        change();
     }
 
     std::string get_text() {

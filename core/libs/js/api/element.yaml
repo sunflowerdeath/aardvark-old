@@ -20,6 +20,10 @@ props:
       type: int
       getter: get_children_count
       readonly: true
+    - name: name
+      type: string
+      getter: get_debug_name
+      readonly: true
 methods:
     - name: getChildAt
       args:

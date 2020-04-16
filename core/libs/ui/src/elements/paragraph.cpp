@@ -1,31 +1,33 @@
 #include "elements/paragraph.hpp"
 
-namespace aardvark::elements {
+namespace aardvark {
 
-Paragraph::Paragraph(std::vector<std::shared_ptr<inline_layout::Span>> content,
-                     inline_layout::LineMetrics metrics,
-                     bool is_repaint_boundary)
-    : content(content),
+ParagraphElement::ParagraphElement(
+    // std::vector<std::shared_ptr<inline_layout::Span>> children,
+    std::shared_ptr<inline_layout::Span> root,
+    inline_layout::LineMetrics metrics,
+    bool is_repaint_boundary)
+    : root(std::move(root)),
       metrics(metrics),
       Element(is_repaint_boundary, /* size_depends_on_parent */ true){};
 
-void Paragraph::next_line() {
+void ParagraphElement::next_line() {
     current_line = &lines.emplace_back();
     remaining_width = total_width;
 };
 
-Size Paragraph::layout(BoxConstraints constraints) {
+Size ParagraphElement::layout(BoxConstraints constraints) {
     total_width = constraints.max_width;
     lines.clear();
     next_line();
-    for (auto& span : content) layout_span(span);
- 
+    layout_span(root);
+
     elements.clear();
     current_height = 0;
     for (auto& line : lines) {
         auto line_metrics = inline_layout::calc_combined_metrics(line, metrics);
-        inline_layout::render_spans(line, line_metrics,
-                                    Position{0, current_height}, &elements);
+        inline_layout::render_spans(
+            line, line_metrics, Position{0, current_height}, &elements);
         current_height += line_metrics.height;
     }
 
@@ -37,7 +39,8 @@ Size Paragraph::layout(BoxConstraints constraints) {
     return Size{constraints.max_width, current_height};
 };
 
-void Paragraph::layout_span(std::shared_ptr<inline_layout::Span> span_sp) {
+void ParagraphElement::layout_span(
+    std::shared_ptr<inline_layout::Span> span_sp) {
     auto constraints = inline_layout::InlineConstraints{
         remaining_width,  // remaining_line_width
         total_width,      // total_line_width
@@ -58,8 +61,8 @@ void Paragraph::layout_span(std::shared_ptr<inline_layout::Span> span_sp) {
     }
 };
 
-void Paragraph::paint(bool is_changed) {
+void ParagraphElement::paint(bool is_changed) {
     for (auto& elem : elements) document->paint_element(elem.get());
 };
 
-}  // namespace aardvark::elements
+}  // namespace aardvark

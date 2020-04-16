@@ -42,8 +42,20 @@ class TextSpan : public Span {
     int get_text_offset_at_position(int position) override;
 
     UnicodeString text;
-    SkPaint paint;
-    LineBreak linebreak;
+    NODE_PROP_DEFAULT(SkPaint, paint, make_default_paint());
+    NODE_PROP_DEFAULT(LineBreak, linebreak, LineBreak::normal);
+
+    // TODO decide utf8/16
+    void set_text(std::string& new_text) {
+        text = UnicodeString(new_text.c_str());
+        change();
+    }
+
+    std::string get_text_p() { // TODO
+        std::string utf8;
+        text.toUTF8String(utf8);
+        return utf8;
+    }
 
   private:
     BreakIterator* linebreaker;

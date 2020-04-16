@@ -1,11 +1,12 @@
 #pragma once
 
+#include <SkPaint.h>
 #include <unicode/unistr.h>
 
 #include <optional>
 
 #include "../base_types.hpp"
-#include "../elements/elements.hpp"
+#include "../element.hpp"
 #include "span.hpp"
 
 namespace aardvark::inline_layout {
@@ -28,5 +29,7 @@ LineMetrics calc_combined_metrics(
 void render_spans(const std::vector<std::shared_ptr<Span>>& spans,
                   const LineMetrics& metrics, const Position& offset,
                   std::vector<std::shared_ptr<Element>>* container);
+
+SkPaint make_default_paint();
 
 }  // namespace aardvark::inline_layout
