@@ -135,7 +135,8 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
 
 std::shared_ptr<Element> DecorationSpan::render() {
     auto stack = std::make_shared<StackElement>();
-    render_spans(children, metrics, Position{0, 0}, &stack->children);
+    render_spans(
+        children, metrics, Position{0, 0}, &stack->children, stack.get());
 
     std::shared_ptr<Element> container = stack;
     auto top_offset = 0;

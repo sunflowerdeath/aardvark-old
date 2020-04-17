@@ -26,9 +26,12 @@ LineMetrics calc_combined_metrics(
     const LineMetrics& default_metrics);
 
 // Renders list of spans into the provided container
-void render_spans(const std::vector<std::shared_ptr<Span>>& spans,
-                  const LineMetrics& metrics, const Position& offset,
-                  std::vector<std::shared_ptr<Element>>* container);
+void render_spans(
+    const std::vector<std::shared_ptr<Span>>& spans,
+    const LineMetrics& metrics,
+    const Position& offset,
+    std::vector<std::shared_ptr<Element>>* container,
+    Element* parent);
 
 SkPaint make_default_paint();
 

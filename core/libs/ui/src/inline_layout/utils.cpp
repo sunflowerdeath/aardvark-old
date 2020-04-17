@@ -2,6 +2,7 @@
 
 #include "elements/fixed_size.hpp"
 #include "elements/align.hpp"
+#include "elements/size.hpp"
 
 namespace aardvark::inline_layout {
 
@@ -53,17 +54,20 @@ void render_spans(
     const std::vector<std::shared_ptr<Span>>& spans,
     const LineMetrics& metrics,
     const Position& offset,
-    std::vector<std::shared_ptr<Element>>* container) {
+    std::vector<std::shared_ptr<Element>>* container,
+    Element* parent) {
     auto current_width = 0.0f;
     for (auto& span : spans) {
         auto elem = span->render();
-        auto size = Size{span->width, span->metrics.height};
+        auto sizeConstraints = SizeConstraints{
+            Value::abs(span->width), Value::abs(span->metrics.height)};
         auto align = Alignment{
             Value::abs(current_width + offset.left),
             Value::abs(span->vert_align(metrics, span->metrics) + offset.top)};
         auto aligned = std::make_shared<AlignElement>(
-            std::make_shared<elements::FixedSize>(elem, size), align);
-        container->push_back(aligned);
+            std::make_shared<SizeElement>(elem, sizeConstraints), align);
+        aligned->parent = parent;
+        container->emplace_back(aligned);
         current_width += span->width;
     }
 }

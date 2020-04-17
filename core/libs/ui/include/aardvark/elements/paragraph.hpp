@@ -26,7 +26,7 @@ class ParagraphElement : public Element {
                       .scale(1.5)),
           Element(
               /* is_repaint_boundary */ false,
-              /* size_depends_on_parent */ true){};
+              /* size_depends_on_parent */ false){};
 
     ParagraphElement(
         // std::vector<std::shared_ptr<inline_layout::Span>> children,
@@ -38,10 +38,12 @@ class ParagraphElement : public Element {
     std::string get_debug_name() override { return "Paragraph"; };
     Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
+    void visit_children(ChildrenVisitor visitor) override;
+
     std::shared_ptr<inline_layout::Span> root;
+    inline_layout::LineMetrics metrics;
 
   private:
-    inline_layout::LineMetrics metrics;
     void next_line();
     void layout_span(std::shared_ptr<inline_layout::Span> span_sp);
     std::vector<ParagraphLine> lines;

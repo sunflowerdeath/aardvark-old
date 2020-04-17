@@ -199,6 +199,7 @@ class ObjectsIndex {
         auto ptr = native_object.get();
         auto typeidx = std::type_index(typeid(*ptr));
         auto js_class_rec = class_map->find(typeidx);
+        // TODO better solution
         auto& js_class =
             js_class_rec != class_map->end()
                 ? js_class_rec->second

@@ -5,17 +5,25 @@ import ReactAardvark, {
     Size,
     Stack,
     Background,
-    Paragraph
+    Paragraph,
+    TextSpanC,
+    IntrinsicHeight,
+    Text
 } from '@advk/react-renderer'
 
 const ParagraphExample = () => {
-    let text = "Of course, most of us are not going to have that opportunity."
+    let text = 'Of course, most of us are not going to have that opportunity.'
     return (
-        <Align insets={{ left: Values.abs(10) }}>
+        <Align insets={{ left: Value.abs(10), top: Value.abs(0) }}>
             <Size sizeConstraints={{ width: Value.abs(200) }}>
-                <Paragraph>
-                    <TextSpan text={text} />
-                </Paragraph>
+                <IntrinsicHeight>
+                    <Stack>
+                        <Background color={Color.lightgrey} />
+                        <Paragraph>
+                            <TextSpanC text={text} />
+                        </Paragraph>
+                    </Stack>
+                </IntrinsicHeight>
             </Size>
         </Align>
     )

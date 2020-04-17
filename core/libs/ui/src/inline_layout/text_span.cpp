@@ -13,6 +13,10 @@ TextSpan::TextSpan(
       paint(std::move(paint)),
       linebreak(linebreak),
       Span(base_span) {
+    init();
+};
+
+void TextSpan::init() {
     this->paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
 
     if (this->base_span.span == this) {
@@ -30,7 +34,7 @@ TextSpan::TextSpan(
         linebreaker =
             dynamic_cast<TextSpan*>(this->base_span.span)->linebreaker;
     }
-};
+}
 
 TextSpan::~TextSpan() {
     if (base_span.span == this) delete linebreaker;

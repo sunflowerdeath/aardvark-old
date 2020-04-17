@@ -41,8 +41,11 @@ const createInstance = (
 
 const appendInitialChild = (parentInstance, child) => {
 	// log('appendInitialChild')
-    log(parentInstance.name)
-	parentInstance.appendChild(child)
+    if (parentInstance.name === "Paragraph") {
+        parentInstance.root.appendChild(child)
+    } else {
+        parentInstance.appendChild(child)
+    }
 }
 
 const finalizeInitialChildren = (
@@ -105,8 +108,11 @@ const supportsMutation = true
 
 const appendChild = (parentInstance, child) => {
 	// log('appendChild')
-    log(parentInstance.name)
-	parentInstance.appendChild(child)
+    if (parentInstance.name == 'Paragraph') {
+        parentInstance.root.appendChild(child)
+    } else {
+        parentInstance.appendChild(child)
+    }
 }
 
 const appendChildToContainer = (parentInstance, child) => {

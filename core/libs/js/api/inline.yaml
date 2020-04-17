@@ -33,6 +33,7 @@ name: TextSpan
 extends: Span
 include: aardvark/inline_layout/text_span.hpp
 namespace: aardvark::inline_layout
+constructor: default
 props:
     - name: text
       type: string

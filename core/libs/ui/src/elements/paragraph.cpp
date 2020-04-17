@@ -9,12 +9,12 @@ ParagraphElement::ParagraphElement(
     bool is_repaint_boundary)
     : root(std::move(root)),
       metrics(metrics),
-      Element(is_repaint_boundary, /* size_depends_on_parent */ true){};
+      Element(is_repaint_boundary, /* size_depends_on_parent */ false){};
 
 void ParagraphElement::next_line() {
     current_line = &lines.emplace_back();
     remaining_width = total_width;
-};
+}
 
 Size ParagraphElement::layout(BoxConstraints constraints) {
     total_width = constraints.max_width;
@@ -27,17 +27,18 @@ Size ParagraphElement::layout(BoxConstraints constraints) {
     for (auto& line : lines) {
         auto line_metrics = inline_layout::calc_combined_metrics(line, metrics);
         inline_layout::render_spans(
-            line, line_metrics, Position{0, current_height}, &elements);
+            line, line_metrics, Position{0, current_height}, &elements, this);
         current_height += line_metrics.height;
     }
 
     for (auto& elem : elements) {
-        elem->parent = this;
+        // elem->parent = this;
+        elem->set_document(document);
         document->layout_element(elem.get(), constraints);
     }
 
     return Size{constraints.max_width, current_height};
-};
+}
 
 void ParagraphElement::layout_span(
     std::shared_ptr<inline_layout::Span> span_sp) {
@@ -59,10 +60,14 @@ void ParagraphElement::layout_span(
         next_line();
         layout_span(result.remainder_span.value());
     }
-};
+}
 
 void ParagraphElement::paint(bool is_changed) {
     for (auto& elem : elements) document->paint_element(elem.get());
-};
+}
+
+void ParagraphElement::visit_children(ChildrenVisitor visitor) {
+    for (auto& elem : elements) visitor(elem);
+}
 
 }  // namespace aardvark

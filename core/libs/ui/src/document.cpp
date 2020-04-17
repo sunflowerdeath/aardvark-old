@@ -106,8 +106,8 @@ void Document::relayout() {
 
 void Document::relayout_boundary_element(Element* elem) {
     layout_element(elem, elem->prev_constraints);
-    add_only_parent(repaint_boundaries, elem->find_closest_repaint_boundary());
     update_tree_abs_position(elem);
+    add_only_parent(repaint_boundaries, elem->find_closest_repaint_boundary());
     elem->is_changed = true;
 }
 

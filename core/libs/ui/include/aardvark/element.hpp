@@ -125,7 +125,7 @@ class Element : public std::enable_shared_from_this<Element> {
     // These props should be set by the parent element during layout
     // -------------------------------------------------------------------------
     Size size;
-    Position rel_position;
+    Position rel_position = Position{0, 0};
     std::optional<SkPath> clip = std::nullopt;
 
     // Notifies the document, that this element was changed
