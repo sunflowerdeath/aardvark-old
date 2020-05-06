@@ -18,8 +18,8 @@ const structInitTmpl = compileTmpl(`
     auto to_js = [this](Context& ctx, const {{typeName}}& val) {
         auto res = ctx.object_make(nullptr);
         {{#each props}}
-        res.set_property("{{name}}", {{type}}_mapper->to_js(
-            ctx, val.{{snakeCase name}}));
+        res.set_property("{{name}}",
+            {{type}}_mapper->to_js(ctx, val.{{snakeCase name}}));
         {{/each}}
         return res.to_value();
     };
@@ -38,22 +38,25 @@ const structInitTmpl = compileTmpl(`
                 auto res = obj.get_property("{{name}}");
                 if (res.has_value()) prop_val = res.value();
             }
-            auto optional = {{#if optional}}true{{else}}false{{/if}};
-            if (prop_val.has_value() || !optional) {
-                if (!prop_val.has_value()) prop_val = ctx.value_make_undefined();
-                auto prop_err_params = CheckErrorParams{
-                    err_params.kind,
-                    err_params.name + ".{{name}}",
-                    err_params.target};
-                auto mapped_prop_val = {{type}}_mapper->try_from_js(
-                    ctx, prop_val.value(), prop_err_params);
-                if (mapped_prop_val.has_value()) {
-                    mapped_struct.{{snakeCase name}} = mapped_prop_val.value();
-                } else {
-                    return tl::make_unexpected(mapped_prop_val.error());
-                }
+            {{#if hasDefault}}
+            if (!prop_val.has_value() || prop_val.value().get_type() != ValueType::undefined) {
+                goto end_{{name}};
+            }
+            {{/if}}
+            if (!prop_val.has_value()) prop_val = ctx.value_make_undefined();
+            auto prop_err_params = CheckErrorParams{
+                err_params.kind,
+                err_params.name + ".{{name}}",
+                err_params.target};
+            auto mapped_prop_val = {{type}}_mapper->try_from_js(
+                ctx, prop_val.value(), prop_err_params);
+            if (mapped_prop_val.has_value()) {
+                mapped_struct.{{snakeCase name}} = mapped_prop_val.value();
+            } else {
+                return tl::make_unexpected(mapped_prop_val.error());
             }
         }
+        end_{{name}}:
         {{/each}}
         return mapped_struct;
     };
@@ -128,11 +131,9 @@ const classInitTmpl = compileTmpl(`
         {{#if get_proxy}}
         return {{get_proxy}}(*ctx, mapped_this, *{{type}}_mapper);
         {{else}}
-        return {{type}}_mapper->to_js(
-            *ctx,
-            {{#if getter}}mapped_this->{{getter}}()
-            {{else}}mapped_this->{{snakeCase name}}{{/if}}
-        );
+        auto prop_val = {{#if getter}}mapped_this->{{getter}}()
+            {{else}}mapped_this->{{snakeCase name}}{{/if}};
+        return {{type}}_mapper->to_js(*ctx, prop_val);
         {{/if}}
     };
     {{#unless readonly}}
@@ -332,6 +333,14 @@ const customInitTmpl = compileTmpl(`
     {{name}}_mapper = SimpleMapper<{{typeName}}>({{to_js}}, {{try_from_js}});
 `)
 
+const optionalDefTmpl = compileTmpl(`
+    std::optional<OptionalMapper<{{innerTypeName}}>> {{name}}_mapper;
+`)
+
+const optionalInitTmpl = compileTmpl(`
+    {{name}}_mapper = OptionalMapper<{{innerTypeName}}>(&{{type}}_mapper.value());
+`)
+
 const templates = {
     struct: { def: structDefTmpl, init: structInitTmpl },
     union: { def: unionDefTmpl, init: unionInitTmpl },
@@ -340,6 +349,7 @@ const templates = {
     callback: { def: callbackDefTmpl, init: callbackInitTmpl },
     function: { def: functionDefTmpl, init: functionInitTmpl },
     custom: { def: customDefTmpl, init: customInitTmpl },
+    optional: { def: optionalDefTmpl, init: optionalInitTmpl }
 }     
 
 const headerTmpl = compileTmpl(
@@ -411,24 +421,13 @@ let getRootClass = (name, defs) => {
 }
 
 let setRootClasses = data => {
-    data.rootClasses = [];
+    data.rootClasses = []
     for (let name in data.defs) {
-        let def = data.defs[name];
+        let def = data.defs[name]
         if (def.kind != 'class') continue;
-        if (def['extends'] === undefined) {
-            data.rootClasses.push(def)
-            def.superClasses = []
-        }
+        if (def['extends'] === undefined) data.rootClasses.push(def)
         def.rootClass = getRootClass(def.name, data.defs)
-    }
-    for (let name in data.defs) {
-        let def = data.defs[name];
-        if (def.kind != 'class') continue;
-        let rootClassDef = data.defs[def.rootClass]
-        if (def['extends'] !== undefined) {
-            rootClassDef.superClasses.push(def.name)
-        }
-        def.rootClassName = rootClassDef.className
+        def.rootClassName = data.defs[def.rootClass].className
     }
 }
 
@@ -454,12 +453,17 @@ let setTypeNames = (data, options) => {
         if (def.kind === 'class') {
             def.className = fullName
             def.typeName = `std::shared_ptr<${fullName}>`
+        } else if (def.kind === 'optional') {
+            def.innerTypeName = `${prefix}${def.type}`
+            def.typeName = `std::optional<${def.innerTypeName}>`
         } else if (def.kind == 'function') {
             def.functionName = fullName
         } else {
             def.typeName = fullName
         }
     })
+    // TODO callbacks that return/take other callbacks or
+    // composition of optional/array/other - use recursive typename resolution
     callbacks.forEach(def => {
         let returnTypeName = 'return' in def
             ? getTypeName(def['return'], data.defs)
@@ -490,7 +494,7 @@ let genCode = (data, options) => {
     for (let name in data.defs) {
         let def = data.defs[name]
         if ('include' in def) include.push(def.include)
-        let t = templates[def.kind];
+        let t = templates[def.kind]
         chunks.push({
             name: def.name,
             kind: def.kind,

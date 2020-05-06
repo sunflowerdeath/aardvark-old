@@ -289,4 +289,32 @@ class ObjectsMapper2 : public Mapper<std::shared_ptr<T>> {
   private:
 };
 
+template <typename T>
+class OptionalMapper : public Mapper<std::optional<T>> {
+  public:
+    OptionalMapper(Mapper<T>* mapper) : mapper(mapper){};
+
+    Value to_js(Context& ctx, const std::optional<T>& value) override {
+        if (!value.has_value()) return ctx.value_make_null();
+        return mapper->to_js(ctx, value.value());
+    }
+
+    std::optional<T> from_js(Context& ctx, const Value& value) override {
+        if (value.get_type() == ValueType::null) return std::nullopt;
+        return static_cast<T>(mapper->from_js(ctx, value));
+    }
+
+    tl::expected<std::optional<T>, std::string> try_from_js(
+        Context& ctx,
+        const Value& value,
+        const CheckErrorParams& err_params) override {
+        if (value.get_type() == ValueType::null) return std::nullopt;
+        auto res = mapper->try_from_js(ctx, value, err_params);
+        return res.map([](auto value) { return static_cast<T>(value); });
+    }
+
+  private:
+    Mapper<T>* mapper;
+};
+
 }  // namespace aardvark::jsi

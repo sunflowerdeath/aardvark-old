@@ -4,16 +4,16 @@ doc: Default value is `Value.none`
 props:
     - name: left
       type: Value
-      optional: true
+      hasDefault: true
     - name: top
       type: Value
-      optional: true
+      hasDefault: true
     - name: right
       type: Value
-      optional: true
+      hasDefault: true
     - name: bottom
       type: Value
-      optional: true
+      hasDefault: true
 ---
 kind: class
 name: AlignElement
@@ -162,6 +162,10 @@ values:
     - spaceBetween
     - spaceEvenly
 ---
+kind: optional
+name: OptionalFlexAlign
+type: FlexAlign
+---
 kind: class
 name: FlexChildElement
 extends: Element
@@ -172,11 +176,9 @@ props:
       setter: set_flex
       doc: Flex grow factor, default is `0`.
     - name: align
-      type: FlexAlign
+      type: OptionalFlexAlign
       setter: set_align
       doc: When set it overrides align property of the container
-      get_proxy: aardvark::js::flex_child_get_align_proxy
-      set_proxy: aardvark::js::flex_child_set_align_proxy
     - name: tightFit
       type: bool
       setter: set_tight_fit
@@ -242,16 +244,16 @@ include: aardvark/elements/padding.hpp
 props:
     - name: left
       type: float
-      optional: true
+      hasDefault: true
     - name: top
       type: float
-      optional: true
+      hasDefault: true
     - name: right
       type: float
-      optional: true
+      hasDefault: true
     - name: bottom
       type: float
-      optional: true
+      hasDefault: true
 ---
 kind: class
 name: PaddingElement
@@ -307,22 +309,22 @@ name: SizeConstraints
 props:
     - name: width
       type: Value
-      optional: true
+      hasDefault: true
     - name: height
       type: Value
-      optional: true
+      hasDefault: true
     - name: minWidth
       type: Value
-      optional: true
+      hasDefault: true
     - name: minHeight
       type: Value
-      optional: true
+      hasDefault: true
     - name: maxWidth
       type: Value
-      optional: true
+      hasDefault: true
     - name: maxHeight
       type: Value
-      optional: true
+      hasDefault: true
 ---
 kind: class
 name: SizeElement
@@ -356,10 +358,10 @@ name: Translation
 props:
     - name: left
       type: Value
-      optional: true
+      hasDefault: true
     - name: top
       type: Value
-      optional: true
+      hasDefault: true
 ---
 kind: class
 name: TranslateElement

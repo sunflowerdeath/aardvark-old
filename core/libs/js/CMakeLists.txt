@@ -18,7 +18,6 @@ add_library(aardvark_js ${ADV_JS_LIB_TYPE}
     src/host.cpp
     src/module_loader.cpp
     src/api/animation_frame.cpp
-    src/api/flex_child.cpp
     src/api/element.cpp
     src/api/timeout.cpp
     src/api/transform.cpp

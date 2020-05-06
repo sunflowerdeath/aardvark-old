@@ -19,7 +19,6 @@ idl({
     include: [
         "../include/aardvark_js/api/animation_frame.hpp",
         "../include/aardvark_js/api/element.hpp",
-        "../include/aardvark_js/api/flex_child.hpp",
         "../include/aardvark_js/api/transform.hpp"
     ],
     output: {
