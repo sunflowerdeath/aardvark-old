@@ -1,5 +1,5 @@
 import React from 'react'
-import { Value, Color } from '@advk/common'
+import { Value, Color, BoxBorders, BorderSide } from '@advk/common'
 import ReactAardvark, {
     Align,
     Size,
@@ -7,6 +7,7 @@ import ReactAardvark, {
     Background,
     Paragraph,
     TextSpanC,
+    DecorationSpanC,
     IntrinsicHeight,
     Text
 } from '@advk/react-renderer'
@@ -16,14 +17,24 @@ const ParagraphExample = () => {
     return (
         <Align insets={{ left: Value.abs(10), top: Value.abs(0) }}>
             <Size sizeConstraints={{ width: Value.abs(200) }}>
-                <IntrinsicHeight>
-                    <Stack>
-                        <Background color={Color.lightgrey} />
-                        <Paragraph>
-                            <TextSpanC text={text} />
-                        </Paragraph>
-                    </Stack>
-                </IntrinsicHeight>
+                <Paragraph>
+                    <DecorationSpanC
+                        decoration={{
+                            background: Color.lightgrey
+                        }}
+                    >
+                        <TextSpanC text={text} />
+                        <DecorationSpanC
+                            decoration={{
+                                borders: BoxBorders.all(
+                                    BorderSide(2, Color.red)
+                                )
+                            }}
+                        >
+                            <TextSpanC text="MORE TEXT" />
+                        </DecorationSpanC>
+                    </DecorationSpanC>
+                </Paragraph>
             </Size>
         </Align>
     )

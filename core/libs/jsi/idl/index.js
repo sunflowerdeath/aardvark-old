@@ -39,7 +39,7 @@ const structInitTmpl = compileTmpl(`
                 if (res.has_value()) prop_val = res.value();
             }
             {{#if hasDefault}}
-            if (!prop_val.has_value() || prop_val.value().get_type() != ValueType::undefined) {
+            if (!prop_val.has_value() || prop_val.value().get_type() == ValueType::undefined) {
                 goto end_{{name}};
             }
             {{/if}}

@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
-import { Color, Padding as Padding1 } from '@advk/common'
+import { Color, Padding as Padding1, Value } from '@advk/common'
 import ReactAardvark, {
     Background,
     Flex,
     FlexChild,
     Stack,
     Text,
-    Padding
+    Padding,
+    Size
 } from '@advk/react-renderer'
 
 import ScrollExample from './ScrollExample.js'
@@ -27,7 +28,6 @@ const examples = [
 
 const Main = () => {
     const [selected, setSelected] = useState()
-
     if (selected === undefined) {
         const examplesButtons = examples.map(item => (
             <Button onTap={() => setSelected(item)}>

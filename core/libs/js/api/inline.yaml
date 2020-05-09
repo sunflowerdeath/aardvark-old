@@ -49,3 +49,40 @@ props:
     - name: root
       type: Span
       readonly: true
+---
+kind: optional
+name: OptionalColor
+type: Color
+---
+kind: optional
+name: OptionalBoxBorders
+type: BoxBorders
+---
+kind: optional
+name: OptionalAlignment
+type: Alignment
+---
+kind: struct
+name: Decoration
+namespace: aardvark::inline_layout
+props:
+    - name: background
+      type: OptionalColor
+      hasDefault: yes
+    - name: borders
+      type: OptionalBoxBorders
+      hasDefault: yes
+    - name: insets
+      type: OptionalAlignment
+      hasDefault: yes
+---
+kind: class
+extends: Span
+name: DecorationSpan
+constructor: default
+include: aardvark/inline_layout/decoration_span.hpp
+namespace: aardvark::inline_layout
+props:
+    - name: decoration
+      type: Decoration
+
