@@ -18,9 +18,12 @@ struct BoxBorders {
     BorderSide bottom;
     BorderSide left;
 
+    float height() { return right.width + left.width; }
+    float width() { return top.width + bottom.width; }
+
     static BoxBorders all(BorderSide side) {
         return BoxBorders{side, side, side, side};
-    };
+    }
 };
 
 struct Radius {
@@ -75,8 +78,8 @@ class BorderElement : public SingleChildElement {
           borders(BoxBorders()),
           radiuses(BoxRadiuses()){};
     std::string get_debug_name() override { return "Border"; };
-    float get_intrinsic_height() override;
-    float get_intrinsic_width() override;
+    float get_intrinsic_height(float width) override;
+    float get_intrinsic_width(float height) override;
     Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
 

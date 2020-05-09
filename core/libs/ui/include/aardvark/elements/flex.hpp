@@ -40,8 +40,8 @@ class FlexElement : public MultipleChildrenElement {
           align(align){};
 
     std::string get_debug_name() override { return "Flex"; };
-    float get_intrinsic_height() override;
-    float get_intrinsic_width() override;
+    float get_intrinsic_height(float width) override;
+    float get_intrinsic_width(float height) override;
     Size layout(BoxConstraints constraints) override;
     HitTestMode get_hit_test_mode() override { return HitTestMode::Disabled; };
 

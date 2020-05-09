@@ -37,8 +37,8 @@ class SizeElement : public SingleChildElement {
           size_constraints(size_constraints){};
 
     std::string get_debug_name() override { return "Sized"; };
-    float get_intrinsic_height() override;
-    float get_intrinsic_width() override;
+    float get_intrinsic_height(float width) override;
+    float get_intrinsic_width(float height) override;
     Size layout(BoxConstraints constraints) override;
 
     ELEMENT_PROP(SizeConstraints, size_constraints);

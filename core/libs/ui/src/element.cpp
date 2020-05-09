@@ -78,25 +78,27 @@ void SingleChildElement::append_child(std::shared_ptr<Element> child) {
 }
 
 MultipleChildrenElement::MultipleChildrenElement(
-    std::vector<std::shared_ptr<Element>> children, bool is_repaint_boundary,
+    std::vector<std::shared_ptr<Element>> children,
+    bool is_repaint_boundary,
     bool size_depends_on_parent)
-    : children(children), Element(is_repaint_boundary, size_depends_on_parent) {
-    for (auto child : children) child->parent = this;
+    : children(std::move(children)),
+      Element(is_repaint_boundary, size_depends_on_parent) {
+    for (auto& child : children) child->parent = this;
 }
 
-float MultipleChildrenElement::get_intrinsic_height() {
+float MultipleChildrenElement::get_intrinsic_height(float width) {
     auto max_height = 0;
     for (auto& child : children) {
-        auto height = child->get_intrinsic_height();
+        auto height = child->get_intrinsic_height(width);
         if (height > max_height) max_height = height;
     }
     return max_height;
 }
 
-float MultipleChildrenElement::get_intrinsic_width() {
+float MultipleChildrenElement::get_intrinsic_width(float height) {
     auto max_width = 0;
     for (auto& child : children) {
-        auto width = child->get_intrinsic_width();
+        auto width = child->get_intrinsic_width(height);
         if (width > max_width) max_width = width;
     }
     return max_width;

@@ -2,25 +2,27 @@
 
 namespace aardvark {
 
-float FlexElement::get_intrinsic_height() {
+float FlexElement::get_intrinsic_height(float width) {
     auto result = 0.0;
     for (auto& child : children) {
         if (direction == FlexDirection::column) {
-            result += child->get_intrinsic_height();
+            // TODO probably not correct
+            result += child->get_intrinsic_height(width);
         } else {
-            result = fmax(result, child->get_intrinsic_height());
+            result = fmax(result, child->get_intrinsic_height(width));
         }
     }
     return result;
 }
 
-float FlexElement::get_intrinsic_width() {
+float FlexElement::get_intrinsic_width(float height) {
     auto result = 0.0;
     for (auto& child : children) {
         if (direction == FlexDirection::row) {
-            result += child->get_intrinsic_width();
+            // TODO probably not correct
+            result += child->get_intrinsic_width(height);
         } else {
-            result = fmax(result, child->get_intrinsic_width());
+            result = fmax(result, child->get_intrinsic_width(height));
         }
     }
     return result;

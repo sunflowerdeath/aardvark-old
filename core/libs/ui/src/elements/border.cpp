@@ -14,14 +14,14 @@ BorderElement::BorderElement(
       borders(borders),
       radiuses(radiuses){};
 
-float BorderElement::get_intrinsic_height() {
-    return borders.top.width + borders.bottom.width +
-           child->get_intrinsic_height();
+float BorderElement::get_intrinsic_height(float width) {
+    return borders.height() +
+           child->get_intrinsic_height(width - borders.width());
 }
 
-float BorderElement::get_intrinsic_width() {
-    return borders.left.width + borders.right.width +
-           child->get_intrinsic_width();
+float BorderElement::get_intrinsic_width(float height) {
+    return borders.height() +
+           child->get_intrinsic_width(height - borders.width());
 }
 
 Size BorderElement::layout(BoxConstraints constraints) {

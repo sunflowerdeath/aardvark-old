@@ -2,14 +2,14 @@
 
 namespace aardvark {
 
-float TranslateElement::get_intrinsic_height() {
-    auto child_height = child->get_intrinsic_height();
-    return child_height + translation.left.calc(child_height);
+float TranslateElement::get_intrinsic_height(float width) {
+    auto child_height = child->get_intrinsic_height(width);
+    return child_height + translation.top.calc(child_height);
 }
 
-float TranslateElement::get_intrinsic_width() {
-    auto child_width = child->get_intrinsic_width();
-    return child_width + translation.top.calc(child_width);
+float TranslateElement::get_intrinsic_width(float height) {
+    auto child_width = child->get_intrinsic_width(height);
+    return child_width + translation.left.calc(child_width);
 }
 
 Size TranslateElement::layout(BoxConstraints constraints) {

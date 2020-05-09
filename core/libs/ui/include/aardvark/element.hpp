@@ -87,10 +87,10 @@ class Element : public std::enable_shared_from_this<Element> {
     };
 
     // Returns minimum height that element could fit into.
-    virtual float get_intrinsic_height() { return 0; }
+    virtual float get_intrinsic_height(float width) { return 0; }
 
     // Returns minimum width that element could fit into.
-    virtual float get_intrinsic_width() { return 0; }
+    virtual float get_intrinsic_width(float height) { return 0; }
 
     // Paints element and its children.
     // `is_changed` is `true` when the element itself or some of its parents is
@@ -173,11 +173,11 @@ class SingleChildElement : public Element {
     SingleChildElement(std::shared_ptr<Element> child, bool is_repaint_boundary,
                        bool size_depends_on_parent);
 
-    float get_intrinsic_height() override {
-        return child->get_intrinsic_height();
+    float get_intrinsic_height(float width) override {
+        return child->get_intrinsic_height(width);
     }
-    float get_intrinsic_width() override {
-        return child->get_intrinsic_width();
+    float get_intrinsic_width(float height) override {
+        return child->get_intrinsic_width(height);
     }
     void paint(bool is_changed) override;
     void append_child(std::shared_ptr<Element> child) override;
@@ -197,8 +197,8 @@ class MultipleChildrenElement : public Element {
                             bool is_repaint_boundary,
                             bool size_depends_on_parent);
 
-    float get_intrinsic_height() override;
-    float get_intrinsic_width() override;
+    float get_intrinsic_height(float width) override;
+    float get_intrinsic_width(float height) override;
     void paint(bool is_changed) override;
     void remove_child(std::shared_ptr<Element> child) override;
     void append_child(std::shared_ptr<Element> child) override;

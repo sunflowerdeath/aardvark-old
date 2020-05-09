@@ -20,12 +20,12 @@ class TextElement : public Element {
     TextElement(
         UnicodeString text, SkPaint paint, bool is_repaint_boundary = false)
         : Element(is_repaint_boundary, /* size_depends_on_parent */ true),
-          text(text),
-          skpaint(paint){};
+          text(std::move(text)),
+          skpaint(std::move(paint)){};
 
     std::string get_debug_name() override { return "Text"; };
-    float get_intrinsic_height() override;
-    float get_intrinsic_width() override;
+    float get_intrinsic_height(float width) override;
+    float get_intrinsic_width(float height) override;
     Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
 

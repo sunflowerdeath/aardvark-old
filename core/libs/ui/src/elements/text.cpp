@@ -4,12 +4,12 @@
 
 namespace aardvark {
 
-float TextElement::get_intrinsic_height() {
+float TextElement::get_intrinsic_height(float width) {
     auto metrics = inline_layout::LineMetrics::from_paint(skpaint);
     return metrics.height;
 }
 
-float TextElement::get_intrinsic_width() {
+float TextElement::get_intrinsic_width(float height) {
     return inline_layout::measure_text_width(text, skpaint);
 }
 

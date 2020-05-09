@@ -16,31 +16,6 @@ Decoration Decoration::right() {
     return res;
 }
 
-// TODO remove
-std::pair<Decoration, Decoration> Decoration::split() {
-    std::optional<BoxBorders> left_borders = std::nullopt;
-    std::optional<BoxBorders> right_borders = std::nullopt;
-    if (borders != std::nullopt) {
-        left_borders = borders.value();
-        right_borders = borders.value();
-        left_borders.value().right = BorderSide::none();
-        right_borders.value().left = BorderSide::none();
-    }
-
-    std::optional<Alignment> left_insets = std::nullopt;
-    std::optional<Alignment> right_insets = std::nullopt;
-    if (insets != std::nullopt) {
-        left_insets = insets.value();
-        right_insets = insets.value();
-        left_insets.value().right = Value::none();
-        right_insets.value().left = Value::none();
-    }
-
-    return std::make_pair(
-        Decoration{background, left_borders, left_insets},
-        Decoration{background, right_borders, right_insets});
-};
-
 std::pair<float, float> Decoration::get_paddings(float total_line_width) {
     auto before = 0;
     auto after = 0;
@@ -110,18 +85,17 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
     } else if (fit_spans.size() == 0) {
         return InlineLayoutResult::wrap(shared_from_this());
     } else {
-        auto split_decoration = decoration.split();
         auto fit_span = std::make_shared<DecorationSpan>(
-            fit_spans,                      // children
-            std::get<0>(split_decoration),  // decoration
-            SpanBase{this, 0}               // base_span
+            fit_spans,          // children
+            decoration.left(),  // decoration
+            SpanBase{this, 0}   // base_span
         );
         // TODO use default_metrics?
         auto fit_span_metrics =
             calc_combined_metrics(fit_spans, LineMetrics{0, 0, 0});
         auto remainder_span = std::make_shared<DecorationSpan>(
             remaining_spans,                                    // children
-            std::get<1>(split_decoration),                      // decoration
+            decoration.right(),                                 // decoration
             SpanBase{this, static_cast<int>(fit_spans.size())}  // base_span
         );
         return InlineLayoutResult::split(

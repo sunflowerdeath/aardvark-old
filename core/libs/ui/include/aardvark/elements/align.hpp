@@ -13,6 +13,9 @@ struct Alignment {
     Value right = Value::none();
     Value bottom = Value::none();
 
+    float calc_vert(float value) { return top.calc(0) + bottom.calc(0); };
+    float calc_horiz(float value) { return top.calc(0) + bottom.calc(0); };
+
     static Alignment all(Value value) {
         return Alignment{value, value, value, value};
     };
@@ -32,8 +35,8 @@ class AlignElement : public SingleChildElement {
         bool is_repaint_boundary = false);
 
     std::string get_debug_name() override { return "Align"; };
-    float get_intrinsic_height() override;
-    float get_intrinsic_width() override;
+    float get_intrinsic_height(float width) override;
+    float get_intrinsic_width(float height) override;
     Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
     HitTestMode get_hit_test_mode() override { return HitTestMode::Disabled; };

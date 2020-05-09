@@ -21,7 +21,6 @@ struct Decoration {
     std::optional<Alignment> insets = std::nullopt;
 
     // Splits decoration into left and right parts
-    std::pair<Decoration, Decoration> split(); // TODO remove
     Decoration left();
     Decoration right();
  

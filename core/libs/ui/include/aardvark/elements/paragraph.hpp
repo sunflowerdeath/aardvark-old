@@ -39,6 +39,7 @@ class ParagraphElement : public Element {
     Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
     void visit_children(ChildrenVisitor visitor) override;
+    // TODO intrinsic
 
     std::shared_ptr<inline_layout::Span> root;
     inline_layout::LineMetrics metrics;

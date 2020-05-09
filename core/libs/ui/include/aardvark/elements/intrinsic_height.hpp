@@ -22,7 +22,8 @@ class IntrinsicHeightElement : public SingleChildElement {
     std::string get_debug_name() override { return "IntrinsicHeight"; };
 
     Size layout(BoxConstraints constraints) override {
-        auto size = Size{constraints.max_width, child->get_intrinsic_height()};
+        auto size = Size{constraints.max_width,
+                         child->get_intrinsic_height(constraints.max_width)};
         auto child_constraints =
             BoxConstraints::from_size(size, /* tight */ false);
         auto child_size =

@@ -10,6 +10,9 @@ struct Padding {
     float top = 0.0;
     float right = 0.0;
     float bottom = 0.0;
+
+    float width() { return left + right; }
+    float height() { return top + bottom; }
 };
 
 class PaddingElement : public SingleChildElement {
@@ -31,8 +34,8 @@ class PaddingElement : public SingleChildElement {
           padding(padding){};
 
     std::string get_debug_name() override { return "Padding"; };
-    float get_intrinsic_height() override;
-    float get_intrinsic_width() override;
+    float get_intrinsic_height(float width) override;
+    float get_intrinsic_width(float height) override;
     Size layout(BoxConstraints constraints) override;
 
     ELEMENT_PROP(Padding, padding);

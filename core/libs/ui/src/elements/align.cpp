@@ -14,16 +14,14 @@ AlignElement::AlignElement(
       adjust_child_size(adjust_child_size),
       insets(insets){};
 
-float AlignElement::get_intrinsic_height() {
-    auto top = insets.top.calc(0);
-    auto bottom = insets.bottom.calc(0);
-    return top + bottom + child->get_intrinsic_height();
+float AlignElement::get_intrinsic_height(float width) {
+    return insets.calc_vert(0) +
+           child->get_intrinsic_height(width - insets.calc_horiz(0));
 }
 
-float AlignElement::get_intrinsic_width() {
-    auto left = insets.left.calc(0);
-    auto right = insets.right.calc(0);
-    return left + right + child->get_intrinsic_width();
+float AlignElement::get_intrinsic_width(float height) {
+    return insets.calc_horiz(0) +
+           child->get_intrinsic_width(height - insets.calc_horiz(0));
 }
 
 Size AlignElement::layout(BoxConstraints constraints) {

@@ -31,8 +31,8 @@ class TranslateElement : public SingleChildElement {
 
     std::string get_debug_name() override { return "Translate"; };
     HitTestMode get_hit_test_mode() override { return HitTestMode::Disabled; };
-    float get_intrinsic_height() override;
-    float get_intrinsic_width() override;
+    float get_intrinsic_height(float width) override;
+    float get_intrinsic_width(float height) override;
     Size layout(BoxConstraints constraints) override;
     bool hit_test(double left, double top) override;
 
