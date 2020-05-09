@@ -39,6 +39,8 @@ class ParagraphElement : public Element {
     Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
     void visit_children(ChildrenVisitor visitor) override;
+    float get_intrinsic_height(float width) override;
+    float get_intrinsic_width(float height) override;
     // TODO intrinsic
 
     std::shared_ptr<inline_layout::Span> root;
@@ -46,11 +48,12 @@ class ParagraphElement : public Element {
 
   private:
     void next_line();
+    float layout_inline(float max_width);
     void layout_span(std::shared_ptr<inline_layout::Span> span_sp);
     std::vector<ParagraphLine> lines;
     ParagraphLine* current_line;
     std::vector<std::shared_ptr<Element>> elements;
-    float current_height;
+    // float current_height;
     float total_width;
     float remaining_width;
 };

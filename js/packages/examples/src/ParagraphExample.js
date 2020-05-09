@@ -17,24 +17,29 @@ const ParagraphExample = () => {
     return (
         <Align insets={{ left: Value.abs(10), top: Value.abs(0) }}>
             <Size sizeConstraints={{ width: Value.abs(200) }}>
-                <Paragraph>
-                    <DecorationSpanC
-                        decoration={{
-                            background: Color.lightgrey
-                        }}
-                    >
-                        <TextSpanC text={text} />
-                        <DecorationSpanC
-                            decoration={{
-                                borders: BoxBorders.all(
-                                    BorderSide(2, Color.red)
-                                )
-                            }}
-                        >
-                            <TextSpanC text="MORE TEXT" />
-                        </DecorationSpanC>
-                    </DecorationSpanC>
-                </Paragraph>
+                <IntrinsicHeight>
+                    <Stack>
+                        <Background color={Color.blue} />
+                        <Paragraph>
+                            <DecorationSpanC
+                                decoration={{
+                                    background: Color.lightgrey
+                                }}
+                            >
+                                <TextSpanC text={text} />
+                                <DecorationSpanC
+                                    decoration={{
+                                        borders: BoxBorders.all(
+                                            BorderSide(2, Color.red)
+                                        )
+                                    }}
+                                >
+                                    <TextSpanC text="MORE TEXT" />
+                                </DecorationSpanC>
+                            </DecorationSpanC>
+                        </Paragraph>
+                    </Stack>
+                </IntrinsicHeight>
             </Size>
         </Align>
     )

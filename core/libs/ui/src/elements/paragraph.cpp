@@ -16,14 +16,14 @@ void ParagraphElement::next_line() {
     remaining_width = total_width;
 }
 
-Size ParagraphElement::layout(BoxConstraints constraints) {
-    total_width = constraints.max_width;
+float ParagraphElement::layout_inline(float max_width) {
+    total_width = max_width;
     lines.clear();
     next_line();
     layout_span(root);
 
     elements.clear();
-    current_height = 0;
+    auto current_height = 0.0f;
     for (auto& line : lines) {
         auto line_metrics = inline_layout::calc_combined_metrics(line, metrics);
         inline_layout::render_spans(
@@ -31,13 +31,18 @@ Size ParagraphElement::layout(BoxConstraints constraints) {
         current_height += line_metrics.height;
     }
 
+    return current_height;
+}
+
+Size ParagraphElement::layout(BoxConstraints constraints) {
+    auto height = layout_inline(constraints.max_width);
+
     for (auto& elem : elements) {
-        // elem->parent = this;
         elem->set_document(document);
         document->layout_element(elem.get(), constraints);
     }
 
-    return Size{constraints.max_width, current_height};
+    return Size{constraints.max_width, height};
 }
 
 void ParagraphElement::layout_span(
@@ -68,6 +73,15 @@ void ParagraphElement::paint(bool is_changed) {
 
 void ParagraphElement::visit_children(ChildrenVisitor visitor) {
     for (auto& elem : elements) visitor(elem);
+}
+
+float ParagraphElement::get_intrinsic_height(float width) {
+    return layout_inline(width);
+}
+
+float ParagraphElement::get_intrinsic_width(float height) {
+    // TODO does not really make sense
+    return 0;
 }
 
 }  // namespace aardvark

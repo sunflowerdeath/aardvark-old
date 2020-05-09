@@ -47,11 +47,13 @@ Element* Element::find_closest_repaint_boundary() {
     return current;
 }
 
-SingleChildElement::SingleChildElement(std::shared_ptr<Element> child,
-                                       bool is_repaint_boundary,
-                                       bool size_depends_on_parent)
-    : child(child), Element(is_repaint_boundary, size_depends_on_parent) {
-    if (child) child->parent = this;
+SingleChildElement::SingleChildElement(
+    std::shared_ptr<Element> child,
+    bool is_repaint_boundary,
+    bool size_depends_on_parent)
+    : child(std::move(child)),
+      Element(is_repaint_boundary, size_depends_on_parent) {
+    if (this->child) this->child->parent = this;
 }
 
 void SingleChildElement::paint(bool is_changed) {
@@ -83,7 +85,7 @@ MultipleChildrenElement::MultipleChildrenElement(
     bool size_depends_on_parent)
     : children(std::move(children)),
       Element(is_repaint_boundary, size_depends_on_parent) {
-    for (auto& child : children) child->parent = this;
+    for (auto& child : this->children) child->parent = this;
 }
 
 float MultipleChildrenElement::get_intrinsic_height(float width) {
