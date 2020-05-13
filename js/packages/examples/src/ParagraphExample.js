@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Value, Color, BoxBorders, BorderSide } from '@advk/common'
 import ReactAardvark, {
     Align,
@@ -11,8 +11,10 @@ import ReactAardvark, {
     IntrinsicHeight,
     Text
 } from '@advk/react-renderer'
+import GestureResponderSpan from '@advk/react-renderer/src/components/GestureResponderSpan'
 
 const ParagraphExample = () => {
+    const [hovered, setHovered] = useState(false)
     let text = 'Of course, most of us are not going to have that opportunity.'
     return (
         <Align insets={{ left: Value.abs(10), top: Value.abs(0) }}>
@@ -36,6 +38,20 @@ const ParagraphExample = () => {
                                 >
                                     <TextSpanC text="MORE TEXT" />
                                 </DecorationSpanC>
+                                <GestureResponderSpan
+                                    onHoverStart={() => setHovered(true)}
+                                    onHoverEnd={() => setHovered(false)}
+                                >
+                                    <DecorationSpanC
+                                        decoration={{
+                                            background: hovered
+                                                ? Color.yellow
+                                                : Color.red
+                                        }}
+                                    >
+                                        <TextSpanC text="link text link text link text" />
+                                    </DecorationSpanC>
+                                </GestureResponderSpan>
                             </DecorationSpanC>
                         </Paragraph>
                     </Stack>

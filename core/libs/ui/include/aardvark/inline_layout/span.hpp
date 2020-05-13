@@ -117,6 +117,10 @@ class SingleChildSpan : public Span, public SingleChildNode<Span, Element> {
           }),
           Span(base_span),
           SingleChildNode(std::move(child)){};
+
+    UnicodeString get_text() override { return child->get_text(); }
+
+    int get_text_length() override { return child->get_text_length(); }
 };
 
 class MultipleChildrenSpan : public Span,

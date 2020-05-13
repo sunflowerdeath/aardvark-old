@@ -53,7 +53,6 @@ class ParagraphElement : public Element {
     std::vector<ParagraphLine> lines;
     ParagraphLine* current_line;
     std::vector<std::shared_ptr<Element>> elements;
-    // float current_height;
     float total_width;
     float remaining_width;
 };

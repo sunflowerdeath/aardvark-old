@@ -85,4 +85,15 @@ namespace: aardvark::inline_layout
 props:
     - name: decoration
       type: Decoration
-
+---
+kind: class
+name: ResponderSpan
+extends: Span
+include: aardvark/inline_layout/responder_span.hpp
+namespace: aardvark::inline_layout
+constructor: default
+props:
+    - name: hitTestMode
+      type: HitTestMode
+    - name: handler
+      type: ResponderEventHandler
