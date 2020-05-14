@@ -67,6 +67,7 @@ bool Document::render() {
 bool Document::initial_render() {
     layout_element(
         root.get(), BoxConstraints::from_size(screen->size, true /* tight */));
+    update_tree_abs_position(root.get());
     size_observer->check_all_elements();
     if (!changed_elements.empty()) relayout();
 
@@ -121,7 +122,7 @@ void Document::update_tree_abs_position(Element* elem) {
 void Document::update_abs_position(Element* elem) {
     elem->abs_position =
         elem->parent == nullptr
-            ? elem->rel_position
+            ? Position{0, 0}
             : Position::add(elem->parent->abs_position, elem->rel_position);
 }
 

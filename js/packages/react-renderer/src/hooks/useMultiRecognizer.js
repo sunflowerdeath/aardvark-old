@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import HoverRecognizer from '@advk/common/src/gestures/HoverRecognizer.js'
 import TapRecognizer from '@advk/common/src/gestures/TapRecognizer.js'
 import MultiRecognizer from '@advk/common/src/gestures/MultiRecognizer.js'
-import useLastValue from '../hooks/useLastValue.js'
+import useLastValue from './useLastValue.js'
 
 // Hook that composes different handler functions from props into single handler
 // for the Responder element
