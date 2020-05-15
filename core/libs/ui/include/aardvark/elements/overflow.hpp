@@ -1,8 +1,22 @@
 #pragma once
 
+#include <limits>
 #include "../element.hpp"
 
 namespace aardvark {
+
+enum class OverflowType { original, unconstrained, sized };
+
+struct OverflowConstraint {
+    OverflowType type;
+    float size;
+
+    float resolve(float original);
+
+    static OverflowConstraint original;
+    static OverflowConstraint unconstrained;
+    static OverflowConstraint sized(float size);
+};
 
 class OverflowElement : public SingleChildElement {
   public:
@@ -14,8 +28,8 @@ class OverflowElement : public SingleChildElement {
 
     OverflowElement(
         std::shared_ptr<Element> child,
-        std::optional<float> max_width,
-        std::optional<float> max_height)
+        OverflowConstraint max_width,
+        OverflowConstraint max_height)
         : max_width(max_width),
           max_height(max_height),
           SingleChildElement(
@@ -26,8 +40,10 @@ class OverflowElement : public SingleChildElement {
     std::string get_debug_name() override { return "Overflow"; };
     Size layout(BoxConstraints constraints) override;
 
-    ELEMENT_PROP_DEFAULT(std::optional<float>, max_width, std::nullopt);
-    ELEMENT_PROP_DEFAULT(std::optional<float>, max_height, std::nullopt);
+    ELEMENT_PROP_DEFAULT(
+        OverflowConstraint, max_width, OverflowConstraint::original);
+    ELEMENT_PROP_DEFAULT(
+        OverflowConstraint, max_height, OverflowConstraint::original);
 };
 
 }  // namespace aardvark

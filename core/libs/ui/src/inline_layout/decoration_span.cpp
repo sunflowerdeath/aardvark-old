@@ -133,8 +133,9 @@ std::shared_ptr<Element> DecorationSpan::render() {
         container = std::make_shared<OverflowElement>(
             std::make_shared<BorderElement>(
                 container, borders, BoxRadiuses::all(Radius{0, 0})),
-            std::nullopt,                      // max_width
-            metrics.height + borders.height()  // max_height
+            OverflowConstraint::original,  // max_width
+            OverflowConstraint::sized(
+                metrics.height + borders.height())  // max_height
         );
         top_offset += borders.top.width;
     }
