@@ -9,6 +9,7 @@
 #include "intrinsic_height.hpp"
 #include "intrinsic_width.hpp"
 #include "layer.hpp"
+#include "overflow.hpp"
 #include "padding.hpp"
 #include "paragraph.hpp"
 #include "placeholder.hpp"

@@ -25,13 +25,13 @@ float BorderElement::get_intrinsic_width(float height) {
 }
 
 Size BorderElement::layout(BoxConstraints constraints) {
-    auto vert_width = borders.left.width + borders.right.width;
-    auto horiz_width = borders.top.width + borders.bottom.width;
+    auto vert_size = borders.top.width + borders.bottom.width;
+    auto horiz_size = borders.left.width + borders.right.width;
     auto child_constraints = BoxConstraints{
-        0,                                    // min_width
-        constraints.max_width - vert_width,   // max_width
-        0,                                    // min_height
-        constraints.max_height - horiz_width  // max_height
+        0,                                   // min_width
+        constraints.max_width - horiz_size,  // max_width
+        0,                                   // min_height
+        constraints.max_height - vert_size   // max_height
     };
     auto size = document->layout_element(child.get(), child_constraints);
     child->size = size;
@@ -40,8 +40,8 @@ Size BorderElement::layout(BoxConstraints constraints) {
         static_cast<float>(borders.top.width)    // top
     };
     return Size{
-        size.width + vert_width,   // width
-        size.height + horiz_width  // height
+        size.width + horiz_size,  // width
+        size.height + vert_size   // height
     };
 };
 

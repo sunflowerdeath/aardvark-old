@@ -18,8 +18,8 @@ struct BoxBorders {
     BorderSide bottom;
     BorderSide left;
 
-    float height() { return right.width + left.width; }
-    float width() { return top.width + bottom.width; }
+    float height() { return top.width + bottom.width; }
+    float width() { return left.width + right.width; }
 
     static BoxBorders all(BorderSide side) {
         return BoxBorders{side, side, side, side};

@@ -32,7 +32,7 @@ const ParagraphExample = () => {
                                 <DecorationSpanC
                                     decoration={{
                                         borders: BoxBorders.all(
-                                            BorderSide(2, Color.red)
+                                            BorderSide(8, Color.yellow)
                                         )
                                     }}
                                 >

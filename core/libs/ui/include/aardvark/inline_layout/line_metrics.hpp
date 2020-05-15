@@ -9,7 +9,7 @@ struct LineMetrics {
     float baseline;
     float x_height;
 
-    LineMetrics add(float added);
+    LineMetrics add(float ascent, float descent);
     LineMetrics scale(float ratio);
 
     static LineMetrics from_paint(const SkPaint& paint);

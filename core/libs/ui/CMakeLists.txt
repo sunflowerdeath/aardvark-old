@@ -33,6 +33,7 @@ add_library(aardvark_ui ${ADV_UI_LIB_TYPE}
     src/elements/fixed_size.cpp
     src/elements/flex.cpp
     src/elements/layer.cpp
+    src/elements/overflow.cpp
     src/elements/padding.cpp
     src/elements/paragraph.cpp
     src/elements/responder.cpp

@@ -1,5 +1,8 @@
 #include "inline_layout/decoration_span.hpp"
 
+#include "elements/translate.hpp"
+#include "elements/overflow.hpp"
+
 namespace aardvark::inline_layout {
 
 Decoration Decoration::left() {
@@ -127,13 +130,17 @@ std::shared_ptr<Element> DecorationSpan::render() {
     }
     if (decoration.borders != std::nullopt) {
         auto borders = decoration.borders.value();
-        container = std::make_shared<BorderElement>(
-            container, borders, BoxRadiuses::all(Radius{0, 0}));
+        container = std::make_shared<OverflowElement>(
+            std::make_shared<BorderElement>(
+                container, borders, BoxRadiuses::all(Radius{0, 0})),
+            std::nullopt,                      // max_width
+            metrics.height + borders.height()  // max_height
+        );
         top_offset += borders.top.width;
     }
     if (top_offset > 0) {
-        container = std::make_shared<AlignElement>(
-            container, Alignment{Value::abs(0), Value::abs(-top_offset)});
+        container = std::make_shared<TranslateElement>(
+            container, Translation{Value::abs(0), Value::abs(-top_offset)});
     }
     return container;
 }

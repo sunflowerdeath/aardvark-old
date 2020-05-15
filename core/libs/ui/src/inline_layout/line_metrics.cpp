@@ -1,9 +1,11 @@
 #include "inline_layout/line_metrics.hpp"
 
+#include <iostream>
+
 namespace aardvark::inline_layout {
 
-LineMetrics LineMetrics::add(float added) {
-    return LineMetrics{height + added, baseline, x_height};
+LineMetrics LineMetrics::add(float ascent, float descent) {
+    return LineMetrics{height + ascent + descent, baseline + descent, x_height};
 };
 
 LineMetrics LineMetrics::scale(float ratio) {
@@ -14,6 +16,7 @@ LineMetrics LineMetrics::scale(float ratio) {
 LineMetrics LineMetrics::from_paint(const SkPaint& paint) {
     SkPaint::FontMetrics metrics;
     (void)paint.getFontMetrics(&metrics);
+    std::cout << "LINE METRICS " << metrics.fAscent << " " << metrics.fDescent << std::endl;
     return LineMetrics{
         -metrics.fAscent + metrics.fDescent,  // height
         -metrics.fAscent,                     // baseline

@@ -24,7 +24,8 @@ class TranslateElement : public SingleChildElement {
         std::shared_ptr<Element> child,
         Translation translation,
         bool is_repaint_boundary = false)
-        : SingleChildElement(
+        : translation(translation),
+          SingleChildElement(
               std::move(child),
               is_repaint_boundary,
               /* size_depends_on_parent */ false){};

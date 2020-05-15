@@ -7,7 +7,7 @@
     "build": "../../node_modules/.bin/webpack",
     "build-prod": "NODE_ENV=production ../../node_modules/.bin/webpack",
     "start": "../../../core/build/bin/adv_js_example build/main.js",
-    "start-prod": "../../../core/build-release/bin/adv_js_example build-prod/main.js",
+    "start-prod": "../../../core/build-prod/bin/adv_js_example build-prod/main.js",
     "lldb": "lldb ../../../core/build/bin/adv_js_example -- build/main.js"
   },
   "dependencies": {
