@@ -22,13 +22,6 @@ Size TextElement::layout(BoxConstraints constraints) {
 };
 
 void TextElement::paint(bool is_changed) {
-    // std::cout << "===" << get_text() << std::endl;
-    // Element* elem = this;
-    // while (elem != nullptr) {
-        // std::cout << elem->get_debug_name() << ": " << elem->abs_position.top
-                  // << std::endl;
-        // elem = elem->parent;
-    // }
     auto layer = document->get_layer();
     document->setup_layer(layer, this);
     auto metrics = inline_layout::LineMetrics::from_paint(skpaint);

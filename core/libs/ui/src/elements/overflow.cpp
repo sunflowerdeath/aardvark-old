@@ -8,7 +8,6 @@ float OverflowConstraint::resolve(float original) {
     } else if (type == OverflowType::original) {
         return original;
     } else {
-        // sized
         return size;
     }
 }

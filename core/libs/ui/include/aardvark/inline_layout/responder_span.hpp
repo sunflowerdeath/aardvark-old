@@ -19,11 +19,13 @@ class ResponderSpan : public SingleChildSpan {
     InlineLayoutResult layout(InlineConstraints constraints) override {
         auto child_result = child->layout(constraints);
         if (child_result.type == InlineLayoutResult::Type::fit) {
+            child->metrics = child_result.metrics;
             return InlineLayoutResult::fit(
                 child_result.width, child_result.metrics, shared_from_this());
         } else if (child_result.type == InlineLayoutResult::Type::wrap) {
             return InlineLayoutResult::wrap(shared_from_this());
         } else {
+            child_result.fit_span.value()->metrics = child_result.metrics;
             auto fit = std::make_shared<ResponderSpan>(
                 child_result.fit_span.value(),
                 hit_test_mode,
