@@ -9,35 +9,35 @@ using namespace aardvark;
 TEST_CASE("DecorationSpan", "[inline][decoration_span]") {
     auto red = Color::from_sk_color(SK_ColorRED);
     auto blue = Color::from_sk_color(SK_ColorBLUE);
-    auto decoration =
-        inline_layout::Decoration{red,  // color
-                                  BoxBorders{
-                                      BorderSide{1, red},   // top
-                                      BorderSide{2, red},   // right
-                                      BorderSide{3, blue},  // bottom
-                                      BorderSide{4, blue},  // left
-                                  },
-                                  Alignment{
-                                      Value::abs(1),  // left
-                                      Value::abs(2),  // top
-                                      Value::abs(3),  // right
-                                      Value::abs(4)   // bottom
-                                  }};
+    auto decoration = inline_layout::Decoration{
+        red,  // color
+        BoxBorders{
+            BorderSide{1, red},   // top
+            BorderSide{2, red},   // right
+            BorderSide{3, blue},  // bottom
+            BorderSide{4, blue},  // left
+        },
+        Padding{
+            1,  // left
+            2,  // top
+            3,  // right
+            4   // bottom
+        }};
 
     SECTION("decoration split") {
         auto left = decoration.left();
         REQUIRE(left.background == red);
         REQUIRE(left.borders.value().left.width == 4);
         REQUIRE(left.borders.value().right.width == 0);
-        REQUIRE(left.insets.value().left == Value::abs(1));
-        REQUIRE(left.insets.value().right == Value::none());
+        REQUIRE(left.padding.value().left == 1);
+        REQUIRE(left.padding.value().right == 0);
 
         auto right = decoration.right();
         REQUIRE(right.background == red);
         REQUIRE(right.borders.value().left.width == 0);
         REQUIRE(right.borders.value().right.width == 2);
-        REQUIRE(right.insets.value().left == Value::none());
-        REQUIRE(right.insets.value().right == Value::abs(3));
+        REQUIRE(right.padding.value().left == 0);
+        REQUIRE(right.padding.value().right == 3);
     }
 
     SECTION("slice") {

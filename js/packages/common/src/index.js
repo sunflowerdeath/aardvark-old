@@ -1,3 +1,4 @@
+export { Alignment } from './Alignment.js'
 export { BorderSide, BoxBorders, Radius, BoxRadiuses } from './Borders.js'
 export { Color } from './Color.js'
 export { Padding } from './Padding.js'

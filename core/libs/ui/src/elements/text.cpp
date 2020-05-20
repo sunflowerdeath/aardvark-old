@@ -1,7 +1,6 @@
 #include "elements/text.hpp"
 
 #include "inline_layout/utils.hpp"
-#include <iostream>
 
 namespace aardvark {
 

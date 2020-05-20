@@ -8,7 +8,7 @@
 #include "../node.hpp"
 #include "../elements/background.hpp"
 #include "../elements/border.hpp"
-#include "../elements/align.hpp"
+#include "../elements/padding.hpp"
 #include "../elements/stack.hpp"
 #include "span.hpp"
 #include "utils.hpp"
@@ -18,7 +18,7 @@ namespace aardvark::inline_layout {
 struct Decoration {
     std::optional<Color> background = std::nullopt;
     std::optional<BoxBorders> borders = std::nullopt;
-    std::optional<Alignment> insets = std::nullopt;
+    std::optional<Padding> padding = std::nullopt;
 
     // Splits decoration into left and right parts
     Decoration left();

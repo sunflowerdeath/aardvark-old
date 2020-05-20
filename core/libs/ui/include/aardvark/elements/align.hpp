@@ -7,18 +7,25 @@
 
 namespace aardvark {
 
+enum class AlignmentOrigin { top_left, top_right, bottom_left, bottom_right };
+
 struct Alignment {
-    Value left = Value::none();
-    Value top = Value::none();
-    Value right = Value::none();
-    Value bottom = Value::none();
+    AlignmentOrigin origin = AlignmentOrigin::top_left;
+    Value vert = Value::none();
+    Value horiz = Value::none();
 
-    float calc_vert(float value) { return top.calc(0) + bottom.calc(0); };
-    float calc_horiz(float value) { return top.calc(0) + bottom.calc(0); };
-
-    static Alignment all(Value value) {
-        return Alignment{value, value, value, value};
-    };
+    static Alignment top_left(Value top, Value left) {
+        return Alignment{AlignmentOrigin::top_left, top, left};
+    }
+    static Alignment top_right(Value top, Value right) {
+        return Alignment{AlignmentOrigin::top_right, top, right};
+    }
+    static Alignment bottom_left(Value bottom, Value left) {
+        return Alignment{AlignmentOrigin::bottom_left, bottom, left};
+    }
+    static Alignment bottom_right(Value bottom, Value right) {
+        return Alignment{AlignmentOrigin::bottom_right, bottom, right};
+    }
 };
 
 class AlignElement : public SingleChildElement {
@@ -30,7 +37,7 @@ class AlignElement : public SingleChildElement {
 
     AlignElement(
         std::shared_ptr<Element> child,
-        Alignment insets,
+        Alignment alignment,
         bool adjust_child_size = true,
         bool is_repaint_boundary = false);
 
@@ -46,7 +53,7 @@ class AlignElement : public SingleChildElement {
     // relative size and position at the same time.
     ELEMENT_PROP(bool, adjust_child_size);
 
-    ELEMENT_PROP(Alignment, insets);
+    ELEMENT_PROP(Alignment, alignment);
 };
 
 }  // namespace aardvark::elements

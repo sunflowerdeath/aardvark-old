@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { Value, Color, BoxBorders, BorderSide } from '@advk/common'
+import { Alignment, Value, Color, BoxBorders, BorderSide } from '@advk/common'
 import ReactAardvark, {
-    Align,
+    Align as Aligned,
     Size,
     Stack,
     Background,
@@ -17,7 +17,7 @@ const ParagraphExample = () => {
     const [hovered, setHovered] = useState(false)
     let text = 'Of course, most of us are not going to have that opportunity.'
     return (
-        <Align insets={{ left: Value.abs(10), top: Value.abs(0) }}>
+        <Aligned alignment={Alignment.topLeft(Value.abs(10), Value.abs(0))}>
             <Size sizeConstraints={{ width: Value.abs(200) }}>
                 <IntrinsicHeight>
                     <Stack>
@@ -57,7 +57,7 @@ const ParagraphExample = () => {
                     </Stack>
                 </IntrinsicHeight>
             </Size>
-        </Align>
+        </Aligned>
     )
 }
 

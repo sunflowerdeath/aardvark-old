@@ -1,9 +1,9 @@
 import React, { useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import Animated from 'animated'
-import { Value, TransformMatrix } from '@advk/common'
+import { Alignment, Value, TransformMatrix } from '@advk/common'
 import {
-    Align,
+    Align as Aligned,
     Size,
     Stack,
     Background,
@@ -64,7 +64,7 @@ const FloatingScrollbarWrapper = props => {
     return (
         <Stack>
             {children}
-            <Align alignment={{ top: Value.abs(0), right: Value.abs(0) }}>
+            <Aligned alignment={Alignment.topRight(Value.abs(0), Value.abs(0))}>
                 <Size
                     sizeConstraints={{
                         height: Value.rel(1),
@@ -84,7 +84,7 @@ const FloatingScrollbarWrapper = props => {
                         </Layer>
                     </Clip>
                 </Size>
-            </Align>
+            </Aligned>
         </Stack>
     )
 }

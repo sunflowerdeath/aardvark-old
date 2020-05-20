@@ -12,7 +12,6 @@ import {
     TransformMatrix
 } from '@advk/common'
 import ReactAardvark, {
-    Align,
     GestureResponder,
     Size,
     Stack,

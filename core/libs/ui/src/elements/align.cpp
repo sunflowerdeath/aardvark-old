@@ -4,7 +4,7 @@ namespace aardvark {
 
 AlignElement::AlignElement(
     std::shared_ptr<Element> child,
-    Alignment insets,
+    Alignment alignment,
     bool adjust_child_size,
     bool is_repaint_boundary)
     : SingleChildElement(
@@ -12,42 +12,41 @@ AlignElement::AlignElement(
           is_repaint_boundary,
           /* size_depends_on_parent */ true),
       adjust_child_size(adjust_child_size),
-      insets(insets){};
+      alignment(alignment){};
 
 float AlignElement::get_intrinsic_height(float width) {
-    return insets.calc_vert(0) +
-           child->get_intrinsic_height(width - insets.calc_horiz(0));
+    auto align = alignment.vert.calc(0);
+    return align +
+           child->get_intrinsic_height(width - (adjust_child_size ? align : 0));
 }
 
 float AlignElement::get_intrinsic_width(float height) {
-    return insets.calc_horiz(0) +
-           child->get_intrinsic_width(height - insets.calc_horiz(0));
+    auto align = alignment.horiz.calc(0);
+    return align +
+           child->get_intrinsic_width(height - (adjust_child_size ? align : 0));
 }
 
 Size AlignElement::layout(BoxConstraints constraints) {
-    auto left = insets.left.calc(constraints.max_width);
-    auto top = insets.top.calc(constraints.max_height);
-    auto right = insets.right.calc(constraints.max_width);
-    auto bottom = insets.bottom.calc(constraints.max_height);
-    auto horiz = left + right;
-    auto vert = top + bottom;
+    auto horiz = alignment.horiz.calc(0);
+    auto vert = alignment.vert.calc(0);
 
     auto child_constraints = BoxConstraints{
-        0,  // min_width
-        adjust_child_size ? (constraints.max_width - horiz)
-                          : constraints.max_width,  // max_width
-        0,                                          // min_height
-        adjust_child_size ? (constraints.max_height - vert)
-                          : constraints.max_height,  // max_height
+        0,                                                        // min_width
+        constraints.max_width - (adjust_child_size ? horiz : 0),  // max_width
+        0,                                                        // min_height
+        constraints.max_height - (adjust_child_size ? vert : 0)   // max_height
     };
     auto size = document->layout_element(child.get(), child_constraints);
     child->size = size;
-    child->rel_position = Position{
-        insets.left.is_none() ? (constraints.max_width - horiz - size.width)
-                              : left,  // left
-        insets.top.is_none() ? (constraints.max_height - vert - size.height)
-                             : top  // top
-    };
+    auto left = (alignment.origin == AlignmentOrigin::top_left ||
+                 alignment.origin == AlignmentOrigin::bottom_left)
+                    ? horiz
+                    : (constraints.max_width - horiz - size.width);
+    auto top = (alignment.origin == AlignmentOrigin::top_left ||
+                alignment.origin == AlignmentOrigin::top_right)
+                   ? vert
+                   : (constraints.max_height - vert - size.height);
+    child->rel_position = Position{left, top};
     return constraints.max_size();
 };
 

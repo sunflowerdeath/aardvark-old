@@ -61,9 +61,9 @@ void render_spans(
         auto elem = span->render();
         auto sizeConstraints = SizeConstraints{
             Value::abs(span->width), Value::abs(span->metrics.height)};
-        auto align = Alignment{
-            Value::abs(current_width + offset.left),
-            Value::abs(span->vert_align(metrics, span->metrics) + offset.top)};
+        auto align = Alignment::top_left(
+            Value::abs(span->vert_align(metrics, span->metrics) + offset.top),
+            Value::abs(current_width + offset.left));
         auto aligned = std::make_shared<AlignElement>(
             std::make_shared<SizeElement>(elem, sizeConstraints), align);
         aligned->parent = parent;

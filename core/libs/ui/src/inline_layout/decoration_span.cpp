@@ -8,23 +8,23 @@ namespace aardvark::inline_layout {
 Decoration Decoration::left() {
     auto res = *this;
     if (borders != std::nullopt) res.borders.value().right = BorderSide::none();
-    if (insets != std::nullopt) res.insets.value().right = Value::none();
+    if (padding != std::nullopt) res.padding.value().right = 0;
     return res;
 }
 
 Decoration Decoration::right() {
     auto res = *this;
     if (borders != std::nullopt) res.borders.value().left = BorderSide::none();
-    if (insets != std::nullopt) res.insets.value().left = Value::none();
+    if (padding != std::nullopt) res.padding.value().left = 0;
     return res;
 }
 
 std::pair<float, float> Decoration::get_paddings(float total_line_width) {
     auto before = 0;
     auto after = 0;
-    if (insets != std::nullopt) {
-        before += insets.value().left.calc(total_line_width);
-        after += insets.value().right.calc(total_line_width);
+    if (padding != std::nullopt) {
+        before += padding.value().left;
+        after += padding.value().right;
     }
     if (borders != std::nullopt) {
         before += borders.value().left.width;
@@ -117,10 +117,10 @@ std::shared_ptr<Element> DecorationSpan::render() {
 
     std::shared_ptr<Element> container = stack;
     auto top_offset = 0;
-    if (decoration.insets != std::nullopt) {
-        auto insets = decoration.insets.value();
-        container = std::make_shared<AlignElement>(container, insets);
-        top_offset += insets.top.calc(metrics.height);
+    if (decoration.padding != std::nullopt) {
+        auto padding = decoration.padding.value();
+        container = std::make_shared<PaddingElement>(container, padding);
+        top_offset += padding.top;
     }
     if (decoration.background != std::nullopt) {
         auto background =

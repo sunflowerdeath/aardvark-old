@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react'
-import { Value, Color, TransformMatrix } from '@advk/common'
+import { Alignment, Value, Color, TransformMatrix } from '@advk/common'
 import {
-    Align,
+    Align as Aligned,
     Size,
     Stack,
     Background,
@@ -32,7 +32,9 @@ const LayerExample = () => {
     )
     return (
         <Stack>
-            <Align insets={{ top: Value.abs(50), left: Value.abs(50) }}>
+            <Aligned
+                alignment={Alignment.topLeft(Value.abs(50), Value.abs(50))}
+            >
                 <Layer transform={matrix}>
                     <GestureResponder
                         onHoverStart={useCallback(() => setIsHovered(true))}
@@ -52,8 +54,10 @@ const LayerExample = () => {
                         </Size>
                     </GestureResponder>
                 </Layer>
-            </Align>
-            <Align insets={{ top: Value.abs(20), right: Value.abs(20) }}>
+            </Aligned>
+            <Aligned
+                alignment={Alignment.topRight(Value.abs(20), Value.abs(20))}
+            >
                 <Size
                     sizeConstraints={{
                         width: Value.abs(200),
@@ -78,7 +82,7 @@ const LayerExample = () => {
                         </Flex>
                     </Stack>
                 </Size>
-            </Align>
+            </Aligned>
         </Stack>
     )
 }

@@ -1,17 +1,21 @@
+kind: enum
+name: AlignmentOrigin
+values:
+    - topLeft
+    - topRight
+    - bottomLeft
+    - bottomRight
+---
 kind: struct
 name: Alignment
-doc: Default value is `Value.none`
 props:
-    - name: left
+    - name: origin
+      type: AlignmentOrigin
+      hasDefault: true
+    - name: horiz
       type: Value
       hasDefault: true
-    - name: top
-      type: Value
-      hasDefault: true
-    - name: right
-      type: Value
-      hasDefault: true
-    - name: bottom
+    - name: vert
       type: Value
       hasDefault: true
 ---
@@ -24,9 +28,9 @@ props:
     - name: adjustChildSize
       type: bool
       setter: set_adjust_child_size
-    - name: insets
+    - name: alignment
       type: Alignment
-      setter: set_insets
+      setter: set_alignment
 ---
 kind: class
 name: BackgroundElement
