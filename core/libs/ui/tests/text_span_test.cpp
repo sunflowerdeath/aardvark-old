@@ -17,7 +17,7 @@ TEST_CASE("DecorationSpan", "[inline][decoration_span]") {
             BorderSide{3, blue},  // bottom
             BorderSide{4, blue},  // left
         },
-        Padding{
+        Insets{
             1,  // left
             2,  // top
             3,  // right

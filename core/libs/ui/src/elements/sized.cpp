@@ -1,8 +1,8 @@
-#include "elements/size.hpp"
+#include "elements/sized.hpp"
 
 namespace aardvark {
 
-float SizeElement::get_intrinsic_height(float width) {
+float SizedElement::get_intrinsic_height(float width) {
     auto res = size_constraints.height.is_none()
                    ? child->get_intrinsic_height(width)
                    : size_constraints.height.calc(0);
@@ -15,7 +15,7 @@ float SizeElement::get_intrinsic_height(float width) {
     return res;
 }
 
-float SizeElement::get_intrinsic_width(float height) {
+float SizedElement::get_intrinsic_width(float height) {
     auto res = size_constraints.width.is_none()
                    ? child->get_intrinsic_width(height)
                    : size_constraints.width.calc(0);
@@ -45,7 +45,7 @@ float calc_max(const std::array<Value, 2>& values, float parent_max) {
     return res;
 }
 
-Size SizeElement::layout(BoxConstraints constraints) {
+Size SizedElement::layout(BoxConstraints constraints) {
     auto& parent = constraints;
     auto& self = size_constraints;
     auto min_width = calc_min({self.min_width, self.width}, parent.min_width,

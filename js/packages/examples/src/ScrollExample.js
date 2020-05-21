@@ -8,18 +8,18 @@ import React, {
 import {
     Color,
     Value,
-    Padding as Padding1,
+    Insets,
     TransformMatrix
 } from '@advk/common'
 import ReactAardvark, {
     GestureResponder,
-    Size,
+    Sized,
     Stack,
     Background,
     Center,
     Clip,
     Layer,
-    Padding,
+    Padded,
     Responder,
     IntrinsicWidth,
     IntrinsicHeight,
@@ -50,9 +50,9 @@ const ListItem = ({ children }) => {
                     <Background
                         color={isHovered ? Color.green : Color.transparent}
                     />
-                    <Padding padding={Padding1.all(16)}>
+                    <Padded padding={Insets.all(16)}>
                         <Text text={children.join('')} />
-                    </Padding>
+                    </Padded>
                 </Stack>
             </IntrinsicHeight>
         </Responder>
@@ -69,9 +69,9 @@ const Expandable = React.forwardRef((props, ref) => {
         []
     )
     return (
-        <Size sizeConstraints={{ height: Value.abs(isExpanded ? 150 : 50) }}>
+        <Sized sizeConstraints={{ height: Value.abs(isExpanded ? 150 : 50) }}>
             <Background color={Color.PURPLE} />
-        </Size>
+        </Sized>
     )
 })
 
@@ -87,7 +87,7 @@ const BasicScrollExample = () => {
                     <Text text="Disable" />
                 </Button>
             </Flex>
-            <Size
+            <Sized
                 sizeConstraints={{
                     width: Value.abs(200),
                     height: Value.abs(200)
@@ -102,7 +102,7 @@ const BasicScrollExample = () => {
                         ))}
                     </Scrollable>
                 </Stack>
-            </Size>
+            </Sized>
         </>
     )
 }
@@ -114,7 +114,7 @@ const FloatingScrollbarExample = () => {
             <Button onTap={() => expandRef.current.toggle()}>
                 <Text text="Expand" />
             </Button>
-            <Size
+            <Sized
                 sizeConstraints={{
                     width: Value.abs(200),
                     height: Value.abs(200)
@@ -129,7 +129,7 @@ const FloatingScrollbarExample = () => {
                         ))}
                     </Scrollable>
                 </Stack>
-            </Size>
+            </Sized>
         </>
     )
 }
@@ -142,22 +142,22 @@ const examples = [
 const ScrollExample = () => {
     const [selected, setSelected] = useState()
     return (
-        <Padding padding={Padding1.all(16)}>
+        <Padded padding={Insets.all(16)}>
             <Flex direction={FlexDirection.column}>
-                <Padding padding={Padding1.only('bottom', 16)}>
+                <Padded padding={Insets.only('bottom', 16)}>
                     <Flex>
                         {examples.map(item => (
-                            <Padding padding={Padding1.only('right', 8)}>
+                            <Padded padding={Insets.only('right', 8)}>
                                 <Button onTap={() => setSelected(item)}>
                                     <Text text={item.name} />
                                 </Button>
-                            </Padding>
+                            </Padded>
                         ))}
                     </Flex>
-                </Padding>
+                </Padded>
                 {selected ? React.createElement(selected.component) : null}
             </Flex>
-        </Padding>
+        </Padded>
     )
 }
 

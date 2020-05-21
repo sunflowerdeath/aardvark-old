@@ -1,6 +1,6 @@
 export { Alignment } from './Alignment.js'
 export { BorderSide, BoxBorders, Radius, BoxRadiuses } from './Borders.js'
 export { Color } from './Color.js'
-export { Padding } from './Padding.js'
+export { Insets } from './Insets.js'
 export { Value } from './Value.js'
 export { TransformMatrix } from './TransformMatrix.js'

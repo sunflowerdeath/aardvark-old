@@ -1,12 +1,12 @@
 import React, { useState, useCallback } from 'react'
-import { Color, Value, Padding as Padding1 } from '@advk/common'
+import { Color, Value, Insets } from '@advk/common'
 import ReactAardvark, {
     GestureResponder,
-    Size,
+    Sized,
     Stack,
     Background,
     Center,
-    Padding,
+    Padded,
     IntrinsicWidth
 } from '@advk/react-renderer'
 
@@ -30,18 +30,18 @@ const Button = ({ children, onTap }) => {
             onHoverStart={useCallback(() => setIsHovered(true))}
             onHoverEnd={useCallback(() => setIsHovered(false))}
         >
-            <Size sizeConstraints={{ height: Value.abs(40) }}>
+            <Sized sizeConstraints={{ height: Value.abs(40) }}>
                 <IntrinsicWidth>
                     <Stack>
                         <Background color={color} />
                         <Center>
-                            <Padding padding={Padding1.horiz(16)}>
+                            <Padded padding={Insets.horiz(16)}>
                                 {children}
-                            </Padding>
+                            </Padded>
                         </Center>
                     </Stack>
                 </IntrinsicWidth>
-            </Size>
+            </Sized>
         </GestureResponder>
     )
 }

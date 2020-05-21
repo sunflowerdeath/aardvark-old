@@ -5,7 +5,7 @@
 
 namespace aardvark {
 
-struct Padding {
+struct Insets {
     float left = 0.0;
     float top = 0.0;
     float right = 0.0;
@@ -15,17 +15,17 @@ struct Padding {
     float height() { return top + bottom; }
 };
 
-class PaddingElement : public SingleChildElement {
+class PaddedElement : public SingleChildElement {
   public:
-    PaddingElement()
+    PaddedElement()
         : SingleChildElement(
               /* child */ nullptr,
               /* is_repaint_boundary */ false,
               /* size_depends_on_parent */ false){};
 
-    PaddingElement(
+    PaddedElement(
         std::shared_ptr<Element> child,
-        Padding padding,
+        Insets padding,
         bool is_repaint_boundary = false)
         : SingleChildElement(
               std::move(child),
@@ -38,7 +38,7 @@ class PaddingElement : public SingleChildElement {
     float get_intrinsic_width(float height) override;
     Size layout(BoxConstraints constraints) override;
 
-    ELEMENT_PROP(Padding, padding);
+    ELEMENT_PROP(Insets, padding);
 };
 
 }  // namespace aardvark

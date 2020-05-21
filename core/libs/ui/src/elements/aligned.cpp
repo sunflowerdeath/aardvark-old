@@ -1,8 +1,8 @@
-#include "elements/align.hpp"
+#include "elements/aligned.hpp"
 
 namespace aardvark {
 
-AlignElement::AlignElement(
+AlignedElement::AlignedElement(
     std::shared_ptr<Element> child,
     Alignment alignment,
     bool adjust_child_size,
@@ -14,19 +14,19 @@ AlignElement::AlignElement(
       adjust_child_size(adjust_child_size),
       alignment(alignment){};
 
-float AlignElement::get_intrinsic_height(float width) {
+float AlignedElement::get_intrinsic_height(float width) {
     auto align = alignment.vert.calc(0);
     return align +
            child->get_intrinsic_height(width - (adjust_child_size ? align : 0));
 }
 
-float AlignElement::get_intrinsic_width(float height) {
+float AlignedElement::get_intrinsic_width(float height) {
     auto align = alignment.horiz.calc(0);
     return align +
            child->get_intrinsic_width(height - (adjust_child_size ? align : 0));
 }
 
-Size AlignElement::layout(BoxConstraints constraints) {
+Size AlignedElement::layout(BoxConstraints constraints) {
     auto horiz = alignment.horiz.calc(0);
     auto vert = alignment.vert.calc(0);
 
@@ -50,7 +50,7 @@ Size AlignElement::layout(BoxConstraints constraints) {
     return constraints.max_size();
 };
 
-void AlignElement::paint(bool is_changed) {
+void AlignedElement::paint(bool is_changed) {
     document->paint_element(child.get());
 };
 

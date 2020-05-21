@@ -22,9 +22,9 @@ TEST_CASE("ElementObserver", "[element_observer]") {
         auto color = Color::from_sk_color(SK_ColorRED);
         auto small = SizeConstraints::exact(Value::abs(100), Value::abs(100));
         auto big = SizeConstraints::exact(Value::abs(200), Value::abs(200));
-        auto child1 = std::make_shared<SizeElement>(
+        auto child1 = std::make_shared<SizedElement>(
             std::make_shared<BackgroundElement>(color), small);
-        auto child2 = std::make_shared<SizeElement>(
+        auto child2 = std::make_shared<SizedElement>(
             std::make_shared<BackgroundElement>(color), small);
         auto root = std::make_shared<StackElement>(
             std::vector<std::shared_ptr<Element>>{child1, child2});

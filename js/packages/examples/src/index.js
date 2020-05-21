@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
-import { Color, Padding as Padding1, Value } from '@advk/common'
+import { Color, Insets, Value } from '@advk/common'
 import ReactAardvark, {
     Background,
     Flex,
     FlexChild,
     Stack,
     Text,
-    Padding,
+    Padded,
     Size
 } from '@advk/react-renderer'
 
@@ -52,9 +52,9 @@ const Main = () => {
                         <Text text="<- BACK" />
                     </Button>
                     <FlexChild align={FlexAlign.center}>
-                        <Padding padding={Padding1.only('left', 16)}>
+                        <Padded padding={Insets.only('left', 16)}>
                             <Text text={selected.name} />
-                        </Padding>
+                        </Padded>
                     </FlexChild>
                 </Flex>
                 {React.createElement(selected.component)}

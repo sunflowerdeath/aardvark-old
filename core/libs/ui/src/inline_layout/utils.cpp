@@ -1,8 +1,7 @@
 #include "inline_layout/utils.hpp"
 
-#include "elements/fixed_size.hpp"
-#include "elements/align.hpp"
-#include "elements/size.hpp"
+#include "elements/aligned.hpp"
+#include "elements/sized.hpp"
 
 namespace aardvark::inline_layout {
 
@@ -64,8 +63,8 @@ void render_spans(
         auto align = Alignment::top_left(
             Value::abs(span->vert_align(metrics, span->metrics) + offset.top),
             Value::abs(current_width + offset.left));
-        auto aligned = std::make_shared<AlignElement>(
-            std::make_shared<SizeElement>(elem, sizeConstraints), align);
+        auto aligned = std::make_shared<AlignedElement>(
+            std::make_shared<SizedElement>(elem, sizeConstraints), align);
         aligned->parent = parent;
         container->emplace_back(aligned);
         current_width += span->width;

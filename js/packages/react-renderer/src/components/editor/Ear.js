@@ -2,8 +2,8 @@ import React from 'react'
 import { Value, Padding, Radius, BoxRadiuses } from '@advk/common'
 import {
     Stack,
-    Translate,
-    Size,
+    Translated,
+    Sized,
     Border,
     Background
 } from '../../nativeComponents.js'
@@ -21,21 +21,21 @@ const Ear = props => {
     } = props
 
     const bar = (
-        <Size
+        <Sized
             sizeConstraints={{ width: Value.abs(2), height: Value.abs(height) }}
         >
             <Background color={color} />
-        </Size>
+        </Sized>
     )
 
     const circle = (
-        <Translate
+        <Translated
             translation={{
                 left: Value.abs((-circleSize + barWidth) / 2),
                 top: Value.abs(side === 'end' ? height : -circleSize)
             }}
         >
-            <Size
+            <Sized
                 sizeConstraints={{
                     width: Value.abs(circleSize),
                     height: Value.abs(circleSize)
@@ -46,8 +46,8 @@ const Ear = props => {
                 >
                     <Background color={color} />
                 </Border>
-            </Size>
-        </Translate>
+            </Sized>
+        </Translated>
     )
 
     const pos = {
@@ -59,12 +59,12 @@ const Ear = props => {
     }
 
     return (
-        <Translate translation={pos}>
+        <Translated translation={pos}>
             <Stack>
                 {bar}
                 {circle}
             </Stack>
-        </Translate>
+        </Translated>
     )
 }
 

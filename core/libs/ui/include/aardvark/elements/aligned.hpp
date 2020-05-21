@@ -28,14 +28,14 @@ struct Alignment {
     }
 };
 
-class AlignElement : public SingleChildElement {
+class AlignedElement : public SingleChildElement {
   public:
-    AlignElement()
+    AlignedElement()
         : SingleChildElement(/* child */ nullptr,
                              /* is_repaint_boundary */ false,
                              /* size_depends_on_parent */ true){};
 
-    AlignElement(
+    AlignedElement(
         std::shared_ptr<Element> child,
         Alignment alignment,
         bool adjust_child_size = true,

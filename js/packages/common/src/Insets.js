@@ -1,4 +1,4 @@
-const Padding = {
+const Insets = {
 	all(value) {
 		return { left: value, top: value, right: value, bottom: value }
 	},
@@ -25,6 +25,6 @@ const Padding = {
 	}
 }
 
-Padding.none = Padding.all(0)
+Insets.none = Insets.all(0)
 
-export { Padding }
+export { Insets }

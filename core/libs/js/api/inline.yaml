@@ -59,8 +59,8 @@ name: OptionalBoxBorders
 type: BoxBorders
 ---
 kind: optional
-name: OptionalPadding
-type: Padding
+name: OptionalInsets
+type: Insets
 ---
 kind: struct
 name: Decoration
@@ -73,7 +73,7 @@ props:
       type: OptionalBoxBorders
       hasDefault: yes
     - name: padding
-      type: OptionalPadding
+      type: OptionalInsets
       hasDefault: yes
 ---
 kind: class

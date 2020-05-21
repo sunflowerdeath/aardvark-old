@@ -1,42 +1,36 @@
 import React, { useState, forwardRef } from 'react'
-import {
-    BoxBorders,
-    BorderSide,
-    Color,
-    Padding as Paddings,
-    Value
-} from '@advk/common'
+import { BoxBorders, BorderSide, Color, Insets, Value } from '@advk/common'
 import Editor from '@advk/react-renderer/src/components/editor'
 import {
-    Size,
+    Sized,
     Background,
-    Padding,
+    Padded,
     Flex,
     Border,
     IntrinsicWidth
 } from '@advk/react-renderer'
 
 const Container = forwardRef(({ children, color }, ref) => (
-    <Padding padding={Paddings.vert(10)}>
+    <Padded padding={Insets.vert(10)}>
         <Border ref={ref} borders={BoxBorders.all(BorderSide(2, Color[color]))}>
-            <Padding padding={Paddings.all(10)}>
+            <Padded padding={Insets.all(10)}>
                 <IntrinsicWidth>
                     <Flex>{children}</Flex>
                 </IntrinsicWidth>
-            </Padding>
+            </Padded>
         </Border>
-    </Padding>
+    </Padded>
 ))
 
 const Box = forwardRef(({ color, isLast }, ref) => (
-    <Padding padding={isLast ? Paddings.none : Paddings.only('right', 10)}>
-        <Size
+    <Padded padding={isLast ? Insets.none : Insets.only('right', 10)}>
+        <Sized
             ref={ref}
             sizeConstraints={{ width: Value.abs(40), height: Value.abs(40) }}
         >
             <Background color={Color[color]} />
-        </Size>
-    </Padding>
+        </Sized>
+    </Padded>
 ))
 
 const isVoid = node => node.type === 'block'
@@ -93,7 +87,7 @@ const EditorExample = () => {
     let [state, setState] = useState(initialState)
     let [selection, setSelection] = useState(initialSelection)
     return (
-        <Padding padding={Paddings.horiz(20)}>
+        <Padded padding={Insets.horiz(20)}>
             <Editor
                 editorProps={{ isVoid }}
                 state={state}
@@ -104,7 +98,7 @@ const EditorExample = () => {
                 renderLeaf={renderLeaf}
                 isEditable={true}
             />
-        </Padding>
+        </Padded>
     )
 }
 

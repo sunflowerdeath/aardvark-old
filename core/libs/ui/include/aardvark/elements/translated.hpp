@@ -12,15 +12,15 @@ struct Translation {
     Value top = Value::none();
 };
 
-class TranslateElement : public SingleChildElement {
+class TranslatedElement : public SingleChildElement {
   public:
-    TranslateElement()
+    TranslatedElement()
         : SingleChildElement(
               /* child */ nullptr,
               /* is_repaint_boundary */ false,
               /* size_depends_on_parent */ false){};
 
-    TranslateElement(
+    TranslatedElement(
         std::shared_ptr<Element> child,
         Translation translation,
         bool is_repaint_boundary = false)

@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useMemo } from 'react'
 import { Alignment, Value, Color, TransformMatrix } from '@advk/common'
 import {
-    Align as Aligned,
-    Size,
+    Aligned,
+    Sized,
     Stack,
     Background,
     Layer,
@@ -40,7 +40,7 @@ const LayerExample = () => {
                         onHoverStart={useCallback(() => setIsHovered(true))}
                         onHoverEnd={useCallback(() => setIsHovered(false))}
                     >
-                        <Size
+                        <Sized
                             sizeConstraints={{
                                 width: Value.abs(100),
                                 height: Value.abs(100)
@@ -51,14 +51,14 @@ const LayerExample = () => {
                                     isHovered ? HOVERED_COLOR : INITIAL_COLOR
                                 }
                             />
-                        </Size>
+                        </Sized>
                     </GestureResponder>
                 </Layer>
             </Aligned>
             <Aligned
                 alignment={Alignment.topRight(Value.abs(20), Value.abs(20))}
             >
-                <Size
+                <Sized
                     sizeConstraints={{
                         width: Value.abs(200),
                         height: Value.abs(200)
@@ -81,7 +81,7 @@ const LayerExample = () => {
                             </Button>
                         </Flex>
                     </Stack>
-                </Size>
+                </Sized>
             </Aligned>
         </Stack>
     )

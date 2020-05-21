@@ -25,22 +25,21 @@ add_library(aardvark_ui ${ADV_UI_LIB_TYPE}
     src/inline_layout/line_metrics.cpp
     src/inline_layout/text_span.cpp
     src/inline_layout/utils.cpp
-    src/elements/align.cpp
+    src/elements/aligned.cpp
     src/elements/background.cpp
     src/elements/border.cpp
     src/elements/center.cpp
     src/elements/clip.cpp
-    src/elements/fixed_size.cpp
     src/elements/flex.cpp
     src/elements/layer.cpp
     src/elements/overflow.cpp
-    src/elements/padding.cpp
+    src/elements/padded.cpp
     src/elements/paragraph.cpp
     src/elements/responder.cpp
-    src/elements/size.cpp
+    src/elements/sized.cpp
     src/elements/stack.cpp
     src/elements/text.cpp
-    src/elements/translate.cpp
+    src/elements/translated.cpp
     src/pointer_events/hit_tester.cpp
     src/pointer_events/pointer_event_manager.cpp
     src/utils/event_loop.cpp

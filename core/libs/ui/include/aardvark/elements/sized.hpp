@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../base_types.hpp"
 #include "../element.hpp"
 
 namespace aardvark {
@@ -18,15 +17,15 @@ struct SizeConstraints {
     }
 };
 
-class SizeElement : public SingleChildElement {
+class SizedElement : public SingleChildElement {
   public:
-    SizeElement()
+    SizedElement()
         : SingleChildElement(
               nullptr,
               /* is_repaint_boundary */ false,
               /* size_depends_on_parent */ false){};
 
-    SizeElement(
+    SizedElement(
         std::shared_ptr<Element> child,
         SizeConstraints size_constraints,
         bool is_repaint_boundary = false)
@@ -44,4 +43,4 @@ class SizeElement : public SingleChildElement {
     ELEMENT_PROP(SizeConstraints, size_constraints);
 };
 
-}  // namespace aardvark::elements
+}  // namespace aardvark

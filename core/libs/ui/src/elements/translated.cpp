@@ -1,18 +1,18 @@
-#include "elements/translate.hpp"
+#include "elements/translated.hpp"
 
 namespace aardvark {
 
-float TranslateElement::get_intrinsic_height(float width) {
+float TranslatedElement::get_intrinsic_height(float width) {
     auto child_height = child->get_intrinsic_height(width);
     return child_height + translation.top.calc(child_height);
 }
 
-float TranslateElement::get_intrinsic_width(float height) {
+float TranslatedElement::get_intrinsic_width(float height) {
     auto child_width = child->get_intrinsic_width(height);
     return child_width + translation.left.calc(child_width);
 }
 
-Size TranslateElement::layout(BoxConstraints constraints) {
+Size TranslatedElement::layout(BoxConstraints constraints) {
     auto child_size = document->layout_element(child.get(), constraints);
     child->size = child_size;
     auto left_tr = translation.left.calc(child_size.width);
@@ -22,7 +22,7 @@ Size TranslateElement::layout(BoxConstraints constraints) {
                 /* height */ fmaxf(0, child_size.height + top_tr)};
 }
 
-bool TranslateElement::hit_test(double left, double top) {
+bool TranslatedElement::hit_test(double left, double top) {
     auto left_tr = translation.left.calc(size.width);
     auto top_tr = translation.left.calc(size.width);
     return (abs_position.left >= left_tr &&

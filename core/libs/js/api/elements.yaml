@@ -20,8 +20,8 @@ props:
       hasDefault: true
 ---
 kind: class
-name: AlignElement
-include: aardvark/elements/align.hpp
+name: AlignedElement
+include: aardvark/elements/aligned.hpp
 extends: Element
 constructor: default
 props:
@@ -243,8 +243,8 @@ props:
       setter: set_transform
 ---
 kind: struct
-name: Padding
-include: aardvark/elements/padding.hpp
+name: Insets
+include: aardvark/elements/padded.hpp
 props:
     - name: left
       type: float
@@ -260,12 +260,12 @@ props:
       hasDefault: true
 ---
 kind: class
-name: PaddingElement
+name: PaddedElement
 extends: Element
 constructor: default
 props:
     - name: padding
-      type: Padding
+      type: Insets
       setter: set_padding
 ---
 kind: class
@@ -331,9 +331,9 @@ props:
       hasDefault: true
 ---
 kind: class
-name: SizeElement
+name: SizedElement
 extends: Element
-include: aardvark/elements/size.hpp
+include: aardvark/elements/sized.hpp
 constructor: default
 props:
     - name: sizeConstraints
@@ -368,9 +368,9 @@ props:
       hasDefault: true
 ---
 kind: class
-name: TranslateElement
+name: TranslatedElement
 extends: Element
-include: aardvark/elements/translate.hpp
+include: aardvark/elements/translated.hpp
 constructor: default
 props:
     - name: translation

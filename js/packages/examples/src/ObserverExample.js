@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Alignment, Value, Color } from '@advk/common'
 import ReactAardvark, {
-    Align as Aligned,
-    Size,
+    Aligned,
+    Sized,
     Stack,
     Background,
     Flex,
@@ -26,19 +26,19 @@ const ObserverExample = () => {
             <Aligned
                 alignment={Alignment.topLeft(Value.abs(50), Value.abs(50))}
             >
-                <Size
+                <Sized
                     sizeConstraints={{
                         width: Value.abs(width),
                         height: Value.abs(50)
                     }}
                 >
                     <Background color={Color.PURPLE} ref={elemRef} />
-                </Size>
+                </Sized>
             </Aligned>
             <Aligned
                 alignment={Alignment.topRight(Value.abs(20), Value.abs(20))}
             >
-                <Size
+                <Sized
                     sizeConstraints={{
                         width: Value.abs(200),
                         height: Value.abs(200)
@@ -55,7 +55,7 @@ const ObserverExample = () => {
                             </Button>
                         </Flex>
                     </Stack>
-                </Size>
+                </Sized>
             </Aligned>
         </Stack>
     )

@@ -19,16 +19,16 @@ import {
     Path,
     Transforms
 } from 'slate'
-import { Value, Color, Padding } from '@advk/common'
+import { Value, Color, Insets } from '@advk/common'
 import MultiRecognizer from '@advk/common/src/gestures/MultiRecognizer.js'
 import TapRecognizer from '@advk/common/src/gestures/TapRecognizer.js'
 import {
     Layer,
     Stack,
     Flex,
-    Size,
-    Padding as Padding1,
-    Translate,
+    Sized,
+    Padded,
+    Translated,
     Background,
     Responder
 } from '../../nativeComponents.js'
@@ -234,11 +234,11 @@ const Cursor = props => {
     const size = { width: Value.abs(2), height: Value.abs(height) }
     return (
         <Layer opacity={opacity}>
-            <Translate translation={translate}>
-                <Size sizeConstraints={size}>
+            <Translated translation={translate}>
+                <Sized sizeConstraints={size}>
                     <Background color={color} />
-                </Size>
-            </Translate>
+                </Sized>
+            </Translated>
         </Layer>
     )
 }
@@ -281,11 +281,11 @@ const Selection = forwardRef((props, ref) => {
                         height: Value.abs(height + padding * 2)
                     }
                     children.push(
-                        <Translate translation={translate}>
-                            <Size sizeConstraints={size}>
+                        <Translated translation={translate}>
+                            <Sized sizeConstraints={size}>
                                 <Background color={color} />
-                            </Size>
-                        </Translate>
+                            </Sized>
+                        </Translated>
                     )
 
                     let isFirst = i === 0
@@ -465,7 +465,7 @@ const EditorComponent = props => {
     return (
         <Responder handler={useCallback(ctx.state.recognizer.getHandler())}>
             <Stack>
-                <Padding1 padding={Padding.all(10)} ref={elemRef}>
+                <Padded padding={Insets.all(10)} ref={elemRef}>
                     <Flex direction={FlexDirection.column}>
                         <EditorContext.Provider value={ctx.editor}>
                             <Children
@@ -476,7 +476,7 @@ const EditorComponent = props => {
                             />
                         </EditorContext.Provider>
                     </Flex>
-                </Padding1>
+                </Padded>
                 {ctx.state.cursorType === CursorType.range ? (
                     <Selection
                         ref={selectionRef}

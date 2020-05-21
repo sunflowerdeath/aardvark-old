@@ -1,6 +1,6 @@
 #include "inline_layout/decoration_span.hpp"
 
-#include "elements/translate.hpp"
+#include "elements/translated.hpp"
 #include "elements/overflow.hpp"
 
 namespace aardvark::inline_layout {
@@ -119,7 +119,7 @@ std::shared_ptr<Element> DecorationSpan::render() {
     auto top_offset = 0;
     if (decoration.padding != std::nullopt) {
         auto padding = decoration.padding.value();
-        container = std::make_shared<PaddingElement>(container, padding);
+        container = std::make_shared<PaddedElement>(container, padding);
         top_offset += padding.top;
     }
     if (decoration.background != std::nullopt) {
@@ -140,7 +140,7 @@ std::shared_ptr<Element> DecorationSpan::render() {
         top_offset += borders.top.width;
     }
     if (top_offset > 0) {
-        container = std::make_shared<TranslateElement>(
+        container = std::make_shared<TranslatedElement>(
             container, Translation{Value::abs(0), Value::abs(-top_offset)});
     }
     return container;
