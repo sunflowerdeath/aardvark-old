@@ -36,7 +36,7 @@ void EventLoop::clear_timeout(int id) {
 int EventLoop::post_callback(Callback callback) {
     auto guard = std::lock_guard<std::mutex>(callbacks_mutex);
     id++;
-    callbacks[id] = callback;
+    callbacks[id] = std::move(callback);
     io.post([this, id = id]() {
         Callback cb;
         {

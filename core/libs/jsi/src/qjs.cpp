@@ -140,6 +140,8 @@ void Qjs_Context::init() {
 Qjs_Context::~Qjs_Context() {
     strict_equal_function.reset();
     Qjs_Context::function_class_id = 0;
+    // TODO finalizing?
+    garbage_collect();
     JS_FreeContext(ctx);
     JS_FreeRuntime(rt);
 }

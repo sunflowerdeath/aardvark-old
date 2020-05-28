@@ -20,7 +20,7 @@ class DesktopWindow;
 class DesktopApp {
   public:
     DesktopApp(std::shared_ptr<EventLoop> event_loop)
-        : event_loop(event_loop){};
+        : event_loop(std::move(event_loop)){};
 
     // Runs application loop - polls events, calls handlers and repaints
     void run(std::function<void(void)> update_callback = nullptr);

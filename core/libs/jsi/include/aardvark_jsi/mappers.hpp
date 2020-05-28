@@ -245,6 +245,7 @@ class ObjectsIndex {
         auto index = record->index;
         index->records.erase(record->native_object.get());
     }
+
     std::unordered_map<std::type_index, Class>* class_map;
 
   private:

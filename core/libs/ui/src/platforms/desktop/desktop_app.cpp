@@ -139,7 +139,7 @@ void DesktopApp::stop() { should_stop = true; };
 void DesktopApp::run(std::function<void(void)> update_callback) {
     should_stop = false;
     event_loop->post_callback(
-        std::bind(&DesktopApp::render, this, update_callback));
+        [this, update_callback]() { render(update_callback); });
 };
 
 void DesktopApp::render(std::function<void(void)> update_callback) {
@@ -165,7 +165,8 @@ void DesktopApp::render(std::function<void(void)> update_callback) {
     }
     auto timeout = (time < FRAME_TIME) ? (FRAME_TIME - time) : 0;
     event_loop->set_timeout(
-        std::bind(&DesktopApp::render, this, update_callback), timeout);
+        [this, update_callback]() { render(update_callback); }, timeout);
+    // std::bind(&DesktopApp::render, this, update_callback), timeout);
 }
 
 void DesktopApp::handle_event(DesktopWindow* window, Event event) {

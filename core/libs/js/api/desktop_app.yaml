@@ -12,3 +12,4 @@ methods:
         - name: window
           type: DesktopWindow
       return: Document
+    - name: stop

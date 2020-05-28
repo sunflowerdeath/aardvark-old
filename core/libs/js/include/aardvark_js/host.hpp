@@ -21,8 +21,8 @@ class Host {
     void handle_error(jsi::Error& err, std::optional<jsi::ErrorLocation>);
     
     AnimationFrame animation_frame = AnimationFrame();
-    std::shared_ptr<jsi::Context> ctx;
     std::optional<aardvark_js_api::Api> api;
+    std::shared_ptr<jsi::Context> ctx;
     std::shared_ptr<EventLoop> event_loop;
     std::optional<ModuleLoader> module_loader;
     std::shared_ptr<DesktopApp> app;

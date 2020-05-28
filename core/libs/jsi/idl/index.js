@@ -253,7 +253,8 @@ const callbackDefTmpl = compileTmpl(`
     std::optional<SimpleMapper<{{typeName}}>> {{name}}_mapper;
 `)
 
-const callbackInitTmpl = compileTmpl(` auto to_js = [](Context& ctx, const {{typeName}}& val) {
+const callbackInitTmpl = compileTmpl(`
+    auto to_js = [](Context& ctx, const {{typeName}}& val) {
         return ctx.value_make_null();
     };
 

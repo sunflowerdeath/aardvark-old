@@ -60,6 +60,13 @@ Host::Host() {
 
 Host::~Host() {
     stop();
+    event_loop.reset();
+    app.reset();
+    {
+        auto global = ctx->get_global_object();
+        global.delete_property("application");
+    }
+    module_loader = std::nullopt;
     ctx.reset();
 }
 

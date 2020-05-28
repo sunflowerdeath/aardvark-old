@@ -21,11 +21,12 @@ class ElementObserverConnection : public Connection {
     friend ElementObserver<T>;
 
   public:
-    ElementObserverConnection(std::weak_ptr<ElementObserver<T>> observer,
-                              std::weak_ptr<Element> element,
-                              nod::connection connection)
+    ElementObserverConnection(
+        std::weak_ptr<ElementObserver<T>> observer,
+        std::weak_ptr<Element> element,
+        nod::connection connection)
         : observer(observer),
-          element(element),
+          element(std::move(element)),
           connection(std::move(connection)){};
 
     void disconnect() override {
@@ -88,7 +89,7 @@ class ElementObserver
     // Checks values of the observed properties and call handlers if they are
     // changed
     void check_triggered_elements() {
-        for (auto elem : triggered_elements) check_element(elem);
+        for (auto& elem : triggered_elements) check_element(elem);
         triggered_elements.clear();
     }
 
