@@ -15,6 +15,7 @@ let enumTmpl = `
 
 {{#each values}}
 - \`{{.}}\`
+
 {{/each}}
 `
 
@@ -26,12 +27,13 @@ let structTmpl = `
 ## Props
 
 {{#each props}}
----
 ### \`{{name}}\`
 
 Type: \`{{type}}\`
 
 {{doc}}
+
+{{#unless @last}}---{{/unless}}
 {{/each}}
 `
 

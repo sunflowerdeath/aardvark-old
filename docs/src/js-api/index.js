@@ -5,12 +5,22 @@ import Index from './index.md'
 import Document from '../../generated/Document.md'
 import Element from '../../generated/Element.md'
 
+import DesktopWindow from '../../generated/DesktopWindow.md'
+import DesktopApp from '../../generated/DesktopApp.md'
+
 import Size from '../../generated/Size.md'
 import Position from '../../generated/Position.md'
 import ValueType from '../../generated/ValueType.md'
 import Value from '../../generated/Value.md'
 import Color from '../../generated/Color.md'
 import Connection from '../../generated/Connection.md'
+
+import PointerEvent from '../../generated/PointerEvent.md'
+import PointerAction from '../../generated/PointerAction.md'
+import PointerTool from '../../generated/PointerTool.md'
+import ScrollEvent from '../../generated/ScrollEvent.md'
+import KeyAction from '../../generated/KeyAction.md'
+import KeyEvent from '../../generated/KeyEvent.md'
 
 import Alignment from '../../generated/Alignment.md'
 import AlignmentOrigin from '../../generated/AlignmentOrigin.md'
@@ -34,6 +44,12 @@ import FlexDirection from '../../generated/FlexDirection.md'
 import FlexAlign from '../../generated/FlexAlign.md'
 import FlexJustify from '../../generated/FlexJustify.md'
 
+import IntrinsicHeightElement from '../../generated/IntrinsicHeightElement.md'
+import IntrinsicWidthElement from '../../generated/IntrinsicWidthElement.md'
+
+import LayerElement from '../../generated/LayerElement.md'
+import TransformMatrix from './TransformMatrix.md'
+
 const BaseTypes = () => <>
     <Size/>
     <Position/>
@@ -41,6 +57,20 @@ const BaseTypes = () => <>
     <ValueType/>
     <Value/>
     <Connection/>
+</>
+
+const Events = () => <>
+    <PointerEvent/>
+    <PointerAction/>
+    <PointerTool/>
+    <ScrollEvent/>
+    <KeyAction/>
+    <KeyEvent/>
+</>
+
+const Desktop = () => <>
+    <DesktopApp/>
+    <DesktopWindow/>
 </>
 
 const Aligned = () => <>
@@ -65,11 +95,23 @@ const Flex = () => <>
     <FlexAlign/>
 </>
 
+const Intrinsic = () => <>
+    <IntrinsicHeightElement/>
+    <IntrinsicWidthElement/>
+</>
+
+const Layer = () => <>
+    <LayerElement/>
+    <TransformMatrix/>
+</>
+
 export default {
 	name: 'JS API',
 	stories: {
 	    'index': { name: 'Index', markdown: Index },
 	    'base-types': { name: 'Base types', markdown: BaseTypes },
+	    'events': { name: 'Events', markdown: Events },
+	    'desktop': { name: 'Desktop', markdown: Desktop },
 	    'document': { name: 'Document', markdown: Document },
 	    'element': { name: 'Element', markdown: Element },
 	    'aligned-element': { name: 'AlignedElement', markdown: Aligned },
@@ -78,6 +120,9 @@ export default {
 	    'center-element': { name: 'CenterElement', markdown: CenterElement },
 	    'clip-element': { name: 'ClipElement', markdown: ClipElement },
 	    'custom-layout-element': { name: 'CustomLayoutElement', markdown: CustomLayoutElement },
-	    'flex-element': { name: 'FlexElement', markdown: Flex }
+	    'flex-element': { name: 'FlexElement', markdown: Flex },
+	    'intrinsic-height': { name: 'IntrinsicHeightElement', markdown: IntrinsicHeightElement },
+	    'intrinsic-width': { name: 'IntrinsicWidthElement', markdown: IntrinsicWidthElement },
+	    'layer': { name: 'LayerElement', markdown: Layer }
 	}
 }

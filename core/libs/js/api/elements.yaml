@@ -1,6 +1,6 @@
 kind: enum
 name: AlignmentOrigin
-doc: Corner of the container that is used as origin for positioning.
+doc: Which corner of the container to use as origin for positioning.
 values:
     - topLeft
     - topRight
@@ -13,12 +13,15 @@ props:
     - name: origin
       type: AlignmentOrigin
       hasDefault: true
+      doc: Which corner of the container to use as origin for positioning.
     - name: horiz
       type: Value
       hasDefault: true
+      doc: Horizontal distance from the alignment origin.
     - name: vert
       type: Value
       hasDefault: true
+      doc: Vertical distance from the alignment origin.
 ---
 kind: class
 name: AlignedElement
@@ -51,7 +54,7 @@ props:
 ---
 kind: struct
 name: BorderSide
-doc: Border of a single side
+doc: Border of a single side.
 props:
     - name: width
       type: float
@@ -60,7 +63,7 @@ props:
 ---
 kind: struct
 name: BoxBorders
-doc: Set of borders of a rectangle
+doc: Set of borders of a rectangle.
 props:
     - name: top
       type: BorderSide
@@ -73,7 +76,7 @@ props:
 ---
 kind: struct
 name: Radius
-doc: Radius of a single corner
+doc: Radius of a single corner.
 props:
     - name: width
       type: int
@@ -82,7 +85,7 @@ props:
 ---
 kind: struct
 name: BoxRadiuses
-doc: Set of radiuses of all rectangle corners 
+doc: Set of radiuses of all rectangle corners.
 props:
     - name: topLeft
       type: Radius
@@ -109,14 +112,14 @@ props:
 ---
 kind: class
 name: CenterElement
-doc: Element that positions the child at the center
+doc: Element that positions the child at the center.
 include: aardvark/elements/center.hpp
 extends: Element
 constructor: default
 ---
 kind: class
 name: ClipElement
-doc: Element that clips child using provided path
+doc: Element that clips child using provided path.
 include: aardvark/elements/clip.hpp
 extends: Element
 constructor: default
@@ -247,7 +250,7 @@ props:
 kind: class
 name: FlexElement
 doc: |
-    Element that layouts children in a column or row dynamically distributing 
+    Element that layouts children in a column or row, dynamically distributing 
     space between flexible children.
 extends: Element
 include: aardvark/elements/flex.hpp
@@ -272,6 +275,7 @@ props:
 ---
 kind: class
 name: IntrinsicHeightElement
+doc: Element that sizes child to minimum height that it could fit into.
 include: aardvark/elements/intrinsic_height.hpp
 extends: Element
 constructor: default
@@ -279,6 +283,7 @@ constructor: default
 kind: class
 name: IntrinsicWidthElement
 include: aardvark/elements/intrinsic_width.hpp
+doc: Element that sizes child to minimum width that it could fit into.
 extends: Element
 constructor: default
 ---
@@ -297,9 +302,11 @@ props:
     - name: opacity
       type: float
       setter: set_opacity
+      doc: Number from 0 to 1
     - name: transform
       type: Transform
       setter: set_transform
+      doc: 2D transform matrix provided in form of the array with 9 numbers
 ---
 kind: struct
 name: Insets
