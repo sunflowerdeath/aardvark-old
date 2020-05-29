@@ -21,6 +21,7 @@ props:
 ---
 kind: class
 name: AlignedElement
+doc: Element that aligns child within itself.
 include: aardvark/elements/aligned.hpp
 extends: Element
 constructor: default
@@ -28,6 +29,10 @@ props:
     - name: adjustChildSize
       type: bool
       setter: set_adjust_child_size
+      doc: |
+        Whether to reduce size of the child by the size of insets, or make it
+        equal to the size of the container. This is useful when you need to set 
+        relative size and position at the same time. Default is `true`.
     - name: alignment
       type: Alignment
       setter: set_alignment
@@ -35,6 +40,7 @@ props:
 kind: class
 name: BackgroundElement
 extends: Element
+doc: Element that paints itself with a solid color.
 include: aardvark/elements/background.hpp
 constructor: default
 props:
@@ -85,6 +91,7 @@ props:
 kind: class
 name: BorderElement
 include: aardvark/elements/border.hpp
+doc: Element that paints a border.
 extends: Element
 constructor: default
 props:

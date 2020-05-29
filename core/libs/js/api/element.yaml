@@ -1,19 +1,25 @@
 kind: class
 name: Element
+doc: Base class for all elements.
 include: aardvark/element.hpp
 props:
     - name: size
       type: Size
+      doc: Layout size of the element.
     - name: relPosition
       type: Position
+      doc: Position of the element relative to its parent.
     - name: absPosition
       type: Position
+      doc: Position of the element from the root of the document.
     - name: parent
       type: Element
+      doc: Parent of the element.
       readonly: true
       get_proxy: aardvark::js::element_get_parent_proxy
     - name: document
       type: Document
+      doc: Current document of the element.
       readonly: true
       get_proxy: aardvark::js::element_get_document_proxy
     - name: childrenCount

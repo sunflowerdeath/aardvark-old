@@ -26,7 +26,6 @@ const createElement = (type, props) => {
 	for (const key in props) {
 		if (key === 'children') continue
 		if (key === 'ref') {
-		    log('REF')
 		    props[key](elem)
 		    continue
 		}
