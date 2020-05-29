@@ -1,5 +1,6 @@
 kind: enum
 name: AlignmentOrigin
+doc: Corner of the container that is used as origin for positioning.
 values:
     - topLeft
     - topRight
@@ -50,6 +51,7 @@ props:
 ---
 kind: struct
 name: BorderSide
+doc: Border of a single side
 props:
     - name: width
       type: float
@@ -58,6 +60,7 @@ props:
 ---
 kind: struct
 name: BoxBorders
+doc: Set of borders of a rectangle
 props:
     - name: top
       type: BorderSide
@@ -70,6 +73,7 @@ props:
 ---
 kind: struct
 name: Radius
+doc: Radius of a single corner
 props:
     - name: width
       type: int
@@ -78,6 +82,7 @@ props:
 ---
 kind: struct
 name: BoxRadiuses
+doc: Set of radiuses of all rectangle corners 
 props:
     - name: topLeft
       type: Radius
@@ -104,12 +109,14 @@ props:
 ---
 kind: class
 name: CenterElement
+doc: Element that positions the child at the center
 include: aardvark/elements/center.hpp
 extends: Element
 constructor: default
 ---
 kind: class
 name: ClipElement
+doc: Element that clips child using provided path
 include: aardvark/elements/clip.hpp
 extends: Element
 constructor: default
@@ -125,6 +132,31 @@ return: Size
 ---
 kind: class
 name: CustomLayoutElement
+doc: |
+    Element that uses custom callback to set layout of its children.
+    
+    **Example:**
+    ```js
+    const elem = new CustomLayoutElement()
+    
+    // layout children from top to bottom
+    elem.layoutFn = (elem, constraints) => {
+        let height = 0
+        for (let i = 0; i < elem.childrenCount; i++) {
+            let child = elem.getChildAt(i);
+            const childConstraints = {
+                minWidth: 0,
+                maxWidth: constraints.maxWidth,
+                minHeight: 0,
+                maxHeight: Infinity
+            }
+            const childSize = elem.runChildLayout(child, childConstraints)
+            elem.setChildLayout(child, { left: 0, top: scrollHeight }, childSize)
+            height += childSize.height
+        }
+        return { width: constraints.maxWidth, height }
+    }
+    ```
 include: aardvark/elements/custom_layout.hpp
 extends: Element
 constructor: default
@@ -132,15 +164,23 @@ props:
     - name: layoutFn
       type: CustomLayoutCallback
       setter: set_layout_fn
+      doc: |
+        Function that is called on each relayout.
 methods:
     - name: runChildLayout
-      args: 
+      doc: |
+        Function that can be called inside layout callback to perform layout
+        of a child element.
+      args:
         - name: child
           type: Element
         - name: constraints
           type: BoxConstraints
       return: Size
     - name: setChildLayout
+      doc: |
+        Function that can be called inside layout callback to set size and
+        position (relative) of the children.
       args:
         - name: child
           type: Element
@@ -151,12 +191,14 @@ methods:
 ---
 kind: enum
 name: FlexDirection
+doc: Defines main axis of the `FlexElement`.
 values:
     - row
     - column
 ---
 kind: enum
 name: FlexAlign
+doc: Controls alignment of children on the secondary axis.
 values:
     - start
     - center
@@ -165,6 +207,7 @@ values:
 ---
 kind: enum
 name: FlexJustify
+doc: Controls how items are positioned on the main axis.
 values:
     - start
     - center
@@ -180,6 +223,10 @@ type: FlexAlign
 kind: class
 name: FlexChildElement
 extends: Element
+doc: |
+    Makes child of the `FlexElement` flexible. All unsused space in the
+    container is distributed between flexible elements proportionally to theirs
+    grow factor.
 constructor: default
 props:
     - name: flex
@@ -193,10 +240,15 @@ props:
     - name: tightFit
       type: bool
       setter: set_tight_fit
-      doc: Whether to force flexible child to take all of the provided space.
+      doc: |
+        Whether to force child to take all of the provided space.
+        (Sets min constraints equal to max)
 ---
 kind: class
 name: FlexElement
+doc: |
+    Element that layouts children in a column or row dynamically distributing 
+    space between flexible children.
 extends: Element
 include: aardvark/elements/flex.hpp
 constructor: default
@@ -204,17 +256,17 @@ props:
     - name: direction
       type: FlexDirection
       setter: set_direction
-      doc: Which axis is main, default is `row`
+      doc: Which axis is main, default is `FlexDirection.row`
     - name: justify
       type: FlexJustify
       setter: set_justify
-      doc: >-
+      doc: |
         Alignment of the children across the main axis, default is
         `FlexJustify.start`
     - name: align
       type: FlexAlign
       setter: set_align
-      doc: >-
+      doc: |
         Alignment of the children across the secondary axis, default is
         `FlexAlign.start`
 ---

@@ -33,6 +33,7 @@ values:
 ---
 kind: struct
 name: Value
+doc: Struct that can represent numerical value of different type.
 props:
     - name: type
       type: ValueType
@@ -65,6 +66,9 @@ props:
 ---
 kind: struct
 name: Color
+doc: |
+    RGB color with alpha channel. Each color component is a number in range 
+    from 0 to 255.
 props:
     - name: red
       type: int

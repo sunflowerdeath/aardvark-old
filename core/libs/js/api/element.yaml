@@ -5,7 +5,7 @@ include: aardvark/element.hpp
 props:
     - name: size
       type: Size
-      doc: Layout size of the element.
+      doc: Size of the element.
     - name: relPosition
       type: Position
       doc: Position of the element relative to its parent.

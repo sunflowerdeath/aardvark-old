@@ -6,10 +6,24 @@ let mkdirp = require('mkdirp')
 
 let compileTmpl = tmpl => Handlebars.compile(tmpl, { noEscape: true })
 
+let enumTmpl = `
+# \`enum {{name}}\`
+
+{{doc}}
+
+## Values
+
+{{#each values}}
+- \`{{.}}\`
+{{/each}}
+`
+
 let structTmpl = `
 # \`struct {{name}}\`
 
 {{doc}}
+
+## Props
 
 {{#each props}}
 ---
@@ -24,11 +38,15 @@ Type: \`{{type}}\`
 let classTmpl = `
 # \`class {{name}}\`
 
-{{doc}}
-
 {{#if extends}}**Extends:** \`{{extends}}\`{{/if}}
 
+{{doc}}
+
 ## Members
+
+\`\`\`@toc
+levels: [3]
+\`\`\`
 
 {{#each props}}
 ---
@@ -65,7 +83,8 @@ Type: \`{{type}}\`
 
 let templates = {
     class: compileTmpl(classTmpl),
-    struct: compileTmpl(structTmpl)
+    struct: compileTmpl(structTmpl),
+    enum: compileTmpl(enumTmpl)
 }
 
 let docgen = options => {
@@ -77,7 +96,7 @@ let docgen = options => {
     })
     let res = {}
     defs.forEach(def => {
-        if (def.kind === 'class' || def.kind === 'struct') {
+        if (def.kind === 'class' || def.kind === 'struct' || def.kind === 'enum') {
             res[def.name] = templates[def.kind](def)
         }
     })
