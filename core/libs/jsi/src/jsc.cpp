@@ -113,7 +113,7 @@ JSClassRef Jsc_Context::class_to_jsc(const Class& cls) {
 
 tl::unexpected<Error> Jsc_Context::error_from_jsc(JSValueRef ref) {
     auto value = value_from_jsc(ref);
-    return tl::make_unexpected(Error(&value));
+    return tl::make_unexpected(Error(this, &value));
 }
 
 void Jsc_Context::error_to_jsc(Error& error, JSValueRef* exception) {
@@ -194,6 +194,14 @@ Value Jsc_Context::value_make_object(const Object& object) {
     return value_from_jsc((JSValueRef)object_to_jsc(object));
 }
 
+WeakValue Jsc_Context::value_make_weak(const Value& value) {
+    // TODO
+}
+
+Value Jsc_Context::weak_value_lock(const WeakValue& value) {
+    // TODO
+}
+
 bool Jsc_Context::value_is_error(const Value& value) {
     return JSValueIsInstanceOfConstructor(
         ctx,
@@ -212,6 +220,12 @@ Value Jsc_Context::value_make_error(const std::string& message) {
         nullptr        // exception
     );
     return value_from_jsc(err);
+}
+
+std::optional<ErrorLocation> Jsc_Context::value_get_error_location(
+    const Value& value) {
+    // TODO
+    return std::nullopt;
 }
 
 ValueType Jsc_Context::value_get_type(const Value& value) {
@@ -435,6 +449,11 @@ Object Jsc_Context::object_make_function(const Function& function) {
 }
 
 Object Jsc_Context::object_make_constructor(const Class& cls) {
+    // TODO
+}
+
+Object Jsc_Context::object_make_constructor2(
+    const Class& cls, const Function& function) {
     // TODO
 }
 

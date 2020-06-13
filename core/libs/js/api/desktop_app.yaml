@@ -7,6 +7,10 @@ methods:
         - name: size
           type: Size
       return: DesktopWindow
+    - name: destroyWindow
+      args:
+        - name: window
+          type: DesktopWindow
     - name: getDocument
       args:
         - name: window

@@ -12,9 +12,8 @@ void run(const std::string& filepath) {
 
 int main(int argc, char *argv[]) {
     // spdlog::set_level(spdlog::level::debug);
-    run(argv[1]);
-    aardvark::Log::info("exit");
-    /*
+    // run(argv[1]);
+    // aardvark::Log::info("exit");
     // auto filepath = fs::current_path().append();
     while (true) {
         run(argv[1]);
@@ -26,5 +25,4 @@ int main(int argc, char *argv[]) {
         } while (true);
         aardvark::Log::info("Restart");
     }
-    */
 }

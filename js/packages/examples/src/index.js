@@ -7,7 +7,8 @@ import ReactAardvark, {
     Stack,
     Text,
     Padded,
-    Size
+    Size,
+    Placeholder
 } from '@advk/react-renderer'
 
 import ScrollExample from './ScrollExample.js'
@@ -17,6 +18,49 @@ import EditorExample from './EditorExample.js'
 import ParagraphExample from './ParagraphExample.js'
 
 import Button from './Button.js'
+
+const win = application.createWindow({ width: 640, height: 480 })
+const document = application.getDocument(win)
+
+const stop = () => {
+    // ReactAardvark.render(<Placeholder />, document)
+    application.stop()
+}
+
+/*
+import { useRef, useEffect, useCallback } from 'react'
+import { Responder } from '@advk/react-renderer'
+import useLastValue from '@advk/react-renderer/src/hooks/useLastValue'
+import HoverRecognizer from '@advk/common/src/gestures/HoverRecognizer.js'
+
+const Govno = (props) => {
+    const [handler] = useState(() => {
+        return function C() { props.cb() }
+    })
+    // const didUnmountRef = useRef(false)
+    // useEffect(() => {
+        // return function A() {
+            // log('UNMOUNT')
+            // didUnmountRef.current = true
+        // }
+    // }, [])
+    return <Responder handler={handler}><Placeholder/></Responder>
+}
+
+const Main = () => {
+   // return (
+        // <Button>
+            // <Background color={Color.red} />
+        // </Button>
+    // )
+   const [s, setS] = useState(false)
+   return <Govno cb={function B() { setS(true) }}/>
+}
+
+ReactAardvark.render(<Main/>, document)
+
+setTimeout(stop, 500)
+*/
 
 const examples = [
     { name: 'Scroll', component: ScrollExample },
@@ -38,7 +82,12 @@ const Main = () => {
         return (
             <Stack>
                 <Background color={Color.WHITE} />
-                <Flex direction={FlexDirection.column}>{examplesButtons}</Flex>
+                <Flex direction={FlexDirection.column}>
+                    {examplesButtons}
+                    <Button onTap={stop}>
+                        <Text text="STOP" />
+                    </Button>
+                </Flex>
             </Stack>
         )
     }
@@ -63,6 +112,4 @@ const Main = () => {
     )
 }
 
-const win = application.createWindow({ width: 640, height: 480 })
-const document = application.getDocument(win)
 ReactAardvark.render(<Main />, document)

@@ -1,22 +1,22 @@
 // import { connectToDevTools } from 'react-devtools-core'
 import WebApiWebSocket from '@advk/common/src/WebApiWebSocket'
-import Renderer from './renderer.js'
-import { registerNativeComponent } from './helpers.js'
+import Renderer from './renderer'
+import { registerNativeComponent } from './helpers'
+
+const rootContainers = new Map()
 
 const RendererAPI = {
 	render(element, container, callback) {
-		// create a root Container if it doesnt exist
-		if (!container.rootContainer) {
-			container.rootContainer = Renderer.createContainer(
+	    if (!rootContainers.has(container)) {
+	        rootContainers.set(container, Renderer.createContainer(
 				container,
 				false
-			)
+			))
 		}
-
-		// update the root Container
+		
 		Renderer.updateContainer(
 			element,
-			container.rootContainer,
+			rootContainers.get(container),
 			null,
 			callback
 		)

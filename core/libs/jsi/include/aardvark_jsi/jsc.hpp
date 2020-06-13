@@ -48,6 +48,9 @@ class Jsc_Context : public Context {
     Value value_make_string(const String& str) override;
     Value value_make_object(const Object& object) override;
 
+    WeakValue value_make_weak(const Value& value) override;
+    Value weak_value_lock(const WeakValue& value) override;
+
     ValueType value_get_type(const Value& value) override;
     Result<bool> value_to_bool(const Value& value) override;
     Result<double> value_to_number(const Value& value) override;
@@ -56,6 +59,8 @@ class Jsc_Context : public Context {
 
     bool value_is_error(const Value& value) override;
     Value value_make_error(const std::string& message) override;
+    std::optional<ErrorLocation> value_get_error_location(
+        const Value& value) override;
 
     bool value_strict_equal(const Value& a, const Value& b) override;
 
@@ -66,6 +71,8 @@ class Jsc_Context : public Context {
     Object object_make(const Class* cls) override;
     Object object_make_function(const Function& function) override;
     Object object_make_constructor(const Class& cls) override;
+    Object object_make_constructor2(
+        const Class& cls, const Function& function) override;
     Object object_make_array() override;
 
     Value object_to_value(const Object& object) override;

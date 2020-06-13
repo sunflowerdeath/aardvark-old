@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 
-// When you pass somewhere current value of state or props, it will not be
-// updated automatically. This hooks wrap value into getter, that always
+// When you pass into callback some value, for example, state or props, it will
+// not be updated automatically. This hooks wrap value into getter, that always
 // returns last passed value.
 const useLastValue = value => {
 	const ref = useRef(value)

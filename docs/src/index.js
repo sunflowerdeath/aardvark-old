@@ -2,6 +2,7 @@ import '@babel/polyfill'
 import ReactDOM from 'react-dom'
 import React from 'react'
 import MiniBook from 'minibook'
+import { dark } from 'minibook/lib/themes'
 import 'minibook/lib/styles.css'
 
 import DesignSection from './design'
@@ -15,6 +16,6 @@ const sections = {
 }
 
 ReactDOM.render(
-	<MiniBook title="Aardvark" sections={sections} />,
+	<MiniBook title="Aardvark" sections={sections} theme={dark} />,
 	document.querySelector('#root')
 );

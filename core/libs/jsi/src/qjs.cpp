@@ -1,49 +1,66 @@
 #include "qjs.hpp"
 
 #include <regex>
+#include <unordered_set>
 
 namespace aardvark::jsi {
 
 class QjsValue : public PointerData {
   public:
-    QjsValue(
-        JSContext* ctx,
-        const JSValue& value,
-        bool finalizing = false,
-        bool weak = false)
-        : ctx(ctx), value(value), finalizing(finalizing), weak(weak) {}
+    QjsValue(JSContext* ctx, const JSValue& value, bool weak = false)
+        : ctx(ctx), value(value), weak(weak) {
+        // TODO store values per context
+        values.insert(this);
+    }
+
+    // copy
+    QjsValue(const QjsValue& other)
+        : ctx(other.ctx), value(other.value), weak(other.weak) {
+        if (!weak) protect();
+        values.insert(this);
+    }
 
     ~QjsValue() override {
-        if (!finalizing && !weak) JS_FreeValue(ctx, value);
+        values.erase(this);
+        free();
+    }
+    
+    void free() {
+        if (!weak && ctx != nullptr) {
+            JS_FreeValue(ctx, value);
+            ctx = nullptr;
+        }
     }
 
     void protect() {
-        if (!finalizing && !weak) JS_DupValue(ctx, value);
+        if (!weak) JS_DupValue(ctx, value);
     }
 
     PointerData* copy() override {
-        protect();
         return new QjsValue(*this);
     }
 
     PointerData* make_weak() {
-        auto copied = new QjsValue(*this);
-        copied->weak = true;
-        return copied;
+        return new QjsValue(ctx, value, true);
     }
 
     PointerData* lock() {
-        auto copied = new QjsValue(*this);
-        copied->weak = false;
-        copied->protect();
-        return copied;
+        auto locked = new QjsValue(ctx, value, false);
+        locked->protect();
+        return locked;
     }
 
     JSContext* ctx;
     const JSValue value;
-    bool finalizing;
     bool weak;
+    
+    static std::unordered_set<QjsValue*> values;
+    static void free_all() {
+        for (auto value : values) value->free();
+    }
 };
+
+std::unordered_set<QjsValue*> QjsValue::values;
 
 class QjsString : public PointerData {
   public:
@@ -125,6 +142,7 @@ void Qjs_Context::init() {
     rt = JS_NewRuntime();
     ctx = JS_NewContext(rt);
     JS_SetContextOpaque(ctx, (void*)this);
+    JS_SetRuntimeOpaque(rt, (void*)this);
 
     JS_NewClassID(&Qjs_Context::function_class_id);
     auto function_class_def = JSClassDef{
@@ -140,20 +158,19 @@ void Qjs_Context::init() {
 Qjs_Context::~Qjs_Context() {
     strict_equal_function.reset();
     Qjs_Context::function_class_id = 0;
-    // TODO finalizing?
-    garbage_collect();
+    QjsValue::free_all();
     JS_FreeContext(ctx);
     JS_FreeRuntime(rt);
 }
 
 // Helpers
 
-Value Qjs_Context::value_from_qjs(const JSValue& value, bool finalizing) {
-    return Value(this, new QjsValue(ctx, value, finalizing));
+Value Qjs_Context::value_from_qjs(const JSValue& value, bool weak) {
+    return Value(this, new QjsValue(ctx, value, weak));
 }
 
-Object Qjs_Context::object_from_qjs(const JSValue& value, bool finalizing) {
-    return Object(this, new QjsValue(ctx, value, finalizing));
+Object Qjs_Context::object_from_qjs(const JSValue& value, bool weak) {
+    return Object(this, new QjsValue(ctx, value, weak));
 }
 
 JSValue Qjs_Context::value_get_qjs(const Value& value) {
@@ -326,6 +343,8 @@ std::optional<ErrorLocation> Qjs_Context::value_get_error_location(
 void class_finalizer(JSRuntime* rt, JSValue value) {
     auto it = Qjs_Context::class_instances.find(JS_VALUE_GET_PTR(value));
     if (it == Qjs_Context::class_instances.end()) return;
+    // TODO
+    // auto ctx = static_cast<Qjs_Context*>(JS_GetRuntimeOpaque(rt));
     auto ctx = it->second.ctx;
     auto class_id = it->second.class_id;
     while (true) {
@@ -489,7 +508,7 @@ std::vector<std::string> Qjs_Context::object_get_property_names(
     if (res == -1) return jsi_props;
     for (auto i = 0; i < prop_count; i++) {
         auto prop_name = JS_AtomToCString(ctx, props[i].atom);
-        jsi_props.push_back(prop_name);
+        jsi_props.emplace_back(prop_name);
         JS_FreeAtom(ctx, props[i].atom);
         JS_FreeCString(ctx, prop_name);
     }
