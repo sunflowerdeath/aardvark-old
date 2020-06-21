@@ -1,5 +1,6 @@
 #pragma once
 
+#include <unordered_map>
 #include <quickjs/quickjs.h>
 
 #include "jsi.hpp"

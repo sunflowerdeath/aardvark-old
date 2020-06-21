@@ -1,38 +1,45 @@
 find_library(DL_LIB libdl.so)
 find_package(Threads)
 
-set(ADV_EXERNALS_DIR "${CMAKE_CURRENT_LIST_DIR}/../externals")
+set(ADV_EXTERNALS_DIR "${CMAKE_CURRENT_LIST_DIR}/../externals")
+message("ADV_EXTERNALS_DIR is ${ADV_EXTERNALS_DIR}")
 
 # boost
-set(BOOST_ROOT "${ADV_EXERNALS_DIR}/boost")
-find_package(Boost 1.71.0 REQUIRED)
+# set(BOOST_ROOT "${ADV_EXTERNALS_DIR}/boost")
+# find_package(Boost 1.71.0 REQUIRED)
+# add_library(boost INTERFACE)
+# set_target_properties(boost PROPERTIES
+#    INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
+
 add_library(boost INTERFACE)
 set_target_properties(boost PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
-    
+	INTERFACE_INCLUDE_DIRECTORIES ${ADV_EXTERNALS_DIR}/boost)
+
 # Catch2
 add_library(Catch2 INTERFACE)
 set_target_properties(Catch2 PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${ADV_EXERNALS_DIR}/Catch2/include)
+    INTERFACE_INCLUDE_DIRECTORIES ${ADV_EXTERNALS_DIR}/Catch2/include)
     
 # expected
 add_library(expected INTERFACE)
 set_target_properties(expected PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${ADV_EXERNALS_DIR}/expected/include)
+    INTERFACE_INCLUDE_DIRECTORIES ${ADV_EXTERNALS_DIR}/expected/include)
 
 # fmt
-add_subdirectory("${ADV_EXERNALS_DIR}/fmt"
+add_subdirectory("${ADV_EXTERNALS_DIR}/fmt"
     ${CMAKE_CURRENT_BINARY_DIR}/fmt)
 
 # glfw
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-find_package(X11 REQUIRED)
-add_subdirectory(${ADV_EXERNALS_DIR}/glfw)
+if (ADV_PLATFORM STREQUAL "linux")
+    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    find_package(X11 REQUIRED)
+    add_subdirectory(${ADV_EXTERNALS_DIR}/glfw)
+endif()
 
 # ICU
-set(ICU_DIR ${ADV_EXERNALS_DIR}/icu)
+set(ICU_DIR ${ADV_EXTERNALS_DIR}/icu)
 set(ICU_LIB_DIR ${ICU_DIR}/build-${ADV_PLATFORM}-${ADV_ARCH}/lib)
 
 add_library(ICU STATIC IMPORTED)
@@ -40,7 +47,7 @@ set_target_properties(ICU PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES ${ICU_DIR}/source/common
     IMPORTED_LOCATION "${ICU_LIB_DIR}/libicuuc.a"
     INTERFACE_COMPILE_DEFINITIONS
-    "UCONFIG_NO_COLLATION=1 UCONFIG_NO_FORMATTING=1 U_STATIC_IMPLEMENTATION=1"
+    "UCONFIG_NO_COLLATION=1;UCONFIG_NO_FORMATTING=1;U_STATIC_IMPLEMENTATION=1"
 )
 
 add_library(ICU_DATA STATIC IMPORTED)
@@ -50,7 +57,7 @@ set_target_properties(ICU_DATA PROPERTIES
 )
 
 # JavaScriptCore
-set(WEBKIT_DIR "${ADV_EXERNALS_DIR}/WebKit")
+set(WEBKIT_DIR "${ADV_EXTERNALS_DIR}/WebKit")
 set(WEBKIT_LIB_DIR "${WEBKIT_DIR}/build-${ADV_PLATFORM}-${ADV_ARCH}/lib")
 
 add_library(WTF STATIC IMPORTED)
@@ -70,25 +77,28 @@ set_target_properties(JavaScriptCore PROPERTIES
 add_library(nlohmann_json INTERFACE)
 set_target_properties(nlohmann_json PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES
-    ${ADV_EXERNALS_DIR}/nlohmann_json/include)
+    ${ADV_EXTERNALS_DIR}/nlohmann_json/include)
 
 # nod
 add_library(nod INTERFACE)
 set_target_properties(nod PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES
-    ${ADV_EXERNALS_DIR}/nod/include)
+    ${ADV_EXTERNALS_DIR}/nod/include)
 
 # quickjs
-set(QUICKJS_DIR "${ADV_EXERNALS_DIR}/quickjs")
+add_subdirectory("${ADV_EXTERNALS_DIR}/quickjs"
+    ${CMAKE_CURRENT_BINARY_DIR}/quickjs)
 
-add_library(quickjs STATIC IMPORTED)
-set_target_properties(quickjs PROPERTIES
-    IMPORTED_LOCATION "${QUICKJS_DIR}/libquickjs.a"
-    INTERFACE_INCLUDE_DIRECTORIES "${QUICKJS_DIR}/include"
-    INTERFACE_LINK_LIBRARIES "${DL_LIB}")
+#set(QUICKJS_DIR "${ADV_EXTERNALS_DIR}/quickjs")
+
+#add_library(quickjs STATIC IMPORTED)
+#set_target_properties(quickjs PROPERTIES
+#    IMPORTED_LOCATION "${QUICKJS_DIR}/libquickjs.a"
+#    INTERFACE_INCLUDE_DIRECTORIES "${QUICKJS_DIR}/include"
+#    INTERFACE_LINK_LIBRARIES "${DL_LIB}")
 
 # skia
-set(SKIA_DIR "${ADV_EXERNALS_DIR}/skia")
+set(SKIA_DIR "${ADV_EXTERNALS_DIR}/skia")
 
 set(SKIA_INCLUDE_DIRS
 	${SKIA_DIR}/include/c
@@ -159,4 +169,4 @@ set_target_properties(skia PROPERTIES
 
 # spdlog
 set(SPDLOG_FMT_EXTERNAL ON CACHE BOOL "")
-add_subdirectory(${ADV_EXERNALS_DIR}/spdlog)
+add_subdirectory(${ADV_EXTERNALS_DIR}/spdlog)

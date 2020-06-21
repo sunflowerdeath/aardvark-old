@@ -1,0 +1,6 @@
+kind: class
+name: AndroidApp
+include: aardvark/platforms/android/android_app.hpp
+props:
+    - name: document
+      type: Document

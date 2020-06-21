@@ -10,7 +10,7 @@ import android.os.Bundle;
 
 public class AardvarkActivity extends Activity {
     private AardvarkView view;
-    private long nativeAppPtr;
+    private long nativeHostPtr;
     private Map<String, Object> channels = new HashMap<String, Object>();
 
     @Override
@@ -42,8 +42,8 @@ public class AardvarkActivity extends Activity {
         registerChannel("system", new MessageChannel(JsonCodec.instance));
     }
 
-    public void onNativeAppCreate(long nativeAppPtr) {
-        this.nativeAppPtr = nativeAppPtr;
+    public void onNativeAppCreate(long nativeHostPtr) {
+        this.nativeHostPtr = nativeHostPtr;
     }
 
     @Override

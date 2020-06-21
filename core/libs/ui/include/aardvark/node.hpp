@@ -65,7 +65,7 @@ class Node {
 
   private:
     NodeChangeFunc<T, OwnerT> change_fn;
-    T* node_from_this() { return reinterpret_cast<T*>(this); }
+    T* node_from_this() { return dynamic_cast<T*>(this); }
 };
 
 template <typename T, typename OwnerT>

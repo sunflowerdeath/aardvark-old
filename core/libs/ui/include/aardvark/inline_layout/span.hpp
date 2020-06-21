@@ -112,9 +112,7 @@ class SingleChildSpan : public Span, public SingleChildNode<Span, Element> {
     SingleChildSpan(
         std::shared_ptr<Span> child,
         std::optional<SpanBase> base_span = std::nullopt)
-        : Node([](Element* owner, std::shared_ptr<Span>& child) {
-              owner->change();
-          }),
+        : Node([](Element* owner, Span* child) { owner->change(); }),
           Span(base_span),
           SingleChildNode(std::move(child)){};
 
@@ -129,9 +127,7 @@ class MultipleChildrenSpan : public Span,
     MultipleChildrenSpan(
         std::vector<std::shared_ptr<Span>> children,
         std::optional<SpanBase> base_span = std::nullopt)
-        : Node([](Element* owner, std::shared_ptr<Span>& child) {
-              owner->change();
-          }),
+        : Node([](Element* owner, Span* child) { owner->change(); }),
           Span(base_span),
           MultipleChildrenNode(std::move(children), nullptr){};
 };

@@ -1,13 +1,13 @@
 #include "module_loader.hpp"
 
-#include <aardvark/utils/files_utils.hpp>
+// #include <aardvark/utils/files_utils.hpp>
 #include <aardvark/utils/log.hpp>
 #include <aardvark_jsi/jsi.hpp>
 #include <aardvark_jsi/mappers.hpp>
-#include <experimental/filesystem>
+// #include <experimental/filesystem>
 #include <regex>
 
-namespace fs = std::experimental::filesystem;
+// namespace fs = std::experimental::filesystem;
 
 namespace aardvark::js {
 
@@ -57,6 +57,7 @@ jsi::Value ModuleLoader::load_from_source(
     return ctx->value_make_null();
 }
 
+/*
 jsi::Value ModuleLoader::load_from_file(const std::string& filepath) {
     // TODO check relative/absolute path
     auto full_filepath = fs::current_path().append(filepath);
@@ -77,6 +78,7 @@ jsi::Value ModuleLoader::load_from_file(const std::string& filepath) {
     }
     return ModuleLoader::load_from_source(source, full_filepath, source_map);
 }
+*/
 
 void ModuleLoader::handle_error(jsi::Error& error) {
     auto loc = error.location();

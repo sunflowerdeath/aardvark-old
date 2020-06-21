@@ -47,8 +47,8 @@ public class AardvarkExampleActivity extends AardvarkActivity {
         getChannel("system").setMessageHandler(jsonHandler);
     }
 
-    public void onNativeAppCreate(long nativeAppPtr) {
-        super.onNativeAppCreate(nativeAppPtr);
-        init(nativeAppPtr);
+    public void onNativeAppCreate(long nativeHostPtr) {
+        super.onNativeAppCreate(nativeHostPtr);
+        init(nativeHostPtr);
     }
 }

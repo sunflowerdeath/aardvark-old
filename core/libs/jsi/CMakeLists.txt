@@ -21,7 +21,7 @@ add_library(aardvark_jsi ${ADV_JSI_LIB_TYPE}
 target_include_directories(aardvark_jsi PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include/aardvark_jsi)
 
-target_include_directories(aardvark_jsi INTERFACE
+target_include_directories(aardvark_jsi PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(aardvark_jsi fmt expected)

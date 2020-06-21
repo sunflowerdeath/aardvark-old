@@ -13,15 +13,26 @@ else()
 endif()
 
 add_library(aardvark_js ${ADV_JS_LIB_TYPE}
-    generated/api.cpp
     generated/error_location_api.cpp
-    src/host.cpp
     src/module_loader.cpp
-    src/api/animation_frame.cpp
     src/api/element.cpp
-    src/api/timeout.cpp
     src/api/transform.cpp
 )
+
+if(ADV_PLATFORM STREQUAL "linux")
+    target_sources(aardvark_js PRIVATE 
+        generated/api.cpp
+        src/api/timeout.cpp
+        src/api/animation_frame.cpp
+        src/host.cpp)
+endif()
+
+if(ADV_PLATFORM STREQUAL "android")
+    target_sources(aardvark_js PRIVATE
+        generated/android_api.cpp
+        src/android_host.cpp
+        src/android_jni.cpp)
+endif()
 
 make_includable(
     "${ADV_JS_DIR}/packages/sourcemap/build/getOriginalLocation.js"
@@ -32,7 +43,7 @@ target_include_directories(aardvark_js PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/generated
 )
 
-target_include_directories(aardvark_js INTERFACE
+target_include_directories(aardvark_js PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(aardvark_js aardvark_ui aardvark_jsi)

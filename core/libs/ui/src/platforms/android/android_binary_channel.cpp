@@ -1,4 +1,4 @@
-#include "android_binary_channel.hpp"
+#include "platforms/android/android_binary_channel.hpp"
 
 namespace aardvark {
 
@@ -28,9 +28,10 @@ AndroidBinaryChannel* AndroidBinaryChannel::get_native_channel(
 }
 
 void AndroidBinaryChannel::send_message(const std::vector<char>& message) {
-    auto buffer = jni_env->NewDirectByteBuffer(const_cast<char*>(message.data()), message.size());
-    jni_env->CallVoidMethod(platform_channel, channel_handle_message_method,
-                            buffer);
+    auto buffer = jni_env->NewDirectByteBuffer(
+        const_cast<char*>(message.data()), message.size());
+    jni_env->CallVoidMethod(
+        platform_channel, channel_handle_message_method, buffer);
 }
 
 }  // namespace aardvark

@@ -5,6 +5,7 @@
 #include <memory>
 #include <tl/expected.hpp>
 #include <vector>
+#include <string>
 
 namespace aardvark::jsi {
 

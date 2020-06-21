@@ -22,7 +22,8 @@ jsi::Result<jsi::Value> set_timeout(
         return jsi::make_error_result(*host.ctx, callback.error());
     }
     auto timeout = args.size() >= 2 ? args[1].to_number().value_or(0) : 0;
-    auto id = host.event_loop->set_timeout(callback.value(), timeout * 1000);
+    auto id = host.event_loop->set_timeout(
+        callback.value(), static_cast<int>(timeout * 1000));
     return host.ctx->value_make_number(id);
 }
 
@@ -34,7 +35,6 @@ void add_timeout(jsi::Context& ctx) {
                 return set_timeout(*host, this_val, args);
             })
             .to_value();
-    host->ctx->get_global_object().set_property("setTimeout", set_timeout_fn);
     auto clear_timeout_fn =
         host->ctx
             ->object_make_function([host](auto this_val, auto args) {
@@ -42,7 +42,9 @@ void add_timeout(jsi::Context& ctx) {
                 return host->ctx->value_make_undefined();
             })
             .to_value();
-    host->ctx->get_global_object().set_property("clearTimeout", clear_timeout_fn);
+    auto global = host->ctx->get_global_object();
+    global.set_property("setTimeout", set_timeout_fn);
+    global.set_property("clearTimeout", clear_timeout_fn);
 }
 
 }  // namespace aardvark::js

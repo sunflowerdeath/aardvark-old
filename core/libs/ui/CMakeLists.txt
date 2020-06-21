@@ -49,7 +49,7 @@ add_library(aardvark_ui ${ADV_UI_LIB_TYPE}
 target_include_directories(aardvark_ui PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include/aardvark)
 
-target_include_directories(aardvark_ui INTERFACE
+target_include_directories(aardvark_ui PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include)
     
 target_link_libraries(aardvark_ui
@@ -68,7 +68,7 @@ if(ADV_PLATFORM STREQUAL "android")
     target_compile_definitions(aardvark_ui PRIVATE "ADV_PLATFORM_ANDROID=1")
     target_sources(aardvark_ui PRIVATE
         src/platforms/android/android_app.cpp
-        src/platforms/android/android_jni.cpp
+        # src/platforms/android/android_jni.cpp
         src/platforms/android/android_binary_channel.cpp)
         # src/platforms/android/android_texture_layer.cpp)
     target_link_libraries(aardvark_ui android EGL GLESv2 log)

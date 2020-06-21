@@ -40,7 +40,7 @@ if [ "$PLATFORM" = "android" ]; then
         CROSS_COMPILE_PLATFORM="armv7a-linux-androideabi"
     fi
 
-    ANDROID_NDK=$ANDROID_HOME/ndk-bundle
+    ANDROID_NDK=$NDK_PATH
     ANDROID_API=21
     TOOLCHAIN_DIR=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin
     CC=$TOOLCHAIN_DIR/${CROSS_COMPILE_PLATFORM}${ANDROID_API}-clang

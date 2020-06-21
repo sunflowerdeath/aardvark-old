@@ -16,7 +16,7 @@ class BinaryChannel {
 
     virtual void set_message_handler(
         std::function<void(const std::vector<char>&)> handler) {
-        this->handler = handler;
+        this->handler = std::move(handler);
     }
 
     // Handles message received from the platform side
@@ -31,8 +31,8 @@ class BinaryChannel {
 template <class T>
 class MessageCodec {
   public:
-    virtual std::vector<char> encode(const T& message){};
-    virtual T decode(const std::vector<char>& message){};
+    virtual std::vector<char> encode(const T& message) = 0;
+    virtual T decode(const std::vector<char>& message) = 0;
 };
 
 class StringCodec : public MessageCodec<std::string> {
@@ -53,11 +53,11 @@ class StringCodec : public MessageCodec<std::string> {
 
 class JsonCodec : public MessageCodec<json> {
   public:
-    std::vector<char> encode(const json& message) {
+    std::vector<char> encode(const json& message) override {
         return StringCodec::get_instance()->encode(message.dump());
     };
 
-    json decode(const std::vector<char>& message) {
+    json decode(const std::vector<char>& message) override {
         auto str = StringCodec::get_instance()->decode(message);
         return json::parse(str);
     };
@@ -98,6 +98,27 @@ class MessageChannel {
     BinaryChannel* binary_channel;
     MessageCodec<T>* codec;
     std::function<void(T, void*)> handler;
+};
+
+class ChannelManager {
+  public:
+    template<class T>
+    void register_channel(std::string name, MessageChannel<T>* channel) {
+        channels[name] = channel;
+    };
+
+    template<class T>
+    MessageChannel<T>* get_channel(const std::string& name) {
+        return reinterpret_cast<MessageChannel<T>*>(channels[name]);
+    };
+
+    template<class T>
+    void send_message(const std::string& channel, T message) {
+        get_channel<T>(channel)->send_message(message);
+    };
+
+  private:
+    std::map<std::string, void*> channels;
 };
 
 }  // namespace aardvark

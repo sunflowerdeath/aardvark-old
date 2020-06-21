@@ -67,11 +67,10 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/make_includable.cmake")
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/libs/ui")
 
 # jsi
-# set(ADV_JSI_STATIC ON)
 # set(ADV_JSI_EXAMPLES OFF)
 # set(ADV_JSI_TESTS OFF)
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/libs/jsi")
 
 # js
-set(ADV_JS_EXAMPLES ON)
+# set(ADV_JS_EXAMPLES ON)
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/libs/js")

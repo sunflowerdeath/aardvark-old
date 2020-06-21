@@ -1,8 +1,9 @@
 #pragma once
 
+#include <jni.h>
+
+#include <aardvark/channels.hpp>
 #include <functional>
-#include "../../channels.hpp"
-#include "jni.h"
 
 namespace aardvark {
 

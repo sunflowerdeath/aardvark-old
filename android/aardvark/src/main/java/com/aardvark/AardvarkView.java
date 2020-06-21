@@ -53,7 +53,7 @@ class AardvarkView extends GLSurfaceView {
     }
 
     private static class Renderer implements GLSurfaceView.Renderer {
-        private long appPtr;
+        private long hostPtr;
         private AardvarkActivity activity;
         private AardvarkView view;
 
@@ -67,13 +67,13 @@ class AardvarkView extends GLSurfaceView {
 
         public void onSurfaceChanged(GL10 gl, int width, int height) {
             activity.onBeforeNativeAppCreate();
-            appPtr = NativeWrapper.appCreate(
+            hostPtr = NativeWrapper.hostCreate(
                 activity, activity.<JSONObject>getChannel("system").binaryChannel, width, height);
-            activity.onNativeAppCreate(appPtr);
+            activity.onNativeAppCreate(hostPtr);
         }
 
         public void onDrawFrame(GL10 gl) {
-            NativeWrapper.appUpdate(appPtr);
+            NativeWrapper.hostUpdate(hostPtr);
         }
     }
 

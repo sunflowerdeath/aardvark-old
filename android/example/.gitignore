@@ -1,6 +1,7 @@
 .gradle
 .externalNativeBuild
 .idea
+.cxx
 build
 android.iml
 local.properties
