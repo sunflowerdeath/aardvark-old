@@ -1,5 +1,6 @@
 package com.aardvark;
 
+import android.view.Surface;
 import java.nio.ByteBuffer;
 
 // Wrapper for the native library
@@ -14,7 +15,7 @@ public class NativeWrapper {
     // Creates native application id, returns address of the instance
     // Returns pointer to native object
     public static native long hostCreate(
-        AardvarkActivity activity, BinaryChannel systemChannel, int width, int height
+        AardvarkActivity activity, BinaryChannel systemChannel, Surface surface
     );
 
     // Triggers update of the native application

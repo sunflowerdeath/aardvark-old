@@ -56,7 +56,7 @@ target_link_libraries(aardvark_ui
     skia ICU ICU_DATA fmt spdlog::spdlog nlohmann_json nod boost)
 
 if(ADV_PLATFORM STREQUAL "linux")
-    target_compile_definitions(aardvark_ui PRIVATE "ADV_PLATFORM_DESKTOP=1")
+    target_compile_definitions(aardvark_ui PUBLIC "ADV_PLATFORM_DESKTOP=1")
     target_sources(aardvark_ui PRIVATE
         src/platforms/desktop/desktop_window.cpp
         src/platforms/desktop/desktop_app.cpp
@@ -65,9 +65,10 @@ if(ADV_PLATFORM STREQUAL "linux")
 endif()
 
 if(ADV_PLATFORM STREQUAL "android")
-    target_compile_definitions(aardvark_ui PRIVATE "ADV_PLATFORM_ANDROID=1")
+    target_compile_definitions(aardvark_ui PUBLIC "ADV_PLATFORM_ANDROID=1")
     target_sources(aardvark_ui PRIVATE
         src/platforms/android/android_app.cpp
+        # src/platforms/android/android_window.cpp
         # src/platforms/android/android_jni.cpp
         src/platforms/android/android_binary_channel.cpp)
         # src/platforms/android/android_texture_layer.cpp)

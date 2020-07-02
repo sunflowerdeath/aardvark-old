@@ -10,11 +10,10 @@ Java_com_aardvark_NativeWrapper_initJni(JNIEnv* env, jobject obj);
 
 JNIEXPORT jlong JNICALL Java_com_aardvark_NativeWrapper_hostCreate(
     JNIEnv* env,
-    jobject obj,
+    jobject wrapper,
     jobject activity,
     jobject system_channel,
-    jint width,
-    jint height);
+    jobject surface);
 
 JNIEXPORT void JNICALL Java_com_aardvark_NativeWrapper_hostUpdate(
     JNIEnv* env, jobject obj, jlong host_ptr);
@@ -34,13 +33,12 @@ Java_com_aardvark_NativeWrapper_initJni(JNIEnv* env, jobject obj) {
 
 JNIEXPORT jlong JNICALL Java_com_aardvark_NativeWrapper_hostCreate(
     JNIEnv* env,
-    jobject obj,
+    jobject wrapper,
     jobject activity,
     jobject system_channel,
-    jint width,
-    jint height) {
+    jobject surface) {
     auto host =
-        new aardvark::js::AndroidHost(system_channel, activity, width, height);
+        new aardvark::js::AndroidHost(env, system_channel, activity, surface);
     return reinterpret_cast<jlong>(host);
 }
 

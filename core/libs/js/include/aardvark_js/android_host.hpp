@@ -8,7 +8,7 @@
 // #include <aardvark/utils/jni_event_loop.hpp>
 
 #include "../generated/android_api.hpp"
-// #include "api/animation_frame.hpp"
+#include "api/animation_frame.hpp"
 
 #include "module_loader.hpp"
 
@@ -17,12 +17,11 @@ namespace aardvark::js {
 class AndroidHost {
   public:
     AndroidHost(
-        jobject system_channel, jobject activity, int width, int height);
+        JNIEnv* env, jobject system_channel, jobject activity, jobject surface);
 
-    void update() {
-        app->update();
-    }
+    void update();
     
+    AnimationFrame animation_frame = AnimationFrame();
     std::optional<aardvark_js_api::AndroidApi> api;
     std::shared_ptr<jsi::Context> ctx;
     std::optional<ModuleLoader> module_loader;

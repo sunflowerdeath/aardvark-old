@@ -1,3 +1,4 @@
+/*
 package com.aardvark;
 
 import org.json.JSONObject;
@@ -25,6 +26,7 @@ class AardvarkView extends GLSurfaceView {
         setEGLContextClientVersion(2);
         setEGLConfigChooser(new ConfigChooser());
         setRenderer(new Renderer(activity, this));
+        // setRenderMode RENDERMODE_WHEN_DIRTY and then call requestRender()
     }
 
     // Chooser that selects RGBA888 to match code creating Skia surfaces on the native side
@@ -91,3 +93,4 @@ class AardvarkView extends GLSurfaceView {
         return true;
     }
 }
+*/

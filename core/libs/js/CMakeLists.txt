@@ -14,6 +14,7 @@ endif()
 
 add_library(aardvark_js ${ADV_JS_LIB_TYPE}
     generated/error_location_api.cpp
+    src/api/animation_frame.cpp
     src/module_loader.cpp
     src/api/element.cpp
     src/api/transform.cpp
@@ -23,7 +24,6 @@ if(ADV_PLATFORM STREQUAL "linux")
     target_sources(aardvark_js PRIVATE 
         generated/api.cpp
         src/api/timeout.cpp
-        src/api/animation_frame.cpp
         src/host.cpp)
 endif()
 
