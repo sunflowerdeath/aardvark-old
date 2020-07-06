@@ -4,12 +4,12 @@ namespace aardvark {
 
 float PaddedElement::get_intrinsic_height(float width) {
     return padding.height() +
-           child->get_intrinsic_height(width - padding.width());
+           child->query_intrinsic_height(width - padding.width());
 }
 
 float PaddedElement::get_intrinsic_width(float height) {
     return padding.width() +
-           child->get_intrinsic_width(height - padding.height());
+           child->query_intrinsic_width(height - padding.height());
 }
 
 Size PaddedElement::layout(BoxConstraints constraints) {

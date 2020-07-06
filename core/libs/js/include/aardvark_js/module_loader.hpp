@@ -27,7 +27,9 @@ class ModuleLoader {
         const std::string& source_url = "",
         const std::string& source_map = "");
 
-    // jsi::Value load_from_file(const std::string& filepath);
+#if ADV_PLATFORM_DESKTOP
+    jsi::Value load_from_file(const std::string& filepath);
+#endif
 
     // void load_from_url(const std::string& url,
                        // std::function<void(JSValueRef)> callback);

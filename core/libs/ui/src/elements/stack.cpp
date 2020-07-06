@@ -4,8 +4,9 @@ namespace aardvark {
 
 Size StackElement::layout(BoxConstraints constraints) {
     for (auto& child : children) {
-        child->size =
-            document->layout_element(child.get(), constraints.make_loose());
+        child->size = document->layout_element(
+            child.get(),
+            loosen_constraints ? constraints.make_loose() : constraints);
         child->rel_position = Position{0, 0};
     }
     return constraints.max_size();

@@ -16,12 +16,12 @@ BorderElement::BorderElement(
 
 float BorderElement::get_intrinsic_height(float width) {
     return borders.height() +
-           child->get_intrinsic_height(width - borders.width());
+           child->query_intrinsic_height(width - borders.width());
 }
 
 float BorderElement::get_intrinsic_width(float height) {
     return borders.height() +
-           child->get_intrinsic_width(height - borders.width());
+           child->query_intrinsic_width(height - borders.width());
 }
 
 Size BorderElement::layout(BoxConstraints constraints) {

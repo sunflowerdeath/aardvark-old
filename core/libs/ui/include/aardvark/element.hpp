@@ -92,6 +92,20 @@ class Element : public std::enable_shared_from_this<Element> {
     // Returns minimum width that element could fit into.
     virtual float get_intrinsic_width(float height) { return 0; }
 
+    // Flag that tracks when intrinsic size of this element was queried during
+    // last layout
+    bool intrinsic_queried = false;
+
+    float query_intrinsic_height(float width) {
+        intrinsic_queried = true;
+        return get_intrinsic_height(width);
+    }
+
+    float query_intrinsic_width(float height) {
+        intrinsic_queried = true;
+        return get_intrinsic_width(height);
+    }
+
     // Paints element and its children.
     // `is_changed` is `true` when the element itself or some of its parents is
     // changed. When it is `false`, element is allowed to reuse result of
@@ -99,7 +113,7 @@ class Element : public std::enable_shared_from_this<Element> {
     virtual void paint(bool is_changed){};
 
     // Walks children in paint order.
-    virtual void visit_children(ChildrenVisitor visitor) {};
+    virtual void visit_children(ChildrenVisitor visitor){};
     virtual int get_children_count() { return 0; };
     virtual std::shared_ptr<Element> get_child_at(int index) {
         return nullptr;
@@ -118,8 +132,9 @@ class Element : public std::enable_shared_from_this<Element> {
     // These methods only needed for elements with children
     virtual void append_child(std::shared_ptr<Element> child){};
     virtual void remove_child(std::shared_ptr<Element> child){};
-    virtual void insert_before_child(std::shared_ptr<Element> child,
-                                     std::shared_ptr<Element> before_child){};
+    virtual void insert_before_child(
+        std::shared_ptr<Element> child,
+        std::shared_ptr<Element> before_child){};
 
     // -------------------------------------------------------------------------
     // These props should be set by the parent element during layout
@@ -170,40 +185,46 @@ class Element : public std::enable_shared_from_this<Element> {
 
 class SingleChildElement : public Element {
   public:
-    SingleChildElement(std::shared_ptr<Element> child, bool is_repaint_boundary,
-                       bool size_depends_on_parent);
+    SingleChildElement(
+        std::shared_ptr<Element> child,
+        bool is_repaint_boundary,
+        bool size_depends_on_parent);
 
     float get_intrinsic_height(float width) override {
-        return child->get_intrinsic_height(width);
+        return child == nullptr ? 0 : child->get_intrinsic_height(width);
     }
     float get_intrinsic_width(float height) override {
-        return child->get_intrinsic_width(height);
+        return child == nullptr ? 0 : child->get_intrinsic_width(height);
     }
     void paint(bool is_changed) override;
     void append_child(std::shared_ptr<Element> child) override;
     void remove_child(std::shared_ptr<Element> child) override;
-    void visit_children(ChildrenVisitor visitor) override { visitor(child); };
+    void visit_children(ChildrenVisitor visitor) override {
+        if (child != nullptr) visitor(child);
+    };
     int get_children_count() override { return child == nullptr ? 0 : 1; };
     std::shared_ptr<Element> get_child_at(int index) override {
         return index == 0 ? child : nullptr;
     };
 
-    std::shared_ptr<Element> child;
+    std::shared_ptr<Element> child = nullptr;
 };
 
 class MultipleChildrenElement : public Element {
   public:
-    MultipleChildrenElement(std::vector<std::shared_ptr<Element>> children,
-                            bool is_repaint_boundary,
-                            bool size_depends_on_parent);
+    MultipleChildrenElement(
+        std::vector<std::shared_ptr<Element>> children,
+        bool is_repaint_boundary,
+        bool size_depends_on_parent);
 
     float get_intrinsic_height(float width) override;
     float get_intrinsic_width(float height) override;
     void paint(bool is_changed) override;
     void remove_child(std::shared_ptr<Element> child) override;
     void append_child(std::shared_ptr<Element> child) override;
-    void insert_before_child(std::shared_ptr<Element> child,
-                             std::shared_ptr<Element> before_child) override;
+    void insert_before_child(
+        std::shared_ptr<Element> child,
+        std::shared_ptr<Element> before_child) override;
     void visit_children(ChildrenVisitor visitor) override;
     int get_children_count() override { return children.size(); };
     std::shared_ptr<Element> get_child_at(int index) override {

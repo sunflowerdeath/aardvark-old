@@ -16,14 +16,14 @@ AlignedElement::AlignedElement(
 
 float AlignedElement::get_intrinsic_height(float width) {
     auto align = alignment.vert.calc(0);
-    return align +
-           child->get_intrinsic_height(width - (adjust_child_size ? align : 0));
+    return align + child->query_intrinsic_height(
+                       width - (adjust_child_size ? align : 0));
 }
 
 float AlignedElement::get_intrinsic_width(float height) {
     auto align = alignment.horiz.calc(0);
-    return align +
-           child->get_intrinsic_width(height - (adjust_child_size ? align : 0));
+    return align + child->query_intrinsic_width(
+                       height - (adjust_child_size ? align : 0));
 }
 
 Size AlignedElement::layout(BoxConstraints constraints) {

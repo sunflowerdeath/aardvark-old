@@ -1,4 +1,12 @@
 const Color = {
+    rgb(red, green, blue) {
+        return { red, green, blue, alpha: 255 }
+    },
+    
+    rgba(red, green, blue, alpha) {
+        return { red, green, blue, alpha }
+    },
+    
     WHITE: { red: 255, green: 255, blue: 255, alpha: 255 },
     BLACK: { red: 0, green: 0, blue: 0, alpha: 255 },
     LIGHTGRAY: { red: 211, green: 211, blue: 211, alpha: 255 },

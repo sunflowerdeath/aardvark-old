@@ -3,12 +3,12 @@
 namespace aardvark {
 
 float TranslatedElement::get_intrinsic_height(float width) {
-    auto child_height = child->get_intrinsic_height(width);
+    auto child_height = child->query_intrinsic_height(width);
     return child_height + translation.top.calc(child_height);
 }
 
 float TranslatedElement::get_intrinsic_width(float height) {
-    auto child_width = child->get_intrinsic_width(height);
+    auto child_width = child->query_intrinsic_width(height);
     return child_width + translation.left.calc(child_width);
 }
 

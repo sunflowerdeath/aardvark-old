@@ -7,9 +7,10 @@ float FlexElement::get_intrinsic_height(float width) {
     for (auto& child : children) {
         if (direction == FlexDirection::column) {
             // TODO probably not correct
-            result += child->get_intrinsic_height(width);
+            result += child->query_intrinsic_height(width);
         } else {
-            result = fmax(result, child->get_intrinsic_height(width));
+            // TODO NOT CORRECT
+            result = fmax(result, child->query_intrinsic_height(width));
         }
     }
     return result;
@@ -20,9 +21,9 @@ float FlexElement::get_intrinsic_width(float height) {
     for (auto& child : children) {
         if (direction == FlexDirection::row) {
             // TODO probably not correct
-            result += child->get_intrinsic_width(height);
+            result += child->query_intrinsic_width(height);
         } else {
-            result = fmax(result, child->get_intrinsic_width(height));
+            result = fmax(result, child->query_intrinsic_width(height));
         }
     }
     return result;

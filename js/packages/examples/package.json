@@ -13,7 +13,9 @@
   "dependencies": {
     "@advk/common": "*",
     "@advk/react-renderer": "*",
-    "@babel/plugin-proposal-optional-chaining": "^7.6.0"
+    "@babel/plugin-proposal-optional-chaining": "^7.6.0",
+    "mobx": "^5.15.4",
+    "mobx-react": "^6.2.2"
   },
   "author": "sunflowerdeath",
   "license": "Unlicense"

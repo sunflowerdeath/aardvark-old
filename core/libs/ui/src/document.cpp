@@ -106,6 +106,7 @@ void Document::relayout() {
 }
 
 void Document::relayout_boundary_element(Element* elem) {
+    reset_intrinsic_queried(elem);
     layout_element(elem, elem->prev_constraints);
     update_tree_abs_position(elem);
     add_only_parent(repaint_boundaries, elem->find_closest_repaint_boundary());
@@ -126,11 +127,19 @@ void Document::update_abs_position(Element* elem) {
             : Position::add(elem->parent->abs_position, elem->rel_position);
 }
 
+void Document::reset_intrinsic_queried(Element* elem) {
+    elem->intrinsic_queried = false;
+    elem->visit_children([this](std::shared_ptr<Element>& child) {
+        reset_intrinsic_queried(child.get());
+    });
+}
+
 Size Document::layout_element(Element* elem, BoxConstraints constraints) {
     size_observer->trigger_element(elem->shared_from_this());
-    elem->is_relayout_boundary =
-        constraints.is_tight() || elem->size_depends_on_parent;
     auto size = elem->layout(constraints);
+    elem->is_relayout_boundary =
+        !elem->intrinsic_queried &&
+        (constraints.is_tight() || elem->size_depends_on_parent);
     elem->prev_constraints = constraints;
     return size;
 }

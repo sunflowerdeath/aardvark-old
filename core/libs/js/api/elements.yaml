@@ -411,6 +411,10 @@ name: StackElement
 extends: Element
 include: aardvark/elements/stack.hpp
 constructor: default
+props:
+    - name: loosenConstraints
+      type: bool
+      setter: set_loosen_constraints
 ---
 kind: class
 name: TextElement

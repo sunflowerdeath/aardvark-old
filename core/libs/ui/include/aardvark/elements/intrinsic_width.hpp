@@ -22,8 +22,9 @@ class IntrinsicWidthElement : public SingleChildElement {
     std::string get_debug_name() override { return "IntrinsicWidth"; };
 
     Size layout(BoxConstraints constraints) override {
-        auto size = Size{child->get_intrinsic_width(constraints.max_width),
-                         constraints.max_height};
+        auto size = Size{
+            child->query_intrinsic_width(constraints.max_width),
+            constraints.max_height};
         auto child_constraints =
             BoxConstraints::from_size(size, /* tight */ false);
         auto child_size =

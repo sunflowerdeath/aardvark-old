@@ -123,10 +123,8 @@ std::shared_ptr<Element> DecorationSpan::render() {
         top_offset += padding.top;
     }
     if (decoration.background != std::nullopt) {
-        auto background =
-            std::make_shared<BackgroundElement>(decoration.background.value());
-        container = std::make_shared<StackElement>(
-            std::vector<std::shared_ptr<Element>>{background, container});
+        container = std::make_shared<BackgroundElement>(
+            container, decoration.background.value());
     }
     if (decoration.borders != std::nullopt) {
         auto borders = decoration.borders.value();

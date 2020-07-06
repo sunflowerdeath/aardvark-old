@@ -2,17 +2,10 @@ import React from 'react'
 
 const PREFIX = 'adv_'
 
-let id = 0
-
-const getId = () => {
-	id++
-	return PREFIX + String(id)
-}
-
 const nativeComponents = {}
 
-const registerNativeComponent = elementClass => {
-	const id = getId()
+const registerNativeComponent = (name, elementClass) => {
+	const id = PREFIX + name
 	nativeComponents[id] = elementClass
 	const NativeComponent = React.forwardRef((props, ref) => React.createElement(id, {...props, ref}))
 	return NativeComponent

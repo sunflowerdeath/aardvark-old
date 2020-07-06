@@ -57,7 +57,7 @@ SingleChildElement::SingleChildElement(
 }
 
 void SingleChildElement::paint(bool is_changed) {
-    document->paint_element(child.get());
+    if (child != nullptr) document->paint_element(child.get());
 }
 
 void SingleChildElement::remove_child(std::shared_ptr<Element> child) {
@@ -72,7 +72,7 @@ void SingleChildElement::remove_child(std::shared_ptr<Element> child) {
 }
 
 void SingleChildElement::append_child(std::shared_ptr<Element> child) {
-    if (child->parent != nullptr) child->parent->remove_child(child);
+    if (child != nullptr && child->parent != nullptr) child->parent->remove_child(child);
     this->child = child;
     this->child->set_document(this->document);
     this->child->parent = this;
@@ -91,7 +91,7 @@ MultipleChildrenElement::MultipleChildrenElement(
 float MultipleChildrenElement::get_intrinsic_height(float width) {
     auto max_height = 0;
     for (auto& child : children) {
-        auto height = child->get_intrinsic_height(width);
+        auto height = child->query_intrinsic_height(width);
         if (height > max_height) max_height = height;
     }
     return max_height;
@@ -100,7 +100,7 @@ float MultipleChildrenElement::get_intrinsic_height(float width) {
 float MultipleChildrenElement::get_intrinsic_width(float height) {
     auto max_width = 0;
     for (auto& child : children) {
-        auto width = child->get_intrinsic_width(height);
+        auto width = child->query_intrinsic_width(height);
         if (width > max_width) max_width = width;
     }
     return max_width;

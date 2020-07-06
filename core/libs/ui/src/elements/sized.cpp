@@ -4,7 +4,7 @@ namespace aardvark {
 
 float SizedElement::get_intrinsic_height(float width) {
     auto res = size_constraints.height.is_none()
-                   ? child->get_intrinsic_height(width)
+                   ? child->query_intrinsic_height(width)
                    : size_constraints.height.calc(0);
     if (!size_constraints.min_height.is_none()) {
         res = fmax(res, size_constraints.min_height.calc(0));
@@ -17,7 +17,7 @@ float SizedElement::get_intrinsic_height(float width) {
 
 float SizedElement::get_intrinsic_width(float height) {
     auto res = size_constraints.width.is_none()
-                   ? child->get_intrinsic_width(height)
+                   ? child->query_intrinsic_width(height)
                    : size_constraints.width.calc(0);
     if (!size_constraints.min_width.is_none()) {
         res = fmax(res, size_constraints.min_width.calc(0));

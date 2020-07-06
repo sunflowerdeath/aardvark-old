@@ -1,13 +1,15 @@
 #include "module_loader.hpp"
 
-// #include <aardvark/utils/files_utils.hpp>
 #include <aardvark/utils/log.hpp>
 #include <aardvark_jsi/jsi.hpp>
 #include <aardvark_jsi/mappers.hpp>
-// #include <experimental/filesystem>
 #include <regex>
 
-// namespace fs = std::experimental::filesystem;
+#if ADV_PLATFORM_DESKTOP
+#include <experimental/filesystem>
+#include <aardvark/utils/files_utils.hpp>
+namespace fs = std::experimental::filesystem;
+#endif
 
 namespace aardvark::js {
 
@@ -57,7 +59,7 @@ jsi::Value ModuleLoader::load_from_source(
     return ctx->value_make_null();
 }
 
-/*
+#if ADV_PLATFORM_DESKTOP
 jsi::Value ModuleLoader::load_from_file(const std::string& filepath) {
     // TODO check relative/absolute path
     auto full_filepath = fs::current_path().append(filepath);
@@ -72,13 +74,14 @@ jsi::Value ModuleLoader::load_from_file(const std::string& filepath) {
                 source_map_path = full_filepath.parent_path() / source_map_path;
             }
             source_map = utils::read_text_file(source_map_path);
-            Log::info("[ModuleLoader] Load external source map from {}",
-                      source_map_path.u8string());
+            Log::info(
+                "[ModuleLoader] Load external source map from {}",
+                source_map_path.u8string());
         }
     }
     return ModuleLoader::load_from_source(source, full_filepath, source_map);
 }
-*/
+#endif
 
 void ModuleLoader::handle_error(jsi::Error& error) {
     auto loc = error.location();
