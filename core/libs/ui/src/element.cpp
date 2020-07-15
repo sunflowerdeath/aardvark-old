@@ -56,6 +56,15 @@ SingleChildElement::SingleChildElement(
     if (this->child) this->child->parent = this;
 }
 
+Size SingleChildElement::layout(BoxConstraints constraints) {
+    if (child != nullptr) {
+        child->size = document->layout_element(child.get(), constraints);
+        child->rel_position = Position{0, 0};
+        return child->size;
+    }
+    return Size{0, 0};
+}
+
 void SingleChildElement::paint(bool is_changed) {
     if (child != nullptr) document->paint_element(child.get());
 }
@@ -72,7 +81,9 @@ void SingleChildElement::remove_child(std::shared_ptr<Element> child) {
 }
 
 void SingleChildElement::append_child(std::shared_ptr<Element> child) {
-    if (child != nullptr && child->parent != nullptr) child->parent->remove_child(child);
+    if (child != nullptr && child->parent != nullptr) {
+        child->parent->remove_child(child);
+    }
     this->child = child;
     this->child->set_document(this->document);
     this->child->parent = this;
@@ -107,7 +118,7 @@ float MultipleChildrenElement::get_intrinsic_width(float height) {
 }
 
 void MultipleChildrenElement::paint(bool is_changed) {
-    for (auto child : children) {
+    for (auto& child : children) {
         document->paint_element(child.get());
     }
 }

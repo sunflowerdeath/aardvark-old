@@ -4,13 +4,20 @@ namespace aardvark {
 
 float FlexElement::get_intrinsic_height(float width) {
     auto result = 0.0;
+    auto remaining_width = width;
     for (auto& child : children) {
         if (direction == FlexDirection::column) {
             // TODO probably not correct
             result += child->query_intrinsic_height(width);
         } else {
-            // TODO NOT CORRECT
-            result = fmax(result, child->query_intrinsic_height(width));
+            auto child_height = child->query_intrinsic_height(remaining_width);
+            auto child_width = child->query_intrinsic_width(child_height);
+            remaining_width = fmax(0, remaining_width - child_width);
+            result = fmax(result, child_height);
+            // TODO
+            // 1 - get width and height of inflexible children
+            // 2 - allocate remaining width between flexible children
+            // 3 - find maximum height
         }
     }
     return result;
@@ -23,6 +30,7 @@ float FlexElement::get_intrinsic_width(float height) {
             // TODO probably not correct
             result += child->query_intrinsic_width(height);
         } else {
+            // TODO not correct
             result = fmax(result, child->query_intrinsic_width(height));
         }
     }
@@ -97,6 +105,7 @@ Size FlexElement::layout(BoxConstraints constraints) {
     if (remaining_main < 0) remaining_main = 0;
     auto single_flex = remaining_main / total_flex;
     for (auto child : flex_children) {
+        // TODO check infinite
         auto child_main = single_flex * static_cast<float>(child->flex);
         auto child_min_cross =
             get_align(child, align) == FlexAlign::stretch ? max_cross : 0;
@@ -128,10 +137,10 @@ Size FlexElement::layout(BoxConstraints constraints) {
             space_after = space_before;
             break;
         case FlexJustify::space_between:
-            space_after = remaining_main / (children.size() - 1);
+            space_after = remaining_main / (float)(children.size() - 1);
             break;
         case FlexJustify::space_evenly:
-            space_before = remaining_main / (children.size() + 1);
+            space_before = remaining_main / (float)(children.size() + 1);
             break;
     }
     for (auto& child : children) {
@@ -149,8 +158,9 @@ Size FlexElement::layout(BoxConstraints constraints) {
         current_main_pos += get_main(child->size, direction) + space_after;
     }
 
-    return direction == FlexDirection::row ? Size{max_main, cross}
-                                           : Size{cross, max_main};
+    auto main_size = fmin(current_main_pos, max_main);
+    return direction == FlexDirection::row ? Size{main_size, cross}
+                                           : Size{cross, main_size};
 }
 
 Size FlexChildElement::layout(BoxConstraints constraints) {

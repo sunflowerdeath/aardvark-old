@@ -27,8 +27,8 @@ float AlignedElement::get_intrinsic_width(float height) {
 }
 
 Size AlignedElement::layout(BoxConstraints constraints) {
-    auto horiz = alignment.horiz.calc(0);
-    auto vert = alignment.vert.calc(0);
+    auto horiz = alignment.horiz.calc(constraints.max_width);
+    auto vert = alignment.vert.calc(constraints.max_height);
 
     auto child_constraints = BoxConstraints{
         0,                                                        // min_width

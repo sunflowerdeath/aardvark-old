@@ -196,6 +196,7 @@ class SingleChildElement : public Element {
     float get_intrinsic_width(float height) override {
         return child == nullptr ? 0 : child->get_intrinsic_width(height);
     }
+    Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
     void append_child(std::shared_ptr<Element> child) override;
     void remove_child(std::shared_ptr<Element> child) override;

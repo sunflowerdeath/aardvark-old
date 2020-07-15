@@ -417,6 +417,16 @@ props:
       setter: set_loosen_constraints
 ---
 kind: class
+name: StackChildElement
+extends: Element
+include: aardvark/elements/stack.hpp
+constructor: default
+props:
+    - name: floating
+      type: bool
+      setter: set_floating
+---
+kind: class
 name: TextElement
 extends: Element
 include: aardvark/elements/text.hpp
