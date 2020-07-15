@@ -20,6 +20,7 @@ import ReactAardvark, {
     Background,
     Border,
     Center,
+    Container,
     Flex,
     FlexChild,
     Sized,
@@ -34,7 +35,7 @@ import ReactAardvark, {
     GestureResponder,
     Placeholder
 } from '@advk/react-renderer'
-import { decorate, observable, computed } from 'mobx'
+import { decorate, observable, computed, action } from 'mobx'
 import { observer } from 'mobx-react'
 
 const win = application.createWindow({ width: 640, height: 480 })
@@ -69,20 +70,35 @@ class TodoStore {
             this.filter === 'COMPLETED' ? item.isCompleted : !item.isCompleted
         )
     }
+
+    clearCompleted() {
+        this.items = this.items.filter(item => !item.isCompleted)
+    }
+
+    toggleAll() {
+        const nextIsCompleted = this.itemsLeft > 0
+        this.items.forEach(item => {
+            item.isCompleted = nextIsCompleted
+        })
+    }
 }
 
 decorate(TodoStore, {
     items: observable,
     itemsLeft: computed,
     filter: observable,
-    displayedItems: computed
+    displayedItems: computed,
+    toggleAll: action
 })
 
 const TodoStoreContext = React.createContext()
 
 const useTodoStore = () => useContext(TodoStoreContext)
 
+const borderColor = Color.rgb(237, 237, 237)
+
 const Todo = observer(({ store }) => {
+    const todoStore = useTodoStore()
     const [isHovered, setIsHovered] = useState(false)
     const { text, isCompleted } = store
     const color = isCompleted
@@ -98,19 +114,16 @@ const Todo = observer(({ store }) => {
                             store.isCompleted = !store.isCompleted
                         }}
                     >
-                        <Sized
+                        <Container
                             sizeConstraints={{
                                 width: Value.abs(30),
                                 height: Value.abs(30)
                             }}
+                            borders={BoxBorders.all(BorderSide(2, color))}
+                            radiuses={BoxRadiuses.all(Radius.circular(15))}
                         >
-                            <Border
-                                borders={BoxBorders.all(BorderSide(2, color))}
-                                radiuses={BoxRadiuses.all(Radius.circular(15))}
-                            >
-                                <Placeholder />
-                            </Border>
-                        </Sized>
+                            <Placeholder />
+                        </Container>
                     </GestureResponder>
                 </Padded>
                 <FlexChild flex={1}>
@@ -137,17 +150,17 @@ const Todo = observer(({ store }) => {
                     >
                         <GestureResponder
                             onTap={() => {
-                                log('remove')
+                                todoStore.items.remove(store)
                             }}
                         >
-                            <Sized
+                            <Container
+                                margin={Insets.all(10)}
                                 sizeConstraints={{
                                     width: Value.abs(15),
                                     height: Value.abs(15)
                                 }}
-                            >
-                                <Background color={Color.red} />
-                            </Sized>
+                                background={Color.red}
+                            />
                         </GestureResponder>
                     </Translated>
                 </Aligned>
@@ -161,10 +174,7 @@ const Todo = observer(({ store }) => {
             onHoverEnd={useCallback(() => setIsHovered(false))}
         >
             <Border
-                borders={BoxBorders.only(
-                    'bottom',
-                    BorderSide(1, Color.rgb(237, 237, 237))
-                )}
+                borders={BoxBorders.only('bottom', BorderSide(1, borderColor))}
             >
                 <Stack>
                     {row}
@@ -185,20 +195,77 @@ const Button = ({ text, isActive, onTap }) => {
             onHoverEnd={useCallback(() => setIsHovered(false))}
             onTap={onTap}
         >
-            <Border
+            <Container
                 borders={BoxBorders.all(BorderSide(1, color))}
                 radiuses={BoxRadiuses.all(Radius.circular(3))}
+                padding={Insets.symmetrical(7, 3)}
             >
-                <Padded padding={Insets.symmetrical(7, 3)}>
-                    <Text text={text} />
-                </Padded>
-            </Border>
+                <Text text={text} />
+            </Container>
         </GestureResponder>
     )
 }
 
+const TodoListHeader = observer(() => {
+    const todoStore = useTodoStore()
+
+    let toggleAll
+    if (todoStore.items.length > 0) {
+        const alpha = todoStore.itemsLeft === 0 ? 1 : 0.5
+        const color = Color.rgba(77, 77, 77, Math.round(alpha * 255))
+        toggleAll = (
+            <StackChild floating={true}>
+                <Aligned
+                    alignment={Alignment.topLeft(Value.rel(0.5), Value.abs(5))}
+                    adjustChildSize={false}
+                >
+                    <Translated
+                        translation={{ top: Value.rel(-0.5), left: Value.none }}
+                    >
+                        <GestureResponder onTap={() => todoStore.toggleAll()}>
+                            <Container
+                                margin={Insets.all(10)}
+                                sizeConstraints={{
+                                    height: Value.abs(20),
+                                    width: Value.abs(30)
+                                }}
+                                background={color}
+                            />
+                        </GestureResponder>
+                    </Translated>
+                </Aligned>
+            </StackChild>
+        )
+    }
+
+    return (
+        <Border borders={BoxBorders.only('bottom', BorderSide(1, borderColor))}>
+            <Stack>
+                <Sized sizeConstraints={{ height: Value.abs(65) }}>
+                    <Flex align={FlexAlign.center}>
+                        <Padded padding={Insets.only('left', 60)}>
+                            <Text text={'What needs to be done'} />
+                        </Padded>
+                    </Flex>
+                </Sized>
+                {toggleAll}
+            </Stack>
+        </Border>
+    )
+})
+
 const TodoListFooter = observer(() => {
     const todoStore = useTodoStore()
+
+    let clearCompleted
+    if (todoStore.itemsLeft < todoStore.items.length) {
+        clearCompleted = (
+            <GestureResponder onTap={() => todoStore.clearCompleted()}>
+                <Text text={'Clear completed'} />
+            </GestureResponder>
+        )
+    }
+
     return (
         <Sized sizeConstraints={{ height: Value.abs(40) }}>
             <Padded padding={Insets.horiz(15)}>
@@ -209,12 +276,13 @@ const TodoListFooter = observer(() => {
                         justify={FlexJustify.spaceBetween}
                     >
                         <Text text={`${todoStore.itemsLeft} items left`} />
-                        <Text text={'Clear completed'} />
+                        {clearCompleted}
                     </Flex>
                     <Flex align={FlexAlign.center} justify={FlexJustify.center}>
                         <Padded padding={Insets.only('right', 10)}>
                             <Button
                                 text="All"
+                                isActive={todoStore.filter === 'ALL'}
                                 onTap={() => {
                                     todoStore.filter = 'ALL'
                                 }}
@@ -223,6 +291,7 @@ const TodoListFooter = observer(() => {
                         <Padded padding={Insets.only('right', 10)}>
                             <Button
                                 text="Active"
+                                isActive={todoStore.filter === 'ACTIVE'}
                                 onTap={() => {
                                     todoStore.filter = 'ACTIVE'
                                 }}
@@ -230,6 +299,7 @@ const TodoListFooter = observer(() => {
                         </Padded>
                         <Button
                             text="Completed"
+                            isActive={todoStore.filter === 'COMPLETED'}
                             onTap={() => {
                                 todoStore.filter = 'COMPLETED'
                             }}
@@ -247,6 +317,7 @@ const TodoList = observer(() => {
         <Background color={Color.white}>
             <IntrinsicHeight>
                 <Flex direction={FlexDirection.column}>
+                    <TodoListHeader />
                     {todoStore.displayedItems.map(store => (
                         <Todo store={store} />
                     ))}
