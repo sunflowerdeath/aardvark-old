@@ -2,6 +2,7 @@
 
 #include "elements/aligned.hpp"
 #include "elements/sized.hpp"
+#include <iostream>
 
 namespace aardvark::inline_layout {
 
@@ -15,6 +16,9 @@ float measure_text_width(
         text.getBuffer(), byte_length, SkTextEncoding::kUTF16);
 };
 
+// int break_text_width_glyphs(
+    // SkGlyphID[] glyphs,
+
 int break_text(
     const UnicodeString& text,
     const SkFont& font,
@@ -27,7 +31,7 @@ int break_text(
     }
     
     // TODO only once per text span
-    SkGlyphID glyphs[count];
+    SkGlyphID glyphs[count]; // countChar32
     auto glyph_count = font.textToGlyphs(
         text.getBuffer(),        // text
         count * 2,               // byteLength
@@ -35,17 +39,17 @@ int break_text(
         glyphs,                  // glyphs
         count                    // maxGlyphCount
     );
-    float xpos[glyph_count];
-    font.getXPos(glyphs, glyph_count, xpos);
+    float widths[glyph_count];
+    font.getWidths(glyphs, glyph_count, widths);
     
     auto measured_count = 0;
     *measured_width = 0;
     for (int i = 0; i < glyph_count; i++) {
-        if (xpos[i] > max_width) break;
+        if (*measured_width + widths[i] > max_width) break;
         measured_count++;
-        *measured_width = xpos[i];
+        *measured_width += widths[i];
     }
-    return text.countChar32(0, measured_count);
+    return measured_count;
 };
 
 std::string icu_to_std_string(const UnicodeString& text) {
