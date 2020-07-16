@@ -7,18 +7,19 @@ namespace aardvark::inline_layout {
 TextSpan::TextSpan(
     UnicodeString text,
     SkPaint paint,
+    SkFont font,
     LineBreak linebreak,
     std::optional<SpanBase> base_span)
     : text(std::move(text)),
       paint(std::move(paint)),
+      font(std::move(font)),
       linebreak(linebreak),
       Span(base_span) {
     init();
 };
 
 void TextSpan::init() {
-    this->paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
-
+    // this->paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
     if (this->base_span.span == this) {
         // Create linebreaker
         UErrorCode status = U_ZERO_ERROR;
@@ -42,18 +43,18 @@ TextSpan::~TextSpan() {
 
 InlineLayoutResult TextSpan::fit(float measured_width) {
     return InlineLayoutResult::fit(
-        measured_width, LineMetrics::from_paint(paint), shared_from_this());
+        measured_width, LineMetrics::from_font(font), shared_from_this());
 };
 
 InlineLayoutResult TextSpan::split(int fit_chars, float fit_width) {
     auto fit_text = text.tempSubString(0, fit_chars);
     auto remainder_text = text.tempSubString(fit_chars);
     auto fit_span = std::make_shared<TextSpan>(
-        fit_text, paint, linebreak, SpanBase{this, 0});
+        fit_text, paint, font, linebreak, SpanBase{this, 0});
     auto remainder_span = std::make_shared<TextSpan>(
-        remainder_text, paint, linebreak, SpanBase{this, fit_chars});
+        remainder_text, paint, font, linebreak, SpanBase{this, fit_chars});
     return InlineLayoutResult::split(
-        fit_width, LineMetrics::from_paint(paint), fit_span, remainder_span);
+        fit_width, LineMetrics::from_font(font), fit_span, remainder_span);
 }
 
 InlineLayoutResult TextSpan::wrap() {
@@ -69,14 +70,14 @@ InlineLayoutResult TextSpan::break_segment(
     auto required_width =
         constraints.remaining_line_width - constraints.padding_before;
     auto fit_width = 0.0f;
-    auto fit_chars = break_text(text, paint, required_width, &fit_width);
+    auto fit_chars = break_text(text, font, required_width, &fit_width);
     if (is_last_segment && fit_chars == chars_count) {
         // If span fits completely without `padding_after` but does not fit
         // with it, split one char to the next line
         if (fit_width > required_width - constraints.padding_after) {
             return split(
                 chars_count - 1,
-                measure_text_width(text, paint, chars_count - 1));
+                measure_text_width(text, font, chars_count - 1));
         } else {
             return fit(fit_width);
         }
@@ -87,7 +88,7 @@ InlineLayoutResult TextSpan::break_segment(
         // If span is at the line start, it should fit at least one char
         // to prevent endless linebreaking, otherwise it should wrap
         if (at_line_start) {
-            auto first_char_width = measure_text_width(text, paint, 1);
+            auto first_char_width = measure_text_width(text, font, 1);
             return chars_count == 1 ? fit(first_char_width)
                                     : split(1, first_char_width);
         } else {
@@ -107,7 +108,7 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
         auto required_width = constraints.remaining_line_width -
                               constraints.padding_before -
                               constraints.padding_after;
-        auto text_width = measure_text_width(text, paint);
+        auto text_width = measure_text_width(text, font);
         if (text_width <= required_width) return fit(text_width);
         return at_line_start ? fit(text_width) : wrap();
     }
@@ -135,7 +136,7 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
         if (next == BreakIterator::DONE) {
             paddings_width += constraints.padding_after;
         }
-        segment_width = measure_text_width(substring, paint);
+        segment_width = measure_text_width(substring, font);
         if (fit_width + segment_width + paddings_width >
             constraints.remaining_line_width) {
             break;
@@ -169,7 +170,7 @@ InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
 }
 
 std::shared_ptr<Element> TextSpan::render() {
-    return std::make_shared<TextElement>(text, paint);
+    return std::make_shared<TextElement>(text, paint, font);
 }
 
 UnicodeString TextSpan::get_text() { return text; }
@@ -182,7 +183,8 @@ int TextSpan::get_text_length() {
 std::shared_ptr<Span> TextSpan::slice(int start, int end) {
     auto new_text = text.tempSubString(start, end - start + 1);
     auto new_base = SpanBase{base_span.span, base_span.prev_offset + start};
-    return std::make_shared<TextSpan>(new_text, paint, linebreak, new_base);
+    return std::make_shared<TextSpan>(
+        new_text, paint, font, linebreak, new_base);
 }
 
 int TextSpan::get_text_offset_at_position(int position) {

@@ -7,21 +7,45 @@ namespace aardvark::inline_layout {
 
 float measure_text_width(
     const UnicodeString& text,
-    const SkPaint& paint,
+    const SkFont& font,
     std::optional<int> num_chars) {
     auto byte_length =
         (num_chars == std::nullopt ? text.length() : num_chars.value()) * 2;
-    return paint.measureText(text.getBuffer(), byte_length);
+    return font.measureText(
+        text.getBuffer(), byte_length, SkTextEncoding::kUTF16);
 };
 
 int break_text(
     const UnicodeString& text,
-    const SkPaint& paint,
+    const SkFont& font,
     float max_width,
     float* measured_width) {
-    auto fit_bytes = paint.breakText(
-        text.getBuffer(), text.length() * 2, max_width, measured_width);
-    return text.countChar32(0, fit_bytes / 2);
+    auto count = text.length();
+    if (count == 0) {
+        *measured_width = 0;
+        return 0;
+    }
+    
+    // TODO only once per text span
+    SkGlyphID glyphs[count];
+    auto glyph_count = font.textToGlyphs(
+        text.getBuffer(),        // text
+        count * 2,               // byteLength
+        SkTextEncoding::kUTF16,  // encoding
+        glyphs,                  // glyphs
+        count                    // maxGlyphCount
+    );
+    float xpos[glyph_count];
+    font.getXPos(glyphs, glyph_count, xpos);
+    
+    auto measured_count = 0;
+    *measured_width = 0;
+    for (int i = 0; i < glyph_count; i++) {
+        if (xpos[i] > max_width) break;
+        measured_count++;
+        *measured_width = xpos[i];
+    }
+    return text.countChar32(0, measured_count);
 };
 
 std::string icu_to_std_string(const UnicodeString& text) {
@@ -74,10 +98,14 @@ void render_spans(
 SkPaint make_default_paint() {
     SkPaint paint;
     paint.setColor(SK_ColorBLACK);
-    paint.setTextSize(16);
     paint.setAntiAlias(true);
-    paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
     return paint;
+}
+
+SkFont make_default_font() {
+    SkFont font;
+    font.setSize(16);
+    return font;
 }
 
 }  // namespace aardvark::inline_layout

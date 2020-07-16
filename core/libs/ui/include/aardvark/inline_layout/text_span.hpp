@@ -31,9 +31,12 @@ class TextSpan : public Span {
   public:
     TextSpan() { init(); };
 
-    TextSpan(UnicodeString text, SkPaint paint,
-             LineBreak linebreak = LineBreak::normal,
-             std::optional<SpanBase> base_span = std::nullopt);
+    TextSpan(
+        UnicodeString text,
+        SkPaint paint,
+        SkFont font,
+        LineBreak linebreak = LineBreak::normal,
+        std::optional<SpanBase> base_span = std::nullopt);
 
     void init();
 
@@ -48,6 +51,7 @@ class TextSpan : public Span {
 
     UnicodeString text;
     NODE_PROP_DEFAULT(SkPaint, paint, make_default_paint());
+    NODE_PROP_DEFAULT(SkFont, font, make_default_font());
     NODE_PROP_DEFAULT(LineBreak, linebreak, LineBreak::normal);
 
     // TODO decide utf8/16
@@ -67,9 +71,10 @@ class TextSpan : public Span {
     InlineLayoutResult split(int pos, float measured_width);
     InlineLayoutResult fit(float measured_width);
     InlineLayoutResult wrap();
-    InlineLayoutResult break_segment(const UnicodeString& text,
-                                     const InlineConstraints& constraints,
-                                     bool is_last_segment);
+    InlineLayoutResult break_segment(
+        const UnicodeString& text,
+        const InlineConstraints& constraints,
+        bool is_last_segment);
 };
 
 }  // namespace aardvark::inline_layout

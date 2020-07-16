@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SkPaint.h>
+#include <SkFont.h>
 #include <unicode/unistr.h>
 
 #include <optional>
@@ -11,11 +11,16 @@
 
 namespace aardvark::inline_layout {
 
-float measure_text_width(const UnicodeString& text, const SkPaint& paint,
-                         std::optional<int> num_chars = std::nullopt);
+float measure_text_width(
+    const UnicodeString& text,
+    const SkFont& font,
+    std::optional<int> num_chars = std::nullopt);
 
-int break_text(const UnicodeString& text, const SkPaint& paint,
-               float available_width, float* width = nullptr);
+int break_text(
+    const UnicodeString& text,
+    const SkFont& font,
+    float available_width,
+    float* width = nullptr);
 
 // Converts ICU UnicodeString to C++ std string (with UTF-16 encoding)
 std::string icu_to_std_string(const UnicodeString& text);
@@ -34,5 +39,6 @@ void render_spans(
     Element* parent);
 
 SkPaint make_default_paint();
+SkFont make_default_font();
 
 }  // namespace aardvark::inline_layout

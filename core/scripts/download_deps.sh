@@ -57,6 +57,11 @@ if [ "$DEP" = "skia" ] || [ "$DEP" = "all" ]; then
 	# git clone https://skia.googlesource.com/skia.git -b chrome/m71 --depth 1
 fi
 
+if [ "$DEP" = "skia-last" ] || [ "$DEP" = "all" ]; then
+	echo "download skia@m85"
+	curl https://github.com/google/skia/archive/chrome/m85.zip -L -# > skia-chrome-m85.zip
+fi
+
 if [ "$DEP" = "spdlog" ] || [ "$DEP" = "all" ]; then
 	echo "download spdlog@1.4.2"
 	curl "https://github.com/gabime/spdlog/archive/v1.4.2.zip" -L -# > spdlog-1.4.2.zip

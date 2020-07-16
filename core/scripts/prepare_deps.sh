@@ -74,6 +74,18 @@ if [ "$DEP" = "skia" ] || [ "$DEP" = "all" ]; then
 	$SKIA_DIR/tools/git-sync-deps
 fi
 
+if [ "$DEP" = "skia" ] || [ "$DEP" = "all" ]; then
+	SKIA_DIR=$ROOT/externals/skia
+	echo "Skia: extract source"
+	unzip -q $ROOT/downloads/skia-chrome-m71.zip -d $ROOT/externals
+	mv $ROOT/externals/skia-chrome-m71 $ROOT/externals/skia
+	# Patch disables unneeded third-party deps to reduce download size
+	echo "Skia: patch source"
+	patch -d $SKIA_DIR -p3 < $ROOT/scripts/skia.patch
+	echo "Skia: download third party deps"
+	$SKIA_DIR/tools/git-sync-deps
+fi
+
 if [ "$DEP" = "spdlog" ] || [ "$DEP" = "all" ]; then
 	echo "spdlog: extract source"
 	unzip -q $ROOT/downloads/spdlog-1.4.2.zip -d $ROOT/externals

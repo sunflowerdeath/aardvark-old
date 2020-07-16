@@ -11,9 +11,9 @@ LineMetrics LineMetrics::scale(float ratio) {
     return LineMetrics{height + d, baseline + d / 2, x_height};
 }
 
-LineMetrics LineMetrics::from_paint(const SkPaint& paint) {
-    SkPaint::FontMetrics metrics;
-    (void)paint.getFontMetrics(&metrics);
+LineMetrics LineMetrics::from_font(const SkFont& font) {
+    SkFontMetrics metrics;
+    (void)font.getMetrics(&metrics);
     return LineMetrics{
         -metrics.fAscent + metrics.fDescent,  // height
         -metrics.fAscent,                     // baseline

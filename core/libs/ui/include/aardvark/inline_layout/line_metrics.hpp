@@ -1,6 +1,7 @@
 #pragma once
 
-#include "SkPaint.h"
+#include "SkFont.h"
+#include "SkFontMetrics.h"
 
 namespace aardvark::inline_layout {
 
@@ -12,7 +13,7 @@ struct LineMetrics {
     LineMetrics add(float ascent, float descent);
     LineMetrics scale(float ratio);
 
-    static LineMetrics from_paint(const SkPaint& paint);
+    static LineMetrics from_font(const SkFont& font);
 };
 
 }  // namespace aardvark::inline_layout

@@ -21,8 +21,8 @@ class ParagraphElement : public Element {
   public:
     ParagraphElement()
         : root(std::make_shared<inline_layout::DecorationSpan>()),
-          metrics(inline_layout::LineMetrics::from_paint(
-                      inline_layout::make_default_paint())
+          metrics(inline_layout::LineMetrics::from_font(
+                      inline_layout::make_default_font())
                       .scale(1.5)),
           Element(
               /* is_repaint_boundary */ false,

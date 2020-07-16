@@ -98,10 +98,11 @@ add_subdirectory("${ADV_EXTERNALS_DIR}/quickjs"
 #    INTERFACE_LINK_LIBRARIES "${DL_LIB}")
 
 # skia
-set(SKIA_DIR "${ADV_EXTERNALS_DIR}/skia")
+#set(SKIA_DIR "${ADV_EXTERNALS_DIR}/skia")
+set(SKIA_DIR "${ADV_EXTERNALS_DIR}/skia85")
 
 set(SKIA_INCLUDE_DIRS
-	${SKIA_DIR}/include/c
+    ${SKIA_DIR}
 	${SKIA_DIR}/include/codec
 	${SKIA_DIR}/include/config
 	${SKIA_DIR}/include/core
@@ -117,11 +118,14 @@ set(SKIA_INCLUDE_DIRS
 # This must match what skia's BUILD.gn sets
 set(SKIA_DEFINES
 	"SK_SUPPORT_GPU=1"      # skia_enable_gpu
-	"SK_HAS_JPEG_LIBRARY"   # skia_use_libjpeg_turbo
-	"SK_HAS_PNG_LIBRARY"    # skia_use_libpng
-	# "SK_SUPPORT_PDF"      # skia_enable_pdf
+	"SK_CODEC_DECODES_JPEG" # skia_use_libjpeg_turbo_decode
+	"SK_ENCODE_JPEG"        # skia_use_libjpeg_turbo_encode
+	"SK_CODEC_DECODES_PNG"  # skia_use_libpng_decode
+	"SK_ENCODE_PNG"         # skia_use_libpng_encode
+	# "SK_SUPPORT_PDF"      # skia_use_zlib && skia_enable_pdf
 	# "SK_PDF_USE_SFNTLY"   # skia_use_sfntly
-	# "SK_HAS_WEBP_LIBRARY" # skia_use_libwebp
+	# "SK_CODEC_DECODES_WEBP" # skia_use_libwebp_decode
+	# "SK_ENCODE_WEBP"      # skia_use_libwebp_encode
 	"SK_XML"                # skia_use_expat
 )
 

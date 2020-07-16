@@ -5,8 +5,10 @@
 #include <memory>
 
 #include "../element.hpp"
+#include "../inline_layout/utils.hpp"
 #include "../inline_layout/line_metrics.hpp"
 #include "SkPaint.h"
+#include "SkFont.h"
 
 namespace aardvark {
 
@@ -18,10 +20,14 @@ class TextElement : public Element {
               /* size_depends_on_parent */ true){};
 
     TextElement(
-        UnicodeString text, SkPaint paint, bool is_repaint_boundary = false)
+        UnicodeString text,
+        SkPaint paint,
+        SkFont font,
+        bool is_repaint_boundary = false)
         : Element(is_repaint_boundary, /* size_depends_on_parent */ true),
           text(std::move(text)),
-          skpaint(std::move(paint)){};
+          skpaint(std::move(paint)),
+          skfont(std::move(font)){};
 
     std::string get_debug_name() override { return "Text"; };
     float get_intrinsic_height(float width) override;
@@ -42,17 +48,8 @@ class TextElement : public Element {
     }
 
     UnicodeString text = UnicodeString((UChar*)u"");
-    SkPaint skpaint = TextElement::make_default_paint();
-
-  private:
-    static SkPaint make_default_paint() {
-        SkPaint paint;
-        paint.setColor(SK_ColorBLACK);
-        paint.setTextSize(16);
-        paint.setAntiAlias(true);
-        paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
-        return paint;
-    };
+    SkPaint skpaint = inline_layout::make_default_paint();
+    SkFont skfont = inline_layout::make_default_font();
 };
 
 }  // namespace aardvark

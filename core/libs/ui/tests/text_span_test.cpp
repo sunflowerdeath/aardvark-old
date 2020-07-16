@@ -41,15 +41,20 @@ TEST_CASE("DecorationSpan", "[inline][decoration_span]") {
     }
 
     SECTION("slice") {
-        SkPaint paint;
+        auto paint = inline_layout::make_default_paint();
+        auto font = inline_layout::make_default_font();
         auto text1 = UnicodeString("abc");
         auto text2 = UnicodeString("def");
         auto text3 = UnicodeString("ghi");
         auto text4 = UnicodeString("klm");
-        auto span1 = std::make_shared<inline_layout::TextSpan>(text1, paint);
-        auto span2 = std::make_shared<inline_layout::TextSpan>(text2, paint);
-        auto span3 = std::make_shared<inline_layout::TextSpan>(text3, paint);
-        auto span4 = std::make_shared<inline_layout::TextSpan>(text4, paint);
+        auto span1 =
+            std::make_shared<inline_layout::TextSpan>(text1, paint, font);
+        auto span2 =
+            std::make_shared<inline_layout::TextSpan>(text2, paint, font);
+        auto span3 =
+            std::make_shared<inline_layout::TextSpan>(text3, paint, font);
+        auto span4 =
+            std::make_shared<inline_layout::TextSpan>(text4, paint, font);
         auto children = std::vector<std::shared_ptr<inline_layout::Span>>{
             span1, span2, span3, span4};
 
@@ -80,9 +85,10 @@ TEST_CASE("DecorationSpan", "[inline][decoration_span]") {
 TEST_CASE("TextSpan", "[inline][text_span]") {
     SECTION("slice") {
         auto text = UnicodeString((UChar*)u"abcdefgh");
-        SkPaint paint;
-        paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
-        auto span = std::make_shared<inline_layout::TextSpan>(text, paint);
+        auto paint = inline_layout::make_default_paint();
+        auto font = inline_layout::make_default_font();
+        auto span =
+            std::make_shared<inline_layout::TextSpan>(text, paint, font);
 
         // ab | cdef | gh
         // 01   2345   67 - original
@@ -95,14 +101,14 @@ TEST_CASE("TextSpan", "[inline][text_span]") {
     }
 
     auto text = UnicodeString((UChar*)u"Hello, World!");
-    SkPaint paint;
-    paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
-    auto span = std::make_shared<inline_layout::TextSpan>(text, paint);
-    auto text_width = inline_layout::measure_text_width(text, paint);
+    auto paint = inline_layout::make_default_paint();
+    auto font = inline_layout::make_default_font();
+    auto span = std::make_shared<inline_layout::TextSpan>(text, paint, font);
+    auto text_width = inline_layout::measure_text_width(text, font);
     auto hello = UnicodeString((UChar*)u"Hello, ");
     auto world = UnicodeString((UChar*)u"World!");
-    auto hello_width = inline_layout::measure_text_width(hello, paint);
-    auto world_width = inline_layout::measure_text_width(world, paint);
+    auto hello_width = inline_layout::measure_text_width(hello, font);
+    auto world_width = inline_layout::measure_text_width(world, font);
 
     SECTION("linebreak normal: fit") {
         auto constraints = inline_layout::InlineConstraints{
@@ -147,7 +153,7 @@ TEST_CASE("TextSpan", "[inline][text_span]") {
 
     SECTION("linebreak normal: should fit at least one segment") {
         auto hello_span =
-            std::make_shared<inline_layout::TextSpan>(hello, paint);
+            std::make_shared<inline_layout::TextSpan>(hello, paint, font);
         auto constraints = inline_layout::InlineConstraints{
             hello_width - 10,  // remaining_width
             hello_width - 10,  // total_width
@@ -171,7 +177,7 @@ TEST_CASE("TextSpan", "[inline][text_span]") {
     */
 
     auto span_never = std::make_shared<inline_layout::TextSpan>(
-        text, paint, inline_layout::LineBreak::never);
+        text, paint, font, inline_layout::LineBreak::never);
 
     SECTION("linebreak never: wrap") {
         // Result should be `wrap` if span is not at the start of the line
@@ -198,12 +204,12 @@ TEST_CASE("TextSpan", "[inline][text_span]") {
     }
 
     auto span_any = std::make_shared<inline_layout::TextSpan>(
-        hello, paint, inline_layout::LineBreak::anywhere);
+        hello, paint, font, inline_layout::LineBreak::anywhere);
 
     SECTION("linebreak anywhere: split") {
         // Span should split before char that exceed remaining line width
         auto hell = UnicodeString((UChar*)u"Hell");
-        auto hell_width = inline_layout::measure_text_width(hell, paint);
+        auto hell_width = inline_layout::measure_text_width(hell, font);
         auto constraints = inline_layout::InlineConstraints{
             hell_width,  // remaining_width
             hell_width,  // total_width
@@ -270,7 +276,7 @@ TEST_CASE("TextSpan", "[inline][text_span]") {
 
     SECTION("linebreak overflow") {
         auto span_overflow = std::make_shared<inline_layout::TextSpan>(
-            text, paint, inline_layout::LineBreak::overflow);
+            text, paint, font, inline_layout::LineBreak::overflow);
 
         // When segment fits in line, it should break as normal
         auto normal_constraints = inline_layout::InlineConstraints{
@@ -289,7 +295,7 @@ TEST_CASE("TextSpan", "[inline][text_span]") {
 
         // When segment does not fit in line, it should split segment
         auto hell = UnicodeString((UChar*)u"Hell");
-        auto hell_width = inline_layout::measure_text_width(hell, paint);
+        auto hell_width = inline_layout::measure_text_width(hell, font);
         auto overflow_constraints = inline_layout::InlineConstraints{
             hell_width,  // remaining_width
             hell_width,  // total_width
