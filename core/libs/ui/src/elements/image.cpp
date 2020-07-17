@@ -9,17 +9,69 @@ void ImageElement::init_image() {
 }
 
 Size ImageElement::layout(BoxConstraints constraints) {
-    if (image == nullptr) init_image();
-    return Size{
-        fmin(image->width(), constraints.max_width), // width
-        fmin(image->height(), constraints.max_height), // height
-    };
+    return constraints.max_size();
 }
 
 void ImageElement::paint(bool is_changed) {
+    if (image == nullptr) init_image();
+
     auto layer = document->get_layer();
     document->setup_layer(layer, this);
-    layer->canvas->drawImage(image, 0, 0); // TODO respect constraints?
+
+    auto img_width = image->width();
+    auto img_height = image->height();
+    auto width = 0.0;
+    auto height = 0.0;
+    switch (fit) {
+        case ImageFit::size:
+            width = size.width;
+            height = size.height;
+            break;
+        case ImageFit::none:
+            width = img_width;
+            height = img_height;
+            break;
+        case ImageFit::cover: {
+            auto width_ratio = img_width / size.width;
+            auto height_ratio = img_height / size.height;
+            auto ratio = fmin(width_ratio, height_ratio);
+            width = img_width / ratio;
+            height = img_height / ratio;
+        } break;
+        case ImageFit::contain: {
+            auto width_ratio = img_width / size.width;
+            auto height_ratio = img_height / size.height;
+            auto ratio = fmax(width_ratio, height_ratio);
+            width = img_width / ratio;
+            height = img_height / ratio;
+        } break;
+        case ImageFit::fill:
+            width = size.width;
+            height = size.height;
+            break;
+        case ImageFit::scale_down:
+            if (img_width > size.width || img_height > size.height) {
+                auto width_ratio = img_width / size.width;
+                auto height_ratio = img_height / size.height;
+                auto ratio = fmax(width_ratio, height_ratio);
+                width = img_width / ratio;
+                height = img_height / ratio;
+            } else {
+                width = img_width;
+                height = img_height;
+            }
+            break;
+    }
+
+    auto left = (size.width - width) / 2;;
+    auto top = (size.height - height) / 2;;
+
+    auto paint = SkPaint();
+    layer->canvas->drawImageRect(
+        image,
+        SkRect::MakeXYWH(0, 0, image->width(), image->height()),
+        SkRect::MakeXYWH(left, top, width, height),
+        &paint);
 }
 
 }  // namespace aardvark

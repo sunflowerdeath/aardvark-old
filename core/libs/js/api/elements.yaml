@@ -283,6 +283,16 @@ constructor:
         - name: path
           type: string
 ---
+kind: enum
+name: ImageFit
+values:
+    - contain
+    - cover
+    - scaleDown
+    - fill
+    - none
+    - size
+---
 kind: class
 name: ImageElement
 include: aardvark/elements/image.hpp
@@ -291,6 +301,10 @@ constructor: default
 props:
     - name: src
       type: DataSource
+      setter: set_src
+    - name: fit
+      type: ImageFit
+      setter: set_fit
 ---
 kind: class
 name: IntrinsicHeightElement

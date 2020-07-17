@@ -23,25 +23,42 @@ class FileDataSource : public DataSource {
     std::string path;
 };
 
+enum class ImageFit {
+    // Image scaled to fit, maintaining its ratio
+    contain,
+    // Image sized to fill entire box, maintaining its ratio
+    cover,
+    // Scaled down image to fit box if necessary 
+    scale_down,
+    // Resize image to fill box, can change image ratio
+    fill,
+    // Do not resize image
+    none,
+    // Size image using the `size` property
+    size
+};
+
 class ImageElement : public Element {
   public:
     ImageElement(std::shared_ptr<DataSource> src = nullptr)
         : src(std::move(src)),
           Element(
               /* is_repaint_boundary */ false,
-              /* size_depends_on_parent */ false){};
+              /* size_depends_on_parent */ true){};
 
     std::string get_debug_name() override { return "Image"; };
     Size layout(BoxConstraints constraints) override;
     void paint(bool is_changed) override;
 
+    std::shared_ptr<DataSource> src = nullptr;
     void set_src(std::shared_ptr<DataSource> src) {
         this->src = std::move(src);
         data.clear();
         image = nullptr;
     }
 
-    std::shared_ptr<DataSource> src = nullptr;
+    ELEMENT_PROP_DEFAULT(ImageFit, fit, ImageFit::none);
+    ELEMENT_PROP(Size, image_size);
 
   private:
     void init_image();

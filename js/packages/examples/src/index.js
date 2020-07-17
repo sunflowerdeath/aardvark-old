@@ -16,6 +16,7 @@ import LayerExample from './LayerExample.js'
 import ObserverExample from './ObserverExample.js'
 import EditorExample from './EditorExample.js'
 import ParagraphExample from './ParagraphExample.js'
+import ImageExample from './ImageExample.js'
 
 import Button from './Button.js'
 
@@ -23,51 +24,16 @@ const win = application.createWindow({ width: 640, height: 480 })
 const document = application.getDocument(win)
 
 const stop = () => {
-    // ReactAardvark.render(<Placeholder />, document)
     application.stop()
 }
-
-/*
-import { useRef, useEffect, useCallback } from 'react'
-import { Responder } from '@advk/react-renderer'
-import useLastValue from '@advk/react-renderer/src/hooks/useLastValue'
-import HoverRecognizer from '@advk/common/src/gestures/HoverRecognizer.js'
-
-const Govno = (props) => {
-    const [handler] = useState(() => {
-        return function C() { props.cb() }
-    })
-    // const didUnmountRef = useRef(false)
-    // useEffect(() => {
-        // return function A() {
-            // log('UNMOUNT')
-            // didUnmountRef.current = true
-        // }
-    // }, [])
-    return <Responder handler={handler}><Placeholder/></Responder>
-}
-
-const Main = () => {
-   // return (
-        // <Button>
-            // <Background color={Color.red} />
-        // </Button>
-    // )
-   const [s, setS] = useState(false)
-   return <Govno cb={function B() { setS(true) }}/>
-}
-
-ReactAardvark.render(<Main/>, document)
-
-setTimeout(stop, 500)
-*/
 
 const examples = [
     { name: 'Scroll', component: ScrollExample },
     { name: 'Layer', component: LayerExample },
     { name: 'Observer', component: ObserverExample },
     { name: 'Editor', component: EditorExample },
-    { name: 'Paragraph', component: ParagraphExample }
+    { name: 'Paragraph', component: ParagraphExample },
+    { name: 'Image', component: ImageExample }
 ]
 
 const Main = () => {
