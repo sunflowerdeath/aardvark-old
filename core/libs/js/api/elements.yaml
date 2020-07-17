@@ -274,6 +274,25 @@ props:
         `FlexAlign.start`
 ---
 kind: class
+name: DataSource
+---
+kind: class
+name: FileDataSource
+constructor:
+    args:
+        - name: path
+          type: string
+---
+kind: class
+name: ImageElement
+include: aardvark/elements/image.hpp
+extends: Element
+constructor: default
+props:
+    - name: src
+      type: DataSource
+---
+kind: class
 name: IntrinsicHeightElement
 doc: Element that sizes child to minimum height that it could fit into.
 include: aardvark/elements/intrinsic_height.hpp

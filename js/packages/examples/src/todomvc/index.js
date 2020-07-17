@@ -23,6 +23,7 @@ import ReactAardvark, {
     Container,
     Flex,
     FlexChild,
+    Image,
     Sized,
     Stack,
     StackChild,
@@ -371,6 +372,7 @@ const Main = () => {
                         </Flex>
                     </Sized>
                 </Flex>
+                <Image src={FileDataSource("build/icon.png")} />
             </Stack>
         </TodoStoreContext.Provider>
     )

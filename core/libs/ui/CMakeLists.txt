@@ -31,6 +31,7 @@ add_library(aardvark_ui ${ADV_UI_LIB_TYPE}
     src/elements/center.cpp
     src/elements/clip.cpp
     src/elements/flex.cpp
+    src/elements/image.cpp
     src/elements/layer.cpp
     src/elements/overflow.cpp
     src/elements/padded.cpp

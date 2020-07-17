@@ -1,6 +1,8 @@
 #pragma once
 
 #include <experimental/filesystem>
+#include "SkImage.h"
+#include "SkData.h"
 
 namespace aardvark::utils {
 
