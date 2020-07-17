@@ -426,6 +426,19 @@ props:
       type: bool
       setter: set_floating
 ---
+kind: struct
+name: TextStyle
+props:
+    - name: fontSize
+      type: int
+      hasDefault: true
+    - name: lineHeight
+      type: float
+      hasDefault: true
+    - name: color
+      type: Color
+      hasDefault: true
+---
 kind: class
 name: TextElement
 extends: Element
@@ -436,6 +449,9 @@ props:
       type: string
       setter: set_text
       getter: get_text
+    - name: style
+      type: TextStyle
+      setter: set_style
 ---
 kind: struct
 name: Translation

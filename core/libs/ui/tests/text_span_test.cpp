@@ -41,20 +41,15 @@ TEST_CASE("DecorationSpan", "[inline][decoration_span]") {
     }
 
     SECTION("slice") {
-        auto paint = inline_layout::make_default_paint();
-        auto font = inline_layout::make_default_font();
+        auto style = TextStyle();
         auto text1 = UnicodeString("abc");
         auto text2 = UnicodeString("def");
         auto text3 = UnicodeString("ghi");
         auto text4 = UnicodeString("klm");
-        auto span1 =
-            std::make_shared<inline_layout::TextSpan>(text1, paint, font);
-        auto span2 =
-            std::make_shared<inline_layout::TextSpan>(text2, paint, font);
-        auto span3 =
-            std::make_shared<inline_layout::TextSpan>(text3, paint, font);
-        auto span4 =
-            std::make_shared<inline_layout::TextSpan>(text4, paint, font);
+        auto span1 = std::make_shared<inline_layout::TextSpan>(text1, style);
+        auto span2 = std::make_shared<inline_layout::TextSpan>(text2, style);
+        auto span3 = std::make_shared<inline_layout::TextSpan>(text3, style);
+        auto span4 = std::make_shared<inline_layout::TextSpan>(text4, style);
         auto children = std::vector<std::shared_ptr<inline_layout::Span>>{
             span1, span2, span3, span4};
 
@@ -85,10 +80,8 @@ TEST_CASE("DecorationSpan", "[inline][decoration_span]") {
 TEST_CASE("TextSpan", "[inline][text_span]") {
     SECTION("slice") {
         auto text = UnicodeString((UChar*)u"abcdefgh");
-        auto paint = inline_layout::make_default_paint();
-        auto font = inline_layout::make_default_font();
-        auto span =
-            std::make_shared<inline_layout::TextSpan>(text, paint, font);
+        auto style = TextStyle();
+        auto span = std::make_shared<inline_layout::TextSpan>(text, style);
 
         // ab | cdef | gh
         // 01   2345   67 - original
@@ -101,9 +94,9 @@ TEST_CASE("TextSpan", "[inline][text_span]") {
     }
 
     auto text = UnicodeString((UChar*)u"Hello, World!");
-    auto paint = inline_layout::make_default_paint();
-    auto font = inline_layout::make_default_font();
-    auto span = std::make_shared<inline_layout::TextSpan>(text, paint, font);
+    auto style = TextStyle();
+    auto font = style.to_sk_font();
+    auto span = std::make_shared<inline_layout::TextSpan>(text, style);
     auto text_width = inline_layout::measure_text_width(text, font);
     auto hello = UnicodeString((UChar*)u"Hello, ");
     auto world = UnicodeString((UChar*)u"World!");
@@ -153,7 +146,7 @@ TEST_CASE("TextSpan", "[inline][text_span]") {
 
     SECTION("linebreak normal: should fit at least one segment") {
         auto hello_span =
-            std::make_shared<inline_layout::TextSpan>(hello, paint, font);
+            std::make_shared<inline_layout::TextSpan>(hello, style);
         auto constraints = inline_layout::InlineConstraints{
             hello_width - 10,  // remaining_width
             hello_width - 10,  // total_width
@@ -177,7 +170,7 @@ TEST_CASE("TextSpan", "[inline][text_span]") {
     */
 
     auto span_never = std::make_shared<inline_layout::TextSpan>(
-        text, paint, font, inline_layout::LineBreak::never);
+        text, style, inline_layout::LineBreak::never);
 
     SECTION("linebreak never: wrap") {
         // Result should be `wrap` if span is not at the start of the line
@@ -204,7 +197,7 @@ TEST_CASE("TextSpan", "[inline][text_span]") {
     }
 
     auto span_any = std::make_shared<inline_layout::TextSpan>(
-        hello, paint, font, inline_layout::LineBreak::anywhere);
+        hello, style, inline_layout::LineBreak::anywhere);
 
     SECTION("linebreak anywhere: split") {
         // Span should split before char that exceed remaining line width
@@ -276,7 +269,7 @@ TEST_CASE("TextSpan", "[inline][text_span]") {
 
     SECTION("linebreak overflow") {
         auto span_overflow = std::make_shared<inline_layout::TextSpan>(
-            text, paint, font, inline_layout::LineBreak::overflow);
+            text, style, inline_layout::LineBreak::overflow);
 
         // When segment fits in line, it should break as normal
         auto normal_constraints = inline_layout::InlineConstraints{

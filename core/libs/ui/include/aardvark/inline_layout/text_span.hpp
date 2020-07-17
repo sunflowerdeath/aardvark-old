@@ -33,8 +33,7 @@ class TextSpan : public Span {
 
     TextSpan(
         UnicodeString text,
-        SkPaint paint,
-        SkFont font,
+        TextStyle style,
         LineBreak linebreak = LineBreak::normal,
         std::optional<SpanBase> base_span = std::nullopt);
 
@@ -50,8 +49,7 @@ class TextSpan : public Span {
     int get_text_offset_at_position(int position) override;
 
     UnicodeString text;
-    NODE_PROP_DEFAULT(SkPaint, paint, make_default_paint());
-    NODE_PROP_DEFAULT(SkFont, font, make_default_font());
+    NODE_PROP(TextStyle, style);
     NODE_PROP_DEFAULT(LineBreak, linebreak, LineBreak::normal);
 
     // TODO decide utf8/16
@@ -67,6 +65,7 @@ class TextSpan : public Span {
     }
 
   private:
+    SkFont font;
     BreakIterator* linebreaker;
     InlineLayoutResult split(int pos, float measured_width);
     InlineLayoutResult fit(float measured_width);

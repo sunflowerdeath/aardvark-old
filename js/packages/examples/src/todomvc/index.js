@@ -97,6 +97,8 @@ const useTodoStore = () => useContext(TodoStoreContext)
 
 const borderColor = Color.rgb(237, 237, 237)
 
+const footerTextStyle = { fontSize: 14, color: Color.rgb(119, 119, 119) }
+
 const Todo = observer(({ store }) => {
     const todoStore = useTodoStore()
     const [isHovered, setIsHovered] = useState(false)
@@ -128,7 +130,7 @@ const Todo = observer(({ store }) => {
                 </Padded>
                 <FlexChild flex={1}>
                     <Paragraph>
-                        <TextSpanC text={text} />
+                        <TextSpanC text={text} style={{ fontSize: 24 }} />
                     </Paragraph>
                 </FlexChild>
             </Flex>
@@ -200,7 +202,7 @@ const Button = ({ text, isActive, onTap }) => {
                 radiuses={BoxRadiuses.all(Radius.circular(3))}
                 padding={Insets.symmetrical(7, 3)}
             >
-                <Text text={text} />
+                <Text text={text} style={footerTextStyle} />
             </Container>
         </GestureResponder>
     )
@@ -244,7 +246,13 @@ const TodoListHeader = observer(() => {
                 <Sized sizeConstraints={{ height: Value.abs(65) }}>
                     <Flex align={FlexAlign.center}>
                         <Padded padding={Insets.only('left', 60)}>
-                            <Text text={'What needs to be done'} />
+                            <Text
+                                text={'What needs to be done'}
+                                style={{
+                                    fontSize: 24,
+                                    color: Color.rgb(230, 230, 230)
+                                }}
+                            />
                         </Padded>
                     </Flex>
                 </Sized>
@@ -261,7 +269,7 @@ const TodoListFooter = observer(() => {
     if (todoStore.itemsLeft < todoStore.items.length) {
         clearCompleted = (
             <GestureResponder onTap={() => todoStore.clearCompleted()}>
-                <Text text={'Clear completed'} />
+                <Text text={'Clear completed'} style={footerTextStyle} />
             </GestureResponder>
         )
     }
@@ -275,7 +283,10 @@ const TodoListFooter = observer(() => {
                         align={FlexAlign.center}
                         justify={FlexJustify.spaceBetween}
                     >
-                        <Text text={`${todoStore.itemsLeft} items left`} />
+                        <Text
+                            text={`${todoStore.itemsLeft} items left`}
+                            style={footerTextStyle}
+                        />
                         {clearCompleted}
                     </Flex>
                     <Flex align={FlexAlign.center} justify={FlexJustify.center}>
@@ -347,7 +358,13 @@ const Main = () => {
                                 }}
                             >
                                 <Flex justify={FlexJustify.center}>
-                                    <Text text="TODOS" />
+                                    <Text
+                                        text="todos"
+                                        style={{
+                                            color: Color.rgb(234, 215, 215),
+                                            fontSize: 100
+                                        }}
+                                    />
                                 </Flex>
                             </Padded>
                             <TodoList />

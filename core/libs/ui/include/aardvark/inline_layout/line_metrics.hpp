@@ -13,7 +13,7 @@ struct LineMetrics {
     LineMetrics add(float ascent, float descent);
     LineMetrics scale(float ratio);
 
-    static LineMetrics from_font(const SkFont& font);
+    static LineMetrics from_sk_font(const SkFont& font);
 };
 
 }  // namespace aardvark::inline_layout

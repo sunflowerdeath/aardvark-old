@@ -7,11 +7,12 @@ LineMetrics LineMetrics::add(float ascent, float descent) {
 };
 
 LineMetrics LineMetrics::scale(float ratio) {
+    if (ratio == 1) return *this;
     auto d = height * (ratio - 1);
     return LineMetrics{height + d, baseline + d / 2, x_height};
 }
 
-LineMetrics LineMetrics::from_font(const SkFont& font) {
+LineMetrics LineMetrics::from_sk_font(const SkFont& font) {
     SkFontMetrics metrics;
     (void)font.getMetrics(&metrics);
     return LineMetrics{
