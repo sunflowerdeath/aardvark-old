@@ -291,7 +291,7 @@ values:
     - scaleDown
     - fill
     - none
-    - size
+    - customSize
 ---
 kind: class
 name: ImageElement
@@ -305,6 +305,9 @@ props:
     - name: fit
       type: ImageFit
       setter: set_fit
+    - name: customSize
+      type: Size
+      setter: set_custom_size
 ---
 kind: class
 name: IntrinsicHeightElement

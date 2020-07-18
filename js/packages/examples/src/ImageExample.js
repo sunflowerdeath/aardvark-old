@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react'
 import { Alignment, Value, Color, BoxBorders, BorderSide } from '@advk/common'
-import { Aligned, Border, Sized, Stack, Image } from '@advk/react-renderer'
+import { Aligned, Border, Clip, Sized, Stack, Image } from '@advk/react-renderer'
 
 const ImageBox = props => (
     <Sized
@@ -10,7 +10,9 @@ const ImageBox = props => (
         }}
     >
         <Border borders={BoxBorders.all(BorderSide(1, Color.black))}>
-            <Image src={FileDataSource('build/test2.png')} {...props} />
+            <Clip>
+                <Image src={FileDataSource('build/test2.png')} {...props} />
+            </Clip>
         </Border>
     </Sized>
 )
@@ -52,6 +54,15 @@ const ImageExample = () => {
                 <ImageBox
                     src={FileDataSource('build/test4.png')}
                     fit={ImageFit.scaleDown}
+                />
+            </Aligned>
+            <Aligned
+                alignment={Alignment.topLeft(Value.abs(350), Value.abs(50))}
+            >
+                <ImageBox
+                    src={FileDataSource('build/test4.png')}
+                    fit={ImageFit.customSize}
+                    customSize={{ width: 90, height: 50 }}
                 />
             </Aligned>
         </Stack>

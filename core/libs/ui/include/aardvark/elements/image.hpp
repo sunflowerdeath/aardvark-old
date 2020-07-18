@@ -24,18 +24,18 @@ class FileDataSource : public DataSource {
 };
 
 enum class ImageFit {
-    // Image scaled to fit, maintaining its ratio
+    // Image scaled to fit, maintains original ratio
     contain,
-    // Image sized to fill entire box, maintaining its ratio
+    // Image sized to fill entire box, maintains original ratio
     cover,
-    // Scaled down image to fit box if necessary 
+    // Image scaled down to fit box if necessary 
     scale_down,
     // Resize image to fill box, can change image ratio
     fill,
     // Do not resize image
     none,
-    // Size image using the `size` property
-    size
+    // Size image using the `customSize` property
+    custom_size
 };
 
 class ImageElement : public Element {
@@ -58,7 +58,7 @@ class ImageElement : public Element {
     }
 
     ELEMENT_PROP_DEFAULT(ImageFit, fit, ImageFit::none);
-    ELEMENT_PROP(Size, image_size);
+    ELEMENT_PROP(Size, custom_size);
 
   private:
     void init_image();

@@ -23,13 +23,13 @@ void ImageElement::paint(bool is_changed) {
     auto width = 0.0;
     auto height = 0.0;
     switch (fit) {
-        case ImageFit::size:
-            width = size.width;
-            height = size.height;
-            break;
         case ImageFit::none:
             width = img_width;
             height = img_height;
+            break;
+        case ImageFit::custom_size:
+            width = custom_size.width;
+            height = custom_size.height;
             break;
         case ImageFit::cover: {
             auto width_ratio = img_width / size.width;
@@ -63,13 +63,11 @@ void ImageElement::paint(bool is_changed) {
             break;
     }
 
-    auto left = (size.width - width) / 2;;
-    auto top = (size.height - height) / 2;;
-
+    auto left = (size.width - width) / 2;
+    auto top = (size.height - height) / 2;
     auto paint = SkPaint();
     layer->canvas->drawImageRect(
         image,
-        SkRect::MakeXYWH(0, 0, image->width(), image->height()),
         SkRect::MakeXYWH(left, top, width, height),
         &paint);
 }
