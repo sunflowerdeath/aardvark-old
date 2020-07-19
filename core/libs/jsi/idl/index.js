@@ -213,9 +213,11 @@ const classInitTmpl = compileTmpl(`
         {{/each}}
     };
     
+    {{#unless extends}}
     def.finalizer = [](const Object& object) {
         ObjectsIndex<{{rootClassName}}>::finalize(object.to_value());
     };
+    {{/unless}}
 
     {{name}}_js_class = ctx->class_make(def);
     js_class_map.emplace(

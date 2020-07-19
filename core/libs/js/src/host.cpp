@@ -1,8 +1,9 @@
 #include "host.hpp"
 
-#include <aardvark_jsi/check.hpp>
 #include <aardvark/utils/log.hpp>
+#include <aardvark_jsi/check.hpp>
 #include <iostream>
+
 #include "api/timeout.hpp"
 
 namespace aardvark::js {
@@ -54,6 +55,15 @@ Host::Host() {
                })
             .to_value();
     global.set_property("log", log_fn);
+
+    auto gc_fn =
+        ctx->object_make_function(
+               [this](jsi::Value& this_val, std::vector<jsi::Value>& args) {
+                   ctx->garbage_collect();
+                   return ctx->value_make_undefined();
+               })
+            .to_value();
+    global.set_property("gc", gc_fn);
 
     add_timeout(*ctx);
 }

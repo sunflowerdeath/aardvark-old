@@ -54,13 +54,13 @@ class QjsValue : public PointerData {
     const JSValue value;
     bool weak;
     
-    static std::unordered_set<QjsValue*> values;
+    static std::unordered_multiset<QjsValue*> values;
     static void free_all() {
         for (auto value : values) value->free();
     }
 };
 
-std::unordered_set<QjsValue*> QjsValue::values;
+std::unordered_multiset<QjsValue*> QjsValue::values;
 
 class QjsString : public PointerData {
   public:
@@ -159,6 +159,7 @@ Qjs_Context::~Qjs_Context() {
     strict_equal_function.reset();
     Qjs_Context::function_class_id = 0;
     QjsValue::free_all();
+    garbage_collect();
     JS_FreeContext(ctx);
     JS_FreeRuntime(rt);
 }
@@ -341,15 +342,19 @@ std::optional<ErrorLocation> Qjs_Context::value_get_error_location(
 // Class
 
 void class_finalizer(JSRuntime* rt, JSValue value) {
+    auto ptr = JS_VALUE_GET_PTR(value);
     auto it = Qjs_Context::class_instances.find(JS_VALUE_GET_PTR(value));
-    if (it == Qjs_Context::class_instances.end()) return;
+    if (it == Qjs_Context::class_instances.end()) {
+        return;
+    }
     // TODO
     // auto ctx = static_cast<Qjs_Context*>(JS_GetRuntimeOpaque(rt));
     auto ctx = it->second.ctx;
     auto class_id = it->second.class_id;
+    auto obj = ctx->object_from_qjs(value, true);
     while (true) {
         auto& def = ctx->class_definitions[class_id];
-        if (def.finalizer) def.finalizer(ctx->object_from_qjs(value, true));
+        if (def.finalizer) def.finalizer(obj);
         if (def.base_class.has_value()) {
             class_id = static_cast<QjsClass*>(def.base_class.value().ptr)->id;
         } else {

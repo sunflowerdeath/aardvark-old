@@ -17,6 +17,7 @@ import ObserverExample from './ObserverExample.js'
 import EditorExample from './EditorExample.js'
 import ParagraphExample from './ParagraphExample.js'
 import ImageExample from './ImageExample.js'
+import BenchmarkExample from './BenchmarkExample.js'
 
 import Button from './Button.js'
 
@@ -33,7 +34,8 @@ const examples = [
     { name: 'Observer', component: ObserverExample },
     { name: 'Editor', component: EditorExample },
     { name: 'Paragraph', component: ParagraphExample },
-    { name: 'Image', component: ImageExample }
+    { name: 'Image', component: ImageExample },
+    { name: 'Benchmark', component: BenchmarkExample }
 ]
 
 const Main = () => {
@@ -52,6 +54,9 @@ const Main = () => {
                     {examplesButtons}
                     <Button onTap={stop}>
                         <Text text="STOP" />
+                    </Button>
+                    <Button onTap={gc}>
+                        <Text text="GC" />
                     </Button>
                 </Flex>
             </Stack>
