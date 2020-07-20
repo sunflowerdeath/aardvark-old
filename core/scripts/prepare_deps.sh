@@ -26,8 +26,8 @@ fi
 
 if [ "$DEP" = "fmt" ] || [ "$DEP" = "all" ]; then
 	echo "fmt: extract source"
-	unzip -q $ROOT/downloads/fmt-5.3.0.zip -d $ROOT/externals
-	mv $ROOT/externals/fmt-5.3.0 $ROOT/externals/fmt
+	unzip -q $ROOT/downloads/fmt-7.0.1.zip -d $ROOT/externals
+	mv $ROOT/externals/fmt-7.0.1 $ROOT/externals/fmt
 fi
 
 if [ "$DEP" = "glfw" ] || [ "$DEP" = "all" ]; then
@@ -88,8 +88,8 @@ fi
 
 if [ "$DEP" = "spdlog" ] || [ "$DEP" = "all" ]; then
 	echo "spdlog: extract source"
-	unzip -q $ROOT/downloads/spdlog-1.4.2.zip -d $ROOT/externals
-	mv $ROOT/externals/spdlog-1.4.2 $ROOT/externals/spdlog
+	unzip -q $ROOT/downloads/spdlog-1.7.0.zip -d $ROOT/externals
+	mv $ROOT/externals/spdlog-1.7.0 $ROOT/externals/spdlog
 fi
 
 if [ "$DEP" = "webkitgtk" ] || [ "$DEP" = "all" ]; then

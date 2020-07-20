@@ -10,10 +10,6 @@ fi
 mkdir -p $ROOT/downloads
 cd $ROOT/downloads
 
-# fmt@5.2.1
-#echo "clone fmt@5.2.1"
-#git clone https://github.com/fmtlib/fmt -b 5.2.1 --depth 1
-
 if [ "$DEP" = "boost" ] || [ "$DEP" = "all" ]; then
 	echo "download boost@1.71.0"
 	# curl flag "-L" to follow redirects, "-#" to display progressbar
@@ -27,8 +23,8 @@ if [ "$DEP" = "catch2" ] || [ "$DEP" = "all" ]; then
 fi
 
 if [ "$DEP" = "fmt" ] || [ "$DEP" = "all" ]; then
-	echo "clone fmt@5.3.0"
-	curl "https://github.com/fmtlib/fmt/releases/download/5.3.0/fmt-5.3.0.zip" -L -# > fmt-5.3.0.zip
+	echo "clone fmt@7.0.1"
+	curl "https://github.com/fmtlib/fmt/releases/download/7.0.1/fmt-7.0.1.zip" -L -# > fmt-7.0.1.zip
 fi
 
 if [ "$DEP" = "glfw" ] || [ "$DEP" = "all" ]; then
@@ -63,8 +59,8 @@ if [ "$DEP" = "skia-last" ] || [ "$DEP" = "all" ]; then
 fi
 
 if [ "$DEP" = "spdlog" ] || [ "$DEP" = "all" ]; then
-	echo "download spdlog@1.4.2"
-	curl "https://github.com/gabime/spdlog/archive/v1.4.2.zip" -L -# > spdlog-1.4.2.zip
+	echo "download spdlog@1.7.0"
+	curl "https://github.com/gabime/spdlog/archive/v1.7.0.zip" -L -# > spdlog-1.7.0.zip
 fi
 
 if [ "$DEP" = "webkitgtk" ] || [ "$DEP" = "all" ]; then
