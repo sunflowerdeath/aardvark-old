@@ -59,15 +59,57 @@ const ParagraphExample = () => {
     let p2 = (
         <Paragraph>
             <TextSpanC
-                text="Underline underline underline"
+                text="Underline underline"
                 style={{
                     decorations: [{ kind: TextDecorationKind.underline }]
                 }}
             />
             <TextSpanC
-                text="Overline overline overline"
+                text="Big underline"
+                style={{
+                    decorations: [
+                        {
+                            kind: TextDecorationKind.underline,
+                            thickness: 4,
+                            color: Color.red
+                        }
+                    ]
+                }}
+            />
+            <TextSpanC
+                text="Overline overline"
                 style={{
                     decorations: [{ kind: TextDecorationKind.overline }]
+                }}
+            />
+            <TextSpanC
+                text="Big overline"
+                style={{
+                    decorations: [
+                        {
+                            kind: TextDecorationKind.overline,
+                            thickness: 4,
+                            color: Color.red
+                        }
+                    ]
+                }}
+            />
+            <TextSpanC
+                text="Linethrough linethrough"
+                style={{
+                    decorations: [{ kind: TextDecorationKind.lineThrough }]
+                }}
+            />
+            <TextSpanC
+                text="Big linethrough"
+                style={{
+                    decorations: [
+                        {
+                            kind: TextDecorationKind.lineThrough,
+                            thickness: 3,
+                            color: Color.red
+                        }
+                    ]
                 }}
             />
         </Paragraph>
