@@ -318,4 +318,58 @@ class OptionalMapper : public Mapper<std::optional<T>> {
     Mapper<T>* mapper;
 };
 
+template <typename T>
+class ArrayMapper : public Mapper<std::vector<T>> {
+  public:
+    ArrayMapper(Mapper<T>* mapper) : mapper(mapper){};
+
+    Value to_js(Context& ctx, const std::vector<T>& value) override {
+        auto res = ctx.object_make_array();
+        for (auto i = 0; i < value.size(); i++) {
+            res.set_property_at_index(i, mapper->to_js(ctx, value[i]));
+        }
+        return res.to_value();
+    }
+
+    std::vector<T> from_js(Context& ctx, const Value& value) override {
+        auto res = std::vector<T>();
+        auto obj = value.to_object().value();
+        auto length = obj.get_property("length").value().to_number().value();
+        for (auto i = 0; i < length; i++) {
+            res.push_back(
+                mapper->from_js(ctx, obj.get_property_at_index(i).value()));
+        }
+        return res;
+    }
+
+    tl::expected<std::vector<T>, std::string> try_from_js(
+        Context& ctx,
+        const Value& value,
+        const CheckErrorParams& err_params) override {
+        auto res = std::vector<T>();
+        auto err = check_type(ctx, value, "array", err_params);
+        auto obj = value.to_object().value();
+        auto length = obj.get_property("length").value().to_number().value();
+        for (auto i = 0; i < length; i++) {
+            auto item_err_params = CheckErrorParams{
+                err_params.kind,
+                err_params.name + "[" + std::to_string(i) + "]",
+                err_params.target};
+            auto item_res = mapper->try_from_js(
+                ctx,
+                obj.get_property_at_index(i).value(),  // TODO check?
+                item_err_params);
+            if (item_res.has_value()) {
+                res.push_back(item_res.value());
+            } else {
+                return tl::make_unexpected(item_res.error());
+            }
+        }
+        return res;
+    }
+
+  private:
+    Mapper<T>* mapper;
+};
+
 }  // namespace aardvark::jsi

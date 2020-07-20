@@ -12,11 +12,26 @@
 
 namespace aardvark {
 
+enum class TextDecorationKind {
+    underline,
+    line_through,
+    overline
+};
+
+struct TextDecoration {
+    TextDecorationKind kind = TextDecorationKind::underline;
+    int thickness = 1;
+    Color color = Color{0, 0, 0, 255};
+};
+
+using TextDecorationList = std::vector<TextDecoration>;
+
 struct TextStyle {
     Color color = Color::from_sk_color(SK_ColorBLACK);
     std::string font_family;
     int font_size = 16;
     float line_height = 1;
+    TextDecorationList decorations;
 
     SkPaint to_sk_paint() {
         SkPaint paint;

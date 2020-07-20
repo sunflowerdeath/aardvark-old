@@ -462,6 +462,30 @@ props:
       type: bool
       setter: set_floating
 ---
+kind: enum
+name: TextDecorationKind
+values:
+    - underline
+    - lineThrough
+    - overline
+---
+kind: struct
+name: TextDecoration
+props:
+    - name: kind
+      type: TextDecorationKind
+      hasDefault: true
+    - name: thickness
+      type: int
+      hasDefault: true
+    - name: color
+      type: Color
+      hasDefault: true
+---
+kind: array
+name: TextDecorations
+type: TextDecoration
+---
 kind: struct
 name: TextStyle
 props:
@@ -473,6 +497,9 @@ props:
       hasDefault: true
     - name: color
       type: Color
+      hasDefault: true
+    - name: decorations
+      type: TextDecorations
       hasDefault: true
 ---
 kind: class

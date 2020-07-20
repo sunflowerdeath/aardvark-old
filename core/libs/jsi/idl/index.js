@@ -344,6 +344,14 @@ const optionalInitTmpl = compileTmpl(`
     {{name}}_mapper = OptionalMapper<{{innerTypeName}}>(&{{type}}_mapper.value());
 `)
 
+const arrayDefTmpl = compileTmpl(`
+    std::optional<ArrayMapper<{{innerTypeName}}>> {{name}}_mapper;
+`)
+
+const arrayInitTmpl = compileTmpl(`
+    {{name}}_mapper = ArrayMapper<{{innerTypeName}}>(&{{type}}_mapper.value());
+`)
+
 const templates = {
     struct: { def: structDefTmpl, init: structInitTmpl },
     union: { def: unionDefTmpl, init: unionInitTmpl },
@@ -352,7 +360,8 @@ const templates = {
     callback: { def: callbackDefTmpl, init: callbackInitTmpl },
     function: { def: functionDefTmpl, init: functionInitTmpl },
     custom: { def: customDefTmpl, init: customInitTmpl },
-    optional: { def: optionalDefTmpl, init: optionalInitTmpl }
+    optional: { def: optionalDefTmpl, init: optionalInitTmpl },
+    array: { def: arrayDefTmpl, init: arrayInitTmpl }
 }     
 
 const headerTmpl = compileTmpl(
@@ -459,6 +468,9 @@ let setTypeNames = (data, options) => {
         } else if (def.kind === 'optional') {
             def.innerTypeName = `${prefix}${def.type}`
             def.typeName = `std::optional<${def.innerTypeName}>`
+        } else if (def.kind === 'array') {
+            def.innerTypeName = `${prefix}${def.type}`
+            def.typeName = `std::vector<${def.innerTypeName}>`
         } else if (def.kind == 'function') {
             def.functionName = fullName
         } else {

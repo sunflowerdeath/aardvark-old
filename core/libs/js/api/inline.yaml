@@ -39,6 +39,9 @@ props:
       type: string
       setter: set_text
       getter: get_text_p
+    - name: style
+      type: TextStyle
+      setter: set_style
 ---
 kind: class
 name: ParagraphElement

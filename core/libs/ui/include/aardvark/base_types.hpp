@@ -101,10 +101,11 @@ struct Color {
     }
 
     static Color from_sk_color(const SkColor& sk_color) {
-        return Color{static_cast<int>(SkColorGetR(sk_color)),
-                     static_cast<int>(SkColorGetG(sk_color)),
-                     static_cast<int>(SkColorGetB(sk_color)),
-                     static_cast<int>(SkColorGetA(sk_color))};
+        return Color{
+            static_cast<int>(SkColorGetR(sk_color)),
+            static_cast<int>(SkColorGetG(sk_color)),
+            static_cast<int>(SkColorGetB(sk_color)),
+            static_cast<int>(SkColorGetA(sk_color))};
     }
 
     static Color black() { return Color{0, 0, 0, 255}; }
@@ -135,4 +136,3 @@ struct Transform {
 };
 
 }  // namespace aardvark
-

@@ -1,8 +1,21 @@
 #include "elements/text.hpp"
 
+#include "SkPaint.h"
 #include "inline_layout/utils.hpp"
 
 namespace aardvark {
+
+void paint_text_decoration(
+    TextDecoration& decoration,
+    SkCanvas& canvas,
+    inline_layout::LineMetrics& metrics,
+    float text_width) {
+    auto paint = SkPaint();
+    paint.setColor(decoration.color.to_sk_color());
+    paint.setStrokeWidth(decoration.thickness);
+    auto vert = metrics.baseline + 1;
+    canvas.drawLine(0, vert, text_width, vert, paint);
+}
 
 float TextElement::get_intrinsic_height(float width) {
     return style.get_metrics().height;
@@ -36,6 +49,10 @@ void TextElement::paint(bool is_changed) {
         font,                    // font
         paint                    // paint
     );
+
+    for (auto& decoration : style.decorations) {
+        paint_text_decoration(decoration, *layer->canvas, metrics, size.width);
+    }
 };
 
 }  // namespace aardvark
