@@ -96,6 +96,26 @@ props:
     - name: bottomLeft
       type: Radius
 ---
+kind: struct
+name: BoxShadow
+props:
+    - name: blur
+      type: int
+      hasDefault: true
+    - name: color
+      type: Color
+      hasDefault: true
+    - name: offset
+      type: Position
+      hasDefault: true
+    - name: spread
+      type: int
+      hasDefault: true
+---
+kind: array
+name: BoxShadows
+type: BoxShadow
+---
 kind: class
 name: BorderElement
 include: aardvark/elements/border.hpp
@@ -109,6 +129,9 @@ props:
     - name: radiuses
       type: BoxRadiuses
       setter: set_radiuses
+    - name: shadows
+      type: BoxShadows
+      setter: set_shadows
 ---
 kind: class
 name: CenterElement

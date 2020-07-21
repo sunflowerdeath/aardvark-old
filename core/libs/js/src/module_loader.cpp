@@ -104,7 +104,10 @@ std::optional<jsi::ErrorLocation> ModuleLoader::get_original_location(
         Log::warn("Could not get original location from source map");
         return std::nullopt;
     }
-    return api.ErrorLocation_mapper->from_js(*ctx, res.value());
+    auto from_js_res = api.ErrorLocation_mapper->try_from_js(
+        *ctx, res.value(), jsi::CheckErrorParams{});
+    if (!from_js_res.has_value()) return std::nullopt;
+    return from_js_res.value(); 
 }
 
 }  // namespace aardvark::js

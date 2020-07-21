@@ -5,11 +5,20 @@
 
 namespace aardvark {
 
+struct BoxShadow {
+    int blur = 0;
+    Color color = Color::black;
+    Position offset= Position::origin;
+    int spread = 0;
+};
+
+using BoxShadows = std::vector<BoxShadow>;
+
 struct BorderSide {
     float width = 0;
     Color color;
 
-    static BorderSide none() { return BorderSide{0, Color::black()}; };
+    static BorderSide none() { return BorderSide{0, Color::black}; };
 };
 
 struct BoxBorders {
@@ -37,6 +46,8 @@ struct Radius {
         if (width <= d || height <= d) return Radius{0, 0};
         return Radius{width - d, height - d};
     };
+
+    SkVector to_sk_vector() { return SkVector::Make(width, height); }
 
     static Radius circular(int val) { return Radius{val, val}; };
 };
@@ -85,6 +96,7 @@ class BorderElement : public SingleChildElement {
 
     ELEMENT_PROP(BoxBorders, borders);
     ELEMENT_PROP(BoxRadiuses, radiuses);
+    ELEMENT_PROP(BoxShadows, shadows);
 
   private:
     SkCanvas* canvas;

@@ -24,6 +24,8 @@ const Color = {
     black: { red: 0, green: 0, blue: 0, alpha: 255 },
     lightgray: { red: 211, green: 211, blue: 211, alpha: 255 },
     lightgrey: { red: 211, green: 211, blue: 211, alpha: 255 },
+    lightGray: { red: 211, green: 211, blue: 211, alpha: 255 },
+    lightGrey: { red: 211, green: 211, blue: 211, alpha: 255 },
     gray: { red: 128, green: 128, blue: 128, alpha: 255 },
     grey: { red: 128, green: 128, blue: 128, alpha: 255 },
     red: { red: 255, green: 0, blue: 0, alpha: 255 },

@@ -13,4 +13,8 @@ Position Position::add(Position a, Position b) {
     };
 };
 
+Position Position::origin = Position{0,0};
+
+Color Color::black = Color{0, 0, 0, 255};
+
 }  // namespace aardvark

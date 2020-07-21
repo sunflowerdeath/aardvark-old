@@ -1,6 +1,24 @@
 #include "elements/border.hpp"
 
+#include <SkMaskFilter.h>
+
 namespace aardvark {
+
+void paint_box_shadow(
+    SkCanvas& canvas,
+    SkRRect& box,
+    BoxShadow& shadow) {
+    auto paint = SkPaint();
+    paint.setAntiAlias(true);
+    paint.setColor(shadow.color.to_sk_color());
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setMaskFilter(
+        SkMaskFilter::MakeBlur(kNormal_SkBlurStyle, shadow.blur));
+    auto shadow_box = box;
+    shadow_box.outset(shadow.spread, shadow.spread);
+    shadow_box.offset(shadow.offset.left, shadow.offset.top);
+    canvas.drawRRect(shadow_box, paint);
+}
 
 BorderElement::BorderElement(
     std::shared_ptr<Element> child,
@@ -48,7 +66,20 @@ Size BorderElement::layout(BoxConstraints constraints) {
 void BorderElement::paint(bool is_changed) {
     auto layer = document->get_layer();
     document->setup_layer(layer, this);
-    this->canvas = layer->canvas;
+    canvas = layer->canvas;
+
+    // Paint shadows
+    if (shadows.size() > 0) {
+        auto box = SkRRect();
+        auto radii = std::array<SkVector, 4>{
+            radiuses.top_left.to_sk_vector(),
+            radiuses.top_right.to_sk_vector(),
+            radiuses.bottom_right.to_sk_vector(),
+            radiuses.bottom_left.to_sk_vector()};
+        box.setRectRadii(
+            SkRect::MakeXYWH(0, 0, size.width, size.height), radii.data());
+        for (auto& shadow : shadows) paint_box_shadow(*canvas, box, shadow);
+    }
 
     // After painting each border side, coordinates are translated and
     // rotated 90 degrees, so next border can be painted with same function.

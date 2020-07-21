@@ -117,11 +117,11 @@ const ParagraphExample = () => {
 
     return (
         <Stack>
-            <Aligned alignment={Alignment.topLeft(Value.abs(10), Value.abs(0))}>
+            <Aligned alignment={Alignment.topLeft(Value.abs(10), Value.abs(20))}>
                 <Sized sizeConstraints={{ width: Value.abs(200) }}>{p1}</Sized>
             </Aligned>
             <Aligned
-                alignment={Alignment.topLeft(Value.abs(200), Value.abs(0))}
+                alignment={Alignment.topLeft(Value.abs(200), Value.abs(20))}
             >
                 <Sized sizeConstraints={{ width: Value.abs(200) }}>{p2}</Sized>
             </Aligned>

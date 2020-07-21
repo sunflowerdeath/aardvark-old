@@ -17,6 +17,7 @@ import ObserverExample from './ObserverExample.js'
 import EditorExample from './EditorExample.js'
 import ParagraphExample from './ParagraphExample.js'
 import ImageExample from './ImageExample.js'
+import ShadowExample from './ShadowExample.js'
 import BenchmarkExample from './BenchmarkExample.js'
 
 import Button from './Button.js'
@@ -35,6 +36,7 @@ const examples = [
     { name: 'Editor', component: EditorExample },
     { name: 'Paragraph', component: ParagraphExample },
     { name: 'Image', component: ImageExample },
+    { name: 'Shadow', component: ShadowExample },
     { name: 'Benchmark', component: BenchmarkExample }
 ]
 

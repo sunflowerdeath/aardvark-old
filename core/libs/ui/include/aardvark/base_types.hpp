@@ -73,6 +73,7 @@ struct Position {
     float left = 0;
     float top = 0;
     static Position add(Position a, Position b);
+    static Position origin;
 };
 
 inline bool operator==(const Position& lhs, const Position& rhs) {
@@ -108,7 +109,7 @@ struct Color {
             static_cast<int>(SkColorGetA(sk_color))};
     }
 
-    static Color black() { return Color{0, 0, 0, 255}; }
+    static Color black;
 };
 
 inline bool operator==(const Color& lhs, const Color& rhs) {
