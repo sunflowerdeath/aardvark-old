@@ -1,7 +1,6 @@
 #include "aligned.hpp"
 #include "background.hpp"
 #include "border.hpp"
-#include "box_shadow.hpp"
 #include "center.hpp"
 #include "custom_layout.hpp"
 #include "clip.hpp"

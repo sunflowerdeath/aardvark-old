@@ -39,7 +39,7 @@ import ReactAardvark, {
 import { decorate, observable, computed, action } from 'mobx'
 import { observer } from 'mobx-react'
 
-const win = application.createWindow({ width: 640, height: 480 })
+const win = application.createWindow({ width: 640, height: 640 })
 const document = application.getDocument(win)
 
 const INITIAL_TODOS = [
@@ -323,20 +323,37 @@ const TodoListFooter = observer(() => {
     )
 })
 
+const shadowColor = Color.rgba(0,0,0,Math.round(255*0.1))
+
 const TodoList = observer(() => {
     const todoStore = useTodoStore()
     return (
-        <Background color={Color.white}>
-            <IntrinsicHeight>
-                <Flex direction={FlexDirection.column}>
-                    <TodoListHeader />
-                    {todoStore.displayedItems.map(store => (
-                        <Todo store={store} />
-                    ))}
-                    <TodoListFooter />
-                </Flex>
-            </IntrinsicHeight>
-        </Background>
+        <Border
+            shadows={[
+                {
+                    offset: { left: 0, top: 2 },
+                    blur: 4,
+                    color: shadowColor
+                },
+                {
+                    offset: { left: 0, top: 25 },
+                    blur: 50,
+                    color: shadowColor
+                }
+            ]}
+        >
+            <Background color={Color.white}>
+                <IntrinsicHeight>
+                    <Flex direction={FlexDirection.column}>
+                        <TodoListHeader />
+                        {todoStore.displayedItems.map(store => (
+                            <Todo store={store} />
+                        ))}
+                        <TodoListFooter />
+                    </Flex>
+                </IntrinsicHeight>
+            </Background>
+        </Border>
     )
 })
 
@@ -372,7 +389,6 @@ const Main = () => {
                         </Flex>
                     </Sized>
                 </Flex>
-                <Image src={FileDataSource("build/icon.png")} />
             </Stack>
         </TodoStoreContext.Provider>
     )

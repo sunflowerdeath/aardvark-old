@@ -1,13 +1,16 @@
 const path = require('path')
 
 module.exports = {
-    entry: './src/index.js',
+    entry: {
+        main: './src/index.js',
+        todomvc: './src/todomvc/index.js'
+    },
     output: {
         path: path.resolve(
             __dirname,
             process.env.NODE_ENV == 'production' ? 'build-prod' : 'build'
         ),
-        filename: 'main.js'
+        filename: '[name].js'
     },
     mode: process.env.NODE_ENV == 'production' ? 'production' : 'development',
     module: {

@@ -8,7 +8,8 @@
     "build-prod": "NODE_ENV=production ../../node_modules/.bin/webpack",
     "start": "../../../core/build/bin/adv_js_example build/main.js",
     "start-prod": "../../../core/build-prod/bin/adv_js_example build-prod/main.js",
-    "lldb": "lldb ../../../core/build/bin/adv_js_example -- build/main.js"
+    "lldb": "lldb ../../../core/build/bin/adv_js_example -- build/main.js",
+    "todo": "../../../core/build/bin/adv_js_example build/todomvc.js"
   },
   "dependencies": {
     "@advk/common": "*",

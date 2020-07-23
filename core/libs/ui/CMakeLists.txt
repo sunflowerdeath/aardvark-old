@@ -54,7 +54,7 @@ target_include_directories(aardvark_ui PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include)
     
 target_link_libraries(aardvark_ui
-    skia ICU ICU_DATA fmt::fmt spdlog::spdlog nlohmann_json nod boost)
+    skia ICU ICU_DATA fmt::fmt spdlog::spdlog nlohmann_json nod boost SVGNativeViewerLib)
 
 if(ADV_PLATFORM STREQUAL "linux")
     target_compile_definitions(aardvark_ui PUBLIC "ADV_PLATFORM_DESKTOP=1")

@@ -3,6 +3,12 @@
 #include "SkPathOps.h"
 #include "elements/placeholder.hpp"
 
+#include "SkParsePath.h"
+#include "utils/files_utils.hpp"
+
+#include "svgnative/SkiaSVGRenderer.h"
+#include "svgnative/SVGDocument.h"
+
 namespace aardvark {
 
 SkPath offset_path(SkPath* path, Position offset) {
@@ -330,6 +336,21 @@ void Document::paint_layer_tree(LayerTree* tree) {
     }
     current_opacity = prev_opacity;
     screen->canvas->restore();
+
+    // auto path = SkPath();
+    // std::string str = "M9 16.2l-3.5-3.5c-.39-.39-1.01-.39-1.4 0-.39.39-.39 1.01 0 1.4l4.19 4.19c.39.39 1.02.39 1.41 0L20.3 7.7c.39-.39.39-1.01 0-1.4-.39-.39-1.01-.39-1.4 0L9 16.2z";
+    // auto paint = SkPaint();
+    // paint.setAntiAlias(true);
+    // SkParsePath::FromSVGString(str.data(), &path);
+    // path.transform(SkMatrix::Scale(15,15));
+    // screen->canvas->drawPath(path, paint);
+
+    auto data = utils::read_text_file("build/test.svg");
+    auto renderer = std::make_shared<SVGNative::SkiaSVGRenderer>();
+    auto doc = std::unique_ptr<SVGNative::SVGDocument>(
+        SVGNative::SVGDocument::CreateSVGDocument(data.c_str(), renderer));
+    renderer->SetSkCanvas(screen->canvas);
+    doc->Render(200, 200);
 }
 
 std::shared_ptr<Connection> Document::add_pointer_event_handler(

@@ -51,6 +51,9 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Os -g -fno-omit-frame-pointer")
 # -Wl,--gc-sections - Linker option to remove unneeded sections
 # -Wl,-s - Run strip to reduce size of executable
 set(CMAKE_CXX_FLAGS_RELEASE "-Os -ffunction-sections -fdata-sections")
+if(ADV_LTO)
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
+endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CMAKE_EXE_LINKER_FLAGS
         "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections -Wl,-s")
