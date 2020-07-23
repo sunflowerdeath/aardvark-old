@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react'
 import { Alignment, Value, Color, BoxBorders, BorderSide } from '@advk/common'
-import { Aligned, Border, Clip, Sized, Stack, Image } from '@advk/react-renderer'
+import { Aligned, Border, Clip, Sized, Stack, SvgImage } from '@advk/react-renderer'
 
 const ImageBox = props => (
     <Sized
@@ -11,13 +11,13 @@ const ImageBox = props => (
     >
         <Border borders={BoxBorders.all(BorderSide(1, Color.black))}>
             <Clip>
-                <Image src={File('build/test2.png')} {...props} />
+                <SvgImage src={File('build/test2.svg')} {...props} />
             </Clip>
         </Border>
     </Sized>
 )
 
-const ImageExample = () => {
+const SvgExample = () => {
     return (
         <Stack>
             <Aligned
@@ -44,29 +44,29 @@ const ImageExample = () => {
                 alignment={Alignment.topLeft(Value.abs(200), Value.abs(50))}
             >
                 <ImageBox
-                    src={File('build/test3.png')}
                     fit={ImageFit.scaleDown}
+                    src={File('build/test3.svg')}
                 />
             </Aligned>
             <Aligned
                 alignment={Alignment.topLeft(Value.abs(200), Value.abs(200))}
             >
                 <ImageBox
-                    src={File('build/test4.png')}
                     fit={ImageFit.scaleDown}
+                    src={File('build/test4.svg')}
                 />
             </Aligned>
             <Aligned
                 alignment={Alignment.topLeft(Value.abs(350), Value.abs(50))}
             >
                 <ImageBox
-                    src={File('build/test4.png')}
                     fit={ImageFit.customSize}
                     customSize={{ width: 90, height: 50 }}
+                    src={File('build/test4.svg')}
                 />
             </Aligned>
         </Stack>
     )
 }
 
-export default ImageExample
+export default SvgExample

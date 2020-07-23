@@ -78,3 +78,14 @@ props:
       type: int
     - name: alpha
       type: int
+---
+kind: class
+name: DataSource
+include: aardvark/utils/data_source.hpp
+---
+kind: class
+name: File
+constructor:
+    args:
+        - name: path
+          type: string

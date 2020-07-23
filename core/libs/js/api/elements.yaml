@@ -296,16 +296,6 @@ props:
         Alignment of the children across the secondary axis, default is
         `FlexAlign.start`
 ---
-kind: class
-name: DataSource
----
-kind: class
-name: FileDataSource
-constructor:
-    args:
-        - name: path
-          type: string
----
 kind: enum
 name: ImageFit
 values:
@@ -318,6 +308,22 @@ values:
 ---
 kind: class
 name: ImageElement
+include: aardvark/elements/image.hpp
+extends: Element
+constructor: default
+props:
+    - name: src
+      type: DataSource
+      setter: set_src
+    - name: fit
+      type: ImageFit
+      setter: set_fit
+    - name: customSize
+      type: Size
+      setter: set_custom_size
+---
+kind: class
+name: SvgImageElement
 include: aardvark/elements/image.hpp
 extends: Element
 constructor: default
