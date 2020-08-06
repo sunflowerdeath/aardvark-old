@@ -4,7 +4,7 @@ SKIA_DIR=$PWD/externals/skia85
 BUILD_DIR=$SKIA_DIR/build-linux-x86_64
 
 # Skia build configuration:
-# is_official_build=true	Use system libs and disable test utilities 
+# is_official_build=true	    Use system libs and disable test utilities 
 # skia_use_dng_sdk=false	RAW image handling
 # skia_use_piex=false       preview extractor, used for RAW
 # skia_enable_pdf=false		PDF handling
@@ -23,4 +23,4 @@ skia_use_libwebp_encode=false \
 skia_enable_pdf=false \
 skia_use_expat=false"
 
-ninja -C $BUILD_DIR -j7
+ninja -C $BUILD_DIR -j

@@ -176,7 +176,8 @@ set(SPDLOG_FMT_EXTERNAL ON CACHE BOOL "")
 add_subdirectory(${ADV_EXTERNALS_DIR}/spdlog)
 
 # svg-native-viewer
-set(SKIA_LIBRARY_PATH "${ADV_EXTERNALS_DIR}/skia85/build-linux-x86_64/libskia.a")
+set(SKIA_LIBRARY_PATH "${SKIA_DIR}/build-linux-x86_64/libskia.a")
+set(SKIA_SOURCE_DIR "${SKIA_DIR}")
 set(LIB_ONLY ON CACHE BOOL "")
 set(SKIA ON CACHE BOOL "")
 add_subdirectory("${ADV_EXTERNALS_DIR}/svg-native-viewer/svgnative")

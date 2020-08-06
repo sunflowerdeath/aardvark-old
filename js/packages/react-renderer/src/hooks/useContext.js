@@ -15,16 +15,20 @@ const useFirstRender = () => {
 // It has properties `props`, `state` and `setState`, and can be used to store
 // any properties.
 const useContext = ({ initialCtx, props, initialState }) => {
+    const isFirstRender = useFirstRender()
     const ref = useRef(
-        typeof initialCtx === 'function' ? initialCtx() : initialCtx
+        typeof initialCtx === 'function' && isFirstRender
+            ? initialCtx()
+            : initialCtx
     )
     const ctx = ref.current
     const getProps = useLastValue(props)
     const [state, setState] = useState(
-        typeof initialState === 'function' ? initialState(ctx) : initialState
+        typeof initialState === 'function' && isFirstRender
+            ? initialState(ctx)
+            : initialState
     )
     const getState = useLastValue(state)
-    const isFirstRender = useFirstRender()
     if (isFirstRender) {
         Object.defineProperty(ctx, 'props', { get: getProps })
         Object.defineProperty(ctx, 'state', { get: getState })

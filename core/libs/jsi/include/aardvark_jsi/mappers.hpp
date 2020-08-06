@@ -372,4 +372,25 @@ class ArrayMapper : public Mapper<std::vector<T>> {
     Mapper<T>* mapper;
 };
 
+template <typename T>
+class MapMapper : public Mapper<std::unordered_map<std::string, T>> {
+  public:
+    MapMapper(Mapper<T>* mapper) : mapper(mapper){};
+
+    Value to_js(Context& ctx, const std::unordered_map<std::string, T>& value) override {
+    };
+
+    std::unordered_map<std::string, T> from_js(Context& ctx, const Value& value) override {
+    };
+
+    tl::expected<std::unordered_map<std::string, T>, std::string> try_from_js(
+        Context& ctx,
+        const Value& value,
+        const CheckErrorParams& err_params) override {
+    };
+    
+  private:
+    Mapper<T>* mapper;
+};
+
 }  // namespace aardvark::jsi

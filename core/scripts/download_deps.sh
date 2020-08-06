@@ -4,7 +4,7 @@
 ROOT=$PWD
 
 if [ -z $DEP ]; then
-  $DEP = "all"
+  DEP="all"
 fi
 
 mkdir -p $ROOT/downloads
@@ -15,6 +15,11 @@ if [ "$DEP" = "boost" ] || [ "$DEP" = "all" ]; then
 	# curl flag "-L" to follow redirects, "-#" to display progressbar
 	curl "https://dl.bintray.com/boostorg/release/1.71.0/source/boost_1_71_0.tar.gz" -L -# \
 		> boost_1_71_0.tar.gz
+fi
+
+if [ "$DEP" = "expected" ] || [ "$DEP" = "all" ]; then
+	echo "download expected@1.0.0"
+	curl "https://github.com/TartanLlama/expected/archive/v1.0.0.zip" -L -# > expected-1.0.0.zip
 fi
 
 if [ "$DEP" = "catch2" ] || [ "$DEP" = "all" ]; then
@@ -41,19 +46,22 @@ if [ "$DEP" = "icu" ] || [ "$DEP" = "all" ]; then
 		icu4c-58_2-data.zip
 fi
 
+if [ "$DEP" = "json" ] || [ "$DEP" = "all" ]; then
+	echo "download json@3.8.0"
+	curl "https://github.com/nlohmann/json/releases/download/v3.8.0/json.hpp" -L -# > json.hpp
+fi
+
 if [ "$DEP" = "nod" ] || [ "$DEP" = "all" ]; then
 	echo "download nod@0.5.0"
 	curl "https://github.com/fr00b0/nod/archive/v0.5.0.zip" -L -# > nod-0.5.0.zip
 fi
 
-if [ "$DEP" = "skia" ] || [ "$DEP" = "all" ]; then
-	echo "download skia@m71"
-	curl https://github.com/google/skia/archive/chrome/m71.zip -L -# > skia-chrome-m71.zip
-	# git clone https://github.com/google/skia.git -b chrome/m71 --depth 1
-	# git clone https://skia.googlesource.com/skia.git -b chrome/m71 --depth 1
+if [ "$DEP" = "quickjs" ] || [ "$DEP" = "all" ]; then
+	echo "download quickjs@2020-07-05"
+	curl "https://bellard.org/quickjs/quickjs-2020-07-05.tar.xz" -L -# > quickjs-2020-07-05.tar.xz
 fi
 
-if [ "$DEP" = "skia-last" ] || [ "$DEP" = "all" ]; then
+if [ "$DEP" = "skia" ] || [ "$DEP" = "all" ]; then
 	echo "download skia@m85"
 	curl https://github.com/google/skia/archive/chrome/m85.zip -L -# > skia-chrome-m85.zip
 fi
@@ -61,6 +69,11 @@ fi
 if [ "$DEP" = "spdlog" ] || [ "$DEP" = "all" ]; then
 	echo "download spdlog@1.7.0"
 	curl "https://github.com/gabime/spdlog/archive/v1.7.0.zip" -L -# > spdlog-1.7.0.zip
+fi
+
+if [ "$DEP" = "svg-native-viewer" ] || [ "$DEP" = "all" ]; then
+	echo "download svg-native-viewer"
+	git clone git@github.com:sunflowerdeath/svg-native-viewer.git
 fi
 
 if [ "$DEP" = "webkitgtk" ] || [ "$DEP" = "all" ]; then

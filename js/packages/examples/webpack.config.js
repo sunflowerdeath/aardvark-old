@@ -40,6 +40,18 @@ module.exports = {
                         ]
                     }
                 }
+            },
+            {
+                test: /\.(png|svg)$/i,
+                use: [
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            name: '[name].[contenthash].[ext]',
+                            publicPath: 'build'
+                        }
+                    }
+                ]
             }
         ]
     },

@@ -33,7 +33,7 @@ const Box = forwardRef(({ color, isLast }, ref) => (
     </Padded>
 ))
 
-const isVoid = node => node.type === 'block'
+const isVoid = node => node.type === 'box'
 
 const renderElement = ({ node, children, ref }) => (
     <Container ref={ref} color={node.color}>

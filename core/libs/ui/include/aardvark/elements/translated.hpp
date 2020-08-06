@@ -35,7 +35,6 @@ class TranslatedElement : public SingleChildElement {
     float get_intrinsic_height(float width) override;
     float get_intrinsic_width(float height) override;
     Size layout(BoxConstraints constraints) override;
-    bool hit_test(double left, double top) override;
 
     ELEMENT_PROP(Translation, translation);
 };

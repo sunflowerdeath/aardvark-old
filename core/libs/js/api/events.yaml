@@ -56,6 +56,12 @@ props:
       type: int
 ---
 kind: struct
+name: CharEvent
+props:
+    - name: codepoint
+      type: int
+---
+kind: struct
 name: ScrollEvent
 props:
     - name: left
@@ -134,6 +140,12 @@ name: KeyEventHandler
 args:
     - name: event
       type: KeyEvent
+---
+kind: callback
+name: CharEventHandler
+args:
+    - name: event
+      type: CharEvent
 ---
 kind: callback
 name: ScrollEventHandler

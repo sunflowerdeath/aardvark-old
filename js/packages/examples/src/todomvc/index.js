@@ -23,7 +23,6 @@ import ReactAardvark, {
     Container,
     Flex,
     FlexChild,
-    Image,
     Sized,
     Stack,
     StackChild,
@@ -34,10 +33,20 @@ import ReactAardvark, {
     TextSpanC,
     IntrinsicHeight,
     GestureResponder,
-    Placeholder
+    Placeholder,
+    SvgImage
 } from '@advk/react-renderer'
 import { decorate, observable, computed, action } from 'mobx'
 import { observer } from 'mobx-react'
+
+import checkmarkSvg from './checkmark.svg'
+const checkmarkSrc = File(checkmarkSvg)
+
+import arrowDownSvg from './arrowDown.svg'
+const arrowDownSrc = File(arrowDownSvg)
+
+import closeSvg from './close.svg'
+const closeSrc = File(closeSvg)
 
 const win = application.createWindow({ width: 640, height: 640 })
 const document = application.getDocument(win)
@@ -97,8 +106,17 @@ const TodoStoreContext = React.createContext()
 const useTodoStore = () => useContext(TodoStoreContext)
 
 const borderColor = Color.rgb(237, 237, 237)
-
+const shadowColor = Color.rgba(0, 0, 0, Math.round(255 * 0.1))
 const footerTextStyle = { fontSize: 14, color: Color.rgb(119, 119, 119) }
+const underlinedFooterTextStyle = {
+    ...footerTextStyle,
+    decorations: [
+        {
+            kind: TextDecorationKind.underline,
+            color: footerTextStyle.color
+        }
+    ]
+}
 
 const Todo = observer(({ store }) => {
     const todoStore = useTodoStore()
@@ -119,13 +137,20 @@ const Todo = observer(({ store }) => {
                     >
                         <Container
                             sizeConstraints={{
-                                width: Value.abs(30),
-                                height: Value.abs(30)
+                                width: Value.abs(32),
+                                height: Value.abs(32)
                             }}
                             borders={BoxBorders.all(BorderSide(2, color))}
                             radiuses={BoxRadiuses.all(Radius.circular(15))}
                         >
-                            <Placeholder />
+                            {isCompleted ? (
+                                <SvgImage
+                                    src={checkmarkSrc}
+                                    fit={ImageFit.contain}
+                                />
+                            ) : (
+                                <Placeholder />
+                            )}
                         </Container>
                     </GestureResponder>
                 </Padded>
@@ -145,8 +170,9 @@ const Todo = observer(({ store }) => {
                 <Aligned
                     alignment={Alignment.topRight(
                         Value.rel(0.5),
-                        Value.abs(10)
+                        Value.abs(20)
                     )}
+                    adjustChildSize={false}
                 >
                     <Translated
                         translation={{ top: Value.rel(-0.5), left: Value.none }}
@@ -156,14 +182,17 @@ const Todo = observer(({ store }) => {
                                 todoStore.items.remove(store)
                             }}
                         >
-                            <Container
-                                margin={Insets.all(10)}
+                            <Sized
                                 sizeConstraints={{
-                                    width: Value.abs(15),
-                                    height: Value.abs(15)
+                                    width: Value.abs(16),
+                                    height: Value.abs(16)
                                 }}
-                                background={Color.red}
-                            />
+                            >
+                                <SvgImage
+                                    src={closeSrc}
+                                    fit={ImageFit.contain}
+                                />
+                            </Sized>
                         </GestureResponder>
                     </Translated>
                 </Aligned>
@@ -229,11 +258,16 @@ const TodoListHeader = observer(() => {
                             <Container
                                 margin={Insets.all(10)}
                                 sizeConstraints={{
-                                    height: Value.abs(20),
-                                    width: Value.abs(30)
+                                    height: Value.abs(32),
+                                    width: Value.abs(32)
                                 }}
                                 background={color}
-                            />
+                            >
+                                <SvgImage
+                                    src={arrowDownSrc}
+                                    fit={ImageFit.contain}
+                                />
+                            </Container>
                         </GestureResponder>
                     </Translated>
                 </Aligned>
@@ -267,10 +301,20 @@ const TodoListFooter = observer(() => {
     const todoStore = useTodoStore()
 
     let clearCompleted
+    const [isHovered, setIsHovered] = useState(false)
     if (todoStore.itemsLeft < todoStore.items.length) {
         clearCompleted = (
-            <GestureResponder onTap={() => todoStore.clearCompleted()}>
-                <Text text={'Clear completed'} style={footerTextStyle} />
+            <GestureResponder
+                onTap={() => todoStore.clearCompleted()}
+                onHoverStart={() => setIsHovered(true)}
+                onHoverEnd={() => setIsHovered(false)}
+            >
+                <Text
+                    text={'Clear completed'}
+                    style={
+                        isHovered ? underlinedFooterTextStyle : footerTextStyle
+                    }
+                />
             </GestureResponder>
         )
     }
@@ -323,8 +367,6 @@ const TodoListFooter = observer(() => {
     )
 })
 
-const shadowColor = Color.rgba(0,0,0,Math.round(255*0.1))
-
 const TodoList = observer(() => {
     const todoStore = useTodoStore()
     return (
@@ -359,39 +401,36 @@ const TodoList = observer(() => {
 
 const store = new TodoStore()
 
-const Main = () => {
-    return (
-        <TodoStoreContext.Provider value={store}>
-            <Stack>
-                <Background color={Color.rgb(245, 245, 245)} />
-                <Flex justify={FlexJustify.center}>
-                    <Sized sizeConstraints={{ width: Value.abs(550) }}>
-                        <Flex direction={FlexDirection.column}>
-                            <Padded
-                                padding={{
-                                    top: 30,
-                                    bottom: 15,
-                                    left: 0,
-                                    right: 0
-                                }}
-                            >
-                                <Flex justify={FlexJustify.center}>
-                                    <Text
-                                        text="todos"
-                                        style={{
-                                            color: Color.rgb(234, 215, 215),
-                                            fontSize: 100
-                                        }}
-                                    />
-                                </Flex>
-                            </Padded>
-                            <TodoList />
-                        </Flex>
-                    </Sized>
-                </Flex>
-            </Stack>
-        </TodoStoreContext.Provider>
-    )
-}
+const Main = () => (
+    <TodoStoreContext.Provider value={store}>
+        <Background color={Color.rgb(245, 245, 245)}>
+            <Flex justify={FlexJustify.center}>
+                <Sized sizeConstraints={{ width: Value.abs(550) }}>
+                    <Flex direction={FlexDirection.column}>
+                        <Padded
+                            padding={{
+                                top: 30,
+                                bottom: 15,
+                                left: 0,
+                                right: 0
+                            }}
+                        >
+                            <Flex justify={FlexJustify.center}>
+                                <Text
+                                    text="todos"
+                                    style={{
+                                        color: Color.rgb(234, 215, 215),
+                                        fontSize: 100
+                                    }}
+                                />
+                            </Flex>
+                        </Padded>
+                        <TodoList />
+                    </Flex>
+                </Sized>
+            </Flex>
+        </Background>
+    </TodoStoreContext.Provider>
+)
 
 ReactAardvark.render(<Main />, document)

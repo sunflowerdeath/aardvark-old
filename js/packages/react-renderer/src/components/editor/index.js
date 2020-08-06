@@ -412,12 +412,14 @@ const onTap = (ctx, event) => {
     }
 }
 
-const EditorComponent = props => {
+const EditorComponent = forwardRef((props, ref) => {
     const {
         isSelectable,
         isEditable,
         state,
+        onChange,
         selection,
+        onChangeSelection,
         editorProps,
         renderElement,
         renderLeaf
@@ -427,11 +429,18 @@ const EditorComponent = props => {
     const selectionRef = useRef()
     const ctx = myUseContext({
         props,
-        initialCtx: () => ({
-            elemRef,
-            selectionRef,
-            editor: createEditor()
-        }),
+        initialCtx: () => {
+            let editor = createEditor()
+            editor.onChange = () => {
+                onChange(editor.children)
+                onChangeSelection(editor.selection)
+            }
+            return {
+                elemRef,
+                selectionRef,
+                editor
+            }
+        },
         initialState: ctx => ({
             cursorType: CursorType.range,
             recognizer: new MultiRecognizer({
@@ -462,6 +471,13 @@ const EditorComponent = props => {
         if (selectionRef.current != null) selectionRef.current.update()
     })
 
+    useImperativeHandle(ref, () => ({
+        editor: ctx.editor,
+        insertText: text => ctx.editor.insertText(text)
+    }))
+
+    log('RENDER')
+
     return (
         <Responder handler={useCallback(ctx.state.recognizer.getHandler())}>
             <Stack>
@@ -477,6 +493,7 @@ const EditorComponent = props => {
                         </EditorContext.Provider>
                     </Flex>
                 </Padded>
+                {/*
                 {ctx.state.cursorType === CursorType.range ? (
                     <Selection
                         ref={selectionRef}
@@ -488,9 +505,10 @@ const EditorComponent = props => {
                 ) : (
                     <Cursor ctx={ctx} />
                 )}
+                */}
             </Stack>
         </Responder>
     )
-}
+})
 
 export default EditorComponent

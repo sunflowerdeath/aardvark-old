@@ -83,6 +83,9 @@ class Document : public std::enable_shared_from_this<Document> {
     std::shared_ptr<Connection> add_key_event_handler(
         const SignalEventSink<KeyEvent>::EventHandler& handler);
 
+    std::shared_ptr<Connection> add_char_event_handler(
+        const SignalEventSink<CharEvent>::EventHandler& handler);
+
     std::shared_ptr<Connection> add_scroll_event_handler(
         const SignalEventSink<ScrollEvent>::EventHandler& handler);
 
@@ -98,6 +101,7 @@ class Document : public std::enable_shared_from_this<Document> {
 
     std::unique_ptr<PointerEventManager> pointer_event_manager;
     SignalEventSink<KeyEvent> key_event_sink;
+    SignalEventSink<CharEvent> char_event_sink;
     SignalEventSink<ScrollEvent> scroll_event_sink;
 
   private:

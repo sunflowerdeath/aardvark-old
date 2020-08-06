@@ -25,6 +25,10 @@ methods:
       args:
         - name: handler
           type: KeyEventHandler
+    - name: addCharEventHandler
+      args:
+        - name: handler
+          type: CharEventHandler
       return: Connection
     - name: addScrollEventHandler
       args:

@@ -82,6 +82,19 @@ void SvgImageElement::init_svg() {
         SVGNative::SVGDocument::CreateSVGDocument(data.c_str(), renderer));
 }
 
+SVGNative::ColorMap convert_color_map(ColorMap& map) {
+    auto res = SVGNative::ColorMap();
+    for (auto& it : map) {
+        auto color = std::array<float, 4>{
+            (float)it.second.red / 255.0f,
+            (float)it.second.green / 255.0f,
+            (float)it.second.blue / 255.0f,
+            (float)it.second.alpha / 255.0f};
+        res.insert({it.first, color});
+    }
+    return res;
+}
+
 void SvgImageElement::paint(bool is_changed) {
     if (svg == nullptr) init_svg();
     auto img_size = Size{(float)svg->Width(), (float)svg->Height()};
@@ -102,7 +115,12 @@ void SvgImageElement::paint(bool is_changed) {
             fit_size.width / img_size.width, fit_size.height / img_size.height);
     }
     renderer->SetSkCanvas(layer->canvas);
-    svg->Render(img_size.width, img_size.height);
+    if (color_map.size() > 0) {
+        auto map = convert_color_map(color_map);
+        svg->Render(map, img_size.width, img_size.height);
+    } else {
+        svg->Render(img_size.width, img_size.height);
+    }
     layer->canvas->restore();
 }
 

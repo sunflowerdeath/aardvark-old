@@ -25,7 +25,7 @@ extends: Connection
 ---
 kind: enum
 name: ValueType
-originalName: Value::ValueType
+mappedName: Value::ValueType
 values:
     - none
     - abs
@@ -85,6 +85,7 @@ include: aardvark/utils/data_source.hpp
 ---
 kind: class
 name: File
+extends: DataSource
 constructor:
     args:
         - name: path

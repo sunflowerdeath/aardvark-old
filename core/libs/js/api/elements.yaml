@@ -41,6 +41,25 @@ props:
       type: Alignment
       setter: set_alignment
 ---
+kind: struct
+name: FractionalAlignment
+props:
+    - name: left
+      type: float
+    - name: top
+      type: float
+---
+kind: class
+name: FractionalAlignedElement
+doc: Element that aligns child within itself.
+include: aardvark/elements/aligned.hpp
+extends: Element
+constructor: default
+props:
+    - name: alignment
+      type: FractionalAlignment
+      setter: set_alignment
+---
 kind: class
 name: BackgroundElement
 extends: Element
@@ -206,7 +225,7 @@ methods:
     - name: setChildLayout
       doc: |
         Function that can be called inside layout callback to set size and
-        position (relative) of the children.
+        relative position of the children.
       args:
         - name: child
           type: Element
@@ -321,6 +340,10 @@ props:
     - name: customSize
       type: Size
       setter: set_custom_size
+---
+kind: map
+name: ColorMap
+type: Color
 ---
 kind: class
 name: SvgImageElement

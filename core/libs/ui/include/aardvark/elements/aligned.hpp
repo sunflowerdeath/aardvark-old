@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+
 #include "../base_types.hpp"
 #include "../box_constraints.hpp"
 #include "../element.hpp"
@@ -28,12 +29,18 @@ struct Alignment {
     }
 };
 
+struct FractionalAlignment {
+    float left = 0.0f;
+    float top = 0.0f;
+};
+
 class AlignedElement : public SingleChildElement {
   public:
     AlignedElement()
-        : SingleChildElement(/* child */ nullptr,
-                             /* is_repaint_boundary */ false,
-                             /* size_depends_on_parent */ true){};
+        : SingleChildElement(
+              /* child */ nullptr,
+              /* is_repaint_boundary */ false,
+              /* size_depends_on_parent */ true){};
 
     AlignedElement(
         std::shared_ptr<Element> child,
@@ -41,19 +48,38 @@ class AlignedElement : public SingleChildElement {
         bool adjust_child_size = true,
         bool is_repaint_boundary = false);
 
-    std::string get_debug_name() override { return "Align"; };
+    std::string get_debug_name() override { return "Aligned"; };
     float get_intrinsic_height(float width) override;
     float get_intrinsic_width(float height) override;
     Size layout(BoxConstraints constraints) override;
-    void paint(bool is_changed) override;
     HitTestMode get_hit_test_mode() override { return HitTestMode::Disabled; };
 
-    // Whether to reduce size of the child by the size of insets, or make it 
-    // equal to the size of the container. This is useful when you need to set 
-    // relative size and position at the same time.
+    // Whether to reduce constraints for the child or use original constraints.
+    // This is useful when you need to set relative size and position at the
+    // same time.
     ELEMENT_PROP(bool, adjust_child_size);
 
     ELEMENT_PROP(Alignment, alignment);
 };
 
-}  // namespace aardvark::elements
+class FractionalAlignedElement : public SingleChildElement {
+  public:
+    FractionalAlignedElement()
+        : SingleChildElement(
+              /* child */ nullptr,
+              /* is_repaint_boundary */ false,
+              /* size_depends_on_parent */ true){};
+
+    FractionalAlignedElement(
+        std::shared_ptr<Element> child,
+        FractionalAlignment alignment,
+        bool is_repaint_boundary = false);
+
+    std::string get_debug_name() override { return "FractionalAligned"; };
+    Size layout(BoxConstraints constraints) override;
+    HitTestMode get_hit_test_mode() override { return HitTestMode::Disabled; };
+
+    ELEMENT_PROP(FractionalAlignment, alignment);
+};
+
+}  // namespace aardvark

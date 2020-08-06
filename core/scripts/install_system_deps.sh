@@ -1,4 +1,4 @@
-sudo apt install \
+sudo apt -y install \
     curl \
     cmake \
     clang \

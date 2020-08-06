@@ -12,6 +12,9 @@ export const IntrinsicHeight = register(
 )
 export const IntrinsicWidth = register('IntrinsicWidth', IntrinsicWidthElement)
 export const Image = register('Image', ImageElement)
+export const FractionalAligned = register(
+    'FractionalAligned', FractionalAlignedElement
+)
 export const Flex = register('Flex', FlexElement)
 export const FlexChild = register('FlexChild', FlexChildElement)
 export const Layer = register('Layer', LayerElement)

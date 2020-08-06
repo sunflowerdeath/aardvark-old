@@ -81,7 +81,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action,
         button                                                 // button
     };
     DesktopApp::dispatch_event(window, event);
-};
+}
 
 // Keyboard events
 void key_callback(GLFWwindow* window, int key, int scancode, int action,
@@ -92,7 +92,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action,
     if (action == GLFW_REPEAT) key_action = KeyAction::Repeat;
     DesktopApp::dispatch_event(window,
                                KeyEvent{key, scancode, key_action, mods});
-};
+}
+
+void char_callback(GLFWwindow* window, unsigned int codepoint) {
+    DesktopApp::dispatch_event(window, CharEvent{(int)codepoint});
+}
 
 const auto FRAME_TIME = 16000;
 
@@ -118,6 +122,7 @@ std::shared_ptr<DesktopWindow> DesktopApp::create_window(Size size) {
     glfwSetMouseButtonCallback(glfw_window, mouse_button_callback);
     // Keyboard events
     glfwSetKeyCallback(glfw_window, key_callback);
+    glfwSetCharCallback(glfw_window, char_callback);
     auto gr_context = GrContext::MakeGL();
     auto screen = Layer::make_screen_layer(gr_context);
     documents[window.get()] = std::make_shared<Document>(gr_context, screen);
@@ -181,6 +186,12 @@ void DesktopApp::handle_event(DesktopWindow* window, Event event) {
     if (auto key_event = std::get_if<KeyEvent>(&event)) {
         window->key_event_sink.handle_event(*key_event);
         document->key_event_sink.handle_event(*key_event);
+        return;
+    }
+
+    if (auto char_event = std::get_if<CharEvent>(&event)) {
+        window->char_event_sink.handle_event(*char_event);
+        document->char_event_sink.handle_event(*char_event);
         return;
     }
 

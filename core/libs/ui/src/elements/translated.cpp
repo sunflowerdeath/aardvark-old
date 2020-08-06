@@ -22,13 +22,4 @@ Size TranslatedElement::layout(BoxConstraints constraints) {
                 /* height */ fmaxf(0, child_size.height + top_tr)};
 }
 
-bool TranslatedElement::hit_test(double left, double top) {
-    auto left_tr = translation.left.calc(size.width);
-    auto top_tr = translation.left.calc(size.width);
-    return (abs_position.left >= left_tr &&
-            abs_position.left <= left_tr + size.width &&
-            abs_position.top >= top_tr &&
-            abs_position.top <= top_tr + size.height);
-}
-
 }  // namespace aardvark

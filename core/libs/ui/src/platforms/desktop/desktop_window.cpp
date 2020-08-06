@@ -17,8 +17,8 @@ DesktopWindow::DesktopWindow(DesktopApp* app, const Size& size) : app(app) {
     glfwWindowHint(GLFW_DEPTH_BITS, 0);
     glfwWindowHint(GLFW_STENCIL_BITS, STENCIL_BITS);
     glfwWindowHint(GLFW_SAMPLES, MSAA_SAMPLE_COUNT);
-    window =
-        glfwCreateWindow(size.width, size.height, "GLFW", nullptr, nullptr);
+    window = glfwCreateWindow(
+        (int)size.width, (int)size.height, "GLFW", nullptr, nullptr);
     if (window == nullptr) {
         Log::error("[DesktopWindow] Cannot create GLFW window");
     }
@@ -42,11 +42,11 @@ Size DesktopWindow::get_size() {
 }
 
 void DesktopWindow::set_size(const Size& size) {
-    glfwSetWindowSize(window, size.width, size.height);
+    glfwSetWindowSize(window, (int)size.width, (int)size.height);
 }
 
 void DesktopWindow::set_position(const Position& pos) {
-    glfwSetWindowPos(window, pos.left, pos.top);
+    glfwSetWindowPos(window, (int)pos.left, (int)pos.top);
 }
 
 void DesktopWindow::set_title(const char* title) {
@@ -71,6 +71,11 @@ std::shared_ptr<Connection> DesktopWindow::add_pointer_event_handler(
 std::shared_ptr<Connection> DesktopWindow::add_key_event_handler(
     const SignalEventSink<KeyEvent>::EventHandler& handler){
     return key_event_sink.add_handler(handler);
+}
+
+std::shared_ptr<Connection> DesktopWindow::add_char_event_handler(
+    const SignalEventSink<CharEvent>::EventHandler& handler){
+    return char_event_sink.add_handler(handler);
 }
 
 std::shared_ptr<Connection> DesktopWindow::add_scroll_event_handler(

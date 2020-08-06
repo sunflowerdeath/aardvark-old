@@ -2,7 +2,7 @@ kind: struct
 name: ErrorLocation
 props:
     - name: sourceURL
-      originalName: source_url
+      mappedName: source_url
       type: string
     - name: line
       type: int

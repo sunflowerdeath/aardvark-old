@@ -1,7 +1,7 @@
 #pragma once
 
 #include <svgnative/SVGDocument.h>
-#include <svgnative/SkiaSVGRenderer.h>
+#include <svgnative/ports/skia/SkiaSVGRenderer.h>
 
 #include "../base_types.hpp"
 #include "../element.hpp"
@@ -57,6 +57,8 @@ class ImageElement : public Element {
     sk_sp<SkImage> image = nullptr;
 };
 
+using ColorMap = std::unordered_map<std::string, Color>;
+
 class SvgImageElement : public Element {
   public:
     SvgImageElement(
@@ -83,6 +85,7 @@ class SvgImageElement : public Element {
 
     ELEMENT_PROP_DEFAULT(ImageFit, fit, ImageFit::none);
     ELEMENT_PROP(Size, custom_size);
+    ELEMENT_PROP_DEFAULT(ColorMap, color_map, {});
 
   private:
     void init_svg();

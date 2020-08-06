@@ -70,6 +70,10 @@ struct KeyEvent {
     int mods;
 };
 
+struct CharEvent {
+    int codepoint;
+};
+
 // Scroll
 
 struct ScrollEvent {
@@ -77,7 +81,8 @@ struct ScrollEvent {
     float top;
 };
 
-using Event = std::variant<WindowEvent, PointerEvent, KeyEvent, ScrollEvent>;
+using Event =
+    std::variant<WindowEvent, PointerEvent, KeyEvent, CharEvent, ScrollEvent>;
 
 using EventHandler = std::function<void(Event)>;
 

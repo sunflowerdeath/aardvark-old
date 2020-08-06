@@ -347,6 +347,11 @@ std::shared_ptr<Connection> Document::add_key_event_handler(
     return key_event_sink.add_handler(handler);
 }
 
+std::shared_ptr<Connection> Document::add_char_event_handler(
+    const SignalEventSink<CharEvent>::EventHandler& handler) {
+    return char_event_sink.add_handler(handler);
+}
+
 std::shared_ptr<Connection> Document::add_scroll_event_handler(
     const SignalEventSink<ScrollEvent>::EventHandler& handler) {
     return scroll_event_sink.add_handler(handler);
