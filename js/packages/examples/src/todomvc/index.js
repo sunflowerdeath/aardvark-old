@@ -147,6 +147,7 @@ const Todo = observer(({ store }) => {
                                 <SvgImage
                                     src={checkmarkSrc}
                                     fit={ImageFit.contain}
+                                    colorMap={{ fill: Color.rgb(93, 194, 175) }}
                                 />
                             ) : (
                                 <Placeholder />
@@ -191,6 +192,7 @@ const Todo = observer(({ store }) => {
                                 <SvgImage
                                     src={closeSrc}
                                     fit={ImageFit.contain}
+                                    colorMap={{ fill: Color.red }}
                                 />
                             </Sized>
                         </GestureResponder>

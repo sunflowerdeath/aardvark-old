@@ -360,6 +360,9 @@ props:
     - name: customSize
       type: Size
       setter: set_custom_size
+    - name: colorMap
+      type: ColorMap
+      setter: set_color_map
 ---
 kind: class
 name: IntrinsicHeightElement

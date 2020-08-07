@@ -65,6 +65,14 @@ const SvgExample = () => {
                     src={File('build/test4.svg')}
                 />
             </Aligned>
+            <Aligned
+                alignment={Alignment.topLeft(Value.abs(350), Value.abs(200))}
+            >
+                <ImageBox
+                    fit={ImageFit.contain}
+                    colorMap={{ colorA: Color.blue, colorB: Color.green }}
+                />
+            </Aligned>
         </Stack>
     )
 }

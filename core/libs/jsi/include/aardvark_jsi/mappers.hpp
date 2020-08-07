@@ -348,6 +348,7 @@ class ArrayMapper : public Mapper<std::vector<T>> {
         const CheckErrorParams& err_params) override {
         auto res = std::vector<T>();
         auto err = check_type(ctx, value, "array", err_params);
+        if (err.has_value()) return tl::make_unexpected(err.value());
         auto obj = value.to_object().value();
         auto length = obj.get_property("length").value().to_number().value();
         for (auto i = 0; i < length; i++) {
@@ -377,16 +378,50 @@ class MapMapper : public Mapper<std::unordered_map<std::string, T>> {
   public:
     MapMapper(Mapper<T>* mapper) : mapper(mapper){};
 
-    Value to_js(Context& ctx, const std::unordered_map<std::string, T>& value) override {
+    Value to_js(Context& ctx, const std::unordered_map<std::string, T>& value)
+        override {
+        auto res = ctx.object_make(nullptr);
+        for (auto it : value) {
+            res.set_property(it.first, mapper->to_js(ctx, it.second));
+        }
+        return res.to_value();
     };
 
-    std::unordered_map<std::string, T> from_js(Context& ctx, const Value& value) override {
+    std::unordered_map<std::string, T> from_js(
+        Context& ctx, const Value& value) override {
+        auto res = std::unordered_map<std::string, T>();
+        auto obj = value.to_object().value();
+        auto prop_names = obj.get_property_names();
+        for (auto& prop : prop_names) {
+            res.insert(
+                {prop, mapper->from_js(ctx, obj.get_property(prop).value())});
+        }
+        return res;
     };
 
     tl::expected<std::unordered_map<std::string, T>, std::string> try_from_js(
         Context& ctx,
         const Value& value,
         const CheckErrorParams& err_params) override {
+        auto res = std::unordered_map<std::string, T>();
+        auto err = check_type(ctx, value, "object", err_params);
+        if (err.has_value()) return tl::make_unexpected(err.value());
+        auto obj = value.to_object().value();
+        auto prop_names = obj.get_property_names();
+        for (auto& prop : prop_names) {
+            auto prop_val = obj.get_property(prop).value(); // TODO check?
+            auto prop_err_params = CheckErrorParams{
+                err_params.kind,
+                err_params.name + "." + prop,
+                err_params.target};
+            auto prop_res = mapper->try_from_js(ctx, prop_val, prop_err_params);
+            if (prop_res.has_value()) {
+                res.insert({ prop, prop_res.value() });
+            } else {
+                return tl::make_unexpected(prop_res.error());
+            }
+        }
+        return res;
     };
     
   private:
