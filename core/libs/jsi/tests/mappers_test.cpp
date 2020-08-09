@@ -112,4 +112,47 @@ TEMPLATE_TEST_CASE(
             REQUIRE(object1.strict_equal_to(object2) == false);
         }
     }
+
+    SECTION("array") {
+        auto int_array = ctx->object_make_array();
+        int_array.set_property_at_index(0, ctx->value_make_number(1));
+        int_array.set_property_at_index(1, ctx->value_make_number(2));
+
+        auto bool_array = ctx->object_make_array();
+        bool_array.set_property_at_index(0, ctx->value_make_bool(true));
+        bool_array.set_property_at_index(1, ctx->value_make_bool(false));
+
+        SECTION("to_js") {
+            auto mapper = ArrayMapper<int>(int_mapper);
+            auto res = mapper.to_js(ctx_ref, std::vector{1,2});
+            REQUIRE(res.get_type() == ValueType::object);
+            auto obj = res.to_object().value();
+            REQUIRE(obj.is_array());
+            REQUIRE(
+                obj.get_property_at_index(0).value().to_number().value() == 1);
+            REQUIRE(
+                obj.get_property_at_index(1).value().to_number().value() == 2);
+        }
+
+        SECTION("from_js") {
+            auto mapper = ArrayMapper<int>(int_mapper);
+            auto res = mapper.from_js(ctx_ref, int_array.to_value());
+            REQUIRE(res.size() == 2);
+            REQUIRE(res[0] == 1);
+            REQUIRE(res[1] == 2);
+        }
+
+        SECTION("try_from_js") {
+            auto mapper = ArrayMapper<int>(int_mapper);
+            auto res =
+                mapper.try_from_js(ctx_ref, int_array.to_value(), err_params);
+            REQUIRE(res.has_value());
+            REQUIRE(res.value().size() == 2);
+            REQUIRE(res.value()[0] == 1);
+            REQUIRE(res.value()[1] == 2);
+            auto res2 =
+                mapper.try_from_js(ctx_ref, bool_array.to_value(), err_params);
+            REQUIRE(res2.has_value() == false);
+        }
+    }
 }
