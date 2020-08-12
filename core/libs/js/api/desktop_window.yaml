@@ -1,3 +1,34 @@
+kind: optional
+name: OptionalPosition
+type: Position
+---
+kind: struct
+name: DesktopWindowOptions
+props:
+    - name: title
+      type: string
+      hasDefault: true
+    - name: position
+      type: OptionalPosition
+      hasDefault: true
+    - name: size
+      type: Size
+    - name: visible
+      type: bool
+      hasDefault: true
+    - name: decorated
+      type: bool
+      hasDefault: true
+    - name: resizable
+      type: bool
+      hasDefault: true
+    - name: floating
+      type: bool
+      hasDefault: true
+    - name: maximized
+      type: bool
+      hasDefault: true
+---
 kind: class
 name: DesktopWindow
 include: aardvark/platforms/desktop/desktop_window.hpp
@@ -6,8 +37,10 @@ props:
       type: Size
       getter: get_size
       setter: set_size
-    # - name: position
-      # type: Position
+    - name: position
+      type: Position
+      getter: get_position
+      setter: set_position
     # - name: title
       # type: string
 methods:

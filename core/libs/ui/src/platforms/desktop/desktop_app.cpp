@@ -105,8 +105,9 @@ void DesktopApp::dispatch_event(GLFWwindow* glfw_window, Event event) {
     window->app->handle_event(window, event);
 };
 
-std::shared_ptr<DesktopWindow> DesktopApp::create_window(Size size) {
-    auto window = std::make_shared<DesktopWindow>(this, size);
+std::shared_ptr<DesktopWindow> DesktopApp::create_window(
+    const DesktopWindowOptions& options) {
+    auto window = std::make_shared<DesktopWindow>(this, options);
     windows.push_back(window);
     auto glfw_window = window->window;
     // Window events
@@ -127,7 +128,7 @@ std::shared_ptr<DesktopWindow> DesktopApp::create_window(Size size) {
     auto screen = Layer::make_screen_layer(gr_context);
     documents[window.get()] = std::make_shared<Document>(gr_context, screen);
     return window;
-};
+}
 
 std::shared_ptr<Document> DesktopApp::get_document(
     std::shared_ptr<DesktopWindow> window) {

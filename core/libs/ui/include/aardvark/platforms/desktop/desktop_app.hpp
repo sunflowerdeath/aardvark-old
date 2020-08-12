@@ -16,6 +16,7 @@
 namespace aardvark {
 
 class DesktopWindow;
+struct DesktopWindowOptions;
 
 class DesktopApp {
   public:
@@ -31,7 +32,8 @@ class DesktopApp {
     void stop();
 
     // Creates new window
-    std::shared_ptr<DesktopWindow> create_window(Size size);
+    std::shared_ptr<DesktopWindow> create_window(
+        const DesktopWindowOptions& options);
 
     void destroy_window(std::shared_ptr<DesktopWindow> window);
 

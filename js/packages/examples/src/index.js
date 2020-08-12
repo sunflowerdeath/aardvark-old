@@ -24,7 +24,9 @@ import BenchmarkExample from './BenchmarkExample.js'
 
 import Button from './Button.js'
 
-const win = application.createWindow({ width: 640, height: 480 })
+const win = application.createWindow({
+    size: { width: 640, height: 640 }
+})
 const document = application.getDocument(win)
 
 const stop = () => {
@@ -43,6 +45,17 @@ const examples = [
     { name: 'Shadow', component: ShadowExample },
     { name: 'Benchmark', component: BenchmarkExample }
 ]
+
+const popup = (event) => {
+    log(JSON.stringify(event))
+    application.createWindow({
+        position: { left: win.position.left + event.left, top: win.position.top + event.top },
+        size: { width: 150, height: 300 },
+        floating: true,
+        decorated: false,
+        resizable: false
+    })
+}
 
 const Main = () => {
     const [selected, setSelected] = useState()
@@ -63,6 +76,9 @@ const Main = () => {
                     </Button>
                     <Button onTap={gc}>
                         <Text text="GC" />
+                    </Button>
+                    <Button onTap={popup}>
+                        <Text text="popup" />
                     </Button>
                 </Flex>
             </Stack>

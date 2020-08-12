@@ -4,8 +4,8 @@ include: aardvark/platforms/desktop/desktop_app.hpp
 methods:
     - name: createWindow
       args:
-        - name: size
-          type: Size
+        - name: options
+          type: DesktopWindowOptions
       return: DesktopWindow
     - name: destroyWindow
       args:

@@ -30,4 +30,4 @@ rm -rf $BUILD_DIR
 mkdir $BUILD_DIR
 cd $BUILD_DIR
 cmake $CMAKE_ARGS ..
-make -j4
+make -j

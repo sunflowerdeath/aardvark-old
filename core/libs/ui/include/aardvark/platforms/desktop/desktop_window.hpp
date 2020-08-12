@@ -11,8 +11,22 @@ namespace aardvark {
 
 class DesktopApp;
 
+struct DesktopWindowOptions {
+    std::string title = "";
+    std::optional<Position> position = std::nullopt;
+    Size size;
+    // std::optional<Size> min_size = std::nullopt;    
+    // std::optional<Size> max_size = std::nullopt;
+    bool visible = true;
+    bool decorated = true;
+    bool resizable = true;
+    bool floating = false;
+    bool maximized = false;
+};
+
 class DesktopWindow {
   public:
+    DesktopWindow(DesktopApp* app, const DesktopWindowOptions& options);
     DesktopWindow(DesktopApp* app, const Size& size);
     ~DesktopWindow();
     // Disable copy and assignment
@@ -25,8 +39,12 @@ class DesktopWindow {
 
     Size get_size();
     void set_size(const Size& size);
+    
+    Position get_position();
     void set_position(const Position& pos);
-    void set_title(const char* title);
+    
+    void set_title(const char* title); // TODO std::string
+    
     void minimize();
     void maximize();
     void restore();
@@ -56,6 +74,9 @@ class DesktopWindow {
     static DesktopWindow* get(GLFWwindow* window) {
         return static_cast<DesktopWindow*>(glfwGetWindowUserPointer(window));
     }
+    
+  private:
+    void create_with_options(const DesktopWindowOptions& options);
 };
 
 }  // namespace aardvark

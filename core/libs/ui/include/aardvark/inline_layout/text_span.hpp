@@ -67,6 +67,7 @@ class TextSpan : public Span {
   private:
     SkFont font;
     BreakIterator* linebreaker;
+    std::optional<std::vector<float>> glyph_widths = std::nullopt;
     InlineLayoutResult split(int pos, float measured_width);
     InlineLayoutResult fit(float measured_width);
     InlineLayoutResult wrap();

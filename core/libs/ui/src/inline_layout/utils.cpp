@@ -16,8 +16,34 @@ float measure_text_width(
         text.getBuffer(), byte_length, SkTextEncoding::kUTF16);
 };
 
-// int break_text_width_glyphs(
-    // SkGlyphID[] glyphs,
+std::vector<float> get_glyph_widths(
+    const UnicodeString& text, const SkFont& font) {
+    auto count = text.length(); 
+    if (count == 0) return std::vector<float>();
+    SkGlyphID glyphs[count]; // countChar32
+    auto glyph_count = font.textToGlyphs(
+        text.getBuffer(),        // text
+        count * 2,               // byteLength
+        SkTextEncoding::kUTF16,  // encoding
+        glyphs,                  // glyphs
+        count                    // maxGlyphCount
+    );
+    auto widths = std::vector<float>(glyph_count);
+    font.getWidths(glyphs, glyph_count, widths.data());
+    return widths;
+}
+
+int find_break_position(
+    float max_width, std::vector<float> glyph_widths, float* measured_width) {
+    auto measured_count = 0;
+    *measured_width = 0;
+    for (int i = 0; i < glyph_widths.size(); i++) {
+        if (*measured_width + glyph_widths[i] > max_width) break;
+        measured_count++;
+        *measured_width += glyph_widths[i];
+    }
+    return measured_count;
+}
 
 int break_text(
     const UnicodeString& text,

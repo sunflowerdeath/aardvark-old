@@ -17,6 +17,13 @@ struct Selection {
 
 using ParagraphLine = std::vector<std::shared_ptr<inline_layout::Span>>;
 
+/*
+struct ParagraphLine {
+    FontMetrics metrics;
+    std::vector<std::shared_ptr<inline_layout::Span>> spans;
+};
+*/
+
 class ParagraphElement : public Element {
   public:
     ParagraphElement()
@@ -45,6 +52,8 @@ class ParagraphElement : public Element {
 
     std::shared_ptr<inline_layout::Span> root;
     inline_layout::LineMetrics metrics;
+
+    std::vector<int> get_offset_at_position(Position pos);
 
   private:
     void next_line();

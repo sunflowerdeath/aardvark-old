@@ -35,7 +35,7 @@ float center(LineMetrics line, LineMetrics span);
 float bottom(LineMetrics line, LineMetrics span);
 
 // Middle of the span is aligned with middle of x-height of the line
-int text_center(LineMetrics line, LineMetrics span);
+float text_center(LineMetrics line, LineMetrics span);
 
 }  // namespace vert_align
 

@@ -84,4 +84,34 @@ float ParagraphElement::get_intrinsic_width(float height) {
     return 0;
 }
 
+/*
+std::vector<int> ParagraphElement::get_offset_at_position(Position pos) {
+    auto res = std::vector<int>();
+    auto current_height = 0.0f;
+    ParagraphLine* current_line = nullptr;
+    for (auto& line : lines) {
+        current_height += line.metrics.height;
+        current_line = &line;
+        if (pos.top < current_height) break;
+    }
+    std::shared_ptr<inline_layout::Span> current_span = nullptr;
+    auto current_width = 0.0f;
+    for (auto& span : current_line->spans) {
+        current_width += span.size.width;
+        if (pos.left < current_width) break;
+    }
+    inline_layout::Span* base_span = nullptr;
+    auto prev_offset = 0.0f;
+    auto current_base = &current_span->base;
+    while (current_base != nullptr) {
+        prev_offset += current_base.prev_offset;
+        current_base = &current_base->span->base;
+    }
+    auto offset = prev_offset + find_break_offset(glyph_widths, current_width);
+    auto path = get_span_path();
+    path.push_back(offset);
+    return path;
+}
+*/
+
 }  // namespace aardvark

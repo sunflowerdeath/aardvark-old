@@ -96,6 +96,9 @@ InlineLayoutResult TextSpan::break_segment(
 }
 
 InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
+    if (glyph_widths == std::nullopt) {
+        glyph_widths = get_glyph_widths(text, font);
+    }
     font = style.to_sk_font();
     auto chars_count = text.countChar32();
     if (chars_count == 0) return fit(0);
@@ -185,7 +188,11 @@ std::shared_ptr<Span> TextSpan::slice(int start, int end) {
 }
 
 int TextSpan::get_text_offset_at_position(int position) {
-    // TODO
+    if (glyph_widths == std::nullopt) {
+        glyph_widths = get_glyph_widths(text, font);
+    }
+    auto measured_width = 0.0f;
+    return find_break_position(position, glyph_widths.value(), &measured_width);
 }
 
 }  // namespace aardvark::inline_layout

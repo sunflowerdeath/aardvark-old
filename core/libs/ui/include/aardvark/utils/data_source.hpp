@@ -23,4 +23,14 @@ class File : public DataSource {
     std::string path;
 };
 
+class StringSrc : public DataSource {
+  public:
+    StringSrc(std::string data) : data(std::move(data)){};
+
+    std::string get_data() override { return data; };
+
+  private:
+    std::string data;
+};
+
 }

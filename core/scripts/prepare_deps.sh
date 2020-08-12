@@ -6,7 +6,7 @@
 ROOT=$PWD
 
 if [ -z $DEP ]; then
-  DEP="all"
+    DEP="all"
 fi
 
 mkdir -p $ROOT/externals

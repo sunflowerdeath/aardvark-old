@@ -16,6 +16,12 @@ float measure_text_width(
     const SkFont& font,
     std::optional<int> num_chars = std::nullopt);
 
+std::vector<float> get_glyph_widths(
+    const UnicodeString& text, const SkFont& font);
+
+int find_break_position(
+    float max_width, std::vector<float> glyph_widths, float* measured_width);
+
 int break_text(
     const UnicodeString& text,
     const SkFont& font,

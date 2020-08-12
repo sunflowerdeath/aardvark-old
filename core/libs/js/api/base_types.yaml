@@ -90,3 +90,11 @@ constructor:
     args:
         - name: path
           type: string
+---
+kind: class
+name: StringSrc
+extends: DataSource
+constructor:
+    args:
+        - name: data
+          type: string
