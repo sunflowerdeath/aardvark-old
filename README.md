@@ -21,7 +21,7 @@ different platforms.
 Currently Aardvark is under development and not ready for use.
 
 <p align="center">
-  <img width="644" height="670" src="logo.png">
+  <img width="644" height="670" src="todomvc.png">
 </p>
 
 ### Platforms
