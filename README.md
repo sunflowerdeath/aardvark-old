@@ -16,4 +16,31 @@ Goal of this project is to allow developers to control by themselves how their
 applications should work, and not depend on the features and limitations of
 different platforms.
 
-Currently it is under development and not ready for use.
+## Development status
+
+Currently Aardvark is under development and not ready for use.
+
+<p align="center">
+  <img width="644" height="670" src="logo.png">
+</p>
+
+### Platforms
+
+- 🔨 Desktop Linux
+- 🔨 Android
+- ⌛ Windows
+- ⌛ Macos
+- ⌛ Ios
+
+### Features
+
+- ✅ Basic rendering
+  - ✅ Layout elements
+  - ✅ Decorations
+  - ✅ Png and svg images
+  - ✅ Inline rendering
+  - ✅ Hit testing and event handling  
+- ✅ JS bindings
+- ✅ React renderer
+- 🔨 Inline editing
+- ⌛ Native extensions

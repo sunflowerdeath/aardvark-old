@@ -48,7 +48,10 @@ const arrowDownSrc = File(arrowDownSvg)
 import closeSvg from './close.svg'
 const closeSrc = File(closeSvg)
 
-const win = application.createWindow({ width: 640, height: 640 })
+const win = application.createWindow({
+    size: { width: 640, height: 640 },
+    title: 'TodoMVC'
+})
 const document = application.getDocument(win)
 
 const INITIAL_TODOS = [
@@ -263,11 +266,11 @@ const TodoListHeader = observer(() => {
                                     height: Value.abs(32),
                                     width: Value.abs(32)
                                 }}
-                                background={color}
                             >
                                 <SvgImage
                                     src={arrowDownSrc}
                                     fit={ImageFit.contain}
+                                    colorMap={{ fill: color }}
                                 />
                             </Container>
                         </GestureResponder>
