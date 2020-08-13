@@ -40,12 +40,11 @@ import { decorate, observable, computed, action } from 'mobx'
 import { observer } from 'mobx-react'
 
 import checkmarkSvg from './checkmark.svg'
-const checkmarkSrc = File(checkmarkSvg)
-
 import arrowDownSvg from './arrowDown.svg'
-const arrowDownSrc = File(arrowDownSvg)
-
 import closeSvg from './close.svg'
+
+const arrowDownSrc = File(arrowDownSvg)
+const checkmarkSrc = File(checkmarkSvg)
 const closeSrc = File(closeSvg)
 
 const win = application.createWindow({

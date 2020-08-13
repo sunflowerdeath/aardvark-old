@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
-import { Color, Insets, Value } from '@advk/common'
+import { Color, Insets, Value, BoxBorders, BorderSide } from '@advk/common'
 import ReactAardvark, {
     Background,
+    Border,
+    Center,
     Flex,
     FlexChild,
     Stack,
@@ -46,14 +48,39 @@ const examples = [
     { name: 'Benchmark', component: BenchmarkExample }
 ]
 
-const popup = (event) => {
-    log(JSON.stringify(event))
-    application.createWindow({
-        position: { left: win.position.left + event.left, top: win.position.top + event.top },
-        size: { width: 150, height: 300 },
+const Popup = () => (
+    <Background color={Color.rgb(45, 45, 45)}>
+        <Border borders={BoxBorders.all(BorderSide(1, Color.black))}>
+            <Center>
+                <Text text="Popup" style={{ color: Color.white }} />
+            </Center>
+        </Border>
+    </Background>
+)
+
+const popup = event => {
+    let popupWin = application.createWindow({
+        position: {
+            left: win.position.left + event.left,
+            top: win.position.top + event.top
+        },
+        size: { width: 200, height: 250 },
         floating: true,
         decorated: false,
-        resizable: false
+        resizable: false,
+        visible: false
+    })
+    let popupDoc = application.getDocument(popupWin)
+    ReactAardvark.render(<Popup />, popupDoc)
+    requestAnimationFrame(() => {
+        popupWin.show()
+        let conn = popupWin.addWindowEventHandler(event => {
+            if (event.type === 'blur') {
+                conn.disconnect()
+                popupWin.hide()
+                application.destroyWindow(popupWin)
+            }
+        })
     })
 }
 

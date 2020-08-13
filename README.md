@@ -36,10 +36,10 @@ Currently Aardvark is under development and not ready for use.
 
 - ✅ Basic rendering
   - ✅ Layout elements
-  - ✅ Decorations
+  - ✅ Decorations (background, border, radius, shadows)
   - ✅ Png and svg images
   - ✅ Inline rendering
-  - ✅ Hit testing and event handling  
+  - ✅ Hit testing and event handling
 - ✅ JS bindings
 - ✅ React renderer
 - 🔨 Inline editing

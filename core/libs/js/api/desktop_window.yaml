@@ -41,14 +41,16 @@ props:
       type: Position
       getter: get_position
       setter: set_position
-    # - name: title
-      # type: string
+    - name: title
+      type: string
+      getter: get_title
+      setter: set_title
 methods:
     - name: minimize
     - name: maximize
     - name: restore
     - name: hide
-    - name: focus
+    - name: show
     - name: addPointerEventHandler
       args:
         - name: handler

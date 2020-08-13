@@ -38,6 +38,7 @@ void DesktopWindow::create_with_options(const DesktopWindowOptions& options) {
     glfwWindowHint(GLFW_STENCIL_BITS, STENCIL_BITS);
     glfwWindowHint(GLFW_SAMPLES, MSAA_SAMPLE_COUNT);
 
+    title = options.title;
     window = glfwCreateWindow(
         (int)options.size.width,
         (int)options.size.height,
@@ -82,8 +83,11 @@ void DesktopWindow::set_position(const Position& pos) {
     glfwSetWindowPos(window, (int)pos.left, (int)pos.top);
 }
 
-void DesktopWindow::set_title(const char* title) {
-    glfwSetWindowTitle(window, title);
+std::string DesktopWindow::get_title() { return title; }
+
+void DesktopWindow::set_title(const std::string& a_title) {
+    title = a_title;
+    glfwSetWindowTitle(window, title.data());
 }
 
 void DesktopWindow::minimize() { glfwIconifyWindow(window); }
@@ -93,6 +97,8 @@ void DesktopWindow::restore() { glfwRestoreWindow(window); }
 void DesktopWindow::maximize() { glfwMaximizeWindow(window); }
 
 void DesktopWindow::hide() { glfwHideWindow(window); }
+
+void DesktopWindow::show() { glfwShowWindow(window); }
 
 void DesktopWindow::focus() { glfwFocusWindow(window); }
 

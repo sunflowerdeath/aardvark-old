@@ -43,12 +43,14 @@ class DesktopWindow {
     Position get_position();
     void set_position(const Position& pos);
     
-    void set_title(const char* title); // TODO std::string
+    std::string get_title();
+    void set_title(const std::string& title);
     
     void minimize();
     void maximize();
     void restore();
     void hide();
+    void show();
     void focus();
 
     SignalEventSink<WindowEvent> window_event_sink;
@@ -76,6 +78,8 @@ class DesktopWindow {
     }
     
   private:
+    std::string title = "";
+
     void create_with_options(const DesktopWindowOptions& options);
 };
 
