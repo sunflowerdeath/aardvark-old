@@ -25,10 +25,15 @@ float ParagraphElement::layout_inline(float max_width) {
     elements.clear();
     auto current_height = 0.0f;
     for (auto& line : lines) {
-        auto line_metrics = inline_layout::calc_combined_metrics(line, metrics);
+        line.metrics =
+            inline_layout::calc_combined_metrics(line.spans, metrics);
         inline_layout::render_spans(
-            line, line_metrics, Position{0, current_height}, &elements, this);
-        current_height += line_metrics.height;
+            line.spans,
+            line.metrics,
+            Position{0, current_height},
+            &elements,
+            this);
+        current_height += line.metrics.height;
     }
 
     return current_height;
@@ -58,7 +63,7 @@ void ParagraphElement::layout_span(
         auto fit_span = result.fit_span.value();
         fit_span->metrics = result.metrics;
         fit_span->width = result.width;
-        current_line->push_back(fit_span);
+        current_line->spans.push_back(fit_span);
         remaining_width -= result.width;
     }
     if (result.remainder_span != std::nullopt) {
@@ -86,7 +91,7 @@ float ParagraphElement::get_intrinsic_width(float height) {
 
 /*
 std::vector<int> ParagraphElement::get_offset_at_position(Position pos) {
-    auto res = std::vector<int>();
+    // find line
     auto current_height = 0.0f;
     ParagraphLine* current_line = nullptr;
     for (auto& line : lines) {
@@ -94,23 +99,24 @@ std::vector<int> ParagraphElement::get_offset_at_position(Position pos) {
         current_line = &line;
         if (pos.top < current_height) break;
     }
+
+    // find span in line (always root)
     std::shared_ptr<inline_layout::Span> current_span = nullptr;
-    auto current_width = 0.0f;
+    auto current_pos = 0.0f;
     for (auto& span : current_line->spans) {
-        current_width += span.size.width;
-        if (pos.left < current_width) break;
+        current_span = span;
+        if (pos.left < current_pos + span->width) break;
+        current_pos += span->width;
     }
-    inline_layout::Span* base_span = nullptr;
-    auto prev_offset = 0.0f;
-    auto current_base = &current_span->base;
-    while (current_base != nullptr) {
-        prev_offset += current_base.prev_offset;
-        current_base = &current_base->span->base;
+
+    auto span_offset = current_span->get_text_offset_at_position(pos.left);
+    auto current_hz = current_span;
+    for (auto &o : offset) {
+        o += current_hz.base_span.prev_offset;
+        current_hz = current_hz.get_child_at(o);
     }
-    auto offset = prev_offset + find_break_offset(glyph_widths, current_width);
-    auto path = get_span_path();
-    path.push_back(offset);
-    return path;
+
+    return offset;
 }
 */
 

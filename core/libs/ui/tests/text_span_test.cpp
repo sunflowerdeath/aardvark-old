@@ -78,21 +78,6 @@ TEST_CASE("DecorationSpan", "[inline][decoration_span]") {
 }
 
 TEST_CASE("TextSpan", "[inline][text_span]") {
-    SECTION("slice") {
-        auto text = UnicodeString((UChar*)u"abcdefgh");
-        auto style = TextStyle();
-        auto span = std::make_shared<inline_layout::TextSpan>(text, style);
-
-        // ab | cdef | gh
-        // 01   2345   67 - original
-        //      0123      - slice
-
-        auto slice = span->slice(2, 5);
-        REQUIRE(slice->get_text() == "cdef");
-        REQUIRE(slice->base_span.span == span.get());
-        REQUIRE(slice->base_span.prev_offset == 2);
-    }
-
     auto text = UnicodeString((UChar*)u"Hello, World!");
     auto style = TextStyle();
     auto font = style.to_sk_font();
@@ -303,4 +288,42 @@ TEST_CASE("TextSpan", "[inline][text_span]") {
             overflow_result.fit_span.value().get());
         REQUIRE(fit_span->text == hell);
     }
+
+    SECTION("slice") {
+        auto text = UnicodeString((UChar*)u"abcdefgh");
+        auto style = TextStyle();
+        auto span = std::make_shared<inline_layout::TextSpan>(text, style);
+
+        // ab | cdef | gh
+        // 01   2345   67 - original
+        //      0123      - slice
+
+        auto slice = span->slice(2, 5);
+        REQUIRE(slice->get_text() == "cdef");
+        REQUIRE(slice->base_span.span == span.get());
+        REQUIRE(slice->base_span.prev_offset == 2);
+    }
+
+    SECTION("get_offset_at_position") {
+        auto text = UnicodeString((UChar*)u"Hello");
+        auto style = TextStyle();
+        auto span = std::make_shared<inline_layout::TextSpan>(text, style);
+
+        // before
+        auto before = span->get_offset_at_position(-1);
+        REQUIRE(before == 0);
+
+        // after
+        auto after = span->get_offset_at_position(1000);
+        REQUIRE(after == 5);
+
+        // inside
+        auto he = UnicodeString((UChar*)u"He");
+        auto he_width = inline_layout::measure_text_width(he, font);
+        auto inside_left = span->get_offset_at_position(he_width - 1);
+        REQUIRE(inside_left == 2);
+        auto inside_right = span->get_offset_at_position(he_width + 1);
+        REQUIRE(inside_right == 2);
+    }
+
 }

@@ -69,7 +69,7 @@ class Span : public std::enable_shared_from_this<Span>,
   public:
     Span(std::optional<SpanBase> base_span = std::nullopt)
         : base_span(
-              base_span == std::nullopt ? SpanBase{this, 0}
+              base_span == std::nullopt ? SpanBase{nullptr, 0}
                                         : base_span.value()){};
 
     virtual ~Span() = default;
@@ -97,7 +97,7 @@ class Span : public std::enable_shared_from_this<Span>,
     }
 
     // Finds closest text offset at the provided position
-    virtual int get_text_offset_at_position(int position) { return 0; }
+    virtual int get_offset_at_position(float position) { return 0; }
 
     // Span from which this span is derived
     SpanBase base_span;

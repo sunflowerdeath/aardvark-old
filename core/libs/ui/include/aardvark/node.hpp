@@ -35,6 +35,7 @@ class Node {
     virtual void insert_before_child(
         std::shared_ptr<T> child, std::shared_ptr<T> before_child) {}
     virtual void remove_child(std::shared_ptr<T> child) {}
+    virtual int find_child(std::shared_ptr<T> child) { return -1; }
     virtual void visit_children(NodeChildrenVisitor<T> visitor) {}
     virtual int get_children_count() { return 0; }
     virtual std::shared_ptr<T> get_child_at(int index) { return nullptr; }
@@ -96,6 +97,10 @@ class SingleChildNode : public virtual Node<T, OwnerT> {
         this->change();
     }
 
+    int find_child(std::shared_ptr<T> child) override {
+        return this->child == child ? 0 : -1;
+    }
+
     void visit_children(NodeChildrenVisitor<T> visitor) override {
         if (child != nullptr) visitor(child);
     }
@@ -147,9 +152,14 @@ class MultipleChildrenNode : public virtual Node<T, OwnerT> {
         this->change();
     }
 
+    int find_child(std::shared_ptr<T> child) override {
+        auto it = std::find(children.begin(), children.end(), child);
+        return it == children.end() ? -1 : std::distance(children.begin(), it);
+    }
+
     void visit_children(NodeChildrenVisitor<T> visitor) override {
         for (auto& child : children) visitor(child);
-    };
+    }
 
     int get_children_count() override { return children.size(); };
 

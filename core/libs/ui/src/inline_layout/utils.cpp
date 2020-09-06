@@ -38,7 +38,7 @@ int find_break_position(
     auto measured_count = 0;
     *measured_width = 0;
     for (int i = 0; i < glyph_widths.size(); i++) {
-        if (*measured_width + glyph_widths[i] > max_width) break;
+        if (*measured_width + glyph_widths[i] / 2 > max_width) break;
         measured_count++;
         *measured_width += glyph_widths[i];
     }

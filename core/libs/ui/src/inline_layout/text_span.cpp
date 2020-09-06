@@ -17,7 +17,7 @@ TextSpan::TextSpan(
 };
 
 void TextSpan::init() {
-    if (this->base_span.span == this) {
+    if (this->base_span.span == nullptr) {
         // Create linebreaker
         UErrorCode status = U_ZERO_ERROR;
         linebreaker =
@@ -96,10 +96,10 @@ InlineLayoutResult TextSpan::break_segment(
 }
 
 InlineLayoutResult TextSpan::layout(InlineConstraints constraints) {
+    font = style.to_sk_font();
     if (glyph_widths == std::nullopt) {
         glyph_widths = get_glyph_widths(text, font);
     }
-    font = style.to_sk_font();
     auto chars_count = text.countChar32();
     if (chars_count == 0) return fit(0);
     auto at_line_start =
@@ -183,11 +183,12 @@ int TextSpan::get_text_length() {
 
 std::shared_ptr<Span> TextSpan::slice(int start, int end) {
     auto new_text = text.tempSubString(start, end - start + 1);
-    auto new_base = SpanBase{base_span.span, base_span.prev_offset + start};
+    auto new_base = SpanBase{this, start};
     return std::make_shared<TextSpan>(new_text, style, linebreak, new_base);
 }
 
-int TextSpan::get_text_offset_at_position(int position) {
+int TextSpan::get_offset_at_position(float position) {
+    font = style.to_sk_font();
     if (glyph_widths == std::nullopt) {
         glyph_widths = get_glyph_widths(text, font);
     }

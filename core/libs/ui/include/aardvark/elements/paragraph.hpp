@@ -15,14 +15,12 @@ struct Selection {
     int extent_offset;
 };
 
-using ParagraphLine = std::vector<std::shared_ptr<inline_layout::Span>>;
+// using ParagraphLine = std::vector<std::shared_ptr<inline_layout::Span>>;
 
-/*
 struct ParagraphLine {
-    FontMetrics metrics;
+    inline_layout::LineMetrics metrics;
     std::vector<std::shared_ptr<inline_layout::Span>> spans;
 };
-*/
 
 class ParagraphElement : public Element {
   public:

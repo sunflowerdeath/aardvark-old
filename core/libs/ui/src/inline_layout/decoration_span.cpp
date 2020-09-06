@@ -46,6 +46,7 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
     auto fit_spans_width = 0;
     auto reached_end = false;
     auto paddings = decoration.get_paddings(constraints.total_line_width);
+    auto prev_offset = 0;
     for (auto& span : children) {
         if (reached_end) {
             remaining_spans.push_back(span);
@@ -63,7 +64,7 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
                               padding_before,
                               padding_after};
         auto result = span->layout(span_constraints);
-        if (result.fit_span != std::nullopt) {
+        if (result.fit_span.has_value()) {
             auto fit_span = result.fit_span.value();
             fit_span->metrics = result.metrics;
             fit_span->width = result.width;
@@ -73,9 +74,12 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
                 (result.type == InlineLayoutResult::Type::fit ? padding_after
                                                               : 0);
         }
-        if (result.remainder_span != std::nullopt) {
+        if (result.remainder_span.has_value()) {
             reached_end = true;
             remaining_spans.push_back(result.remainder_span.value());
+        }
+        if (result.fit_span.has_value() && !result.remainder_span.has_value()) {
+            prev_offset++;
         }
     }
 
@@ -97,9 +101,9 @@ InlineLayoutResult DecorationSpan::layout(InlineConstraints constraints) {
         auto fit_span_metrics =
             calc_combined_metrics(fit_spans, LineMetrics{0, 0, 0});
         auto remainder_span = std::make_shared<DecorationSpan>(
-            remaining_spans,                                    // children
-            decoration.right(),                                 // decoration
-            SpanBase{this, static_cast<int>(fit_spans.size())}  // base_span
+            remaining_spans,             // children
+            decoration.right(),          // decoration
+            SpanBase{this, prev_offset}  // base_span
         );
         return InlineLayoutResult::split(
             constraints.remaining_line_width,  // width
@@ -193,7 +197,7 @@ std::shared_ptr<Span> DecorationSpan::slice(int start, int end) {
         SpanBase{this, base_span.prev_offset + start});
 }
 
-int DecorationSpan::get_text_offset_at_position(int position) {
+int DecorationSpan::get_offset_at_position(float position) {
     // TODO
     return 0;
 }

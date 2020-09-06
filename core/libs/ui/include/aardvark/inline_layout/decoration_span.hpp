@@ -40,7 +40,7 @@ class DecorationSpan : public MultipleChildrenSpan {
     UnicodeString get_text() override;
     int get_text_length() override;
     std::shared_ptr<Span> slice(int start, int end) override;
-    int get_text_offset_at_position(int position) override;
+    int get_offset_at_position(float position) override;
 
     Decoration decoration;
 };

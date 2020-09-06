@@ -46,7 +46,7 @@ class TextSpan : public Span {
     UnicodeString get_text() override;
     int get_text_length() override;
     std::shared_ptr<Span> slice(int start, int end) override;
-    int get_text_offset_at_position(int position) override;
+    int get_offset_at_position(float position) override;
 
     UnicodeString text;
     NODE_PROP(TextStyle, style);
