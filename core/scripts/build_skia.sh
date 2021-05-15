@@ -18,6 +18,8 @@ skia_use_piex=false \
 skia_enable_pdf=false \
 skia_use_libwebp_decode=false \
 skia_use_libwebp_encode=false \
+skia_enable_skparagraph=false \
+skia_enable_skottie=false \
 "
 
 if [ "$PLATFORM" = "android" ]; then
@@ -38,6 +40,14 @@ fi
 if [ "$PLATFORM" = "linux" ]; then
     # skia_use_expat=false  XML parsing lib (for SVG and Android fontmanager)
     BUILD_FLAGS="$BUILD_FLAGS skia_use_expat=false"
+fi
+
+if [ "$PLATFORM" = "macos" ]; then
+    BUILD_FLAGS="$BUILD_FLAGS \
+        skia_use_system_libpng=false \
+        skia_use_system_libjpeg_turbo=false \
+        target_cpu=\"arm64\" \
+    "
 fi
 
 $SKIA_DIR/bin/gn gen --root=$SKIA_DIR $BUILD_DIR --args="$BUILD_FLAGS"

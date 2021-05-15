@@ -62,8 +62,8 @@ if [ "$DEP" = "quickjs" ] || [ "$DEP" = "all" ]; then
 fi
 
 if [ "$DEP" = "skia" ] || [ "$DEP" = "all" ]; then
-	echo "download skia@m85"
-	curl https://github.com/google/skia/archive/chrome/m85.zip -L -# > skia-chrome-m85.zip
+	echo "download skia@m91"
+	curl https://github.com/google/skia/archive/chrome/m91.zip -L -# > skia-chrome-m91.zip
 fi
 
 if [ "$DEP" = "spdlog" ] || [ "$DEP" = "all" ]; then

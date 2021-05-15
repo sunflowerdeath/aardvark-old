@@ -65,8 +65,8 @@ fi
 if [ "$DEP" = "skia" ] || [ "$DEP" = "all" ]; then
 	SKIA_DIR=$ROOT/externals/skia
 	echo "Skia: extract source"
-	unzip -q $ROOT/downloads/skia-chrome-m85.zip -d $ROOT/externals
-	mv $ROOT/externals/skia-chrome-m85 $ROOT/externals/skia
+	unzip -q $ROOT/downloads/skia-chrome-m91.zip -d $ROOT/externals
+	mv $ROOT/externals/skia-chrome-m91 $ROOT/externals/skia
 	# Patch disables unneeded third-party deps to reduce download size
 	# echo "Skia: patch source"
 	# patch -d $SKIA_DIR -p3 < $ROOT/scripts/skia.patch
