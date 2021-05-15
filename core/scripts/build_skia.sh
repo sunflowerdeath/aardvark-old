@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 SKIA_DIR=$PWD/externals/skia
-BUILD_DIR=$WEBKIT_DIR/build-$PLATFORM-$ARCH
+BUILD_DIR=$SKIA_DIR/build-$PLATFORM-$ARCH
 
 # Skia build configuration:
 # is_official_build=true	    Use system libs and disable test utilities 
@@ -42,4 +42,4 @@ fi
 
 $SKIA_DIR/bin/gn gen --root=$SKIA_DIR $BUILD_DIR --args="$BUILD_FLAGS"
 
-ninja -C $BUILD_DIR -j
+ninja -C $BUILD_DIR -j 8

@@ -68,8 +68,8 @@ if [ "$DEP" = "skia" ] || [ "$DEP" = "all" ]; then
 	unzip -q $ROOT/downloads/skia-chrome-m85.zip -d $ROOT/externals
 	mv $ROOT/externals/skia-chrome-m85 $ROOT/externals/skia
 	# Patch disables unneeded third-party deps to reduce download size
-	echo "Skia: patch source"
-	patch -d $SKIA_DIR -p3 < $ROOT/scripts/skia.patch
+	# echo "Skia: patch source"
+	# patch -d $SKIA_DIR -p3 < $ROOT/scripts/skia.patch
 	echo "Skia: download third party deps"
 	$SKIA_DIR/tools/git-sync-deps
 fi
