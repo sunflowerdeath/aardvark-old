@@ -13,8 +13,8 @@ mkdir -p $ROOT/externals
 
 if [ "$DEP" = "boost" ] || [ "$DEP" = "all" ]; then
 	echo "boost: extract source"
-	tar -xf $ROOT/downloads/boost_1_71_0.tar.gz -C $ROOT/externals
-	mv $ROOT/externals/boost_1_71_0 $ROOT/externals/boost
+	tar -xf $ROOT/downloads/boost_1_76_0.tar.gz -C $ROOT/externals
+	mv $ROOT/externals/boost_1_76_0 $ROOT/externals/boost
 fi
 
 if [ "$DEP" = "catch2" ] || [ "$DEP" = "all" ]; then
@@ -32,17 +32,17 @@ fi
 
 if [ "$DEP" = "glfw" ] || [ "$DEP" = "all" ]; then
 	echo "GLFW: extract source"
-	unzip -q $ROOT/downloads/glfw-3.2.1.zip -d $ROOT/externals
-	mv $ROOT/externals/glfw-3.2.1 $ROOT/externals/glfw
+	unzip -q $ROOT/downloads/glfw-3.3.4.zip -d $ROOT/externals
+	mv $ROOT/externals/glfw-3.3.4 $ROOT/externals/glfw
 fi
 
 if [ "$DEP" = "icu" ] || [ "$DEP" = "all" ]; then
 	ICU_DIR=$ROOT/externals/icu
 	echo "ICU: extract source"
-	tar -xf $ROOT/downloads/icu4c-58_2-src.tgz -C $ROOT/externals
+	tar -xf $ROOT/downloads/icu4c-58_3-src.tgz -C $ROOT/externals
 	echo "ICU: extract data"
 	# unzip flag "-q" is quiet, "-o" is overwrite
-	unzip  -o -q $ROOT/downloads/icu4c-58_2-data.zip -d $ICU_DIR/source
+	unzip  -o -q $ROOT/downloads/icu4c-58_3-data.zip -d $ICU_DIR/source
 	echo "ICU: patch source"
 	patch -d $ICU_DIR -p2 < $ROOT/scripts/icu.patch
 	rm -f $ICU_DIR/source/data/in/icudt58l.dat

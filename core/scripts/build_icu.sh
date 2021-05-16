@@ -24,7 +24,7 @@ COMMON_CXXFLAGS="$COMMON_CFLAGS --std=c++11"
 mkdir -p $ICU_DIR/build-$PLATFORM-$ARCH
 cd $ICU_DIR/build-$PLATFORM-$ARCH
 
-if [ "$PLATFORM" = "linux" ]; then
+if [ "$PLATFORM" = "linux" ] || [ "$PLATFORM" = "macos" ]; then
     $ICU_DIR/source/configure \
         $COMMON_OPTIONS \
         CFLAGS="$COMMON_CFLAGS" \

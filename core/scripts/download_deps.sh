@@ -11,10 +11,10 @@ mkdir -p $ROOT/downloads
 cd $ROOT/downloads
 
 if [ "$DEP" = "boost" ] || [ "$DEP" = "all" ]; then
-	echo "download boost@1.71.0"
+	echo "download boost@1.76.0"
 	# curl flag "-L" to follow redirects, "-#" to display progressbar
-	curl "https://dl.bintray.com/boostorg/release/1.71.0/source/boost_1_71_0.tar.gz" -L -# \
-		> boost_1_71_0.tar.gz
+	curl "https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz" -L -# \
+		> boost_1_76_0.tar.gz
 fi
 
 if [ "$DEP" = "expected" ] || [ "$DEP" = "all" ]; then
@@ -33,17 +33,17 @@ if [ "$DEP" = "fmt" ] || [ "$DEP" = "all" ]; then
 fi
 
 if [ "$DEP" = "glfw" ] || [ "$DEP" = "all" ]; then
-	echo "download GLFW@3.2.1"
-	curl "https://github.com/glfw/glfw/releases/download/3.2.1/glfw-3.2.1.zip" -L -# > glfw-3.2.1.zip
+	echo "download GLFW@3.3.4"
+	curl "https://github.com/glfw/glfw/releases/download/3.3.4/glfw-3.3.4.zip" -L -# > glfw-3.3.4.zip
 fi
 
 if [ "$DEP" = "icu" ] || [ "$DEP" = "all" ]; then
-	echo "download ICU@58.2"
-	curl "http://download.icu-project.org/files/icu4c/58.2/icu4c-58_2-src.tgz" -L -# > \
-		icu4c-58_2-src.tgz
+	echo "download ICU@58.3"
+	curl "https://github.com/unicode-org/icu/releases/download/release-58-3/icu4c-58_3-src.tgz" -L -# > \
+		icu4c-58_3-src.tgz
 	echo "download ICU data"
-	curl "http://download.icu-project.org/files/icu4c/58.2/icu4c-58_2-data.zip" -L -# > \
-		icu4c-58_2-data.zip
+	curl "https://github.com/unicode-org/icu/releases/download/release-58-3/icu4c-58_3-data.zip" -L -# > \
+		icu4c-58_3-data.zip
 fi
 
 if [ "$DEP" = "json" ] || [ "$DEP" = "all" ]; then

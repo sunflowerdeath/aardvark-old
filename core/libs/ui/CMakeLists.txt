@@ -65,6 +65,15 @@ if(ADV_PLATFORM STREQUAL "linux")
     target_link_libraries(aardvark_ui glfw ${X11_LIBRARIES} stdc++fs)
 endif()
 
+if(ADV_PLATFORM STREQUAL "macos")
+    target_compile_definitions(aardvark_ui PUBLIC "ADV_PLATFORM_DESKTOP=1")
+    target_sources(aardvark_ui PRIVATE
+        src/platforms/desktop/desktop_window.cpp
+        src/platforms/desktop/desktop_app.cpp
+        src/utils/files_utils.cpp)
+    target_link_libraries(aardvark_ui glfw stdc++fs)
+endif()
+
 if(ADV_PLATFORM STREQUAL "android")
     target_compile_definitions(aardvark_ui PUBLIC "ADV_PLATFORM_ANDROID=1")
     target_sources(aardvark_ui PRIVATE
