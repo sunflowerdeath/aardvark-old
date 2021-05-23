@@ -4,16 +4,24 @@ find_package(Threads)
 set(ADV_EXTERNALS_DIR "${CMAKE_CURRENT_LIST_DIR}/../externals")
 message("ADV_EXTERNALS_DIR is ${ADV_EXTERNALS_DIR}")
 
-# boost
-# set(BOOST_ROOT "${ADV_EXTERNALS_DIR}/boost")
-# find_package(Boost 1.71.0 REQUIRED)
-# add_library(boost INTERFACE)
-# set_target_properties(boost PROPERTIES
-#    INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
+IF(APPLE)
+    set(CMAKE_THREAD_LIBS_INIT "-lpthread")
+    set(CMAKE_HAVE_THREADS_LIBRARY 1)
+    set(CMAKE_USE_WIN32_THREADS_INIT 0)
+    set(CMAKE_USE_PTHREADS_INIT 1)
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+ENDIF()
 
+# boost
+set(BOOST_ROOT "${ADV_EXTERNALS_DIR}/boost")
+find_package(Boost 1.76.0 REQUIRED)
 add_library(boost INTERFACE)
 set_target_properties(boost PROPERTIES
-	INTERFACE_INCLUDE_DIRECTORIES ${ADV_EXTERNALS_DIR}/boost)
+   INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
+
+# add_library(boost INTERFACE)
+# set_target_properties(boost PROPERTIES
+	# INTERFACE_INCLUDE_DIRECTORIES ${ADV_EXTERNALS_DIR}/boost)
 
 # Catch2
 add_library(Catch2 INTERFACE)
@@ -99,7 +107,7 @@ add_subdirectory("${ADV_EXTERNALS_DIR}/quickjs"
 
 # skia
 #set(SKIA_DIR "${ADV_EXTERNALS_DIR}/skia")
-set(SKIA_DIR "${ADV_EXTERNALS_DIR}/skia85")
+set(SKIA_DIR "${ADV_EXTERNALS_DIR}/skia")
 
 set(SKIA_INCLUDE_DIRS
     ${SKIA_DIR}
@@ -176,7 +184,7 @@ set(SPDLOG_FMT_EXTERNAL ON CACHE BOOL "")
 add_subdirectory(${ADV_EXTERNALS_DIR}/spdlog)
 
 # svg-native-viewer
-set(SKIA_LIBRARY_PATH "${SKIA_DIR}/build-linux-x86_64/libskia.a")
+set(SKIA_LIBRARY_PATH "${SKIA_DIR}/build-${ADV_PLATFORM}-${ADV_ARCH}/libskia.a")
 set(SKIA_SOURCE_DIR "${SKIA_DIR}")
 set(LIB_ONLY ON CACHE BOOL "")
 set(SKIA ON CACHE BOOL "")

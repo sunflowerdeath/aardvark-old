@@ -33,7 +33,7 @@ module.exports = {
                                 {
                                     targets: { safari: '12' },
                                     useBuiltIns: 'usage',
-                                    modules: 'false',
+                                    modules: false,
                                     corejs: { version: 3 }
                                 }
                             ]

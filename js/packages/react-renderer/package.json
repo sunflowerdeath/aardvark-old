@@ -21,6 +21,7 @@
     "slate": "^0.57.1"
   },
   "peerDependencies": {
-    "react": "^16.9.0"
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0"
   }
 }

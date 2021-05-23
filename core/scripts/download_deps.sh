@@ -67,8 +67,8 @@ if [ "$DEP" = "skia" ] || [ "$DEP" = "all" ]; then
 fi
 
 if [ "$DEP" = "spdlog" ] || [ "$DEP" = "all" ]; then
-	echo "download spdlog@1.7.0"
-	curl "https://github.com/gabime/spdlog/archive/v1.7.0.zip" -L -# > spdlog-1.7.0.zip
+	echo "download spdlog@1.8.5"
+	curl "https://github.com/gabime/spdlog/archive/v1.8.5.zip" -L -# > spdlog-1.8.5.zip
 fi
 
 if [ "$DEP" = "svg-native-viewer" ] || [ "$DEP" = "all" ]; then
