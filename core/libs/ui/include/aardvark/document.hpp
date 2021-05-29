@@ -5,7 +5,7 @@
 #include <optional>
 #include <unordered_set>
 
-#include "GrContext.h"
+#include "GrDirectContext.h"
 #include "SkCanvas.h"
 #include "SkRegion.h"
 #include "base_types.hpp"
@@ -32,7 +32,7 @@ using LayerTreeNode = std::variant<LayerTree*, std::shared_ptr<Layer>>;
 class Document : public std::enable_shared_from_this<Document> {
   public:
     Document(
-        sk_sp<GrContext> gr_context,
+        sk_sp<GrDirectContext> gr_context,
         std::shared_ptr<Layer> screen,
         std::shared_ptr<Element> root = nullptr);
 
@@ -115,7 +115,7 @@ class Document : public std::enable_shared_from_this<Document> {
     void compose();
     void paint_layer_tree(LayerTree* tree);
 
-    sk_sp<GrContext> gr_context;
+    sk_sp<GrDirectContext> gr_context;
     ElementsSet changed_elements;
     ElementsSet relayout_boundaries;
     ElementsSet repaint_boundaries;

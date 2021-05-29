@@ -73,7 +73,8 @@ fi
 
 if [ "$DEP" = "svg-native-viewer" ] || [ "$DEP" = "all" ]; then
 	echo "download svg-native-viewer"
-	git clone git@github.com:sunflowerdeath/svg-native-viewer.git
+	# git clone git@github.com:sunflowerdeath/svg-native-viewer.git
+	git clone https://github.com/adobe/svg-native-viewer.git
 fi
 
 if [ "$DEP" = "webkitgtk" ] || [ "$DEP" = "all" ]; then

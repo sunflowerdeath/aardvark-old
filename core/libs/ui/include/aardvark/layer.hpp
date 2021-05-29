@@ -1,12 +1,13 @@
 #pragma once
 
 #include <memory>
-#ifdef ADV_PLATFORM_ANDROID
-#include <GLES/gl.h>
-#endif
-#ifdef ADV_PLATFORM_DESKTOP
-#include <GL/gl.h>
-#endif
+// #ifdef ADV_PLATFORM_ANDROID
+// #include <GLES/gl.h>
+// #endif
+// #ifdef ADV_PLATFORM_DESKTOP
+// #include <GL/gl.h>
+// #endif
+#include "GrDirectContext.h"
 #include "GrBackendSurface.h"
 #include "SkCanvas.h"
 #include "SkSurface.h"
@@ -38,9 +39,9 @@ class Layer {
     void paint_layer(Layer* layer, Position pos, float opacity = 1);
 
     static std::shared_ptr<Layer> make_screen_layer(
-        sk_sp<GrContext> gr_context);
+        sk_sp<GrDirectContext> gr_context);
     static std::shared_ptr<Layer> make_offscreen_layer(
-        sk_sp<GrContext> gr_context, Size size);
+        sk_sp<GrDirectContext> gr_context, Size size);
 
   private:
     bool is_changed = true;

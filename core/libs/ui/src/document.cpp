@@ -28,7 +28,7 @@ void add_only_parent(ElementsSet& set, Element* added) {
 };
 
 Document::Document(
-    sk_sp<GrContext> gr_context,
+    sk_sp<GrDirectContext> gr_context,
     std::shared_ptr<Layer> screen,
     std::shared_ptr<Element> root)
     : gr_context(std::move(gr_context)), screen(std::move(screen)) {

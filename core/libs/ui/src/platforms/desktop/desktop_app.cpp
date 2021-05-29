@@ -124,7 +124,7 @@ std::shared_ptr<DesktopWindow> DesktopApp::create_window(
     // Keyboard events
     glfwSetKeyCallback(glfw_window, key_callback);
     glfwSetCharCallback(glfw_window, char_callback);
-    auto gr_context = GrContext::MakeGL();
+    auto gr_context = GrDirectContext::MakeGL();
     auto screen = Layer::make_screen_layer(gr_context);
     documents[window.get()] = std::make_shared<Document>(gr_context, screen);
     return window;

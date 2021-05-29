@@ -41,52 +41,63 @@ void Layer::paint_layer(Layer* layer, Position pos, float opacity) {
     SkPaint paint;
     paint.setAntiAlias(true);
     paint.setAlpha(opacity * 255);
-    canvas->drawImage(layer->get_snapshot(), pos.left, pos.top, &paint);
+    auto sampling = SkSamplingOptions(SkFilterMode::kNearest, SkMipmapMode::kNone);
+    canvas->drawImage(layer->get_snapshot(), pos.left, pos.top, sampling, &paint);
 };
 
 const int STENCIL_BITS = 8;
 const int MSAA_SAMPLE_COUNT = 0;
 
-void measure_current_viewport_size(GLint* width, GLint* height) {
-    GLint dimensions[4];
-    glGetIntegerv(GL_VIEWPORT, dimensions);
-    *width = dimensions[2];
-    *height = dimensions[3];
-}
+// void measure_current_viewport_size(GLint* width, GLint* height) {
+    // GLint dimensions[4];
+    // glGetIntegerv(GL_VIEWPORT, dimensions);
+    // *width = dimensions[2];
+    // *height = dimensions[3];
+// }
 
-std::shared_ptr<Layer> Layer::make_screen_layer(sk_sp<GrContext> gr_context) {
+std::shared_ptr<Layer> Layer::make_screen_layer(sk_sp<GrDirectContext> gr_context) {
     // These values may be different on some devices
     const SkColorType color_type = kRGBA_8888_SkColorType;
     const GrGLenum color_format = GR_GL_RGBA8;
 
     // Measure viewport size
-    GLint width;
-    GLint height;
-    measure_current_viewport_size(&width, &height);
+    // GLint width;
+    // GLint height;
+    // measure_current_viewport_size(&width, &height);
 
 	// Get an id of the currently attached to the screen framebuffer
-    GrGLint buffer;
-    glGetIntegerv(GR_GL_FRAMEBUFFER_BINDING, &buffer);
+    // GrGLint buffer;
+    // glGetIntegerv(GR_GL_FRAMEBUFFER_BINDING, &buffer);
+
+    int width = 640;
+    int height = 480;
 
     // Wrap the framebuffer in a Skia render target
     GrGLFramebufferInfo info;
-    info.fFBOID = (GrGLuint)buffer;
+    // info.fFBOID = (GrGLuint)buffer;
+    info.fFBOID = 0; // assume default framebuffer
     info.fFormat = color_format;
     auto target = GrBackendRenderTarget(width, height, MSAA_SAMPLE_COUNT,
                                         STENCIL_BITS, info);
 
     // Setup skia surface
-    SkSurfaceProps props(SkSurfaceProps::kLegacyFontHost_InitType);
-    auto surface(SkSurface::MakeFromBackendRenderTarget(
-        gr_context.get(), target, kBottomLeft_GrSurfaceOrigin, color_type,
-        nullptr, &props));
+    // auto props = SkSurfaceProps(SkSurfaceProps::kLegacyFontHost_InitType);
+    auto surface = SkSurface::MakeFromBackendRenderTarget(
+        gr_context.get(), // context,
+        target, // backendRenderTarget,
+        kBottomLeft_GrSurfaceOrigin, // origin,
+        color_type, // colorType,
+        nullptr, // colorSpace,
+        nullptr // surfaceProps
+    );
 	if (surface == nullptr) {
 		Log::error("[Layer] Cannot create screen layer surface");
 	}
+
     return std::make_shared<Layer>(surface);
 };
 
-std::shared_ptr<Layer> Layer::make_offscreen_layer(sk_sp<GrContext> gr_context,
+std::shared_ptr<Layer> Layer::make_offscreen_layer(sk_sp<GrDirectContext> gr_context,
                                                    Size size) {
     const SkImageInfo info =
         SkImageInfo::MakeN32Premul(size.width, size.height);
