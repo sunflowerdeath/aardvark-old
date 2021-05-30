@@ -1,6 +1,6 @@
 #pragma once
 
-#include <GL/gl.h>
+// #include <GL/gl.h>
 #include <GLFW/glfw3.h>
 #include "../../events.hpp"
 #include "../../base_types.hpp"

@@ -10,7 +10,8 @@
   "license": "Unlicense",
   "dependencies": {
     "core-js": "^3.4.0",
-    "react": "^16.9.0"
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",

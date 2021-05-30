@@ -71,7 +71,7 @@ if(ADV_PLATFORM STREQUAL "macos")
         src/platforms/desktop/desktop_window.cpp
         src/platforms/desktop/desktop_app.cpp
         src/utils/files_utils.cpp)
-    target_link_libraries(aardvark_ui glfw stdc++fs)
+    target_link_libraries(aardvark_ui glfw)
 endif()
 
 if(ADV_PLATFORM STREQUAL "android")

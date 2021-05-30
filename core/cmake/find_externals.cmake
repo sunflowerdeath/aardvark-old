@@ -4,13 +4,13 @@ find_package(Threads)
 set(ADV_EXTERNALS_DIR "${CMAKE_CURRENT_LIST_DIR}/../externals")
 message("ADV_EXTERNALS_DIR is ${ADV_EXTERNALS_DIR}")
 
-IF(APPLE)
+if(APPLE)
     set(CMAKE_THREAD_LIBS_INIT "-lpthread")
     set(CMAKE_HAVE_THREADS_LIBRARY 1)
     set(CMAKE_USE_WIN32_THREADS_INIT 0)
     set(CMAKE_USE_PTHREADS_INIT 1)
     set(THREADS_PREFER_PTHREAD_FLAG ON)
-ENDIF()
+endif()
 
 # boost
 set(BOOST_ROOT "${ADV_EXTERNALS_DIR}/boost")
@@ -38,13 +38,14 @@ add_subdirectory("${ADV_EXTERNALS_DIR}/fmt"
     ${CMAKE_CURRENT_BINARY_DIR}/fmt)
 
 # glfw
-if (ADV_PLATFORM STREQUAL "linux")
-    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+if(ADV_PLATFORM STREQUAL "linux")
     find_package(X11 REQUIRED)
-    add_subdirectory(${ADV_EXTERNALS_DIR}/glfw)
 endif()
+
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+add_subdirectory(${ADV_EXTERNALS_DIR}/glfw)
 
 # ICU
 set(ICU_DIR ${ADV_EXTERNALS_DIR}/icu)
@@ -125,6 +126,7 @@ set(SKIA_INCLUDE_DIRS
 
 # This must match what skia's BUILD.gn sets
 set(SKIA_DEFINES
+        "SK_GL=1"               # skia_use_gl
 	"SK_SUPPORT_GPU=1"      # skia_enable_gpu
 	"SK_CODEC_DECODES_JPEG" # skia_use_libjpeg_turbo_decode
 	"SK_ENCODE_JPEG"        # skia_use_libjpeg_turbo_encode
@@ -144,7 +146,11 @@ set(SKIA_DEFINES
 	# ${WEBP_DEMUX_LIB}
 	# ${WEBP_MUX_LIB}
 
-set(SKIA_DEPS ${DL_LIB} ${CMAKE_THREAD_LIBS_INIT})
+if (ADV_PLATFORM STREQUAL "linux" OR ADV_PLATFORM STREQUAL "android")
+    set(SKIA_DEPS ${DL_LIB})
+endif()
+
+set(SKIA_DEPS ${CMAKE_THREAD_LIBS_INIT})
 
 if (ADV_PLATFORM STREQUAL "linux")
     set(SKIA_DEFINES ${SKIA_DEFINES} "SK_SAMPLES_FOR_X") # always set for linux
@@ -160,16 +166,30 @@ if (ADV_PLATFORM STREQUAL "linux")
     set(SKIA_DEPS 
         ${SKIA_DEPS}
         OpenGL::OpenGL
-		OpenGL::GLX
+        OpenGL::GLX
         ${Z_LIB}
         ${FONTCONFIG_LIB}
         ${FREETYPE_LIB}
         ${JPEG_LIB}
         ${PNG_LIB})
 endif()
+
 if (ADV_PLATFORM STREQUAL "android")
     set(SKIA_DEFINES ${SKIA_DEFINES} "SK_BUILD_FOR_ANDROID")
     set(SKIA_DEPS  ${SKIA_DEPS} "EGL")
+endif()
+
+if (ADV_PLATFORM STREQUAL "macos")
+    find_package(OpenGL REQUIRED)
+    find_library(Z_LIB z REQUIRED)       # skia_use_system_zlib
+    find_library(JPEG_LIB jpeg REQUIRED) # skia_use_system_libjpeg_turbo
+    find_library(PNG_LIB png REQUIRED)   # skia_use_system_libpng
+    set(SKIA_DEPS 
+        ${SKIA_DEPS}
+        OpenGL::GL
+        ${Z_LIB}
+        ${JPEG_LIB}
+        ${PNG_LIB})
 endif()
 
 add_library(skia STATIC IMPORTED GLOBAL)

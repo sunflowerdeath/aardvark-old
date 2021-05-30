@@ -11,6 +11,7 @@ BUILD_DIR=$SKIA_DIR/build-$PLATFORM-$ARCH
 # skia_use_sfntly=false		lib for working with fonts, optional dep for PDF 
 BUILD_FLAGS="\
 is_official_build=true \
+skia_use_gl=true \
 skia_use_icu=false \
 skia_use_dng_sdk=false \
 skia_use_sfntly=false \

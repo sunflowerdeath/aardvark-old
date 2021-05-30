@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.10)
 
 # Compiler must be set before "project"
 if (ADV_COMPILER_CLANG)
-    set(CMAKE_C_COMPILER "/usr/bin/clang")
-    set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
+    # set(CMAKE_C_COMPILER "/usr/bin/clang")
+    set(CMAKE_C_COMPILER "/opt/homebrew/opt/llvm/bin/clang")
+    set(CMAKE_CXX_COMPILER "${CMAKE_C_COMPILER}++")
 endif()
 
 project(AARDVARK LANGUAGES C CXX)

@@ -20,7 +20,7 @@ add_library(aardvark_js ${ADV_JS_LIB_TYPE}
     src/api/transform.cpp
 )
 
-if(ADV_PLATFORM STREQUAL "linux")
+if(ADV_PLATFORM STREQUAL "linux" OR ADV_PLATFORM STREQUAL "macos")
     target_sources(aardvark_js PRIVATE 
         generated/api.cpp
         src/api/timeout.cpp

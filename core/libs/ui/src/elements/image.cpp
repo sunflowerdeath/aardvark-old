@@ -69,10 +69,12 @@ void ImageElement::paint(bool is_changed) {
     auto layer = document->get_layer();
     document->setup_layer(layer, this);
     auto paint = SkPaint();
+    auto sampling = SkSamplingOptions(SkFilterMode::kNearest, SkMipmapMode::kNone);
     layer->canvas->drawImageRect(
         image,
         SkRect::MakeXYWH(
             fit_pos.left, fit_pos.top, fit_size.width, fit_size.height),
+        sampling,
         &paint);
 }
 
