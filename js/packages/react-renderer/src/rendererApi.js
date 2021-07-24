@@ -1,26 +1,26 @@
 // import { connectToDevTools } from 'react-devtools-core'
-import WebApiWebSocket from '@advk/common/src/WebApiWebSocket'
+// import WebApiWebSocket from '@advk/common/src/WebApiWebSocket'
 import Renderer from './renderer'
 import { registerNativeComponent } from './helpers'
 
 const rootContainers = new Map()
 
 const RendererAPI = {
-	render(element, container, callback) {
-	    if (!rootContainers.has(container)) {
-	        rootContainers.set(container, Renderer.createContainer(
-				container,
-				false
-			))
-		}
-		
-		Renderer.updateContainer(
-			element,
-			rootContainers.get(container),
-			null,
-			callback
-		)
-	},
+    render(element, container, callback) {
+        if (!rootContainers.has(container)) {
+            rootContainers.set(
+                container,
+                Renderer.createContainer(container, false)
+            )
+        }
+
+        Renderer.updateContainer(
+            element,
+            rootContainers.get(container),
+            null,
+            callback
+        )
+    },
 
     /*
     TODO
@@ -37,8 +37,8 @@ const RendererAPI = {
         })
     },
     */
-    
-    registerNativeComponent
+
+    registerNativeComponent,
 }
 
 export default RendererAPI

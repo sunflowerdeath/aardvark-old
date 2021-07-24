@@ -1,0 +1,8 @@
+cmake \
+  -DADV_PLATFORM=macos \
+  -DADV_COMPILER_CLANG=1 \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DADV_JS_EXAMPLES=1 \
+  -DADV_JSI_QJS=1 \
+  -DADV_ARCH=arm64 \
+  ..

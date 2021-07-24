@@ -9,21 +9,21 @@
   "author": "sunflowerdeath",
   "license": "Unlicense",
   "dependencies": {
-    "core-js": "^3.4.0",
+    "core-js": "^3.15.2",
     "react": "^16.9.0",
     "react-dom": "^16.9.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.5.5",
+    "@babel/core": "^7.14.8",
     "@babel/plugin-proposal-function-bind": "^7.2.0",
     "@babel/plugin-proposal-partial-application": "^7.4.4",
-    "@babel/preset-env": "^7.7.1",
-    "@babel/preset-react": "^7.0.0",
+    "@babel/preset-env": "^7.14.8",
+    "@babel/preset-react": "^7.14.5",
     "babel-loader": "^8.0.6",
     "lerna": "^3.16.4",
     "mocha": "^6.2.0",
     "prettier": "^1.19.1",
-    "webpack": "^4.39.1",
-    "webpack-cli": "^3.3.6"
+    "webpack": "^5.46.0",
+    "webpack-cli": "^4.7.2"
   }
 }

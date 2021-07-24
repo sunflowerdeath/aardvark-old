@@ -2,15 +2,16 @@ const path = require('path')
 
 module.exports = {
     entry: {
+        simple: './src/simple.js',
         main: './src/index.js',
-        todomvc: './src/todomvc/index.js'
+        todomvc: './src/todomvc/index.js',
     },
     output: {
         path: path.resolve(
             __dirname,
             process.env.NODE_ENV == 'production' ? 'build-prod' : 'build'
         ),
-        filename: '[name].js'
+        filename: '[name].js',
     },
     mode: process.env.NODE_ENV == 'production' ? 'production' : 'development',
     module: {
@@ -24,7 +25,7 @@ module.exports = {
                         plugins: [
                             '@babel/plugin-proposal-optional-chaining',
                             '@babel/plugin-proposal-function-bind',
-                            '@babel/plugin-proposal-partial-application'
+                            '@babel/plugin-proposal-partial-application',
                         ],
                         presets: [
                             '@babel/preset-react',
@@ -32,14 +33,14 @@ module.exports = {
                                 '@babel/preset-env',
                                 {
                                     targets: { safari: '12' },
-                                    useBuiltIns: 'usage',
+                                    useBuiltIns: false, //'usage',
                                     modules: false,
-                                    corejs: { version: 3 }
-                                }
-                            ]
-                        ]
-                    }
-                }
+                                    corejs: { version: '3.15' },
+                                },
+                            ],
+                        ],
+                    },
+                },
             },
             {
                 test: /\.(png|svg)$/i,
@@ -48,12 +49,12 @@ module.exports = {
                         loader: 'file-loader',
                         options: {
                             name: '[name].[contenthash].[ext]',
-                            publicPath: 'build'
-                        }
-                    }
-                ]
-            }
-        ]
+                            publicPath: 'build',
+                        },
+                    },
+                ],
+            },
+        ],
     },
-    devtool: process.env.NODE_ENV == 'production' ? false : 'source-map'
+    devtool: process.env.NODE_ENV == 'production' ? false : 'source-map',
 }

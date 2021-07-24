@@ -57,8 +57,8 @@ if [ "$DEP" = "nod" ] || [ "$DEP" = "all" ]; then
 fi
 
 if [ "$DEP" = "quickjs" ] || [ "$DEP" = "all" ]; then
-	echo "download quickjs@2020-07-05"
-	curl "https://bellard.org/quickjs/quickjs-2020-07-05.tar.xz" -L -# > quickjs-2020-07-05.tar.xz
+	echo "download quickjs@2021-03-27"
+	curl "https://bellard.org/quickjs/quickjs-2021-03-27.tar.xz" -L -# > quickjs-2021-03-27.tar.xz
 fi
 
 if [ "$DEP" = "skia" ] || [ "$DEP" = "all" ]; then
