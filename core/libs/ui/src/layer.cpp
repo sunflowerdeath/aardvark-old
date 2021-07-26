@@ -48,12 +48,12 @@ void Layer::paint_layer(Layer* layer, Position pos, float opacity) {
 const int STENCIL_BITS = 8;
 const int MSAA_SAMPLE_COUNT = 0;
 
-// void measure_current_viewport_size(GLint* width, GLint* height) {
-    // GLint dimensions[4];
-    // glGetIntegerv(GL_VIEWPORT, dimensions);
-    // *width = dimensions[2];
-    // *height = dimensions[3];
-// }
+void measure_current_viewport_size(GLint* width, GLint* height) {
+    GLint dimensions[4];
+    glGetIntegerv(GL_VIEWPORT, dimensions);
+    *width = dimensions[2];
+    *height = dimensions[3];
+}
 
 std::shared_ptr<Layer> Layer::make_screen_layer(sk_sp<GrDirectContext> gr_context) {
     // These values may be different on some devices
@@ -61,21 +61,17 @@ std::shared_ptr<Layer> Layer::make_screen_layer(sk_sp<GrDirectContext> gr_contex
     const GrGLenum color_format = GR_GL_RGBA8;
 
     // Measure viewport size
-    // GLint width;
-    // GLint height;
-    // measure_current_viewport_size(&width, &height);
+    GLint width;
+    GLint height;
+    measure_current_viewport_size(&width, &height);
 
-	// Get an id of the currently attached to the screen framebuffer
-    // GrGLint buffer;
-    // glGetIntegerv(GR_GL_FRAMEBUFFER_BINDING, &buffer);
-
-    int width = 640;
-    int height = 480;
+    // Get an id of the currently attached to the screen framebuffer
+    GrGLint buffer;
+    glGetIntegerv(GR_GL_FRAMEBUFFER_BINDING, &buffer);
 
     // Wrap the framebuffer in a Skia render target
     GrGLFramebufferInfo info;
-    // info.fFBOID = (GrGLuint)buffer;
-    info.fFBOID = 0; // assume default framebuffer
+    info.fFBOID = (GrGLuint)buffer;
     info.fFormat = color_format;
     auto target = GrBackendRenderTarget(width, height, MSAA_SAMPLE_COUNT,
                                         STENCIL_BITS, info);

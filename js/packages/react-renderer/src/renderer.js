@@ -1,47 +1,47 @@
 import Reconciler from 'react-reconciler'
 import { createElement, updateElement } from './helpers.js'
 
-const getRootHostContext = rootContainerInstance => {
-	// log('getRootHostContext')
-	return {}
+const getRootHostContext = (rootContainerInstance) => {
+    // log('getRootHostContext')
+    return {}
 }
 
 const getChildHostContext = (
-	parentHostContext,
-	type,
-	rootContainerInstance
+    parentHostContext,
+    type,
+    rootContainerInstance
 ) => {
-	// log('getChildHostContext')
-	return parentHostContext
+    // log('getChildHostContext')
+    return parentHostContext
 }
 
-const getPublicInstance = instance => {
-	// log('getPublicInstance')
-	return instance
+const getPublicInstance = (instance) => {
+    // log('getPublicInstance')
+    return instance
 }
 
-const prepareForCommit = containerInfo => {
-	// Noop
+const prepareForCommit = (containerInfo) => {
+    // Noop
 }
 
-const resetAfterCommit = containerInfo => {
-	// Noop
+const resetAfterCommit = (containerInfo) => {
+    // Noop
 }
 
 const createInstance = (
-	type,
-	props,
-	rootContainerInstance,
-	hostContext,
-	internalInstanceHandle
+    type,
+    props,
+    rootContainerInstance,
+    hostContext,
+    internalInstanceHandle
 ) => {
-	// log('createInstance ' + type)
-	return createElement(type, props)
+    // log('createInstance ' + type)
+    return createElement(type, props)
 }
 
 const appendInitialChild = (parentInstance, child) => {
-	// log('appendInitialChild')
-    if (parentInstance.name === "Paragraph") {
+    // log('appendInitialChild')
+    if (parentInstance.name === 'Paragraph') {
         parentInstance.root.appendChild(child)
     } else {
         parentInstance.appendChild(child)
@@ -49,47 +49,47 @@ const appendInitialChild = (parentInstance, child) => {
 }
 
 const finalizeInitialChildren = (
-	parentInstance,
-	type,
-	props,
-	rootContainerInstance,
-	hostContext
+    parentInstance,
+    type,
+    props,
+    rootContainerInstance,
+    hostContext
 ) => {
-	// log('finalizeInitialChildren')
-	return false
+    // log('finalizeInitialChildren')
+    return false
 }
 
 const prepareUpdate = (
-	instance,
-	type,
-	oldProps,
-	newProps,
-	rootContainerInstance,
-	hostContext
+    instance,
+    type,
+    oldProps,
+    newProps,
+    rootContainerInstance,
+    hostContext
 ) => {
-	// Computes the diff for an instance. Fiber can reuse this work even if it
-	// pauses or abort rendering a part of the tree.
-	// log('prepareUpdate')
-	return true
+    // Computes the diff for an instance. Fiber can reuse this work even if it
+    // pauses or abort rendering a part of the tree.
+    // log('prepareUpdate')
+    return true
 }
 
 const shouldSetTextContent = (type, props) => {
-	// log('shouldSetTextContent')
-	return false
+    // log('shouldSetTextContent')
+    return false
 }
 
 const shouldDeprioritizeSubtree = (type, props) => {
-	// log('shouldDeprioritizeSubtree')
-	return false
+    // log('shouldDeprioritizeSubtree')
+    return false
 }
 
 const createTextInstance = (
-	text,
-	rootContainerInstance,
-	hostContext,
-	internalInstanceHandle
+    text,
+    rootContainerInstance,
+    hostContext,
+    internalInstanceHandle
 ) => {
-	// log('createTextInstance: ' + text)
+    // log('createTextInstance: ' + text)
 }
 
 const scheduleTimeout = setTimeout
@@ -107,7 +107,7 @@ const warnsIfNotActing = true
 const supportsMutation = true
 
 const appendChild = (parentInstance, child) => {
-	// log('appendChild')
+    // log('appendChild')
     if (parentInstance.name == 'Paragraph') {
         parentInstance.root.appendChild(child)
     } else {
@@ -116,86 +116,86 @@ const appendChild = (parentInstance, child) => {
 }
 
 const appendChildToContainer = (parentInstance, child) => {
-	// log('appendChildToContainer')
-	parentInstance.root = child
+    // log('appendChildToContainer')
+    parentInstance.root = child
 }
 
 const commitTextUpdate = (textInstance, oldText, newText) => {
-	// log('commitTextUpdate')
-	textInstance.text = newText
+    // log('commitTextUpdate')
+    textInstance.text = newText
 }
 
 const commitMount = (instance, type, newProps, internalInstanceHandle) => {
-	// Noop
+    // Noop
 }
 
 const commitUpdate = (
-	instance,
-	updatePayload,
-	type,
-	oldProps,
-	newProps,
-	internalInstanceHandle
+    instance,
+    updatePayload,
+    type,
+    oldProps,
+    newProps,
+    internalInstanceHandle
 ) => {
-	// log('commitUpdate')
-	updateElement(instance, type, oldProps, newProps)
+    // log('commitUpdate')
+    updateElement(instance, type, oldProps, newProps)
 }
 
 const insertBefore = (parentInstance, child, beforeChild) => {
-	// TODO Move existing child or add new child?
-	// log('insertBeforeChild')
+    // TODO Move existing child or add new child?
+    // log('insertBeforeChild')
     log(parentInstance.name)
-	parentInstance.insertBeforeChild(child, beforeChild)
+    parentInstance.insertBeforeChild(child, beforeChild)
 }
 const insertInContainerBefore = (parentInstance, child, beforeChild) => {
-	// log('Container does not support insertBefore operation')
+    // log('Container does not support insertBefore operation')
 }
 
 const removeChild = (parentInstance, child) => {
-	// log('removeChild')
-	parentInstance.removeChild(child)
+    // log('removeChild')
+    parentInstance.removeChild(child)
 }
 
 const removeChildFromContainer = (parentInstance, child) => {
-	// log('removeChildFromContainer')
-	// TODO undefined / placeholder
-	parentInstance.root = new PlaceholderElement()
+    // log('removeChildFromContainer')
+    // TODO undefined / placeholder
+    parentInstance.root = new PlaceholderElement()
 }
 
-const resetTextContent = instance => {
-	// Noop
+const resetTextContent = (instance) => {
+    // Noop
 }
 
 const hostConfig = {
-	getPublicInstance,
-	getRootHostContext,
-	getChildHostContext,
-	prepareForCommit,
-	resetAfterCommit,
-	createInstance,
-	appendInitialChild,
-	finalizeInitialChildren,
-	prepareUpdate,
-	shouldSetTextContent,
-	shouldDeprioritizeSubtree,
-	createTextInstance,
-	scheduleTimeout,
-	cancelTimeout,
-	noTimeout,
-	now,
-	isPrimaryRenderer,
-	warnsIfNotActing,
-	supportsMutation,
-	appendChild,
-	appendChildToContainer,
-	commitTextUpdate,
-	commitMount,
-	commitUpdate,
-	insertBefore,
-	insertInContainerBefore,
-	removeChild,
-	removeChildFromContainer,
-	resetTextContent
+    getPublicInstance,
+    getRootHostContext,
+    getChildHostContext,
+    prepareForCommit,
+    resetAfterCommit,
+    createInstance,
+    appendInitialChild,
+    finalizeInitialChildren,
+    prepareUpdate,
+    shouldSetTextContent,
+    shouldDeprioritizeSubtree,
+    createTextInstance,
+    scheduleTimeout,
+    cancelTimeout,
+    noTimeout,
+    now,
+    isPrimaryRenderer,
+    warnsIfNotActing,
+    supportsMutation,
+    appendChild,
+    appendChildToContainer,
+    commitTextUpdate,
+    commitMount,
+    commitUpdate,
+    insertBefore,
+    insertInContainerBefore,
+    removeChild,
+    removeChildFromContainer,
+    resetTextContent,
 }
 
 export default Reconciler(hostConfig)

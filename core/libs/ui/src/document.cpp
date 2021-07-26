@@ -81,12 +81,9 @@ bool Document::initial_render() {
 bool Document::rerender() {
     relayout();
     auto painted = repaint();
-    if (painted || need_recompose) {
-        compose();
-        return true;
-    } else {
-        return false;
-    }
+    // if (need_recompose) compose();
+    compose();
+    return painted;
 }
 
 void Document::relayout() {

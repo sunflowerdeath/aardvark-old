@@ -83,12 +83,12 @@ fi
 if [ "$DEP" = "webkitgtk" ] || [ "$DEP" = "all" ]; then
 	WEBKIT_DIR=$ROOT/externals/WebKit
 	echo "WebKit: extract source"
-	tar -xf $ROOT/downloads/webkitgtk-2.23.2.tar.xz -C $ROOT/externals
-	mv $ROOT/externals/webkitgtk-2.23.2 $WEBKIT_DIR
+	tar -xf $ROOT/downloads/webkitgtk-2.33.2.tar.xz -C $ROOT/externals
+	mv $ROOT/externals/webkitgtk-2.33.2 $WEBKIT_DIR
 	# Patch for webkit allows to use custom version of ICU library and
 	# disables ICU collation
-	echo "WebKit: patch source"
-	patch -d $WEBKIT_DIR -p3 < $ROOT/scripts/WebKit.patch
+	# echo "WebKit: patch source"
+	# patch -d $WEBKIT_DIR -p3 < $ROOT/scripts/WebKit.patch
 	echo "WebKit: copy include headers"
 	mkdir -p $WEBKIT_DIR/include/JavaScriptCore
 	cp -a $WEBKIT_DIR/Source/JavaScriptCore/API/. $WEBKIT_DIR/include/JavaScriptCore

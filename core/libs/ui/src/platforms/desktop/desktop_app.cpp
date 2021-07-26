@@ -167,11 +167,11 @@ void DesktopApp::render(std::function<void(void)> update_callback) {
         std::chrono::duration_cast<std::chrono::microseconds>(end - start)
             .count();
     if (rendered) {
-        Log::debug("[DesktopApp] frame time {}ms", time / 1000.0);
+        Log::info("[DesktopApp] frame time {}ms", time / 1000.0);
     }
     auto timeout = (time < FRAME_TIME) ? (FRAME_TIME - time) : 0;
     event_loop->set_timeout(
-        [this, update_callback]() { render(update_callback); }, timeout);
+        [this, update_callback]() { render(update_callback); }, 0); //timeout);
     // std::bind(&DesktopApp::render, this, update_callback), timeout);
 }
 

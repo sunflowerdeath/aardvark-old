@@ -77,7 +77,12 @@ if [ "$DEP" = "svg-native-viewer" ] || [ "$DEP" = "all" ]; then
 	git clone https://github.com/adobe/svg-native-viewer.git
 fi
 
+# if [ "$DEP" = "webkitgtk" ] || [ "$DEP" = "all" ]; then
+	# echo "download webkitgtk@2.23.2"
+	# curl "https://webkitgtk.org/releases/webkitgtk-2.23.2.tar.xz" -# > webkitgtk-2.23.2.tar.xz
+# fi
+
 if [ "$DEP" = "webkitgtk" ] || [ "$DEP" = "all" ]; then
-	echo "download webkitgtk@2.23.2"
-	curl "https://webkitgtk.org/releases/webkitgtk-2.23.2.tar.xz" -# > webkitgtk-2.23.2.tar.xz
+    echo "download webkitgtk@2.33.2"
+    curl "https://webkitgtk.org/releases/webkitgtk-2.33.2.tar.xz" -# > webkitgtk-2.33.2.tar.xz
 fi
