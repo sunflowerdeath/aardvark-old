@@ -171,7 +171,7 @@ void DesktopApp::render(std::function<void(void)> update_callback) {
     }
     auto timeout = (time < FRAME_TIME) ? (FRAME_TIME - time) : 0;
     event_loop->set_timeout(
-        [this, update_callback]() { render(update_callback); }, 0); //timeout);
+        [this, update_callback]() { render(update_callback); }, timeout);
     // std::bind(&DesktopApp::render, this, update_callback), timeout);
 }
 

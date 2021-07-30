@@ -6,7 +6,9 @@
   "scripts": {
     "build": "../../node_modules/.bin/webpack",
     "build-prod": "NODE_ENV=production ../../node_modules/.bin/webpack",
+    "test": "../../../core/build/bin/adv_js_example test.js",
     "simple": "../../../core/build/bin/adv_js_example build/simple.js",
+    "simple-prod": "../../../core/build/bin/adv_js_example build-prod/simple.js",
     "start": "../../../core/build/bin/adv_js_example build/main.js",
     "start-prod": "../../../core/build-prod/bin/adv_js_example build-prod/main.js",
     "lldb": "lldb ../../../core/build/bin/adv_js_example -- build/main.js",

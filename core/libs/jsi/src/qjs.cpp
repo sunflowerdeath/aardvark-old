@@ -144,6 +144,8 @@ void Qjs_Context::init() {
     JS_SetContextOpaque(ctx, (void*)this);
     JS_SetRuntimeOpaque(rt, (void*)this);
 
+    JS_SetMaxStackSize(rt, 500000);
+
     JS_NewClassID(&Qjs_Context::function_class_id);
     auto function_class_def = JSClassDef{
         "NativeFunction",           // class_name
@@ -203,7 +205,7 @@ Result<Value> Qjs_Context::eval(
     auto res = JS_Eval(
         ctx,
         source.c_str(),
-        source.size() + 1,
+        source.size(),
         source_url.c_str(),
         JS_EVAL_TYPE_GLOBAL);
     if (JS_IsException(res)) return get_error();

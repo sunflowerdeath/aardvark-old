@@ -1,8 +1,10 @@
 import Reconciler from 'react-reconciler'
 import { createElement, updateElement } from './helpers.js'
 
+const logRenderCalls = false
+
 const getRootHostContext = (rootContainerInstance) => {
-    // log('getRootHostContext')
+    if (logRenderCalls) log('getRootHostContext')
     return {}
 }
 
@@ -11,12 +13,12 @@ const getChildHostContext = (
     type,
     rootContainerInstance
 ) => {
-    // log('getChildHostContext')
+    if (logRenderCalls) log('getChildHostContext')
     return parentHostContext
 }
 
 const getPublicInstance = (instance) => {
-    // log('getPublicInstance')
+    if (logRenderCalls) log('getPublicInstance')
     return instance
 }
 
@@ -35,12 +37,12 @@ const createInstance = (
     hostContext,
     internalInstanceHandle
 ) => {
-    // log('createInstance ' + type)
+    if (logRenderCalls) log('createInstance ' + type)
     return createElement(type, props)
 }
 
 const appendInitialChild = (parentInstance, child) => {
-    // log('appendInitialChild')
+    if (logRenderCalls) log('appendInitialChild')
     if (parentInstance.name === 'Paragraph') {
         parentInstance.root.appendChild(child)
     } else {
@@ -55,7 +57,7 @@ const finalizeInitialChildren = (
     rootContainerInstance,
     hostContext
 ) => {
-    // log('finalizeInitialChildren')
+    if (logRenderCalls) log('finalizeInitialChildren')
     return false
 }
 
@@ -74,12 +76,12 @@ const prepareUpdate = (
 }
 
 const shouldSetTextContent = (type, props) => {
-    // log('shouldSetTextContent')
+    if (logRenderCalls) // log('shouldSetTextContent')
     return false
 }
 
 const shouldDeprioritizeSubtree = (type, props) => {
-    // log('shouldDeprioritizeSubtree')
+    if (logRenderCalls) log('shouldDeprioritizeSubtree')
     return false
 }
 
@@ -89,7 +91,7 @@ const createTextInstance = (
     hostContext,
     internalInstanceHandle
 ) => {
-    // log('createTextInstance: ' + text)
+    if (logRenderCalls) log('createTextInstance: ' + text)
 }
 
 const scheduleTimeout = setTimeout
@@ -107,7 +109,7 @@ const warnsIfNotActing = true
 const supportsMutation = true
 
 const appendChild = (parentInstance, child) => {
-    // log('appendChild')
+    if (logRenderCalls) log('appendChild')
     if (parentInstance.name == 'Paragraph') {
         parentInstance.root.appendChild(child)
     } else {
@@ -116,12 +118,12 @@ const appendChild = (parentInstance, child) => {
 }
 
 const appendChildToContainer = (parentInstance, child) => {
-    // log('appendChildToContainer')
+    if (logRenderCalls) log('appendChildToContainer')
     parentInstance.root = child
 }
 
 const commitTextUpdate = (textInstance, oldText, newText) => {
-    // log('commitTextUpdate')
+    if (logRenderCalls) log('commitTextUpdate')
     textInstance.text = newText
 }
 
@@ -137,27 +139,27 @@ const commitUpdate = (
     newProps,
     internalInstanceHandle
 ) => {
-    // log('commitUpdate')
+    if (logRenderCalls) log('commitUpdate')
     updateElement(instance, type, oldProps, newProps)
 }
 
 const insertBefore = (parentInstance, child, beforeChild) => {
     // TODO Move existing child or add new child?
-    // log('insertBeforeChild')
+    if (logRenderCalls) log('insertBeforeChild')
     log(parentInstance.name)
     parentInstance.insertBeforeChild(child, beforeChild)
 }
 const insertInContainerBefore = (parentInstance, child, beforeChild) => {
-    // log('Container does not support insertBefore operation')
+    if (logRenderCalls) log('Container does not support insertBefore operation')
 }
 
 const removeChild = (parentInstance, child) => {
-    // log('removeChild')
+    if (logRenderCalls) log('removeChild')
     parentInstance.removeChild(child)
 }
 
 const removeChildFromContainer = (parentInstance, child) => {
-    // log('removeChildFromContainer')
+    if (logRenderCalls) log('removeChildFromContainer')
     // TODO undefined / placeholder
     parentInstance.root = new PlaceholderElement()
 }

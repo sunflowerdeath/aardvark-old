@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from '@advk/react-renderer/src/react'
 import { Color } from '@advk/common'
 import ReactAardvark, { Stack, Background } from '@advk/react-renderer'
 // import ReactAardvark from '@advk/react-renderer/src/RendererApi'
@@ -10,22 +10,28 @@ const win = application.createWindow({
 
 const document = application.getDocument(win)
 
-// const bg = new BackgroundElement()
-// bg.color = Color.RED
+/*
+const bg = new BackgroundElement()
+bg.color = Color.RED
 
-// const stack = new StackElement()
-// stack.appendChild(bg)
+const stack = new StackElement()
+stack.appendChild(bg)
 
-// document.root = stack
+document.root = stack
 
-// setTimeout(() => {
-  // bg.color = Color.GREEN
-// }, 1000)
+setTimeout(() => {
+  bg.color = Color.GREEN
+}, 1000)
+*/
 
 const Main = () => {
+    let [color, setColor] = useState(Color.RED)
+    useEffect(() => {
+      setTimeout(() => setColor(Color.GREEN), 2000)
+    }, [])
     return (
         <Stack>
-            <Background color={Color.RED} />
+            <Background color={color} />
         </Stack>
     )
 }

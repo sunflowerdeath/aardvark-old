@@ -34,7 +34,7 @@ Host::Host() {
     module_loader = ModuleLoader(
         event_loop.get(),
         ctx.get(),
-        true,
+        false, // enable_source_maps
         [this](
             jsi::Error& err,
             std::optional<jsi::ErrorLocation> original_location) {
