@@ -57,4 +57,9 @@ module.exports = {
         ],
     },
     devtool: process.env.NODE_ENV == 'production' ? false : 'source-map',
+    resolve: {
+      alias: {
+        'react': path.resolve('../react-renderer/node_modules/react')
+      }
+    }
 }

@@ -144,7 +144,7 @@ void Qjs_Context::init() {
     JS_SetContextOpaque(ctx, (void*)this);
     JS_SetRuntimeOpaque(rt, (void*)this);
 
-    JS_SetMaxStackSize(rt, 500000);
+    JS_SetMaxStackSize(rt, 1000000);
 
     JS_NewClassID(&Qjs_Context::function_class_id);
     auto function_class_def = JSClassDef{
