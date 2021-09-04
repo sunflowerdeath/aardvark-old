@@ -43,6 +43,9 @@ struct TextStyle {
     SkFont to_sk_font() {
         SkFont font;
         font.setSize(font_size);
+        auto typeface = SkTypeface::MakeFromName("PT Sans", 
+          SkFontStyle(400,5,  SkFontStyle::Slant::kUpright_Slant));
+        font.setTypeface(typeface);
         return font;
     }
 

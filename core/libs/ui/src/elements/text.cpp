@@ -49,6 +49,7 @@ void TextElement::paint(bool is_changed) {
     document->setup_layer(layer, this);
 
     auto paint = style.to_sk_paint();
+    paint.setAntiAlias(true);
     auto font = style.to_sk_font();
     auto metrics =
         inline_layout::LineMetrics::from_sk_font(font).scale(style.line_height);

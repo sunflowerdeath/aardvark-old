@@ -1,3 +1,9 @@
+window.console = {
+    log,
+    error: (...args) => log('ERROR: ', ...args),
+    warn: (...args) => log('WARNING: ', ...args)
+}
+
 import React, { useState } from 'react'
 import { Color, Insets, Value, BoxBorders, BorderSide } from '@advk/common'
 import ReactAardvark, {

@@ -47,17 +47,23 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Os -g -fno-omit-frame-pointer")
 # Release
 # -Os - Optimize for size
 # -ffunction-sections -fdata-sections 
-#	Put data and code in their own sections, so that unused symbols
-#	can be removed at link time with --gc-sections
+#     Put data and code in their own sections, so that unused symbols
+#     can be removed at link time with --gc-sections
 # -Wl,--gc-sections - Linker option to remove unneeded sections
+# -Wl,-dead_strip - Same but on macos
 # -Wl,-s - Run strip to reduce size of executable
 set(CMAKE_CXX_FLAGS_RELEASE "-Os -ffunction-sections -fdata-sections")
 if(ADV_LTO)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
 endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(CMAKE_EXE_LINKER_FLAGS
-        "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections -Wl,-s")
+    if(ADV_PLATFORM STREQUAL "macos")
+        set(CMAKE_EXE_LINKER_FLAGS
+            "${CMAKE_EXE_LINKER_FLAGS} -Wl,-dead_strip -Wl,-s")
+    else()
+        set(CMAKE_EXE_LINKER_FLAGS
+            "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections -Wl,-s")
+    endif()
     set(CMAKE_SHARED_LINKER_FLAGS
         "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -Wl,-s")
 endif()

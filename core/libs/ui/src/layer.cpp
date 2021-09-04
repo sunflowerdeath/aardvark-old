@@ -77,14 +77,15 @@ std::shared_ptr<Layer> Layer::make_screen_layer(sk_sp<GrDirectContext> gr_contex
                                         STENCIL_BITS, info);
 
     // Setup skia surface
-    // auto props = SkSurfaceProps(SkSurfaceProps::kLegacyFontHost_InitType);
+    auto props = SkSurfaceProps(SkSurfaceProps::kUseDeviceIndependentFonts_Flag,
+      kUnknown_SkPixelGeometry);
     auto surface = SkSurface::MakeFromBackendRenderTarget(
         gr_context.get(), // context,
         target, // backendRenderTarget,
         kBottomLeft_GrSurfaceOrigin, // origin,
         color_type, // colorType,
         nullptr, // colorSpace,
-        nullptr // surfaceProps
+        &props // surfaceProps
     );
 	if (surface == nullptr) {
 		Log::error("[Layer] Cannot create screen layer surface");
@@ -97,8 +98,16 @@ std::shared_ptr<Layer> Layer::make_offscreen_layer(sk_sp<GrDirectContext> gr_con
                                                    Size size) {
     const SkImageInfo info =
         SkImageInfo::MakeN32Premul(size.width, size.height);
+    auto props = SkSurfaceProps(SkSurfaceProps::kUseDeviceIndependentFonts_Flag,
+      kUnknown_SkPixelGeometry);
     auto target =
-        SkSurface::MakeRenderTarget(gr_context.get(), SkBudgeted::kNo, info);
+        SkSurface::MakeRenderTarget(
+          gr_context.get(),
+          SkBudgeted::kNo,
+          info,
+          MSAA_SAMPLE_COUNT, // sampleCount
+          &props
+        );
     if (target == nullptr) {
 		Log::error("[Layer] Cannot create offscreen layer render target");
     }

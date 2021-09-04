@@ -8,11 +8,12 @@
     "build-prod": "NODE_ENV=production ../../node_modules/.bin/webpack",
     "test": "../../../core/build/bin/adv_js_example test.js",
     "simple": "../../../core/build/bin/adv_js_example build/simple.js",
-    "simple-prod": "../../../core/build/bin/adv_js_example build-prod/simple.js",
+    "simple-prod": "../../../core/build-prod/bin/adv_js_example build-prod/simple.js",
     "start": "../../../core/build/bin/adv_js_example build/main.js",
     "start-prod": "../../../core/build-prod/bin/adv_js_example build-prod/main.js",
     "lldb": "lldb ../../../core/build/bin/adv_js_example -- build/main.js",
-    "todo": "../../../core/build/bin/adv_js_example build/todomvc.js"
+    "todo": "../../../core/build/bin/adv_js_example build/todomvc.js",
+    "todo-prod": "../../../core/build-prod/bin/adv_js_example build-prod/todomvc.js"
   },
   "dependencies": {
     "@advk/common": "*",

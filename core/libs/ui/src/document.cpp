@@ -1,5 +1,7 @@
 #include "document.hpp"
 
+#include <iostream>
+
 #include "SkPathOps.h"
 #include "elements/placeholder.hpp"
 
@@ -49,7 +51,11 @@ void Document::set_root(std::shared_ptr<Element> new_root) {
     root->is_relayout_boundary = true;
     root->is_repaint_boundary = true;
     root->rel_position = Position();
-    root->size = screen->size;
+
+    auto pixel_ratio = 2;
+    auto scaled_size = Size{screen->size.width/pixel_ratio, screen->size.height/pixel_ratio};
+    root->size = scaled_size;
+
     is_initial_render = true;
 }
 
@@ -65,8 +71,11 @@ bool Document::render() {
 }
 
 bool Document::initial_render() {
+    auto pixel_ratio = 2;
+    auto scaled_size = Size{screen->size.width/pixel_ratio, screen->size.height/pixel_ratio};
     layout_element(
-        root.get(), BoxConstraints::from_size(screen->size, true /* tight */));
+        root.get(), BoxConstraints::from_size(scaled_size, true /* tight */));
+    std::cout << "LAYOUT " << scaled_size.width << std::endl;
     update_tree_abs_position(root.get());
     size_observer->check_all_elements();
     if (!changed_elements.empty()) relayout();
@@ -243,7 +252,10 @@ Layer* Document::get_layer() {
     // If there is no current layer, setup default layer
     Layer* layer;
     if (current_layer == nullptr) {
-        layer = create_layer(current_layer_tree->element->size);
+        auto pixel_ratio = 2;
+        auto size = current_layer_tree->element->size;
+        auto scaled_size = Size{size.width*pixel_ratio, size.height*pixel_ratio};
+        layer = create_layer(scaled_size);
     } else {
         layer = current_layer;
     }
@@ -254,6 +266,7 @@ Layer* Document::get_layer() {
 void Document::setup_layer(Layer* layer, Element* elem) {
     layer->canvas->restoreToCount(1);
     layer->canvas->save();
+    layer->canvas->scale(2,2);
     auto layer_pos = current_layer_tree->element->abs_position;
     if (current_clip != std::nullopt) {
         SkPath offset_clip;
@@ -269,6 +282,7 @@ void Document::setup_layer(Layer* layer, Element* elem) {
 // Creates layer and adds it to the current layer tree, reusing layers from
 // previous repaint if possible.
 Layer* Document::create_layer(Size size) {
+    std::cout << "CREATE LAYER " << size.width << std::endl;
     auto it = layers_pool.begin();
     while (it != layers_pool.end()) {
         auto prev_layer =
@@ -296,6 +310,9 @@ void Document::compose() {
     need_recompose = false;
     screen->clear();
     current_opacity = 1;
+
+    // root->layer_tree->transform = SkMatrix::Scale(2, 2);
+
     paint_layer_tree(root->layer_tree.get());
     screen->canvas->flush();
 }
