@@ -56,6 +56,11 @@ struct Scale {
 struct Size {
     float width = 0;
     float height = 0;
+
+    Size scale(float ratio) {
+      return Size{width * ratio, height * ratio};
+    };
+
     static bool is_equal(Size a, Size b);
 };
 

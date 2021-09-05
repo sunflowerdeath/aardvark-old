@@ -50,6 +50,8 @@ class Document : public std::enable_shared_from_this<Document> {
 
     void relayout();
 
+    float pixel_ratio = 2;
+
     // Makes the layout of the specified element up-to-date by performing
     // partial relayout of the document.
     void partial_relayout(Element* elem);
